@@ -1200,18 +1200,18 @@ export default async function HomePage() {
             <div className="marquee-track">
               {[...Array(2)].map((_, copy) =>
                 [
-                  { src: "/agents/the-ceo-agent.svg", alt: "The CEO [Agent]" },
-                  { src: "/agents/the-medical-agent.svg", alt: "The Medical [Agent]" },
-                  { src: "/agents/the-cfo-agent.svg", alt: "The CFO [Agent]" },
-                  { src: "/agents/the-real-estate-agent.svg", alt: "The Real Estate [Agent]" },
-                  { src: "/agents/the-legal-agent.svg", alt: "The Legal [Agent]" },
-                  { src: "/agents/the-contractors-agent.svg", alt: "The Contractors [Agent]" },
-                  { src: "/agents/the-personal-agent.svg", alt: "The Personal [Agent]" },
-                  { src: "/agents/the-sales-assistant.svg", alt: "The Sales [Assistant]" },
-                  { src: "/agents/the-finance-agent.svg", alt: "The Finance [Agent]" },
-                  { src: "/agents/the-insurance-agent.svg", alt: "The Insurance [Agent]" },
-                  { src: "/agents/the-accounting-agent.svg", alt: "The Accounting [Agent]" },
-                  { src: "/agents/the-brokers-agent.svg", alt: "The Brokers [Agent]" },
+                  { src: "/agents/the-ceo-agent.png", alt: "The CEO [Agent]" },
+                  { src: "/agents/the-medical-agent.png", alt: "The Medical [Agent]" },
+                  { src: "/agents/the-cfo-agent.png", alt: "The CFO [Agent]" },
+                  { src: "/agents/the-real-estate-agent.png", alt: "The Real Estate [Agent]" },
+                  { src: "/agents/the-legal-agent.png", alt: "The Legal [Agent]" },
+                  { src: "/agents/the-contractors-agent.png", alt: "The Contractors [Agent]" },
+                  { src: "/agents/the-personal-agent.png", alt: "The Personal [Agent]" },
+                  { src: "/agents/the-sales-assistant.png", alt: "The Sales [Assistant]" },
+                  { src: "/agents/the-finance-agent.png", alt: "The Finance [Agent]" },
+                  { src: "/agents/the-insurance-agent.png", alt: "The Insurance [Agent]" },
+                  { src: "/agents/the-accounting-agent.png", alt: "The Accounting [Agent]" },
+                  { src: "/agents/the-brokers-agent.png", alt: "The Brokers [Agent]" },
                 ].map((logo) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
