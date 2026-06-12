@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 
+const NAVY = "#0B1729";
+const RED = "#D72B2B";
+const WHITE_MUTED = "rgba(255,255,255,0.72)";
+const WHITE_SUBTLE = "rgba(255,255,255,0.45)";
+
 const navLinks = [
   { label: "About", to: "/about" },
   { label: "Services", to: "/services" },
@@ -59,32 +64,31 @@ function NewsletterSignup() {
   return (
     <div
       style={{
-        backgroundColor: "#E8342A",
-        borderRadius: "0px",
-        padding: "40px 32px",
-        marginBottom: "0",
+        backgroundColor: "#F7F6F2",
+        padding: "72px 32px",
       }}
     >
       <div style={{ maxWidth: "640px", margin: "0 auto", textAlign: "center" }}>
         <p
           style={{
             fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-            fontSize: "10px",
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.7)",
-            marginBottom: "8px",
+            fontSize: "13px",
+            letterSpacing: "0.08em",
+            color: "#1A1A1A",
+            marginBottom: "14px",
+            fontWeight: 600,
           }}
         >
-          Weekly Intelligence
+          <span style={{ color: RED, fontWeight: 700 }}>[</span> Weekly Intelligence{" "}
+          <span style={{ color: RED, fontWeight: 700 }}>]</span>
         </p>
         <h3
           style={{
             fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-            fontSize: "clamp(20px, 4vw, 28px)",
+            fontSize: "clamp(22px, 3.4vw, 30px)",
             fontWeight: 700,
-            color: "#ffffff",
-            marginBottom: "8px",
+            color: "#1A1A1A",
+            marginBottom: "12px",
             letterSpacing: "-0.5px",
           }}
         >
@@ -93,10 +97,10 @@ function NewsletterSignup() {
         <p
           style={{
             fontFamily: "var(--font-body, Inter, sans-serif)",
-            fontSize: "14px",
-            color: "rgba(255,255,255,0.85)",
-            marginBottom: "24px",
-            lineHeight: "1.5",
+            fontSize: "15px",
+            color: "#555555",
+            marginBottom: "30px",
+            lineHeight: "1.6",
           }}
         >
           What happened in AI last week and what to watch this week. Every Monday.
@@ -108,11 +112,11 @@ function NewsletterSignup() {
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              backgroundColor: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.4)",
+              backgroundColor: "rgba(215,43,43,0.08)",
+              border: `1px solid ${RED}`,
               borderRadius: "999px",
               padding: "12px 28px",
-              color: "#ffffff",
+              color: RED,
               fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
               fontSize: "14px",
               fontWeight: 600,
@@ -126,8 +130,8 @@ function NewsletterSignup() {
             style={{
               display: "flex",
               flexDirection: "row",
-              gap: "8px",
-              maxWidth: "480px",
+              gap: "12px",
+              maxWidth: "520px",
               margin: "0 auto",
               flexWrap: "wrap",
               justifyContent: "center",
@@ -141,23 +145,25 @@ function NewsletterSignup() {
               required
               disabled={status === "loading"}
               style={{
-                flex: "1 1 220px",
-                padding: "12px 18px",
+                flex: "1 1 240px",
+                padding: "14px 22px",
                 borderRadius: "999px",
-                border: "none",
-                backgroundColor: "rgba(255,255,255,0.15)",
-                color: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.12)",
+                backgroundColor: "#FFFFFF",
+                color: "#1A1A1A",
                 fontFamily: "var(--font-body, Inter, sans-serif)",
                 fontSize: "14px",
                 outline: "none",
-                caretColor: "#ffffff",
-                minWidth: "200px",
+                minWidth: "220px",
+                transition: "border-color 0.15s, box-shadow 0.15s",
               }}
               onFocus={(e) => {
-                e.target.style.backgroundColor = "rgba(255,255,255,0.25)";
+                e.target.style.borderColor = RED;
+                e.target.style.boxShadow = "0 0 0 3px rgba(215,43,43,0.1)";
               }}
               onBlur={(e) => {
-                e.target.style.backgroundColor = "rgba(255,255,255,0.15)";
+                e.target.style.borderColor = "rgba(0,0,0,0.12)";
+                e.target.style.boxShadow = "none";
               }}
             />
             <button
@@ -165,22 +171,31 @@ function NewsletterSignup() {
               disabled={status === "loading" || !email}
               style={{
                 flex: "0 0 auto",
-                padding: "12px 24px",
+                padding: "14px 28px",
                 borderRadius: "999px",
-                border: "2px solid #ffffff",
-                backgroundColor: "#ffffff",
-                color: "#E8342A",
+                border: "none",
+                backgroundColor: RED,
+                color: "#FFFFFF",
                 fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-                fontSize: "13px",
+                fontSize: "12px",
                 fontWeight: 700,
                 cursor: status === "loading" ? "not-allowed" : "pointer",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
                 opacity: status === "loading" ? 0.7 : 1,
                 transition: "all 0.2s",
                 whiteSpace: "nowrap",
+                boxShadow: "0 6px 18px rgba(215,43,43,0.28)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              {status === "loading" ? "..." : "Subscribe"}
+              {status === "loading" ? "..." : (
+                <>
+                  Subscribe <span aria-hidden>→</span>
+                </>
+              )}
             </button>
           </form>
         )}
@@ -188,8 +203,8 @@ function NewsletterSignup() {
         {status === "error" && (
           <p
             style={{
-              marginTop: "10px",
-              color: "rgba(255,255,255,0.85)",
+              marginTop: "12px",
+              color: RED,
               fontSize: "13px",
               fontFamily: "var(--font-body, Inter, sans-serif)",
             }}
@@ -204,146 +219,182 @@ function NewsletterSignup() {
 
 export default function Footer() {
   return (
-    <footer className="bg-background border-t border-border/30">
+    <footer>
       <NewsletterSignup />
-      <div className="container mx-auto px-4 md:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div>
-            <svg
-              viewBox="0 0 480 80"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ height: "48px", width: "auto" }}
-            >
-              <text
-                y="62"
-                fontFamily="'IBM Plex Mono', 'Courier New', monospace"
-                fontSize="48"
-                fontWeight="700"
-                letterSpacing="-1.5"
-                fill="currentColor"
-                className="text-foreground"
+      <div style={{ background: NAVY, color: "#FFFFFF" }}>
+        <div className="container mx-auto px-5 md:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div>
+              <svg
+                viewBox="0 0 480 80"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ height: "40px", width: "auto" }}
+                aria-label="Apollo[Claw]"
               >
-                Apollo
-                <tspan fill="#D72B2B">[</tspan>
-                Claw
-                <tspan fill="#D72B2B">]</tspan>
-              </text>
-            </svg>
-            <p className="font-body text-foreground mt-4 text-sm leading-relaxed">
-              Your Business.
-              <br />
-              Your Data.
-              <br />
-              <span className="text-primary">Your AI.</span>
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-mono text-[10px] uppercase tracking-widest text-foreground mb-4">
-              Navigate
-            </h4>
-            <div className="flex flex-col gap-1.5">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  href={link.to}
-                  className="font-body text-[14px] text-foreground hover:text-primary transition-colors"
+                <text
+                  y="62"
+                  fontFamily="'IBM Plex Mono', 'Courier New', monospace"
+                  fontSize="48"
+                  fontWeight="700"
+                  letterSpacing="-1.5"
+                  fill="#FFFFFF"
                 >
-                  {link.label}
-                </Link>
-              ))}
+                  Apollo
+                  <tspan fill={RED}>[</tspan>
+                  Claw
+                  <tspan fill={RED}>]</tspan>
+                </text>
+              </svg>
+              <p
+                className="font-body mt-4 text-sm leading-relaxed"
+                style={{ color: WHITE_MUTED }}
+              >
+                Your Business.
+                <br />
+                Your Data.
+                <br />
+                <span style={{ color: RED }}>Your AI.</span>
+              </p>
             </div>
-          </div>
 
-          <div>
-            <h4 className="font-mono text-[10px] uppercase tracking-widest text-foreground mb-4">
-              Support
-            </h4>
-            <div className="flex flex-col gap-1.5">
-              {supportLinks.map((link) =>
-                link.external ? (
-                  <a
-                    key={link.label}
-                    href={link.to}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-body text-[14px] text-foreground hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
+            <div>
+              <h4
+                className="font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
+              >
+                Navigate
+              </h4>
+              <div className="flex flex-col gap-2">
+                {navLinks.map((link) => (
                   <Link
                     key={link.to}
                     href={link.to}
-                    className="font-body text-[14px] text-foreground hover:text-primary transition-colors"
+                    className="font-body text-[14px] transition-colors hover:text-white"
+                    style={{ color: WHITE_MUTED }}
                   >
                     {link.label}
                   </Link>
-                ),
-              )}
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h4 className="font-mono text-[10px] uppercase tracking-widest text-foreground mb-4">
-              Let&apos;s Talk
-            </h4>
-            <a
-              href="mailto:hello@apolloclaw.ai"
-              className="font-body text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              hello@apolloclaw.ai
-            </a>
-            <br />
-            <a
-              href="tel:+19173635487"
-              className="font-body text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              (917) 363-5487
-            </a>
-            <div className="mt-3" />
-            <a
-              href="https://www.linkedin.com/company/apolloclaw/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center"
-              aria-label="LinkedIn"
-            >
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground font-bold text-xs font-mono">
-                in
-              </span>
-            </a>
-            <div className="mt-4">
+            <div>
+              <h4
+                className="font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
+              >
+                Support
+              </h4>
+              <div className="flex flex-col gap-2">
+                {supportLinks.map((link) =>
+                  link.external ? (
+                    <a
+                      key={link.label}
+                      href={link.to}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-[14px] transition-colors hover:text-white"
+                      style={{ color: WHITE_MUTED }}
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      key={link.to}
+                      href={link.to}
+                      className="font-body text-[14px] transition-colors hover:text-white"
+                      style={{ color: WHITE_MUTED }}
+                    >
+                      {link.label}
+                    </Link>
+                  ),
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h4
+                className="font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
+              >
+                Let&apos;s Talk
+              </h4>
               <a
-                href="https://calendly.com/therealdaveo/apolloai"
+                href="mailto:hello@apolloclaw.ai"
+                className="font-body text-sm transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED, display: "inline-block", marginBottom: 6 }}
+              >
+                hello@apolloclaw.ai
+              </a>
+              <br />
+              <a
+                href="tel:+19173635487"
+                className="font-body text-sm transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                (917) 363-5487
+              </a>
+              <div className="mt-4" />
+              <a
+                href="https://www.linkedin.com/company/apolloclaw/"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="inline-flex items-center"
+                aria-label="LinkedIn"
               >
-                <button className="font-body text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-full px-6 py-3 hover:bg-primary/85 transition-all duration-200 hover:shadow-lg hover:shadow-primary/25">
-                  Schedule Today
-                </button>
+                <span
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-xs font-mono"
+                  style={{ background: RED, color: "#FFFFFF" }}
+                >
+                  in
+                </span>
               </a>
+              <div className="mt-5">
+                <a
+                  href="https://calendly.com/therealdaveo/apolloai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                  style={{
+                    background: RED,
+                    color: "#FFFFFF",
+                    fontSize: 12,
+                    letterSpacing: "0.1em",
+                    padding: "12px 24px",
+                    borderRadius: 4,
+                    textDecoration: "none",
+                    boxShadow: "0 6px 18px rgba(215,43,43,0.3)",
+                  }}
+                >
+                  Schedule Today
+                </a>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="border-t border-border/50 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="font-body text-xs text-muted-subtle">
-            &copy; 2026 Apollo[Claw]
-          </p>
-          <div className="flex gap-6">
-            <Link
-              href="/accessibility"
-              className="font-body text-xs text-foreground hover:text-primary transition-colors"
-            >
-              Accessibility
-            </Link>
-            <Link
-              href="/security"
-              className="font-body text-xs text-foreground hover:text-primary transition-colors"
-            >
-              Security
-            </Link>
+          <div
+            className="mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <p className="font-body text-xs" style={{ color: WHITE_SUBTLE }}>
+              &copy; 2026 Apollo[Claw]
+            </p>
+            <div className="flex gap-6">
+              <Link
+                href="/accessibility"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Accessibility
+              </Link>
+              <Link
+                href="/security"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Security
+              </Link>
+            </div>
           </div>
         </div>
       </div>
