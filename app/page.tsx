@@ -1205,7 +1205,6 @@ export default async function HomePage() {
                   { src: "/agents/the-cfo-agent.png", alt: "The CFO [Agent]" },
                   { src: "/agents/the-real-estate-agent.png", alt: "The Real Estate [Agent]" },
                   { src: "/agents/the-legal-agent.png", alt: "The Legal [Agent]" },
-                  { src: "/agents/the-contractors-agent.png", alt: "The Contractors [Agent]" },
                   { src: "/agents/the-personal-agent.png", alt: "The Personal [Agent]" },
                   { src: "/agents/the-sales-assistant.png", alt: "The Sales [Assistant]" },
                   { src: "/agents/the-finance-agent.png", alt: "The Finance [Agent]" },
