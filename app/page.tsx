@@ -892,69 +892,188 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* LATEST FROM THE BLOG */}
+      {/* LATEST FROM THE BLOG — Section 8 (cream, 2-col cards) */}
       {latestPosts.length > 0 && (
-        <section className="bg-surface-alt pt-[60px] pb-[60px] relative">
-          <div className="container mx-auto px-4 md:px-8 max-w-6xl">
+        <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
+          <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-7xl">
             <ScrollReveal>
-              <div className="text-center mb-16">
-                <h2 className="font-display text-3xl md:text-5xl text-foreground">
-                  Latest from the Blog
+              <div style={{ textAlign: "center", marginBottom: 56, maxWidth: 720, marginLeft: "auto", marginRight: "auto" }}>
+                <span
+                  className="inline-block font-mono uppercase mb-4"
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: "0.16em",
+                    color: "#888888",
+                  }}
+                >
+                  [ Research Hub ]
+                </span>
+                <h2
+                  className="font-display leading-[1.05] tracking-tight"
+                  style={{
+                    fontSize: "clamp(32px, 4.4vw, 56px)",
+                    fontWeight: 800,
+                    color: "#1A1A1A",
+                    margin: "0 0 14px",
+                  }}
+                >
+                  Latest from the <span style={{ color: "#D72B2B" }}>Blog</span>
                 </h2>
-                <p className="font-body text-muted-foreground mt-4 max-w-2xl mx-auto">
-                  Expert insights on AI automation for business owners
+                <p
+                  className="font-body"
+                  style={{
+                    fontSize: "clamp(15px, 1.1vw, 17px)",
+                    color: "#555555",
+                    margin: "0 auto",
+                    maxWidth: 520,
+                  }}
+                >
+                  Expert insights on AI automation for business owners.
                 </p>
               </div>
             </ScrollReveal>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <style>{`
+              #apollo-blog-grid {
+                display: grid;
+                gap: 18px;
+                grid-template-columns: 1fr;
+              }
+              @media (min-width: 768px) {
+                #apollo-blog-grid {
+                  grid-template-columns: 1fr 1fr;
+                  gap: 22px;
+                }
+              }
+              .apollo-blog-card {
+                transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+              }
+              .apollo-blog-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 30px rgba(11,23,41,0.08);
+                border-color: rgba(215,43,43,0.4);
+              }
+            `}</style>
+
+            <div id="apollo-blog-grid">
               {latestPosts.map((post: any, i: number) => (
-                <ScrollReveal key={post.slug} delay={i * 100}>
-                  <Link href={`/blog/${post.slug}`} className="block group">
-                    <div className="bg-card border border-border rounded-2xl overflow-hidden h-full hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col">
-                      {post.image && (
-                        <div className="w-full aspect-[16/9] overflow-hidden flex-shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        </div>
-                      )}
-                      <div className="p-6 flex flex-col flex-1">
-                        <span className="inline-block text-xs font-mono border border-border rounded-full px-3 py-1 mb-3 text-foreground self-start">
-                          {post.category}
-                        </span>
-                        <h3 className="font-display text-xl md:text-2xl text-foreground group-hover:text-primary transition-colors mb-3">
-                          {post.title}
-                        </h3>
-                        <p className="font-body text-sm text-muted-foreground mb-4 line-clamp-3">
-                          {post.excerpt}
-                        </p>
-                        <div className="flex items-center justify-between mt-auto">
-                          <span className="font-mono text-xs text-muted-subtle">
-                            {post.date
-                              ? new Date(post.date).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })
-                              : ""}
-                          </span>
-                          <span className="font-body text-sm text-primary group-hover:underline">
-                            Read More
-                          </span>
-                        </div>
-                      </div>
+                <ScrollReveal key={post.slug} delay={i * 90}>
+                  <div
+                    className="apollo-blog-card"
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid rgba(0,0,0,0.07)",
+                      borderRadius: 10,
+                      padding: "26px 28px",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: "#888888",
+                        marginBottom: 10,
+                      }}
+                    >
+                      [ {post.category} ]
+                    </span>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <h3
+                        style={{
+                          fontFamily: "var(--font-body), Inter, sans-serif",
+                          fontSize: 19,
+                          fontWeight: 800,
+                          color: "#1A1A1A",
+                          margin: "0 0 10px",
+                          letterSpacing: "-0.01em",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {post.title}
+                      </h3>
+                    </Link>
+                    <p
+                      className="line-clamp-3"
+                      style={{
+                        fontSize: 14,
+                        lineHeight: 1.65,
+                        color: "#555555",
+                        margin: "0 0 20px",
+                        flex: 1,
+                      }}
+                    >
+                      {post.excerpt}
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginTop: "auto",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "'IBM Plex Mono', monospace",
+                          fontSize: 11,
+                          color: "#888888",
+                        }}
+                      >
+                        {post.date
+                          ? new Date(post.date).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : ""}
+                      </span>
+                      <Link
+                        href={`/blog/${post.slug}`}
+                        className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                        style={{
+                          background: "#D72B2B",
+                          color: "#ffffff",
+                          fontSize: 11,
+                          letterSpacing: "0.1em",
+                          padding: "8px 18px",
+                          borderRadius: 4,
+                          textDecoration: "none",
+                        }}
+                      >
+                        Read More
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>
 
-            <ScrollReveal delay={400}>
-              <div className="text-center mt-12">
-                <Link href="/blog">
-                  <Button variant="cta-outline" size="lg">
-                    View All Posts
-                  </Button>
+            <ScrollReveal delay={380}>
+              <div style={{ textAlign: "center", marginTop: 44 }}>
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center justify-center font-bold uppercase transition-all"
+                  style={{
+                    background: "transparent",
+                    color: "#1A1A1A",
+                    border: "1px solid rgba(0,0,0,0.25)",
+                    fontSize: 12,
+                    letterSpacing: "0.12em",
+                    padding: "12px 28px",
+                    borderRadius: 4,
+                    textDecoration: "none",
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}
+                >
+                  View All Posts →
                 </Link>
               </div>
             </ScrollReveal>
