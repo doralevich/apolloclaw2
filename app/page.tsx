@@ -1163,31 +1163,67 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="relative pt-[60px] pb-[60px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-primary/5" />
-        <div className="container mx-auto px-4 md:px-8 text-center relative">
+      {/* FINAL CTA — dark navy banner */}
+      <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 70% 60% at 50% 100%, rgba(215,43,43,0.16) 0%, transparent 60%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 text-center relative z-10 max-w-4xl">
           <ScrollReveal>
-            <h2 className="font-display text-2xl md:text-4xl lg:text-5xl text-foreground">
-              Ready to stop doing work a machine can do?
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{
+                fontSize: "clamp(28px, 4vw, 48px)",
+                fontWeight: 800,
+                color: "#ffffff",
+                margin: 0,
+              }}
+            >
+              Let&apos;s find out what <span style={{ color: "#D72B2B" }}>AI</span> can actually do for your business.
             </h2>
           </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <p className="font-body text-lg text-muted-foreground mt-6 max-w-xl mx-auto">
-              Book a free 30-minute discovery call. Just a real conversation about your business.
+          <ScrollReveal delay={150}>
+            <p
+              className="font-body"
+              style={{
+                fontSize: "clamp(15px, 1.15vw, 17px)",
+                lineHeight: 1.65,
+                color: "rgba(255,255,255,0.72)",
+                maxWidth: 520,
+                margin: "22px auto 0",
+              }}
+            >
+              A free 30-minute conversation. You bring the bottlenecks, we&apos;ll bring the answers.
             </p>
           </ScrollReveal>
-          <ScrollReveal delay={400}>
-            <a
-              href="https://calendly.com/therealdaveo/apolloai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-10"
-            >
-              <Button variant="cta" size="xl">
+          <ScrollReveal delay={300}>
+            <div style={{ marginTop: 36 }}>
+              <a
+                href="https://calendly.com/therealdaveo/apolloai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{
+                  background: "#D72B2B",
+                  color: "#ffffff",
+                  fontSize: 13,
+                  letterSpacing: "0.1em",
+                  padding: "14px 32px",
+                  borderRadius: 4,
+                  textDecoration: "none",
+                  boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
+                }}
+              >
                 Schedule Today
-              </Button>
-            </a>
+              </a>
+            </div>
           </ScrollReveal>
         </div>
       </section>
