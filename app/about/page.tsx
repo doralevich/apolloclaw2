@@ -31,6 +31,18 @@ export default function AboutPage() {
         style={{ background: "#0B1729", color: "#ffffff" }}
         className="relative overflow-hidden"
       >
+        {/* grid overlay */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+            pointerEvents: "none",
+          }}
+        />
         <div
           aria-hidden
           style={{
@@ -101,6 +113,50 @@ export default function AboutPage() {
               Schedule a Free Call
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* LETS FIND OUT — cream */}
+      <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-4xl text-center">
+          <ScrollReveal>
+            <span
+              className="inline-block font-mono uppercase mb-5"
+              style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+            >
+              [ The First Step ]
+            </span>
+            <h2
+              className="font-display leading-[1.05] tracking-tight"
+              style={{ fontSize: "clamp(32px, 4.4vw, 56px)", fontWeight: 800, color: "#1A1A1A", margin: "0 0 22px" }}
+            >
+              Let&apos;s Find Out What <span style={{ color: "#D72B2B" }}>AI Can Do</span> For You
+            </h2>
+            <p
+              className="font-body"
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555", maxWidth: 580, margin: "0 auto 32px" }}
+            >
+              Every business is different. The best way to know where AI fits in yours is a direct conversation — no pitch, no pressure. Just an honest look at your operation and what&apos;s possible right now.
+            </p>
+            <a
+              href="https://calendly.com/therealdaveo/apolloai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+              style={{
+                background: "#D72B2B",
+                color: "#ffffff",
+                fontSize: 13,
+                letterSpacing: "0.1em",
+                padding: "14px 30px",
+                borderRadius: 4,
+                textDecoration: "none",
+                boxShadow: "0 8px 24px rgba(215,43,43,0.28)",
+              }}
+            >
+              Schedule a Free Call
+            </a>
+          </ScrollReveal>
         </div>
       </section>
 

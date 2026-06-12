@@ -92,7 +92,7 @@ function NewsletterSignup() {
             letterSpacing: "-0.5px",
           }}
         >
-          Get The Weekly Claw
+          The Weekly Claw
         </h3>
         <p
           style={{
