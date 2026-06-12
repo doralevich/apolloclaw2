@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import { Button } from "@/components/ui/button";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "Skills Drop Membership",
@@ -11,30 +12,13 @@ export const metadata: Metadata = {
 export default function MembershipPage() {
   return (
     <>
-      <section className="bg-background min-h-[40vh] flex items-center relative grid-pattern pt-10 hero-glow">
-        <div className="container mx-auto px-4 md:px-8 py-20 text-center">
-          <h1 className="font-display text-5xl md:text-7xl text-foreground leading-[1.08] max-w-4xl mx-auto opacity-0 animate-fade-up">
-            Skills <span className="text-primary">Drop</span>
-          </h1>
-          <p className="font-body text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto opacity-0 animate-fade-up-delay-1">
-            Ongoing AI support, updates, and optimization so your agent keeps getting smarter as
-            your business grows.
-          </p>
-          <div className="mt-10 opacity-0 animate-fade-up-delay-2">
-            <a
-              href="https://calendly.com/therealdaveo/apolloai"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="cta" size="xl">
-                Learn More
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
+      <PageHero
+        label="Ongoing Support"
+        title="Skills"
+        titleAccent="Drop"
+        description="Ongoing AI support, updates, and optimization so your agent keeps getting smarter as your business grows."
+        cta={{ label: "Learn More", href: "https://calendly.com/therealdaveo/apolloai" }}
+      />
 
       <section className="bg-surface-alt py-24">
         <div className="container mx-auto px-4 md:px-8 max-w-4xl">

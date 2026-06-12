@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import { Button } from "@/components/ui/button";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "AI Consulting Investment | Apollo Claw",
@@ -11,19 +12,12 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <>
-      <section className="bg-background min-h-[40vh] flex items-center relative grid-pattern pt-10 hero-glow">
-        <div className="container mx-auto px-4 md:px-8 py-20 text-center">
-          <h1 className="font-display text-5xl md:text-7xl text-foreground leading-[1.08] max-w-4xl mx-auto opacity-0 animate-fade-up">
-            Honest <span className="text-primary">Pricing</span>
-          </h1>
-          <p className="font-body text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto opacity-0 animate-fade-up-delay-1">
-            We don&apos;t publish dollar amounts publicly because every engagement is different.
-            What we will tell you: it&apos;s accessible for small businesses, and it pays for itself.
-          </p>
-        </div>
-      </section>
-
-      <div className="section-divider" />
+      <PageHero
+        label="Pricing"
+        title="Honest"
+        titleAccent="Pricing"
+        description="We don't publish dollar amounts publicly because every engagement is different. What we will tell you: it's accessible for small businesses, and it pays for itself."
+      />
 
       <section className="bg-surface-alt py-24">
         <div className="container mx-auto px-4 md:px-8 max-w-4xl">

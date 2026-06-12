@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import { Button } from "@/components/ui/button";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "FAQ — Frequently Asked Questions",
@@ -45,19 +46,15 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-background py-10 pt-8">
+    <>
+      <PageHero
+        label="FAQ"
+        title="Frequently"
+        titleAccent="Asked Questions"
+        description="Everything you want to know before your first call."
+      />
+      <div className="bg-background py-16">
       <div className="container mx-auto max-w-3xl px-4 md:px-8">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <div className="w-10 h-[3px] bg-primary mb-5 mx-auto" />
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-              Frequently <span className="text-primary">Asked Questions</span>
-            </h1>
-            <p className="font-body text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
-              Everything you want to know before your first call.
-            </p>
-          </div>
-        </ScrollReveal>
 
         <div className="flex flex-col gap-6">
           {faqs.map((faq, i) => (
@@ -86,5 +83,6 @@ export default function FAQPage() {
         </ScrollReveal>
       </div>
     </div>
+    </>
   );
 }

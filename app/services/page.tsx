@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "AI Services for Executive Leaders | Apollo Claw",
@@ -59,22 +60,12 @@ const bots = [
 export default function ServicesPage() {
   return (
     <>
-      <section className="bg-background min-h-[40vh] flex items-center relative grid-pattern pt-10 hero-glow">
-        <div className="container mx-auto px-4 md:px-8 py-20 text-center">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground opacity-0 animate-fade-up">
-            Our AI Tiers
-          </span>
-          <h1 className="font-display text-5xl md:text-7xl text-foreground leading-[1.08] max-w-4xl mx-auto mt-4 opacity-0 animate-fade-up">
-            Built For Every <span className="text-primary">Business</span>
-          </h1>
-          <p className="font-body text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto opacity-0 animate-fade-up-delay-1">
-            Whether you&apos;re a solo operator or running a 200-person team, there&apos;s an
-            Apollo[Claw] agent designed for your exact situation.
-          </p>
-        </div>
-      </section>
-
-      <div className="section-divider" />
+      <PageHero
+        label="Our AI Tiers"
+        title="Built For Every"
+        titleAccent="Business"
+        description="Whether you're a solo operator or running a 200-person team, there's an Apollo[Claw] agent designed for your exact situation."
+      />
 
       <section className="bg-surface-alt py-24">
         <div className="container mx-auto px-4 md:px-8 max-w-5xl">

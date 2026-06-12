@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "What Apollo Claw Does | AI Strategy, Agents & Org-Wide Deployment",
@@ -54,26 +55,13 @@ const services = [
 export default function WhatWeDoPage() {
   return (
     <>
-      <section className="bg-background min-h-[40vh] flex items-center relative grid-pattern pt-10 hero-glow">
-        <div className="container mx-auto px-4 md:px-8 py-20 text-center">
-          <span className="inline-block font-mono text-xs uppercase tracking-widest text-muted-foreground px-4 py-2 rounded-full bg-card/60 border border-border/50 mb-6 opacity-0 animate-fade-up">
-            What We Do
-          </span>
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.08] max-w-4xl mx-auto opacity-0 animate-fade-up">
-            Everything Your <span className="text-primary">Bot Can Do</span>
-          </h1>
-          <p className="font-body text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto opacity-0 animate-fade-up-delay-1">
-            Every Apollo[Claw] bot is built from a menu of proven integrations. We pick the right combination for your business and wire it all together.
-          </p>
-          <div className="mt-10 opacity-0 animate-fade-up-delay-2">
-            <a href="https://calendly.com/therealdaveo/apolloai?month=2026-04" target="_blank" rel="noopener noreferrer">
-              <Button variant="cta" size="xl">Book a Free Call</Button>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
+      <PageHero
+        label="What We Do"
+        title="Everything Your"
+        titleAccent="Bot Can Do"
+        description="Every Apollo[Claw] bot is built from a menu of proven integrations. We pick the right combination for your business and wire it all together."
+        cta={{ label: "Book a Free Call", href: "https://calendly.com/therealdaveo/apolloai" }}
+      />
 
       {(services as any[]).map((group, gi) => (
         <div key={gi}>

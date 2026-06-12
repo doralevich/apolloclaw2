@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "Security & Privacy",
@@ -9,19 +10,15 @@ export const metadata: Metadata = {
 
 export default function SecurityPage() {
   return (
-    <div className="min-h-screen bg-background py-10 pt-8">
+    <>
+      <PageHero
+        label="Security & Privacy"
+        title="Your Data"
+        titleAccent="Stays Yours"
+        description="Here's exactly how we protect it."
+      />
+      <div className="bg-background py-16">
       <div className="container mx-auto max-w-3xl px-4 md:px-8">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <div className="w-10 h-[3px] bg-primary mb-5 mx-auto" />
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-              Security &amp; <span className="text-primary">Privacy</span>
-            </h1>
-            <p className="font-body text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
-              Your data stays yours. Here&apos;s exactly how we protect it.
-            </p>
-          </div>
-        </ScrollReveal>
 
         <div className="space-y-8">
           {[
@@ -63,5 +60,6 @@ export default function SecurityPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import { Button } from "@/components/ui/button";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "AI 101 — What Business Owners Need to Know",
@@ -37,19 +38,15 @@ const topics = [
 
 export default function AI101Page() {
   return (
-    <div className="min-h-screen bg-background py-10 pt-8">
+    <>
+      <PageHero
+        label="AI 101"
+        title="What Business Owners"
+        titleAccent="Need to Know"
+        description="No hype, no jargon. Just what matters for your business."
+      />
+      <div className="bg-background py-16">
       <div className="container mx-auto max-w-3xl px-4 md:px-8">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <div className="w-10 h-[3px] bg-primary mb-5 mx-auto" />
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-              AI <span className="text-primary">101</span>
-            </h1>
-            <p className="font-body text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
-              What business owners need to know — no hype, no jargon.
-            </p>
-          </div>
-        </ScrollReveal>
 
         <div className="flex flex-col gap-6 mb-16">
           {topics.map((t, i) => (
@@ -89,5 +86,6 @@ export default function AI101Page() {
         </ScrollReveal>
       </div>
     </div>
+    </>
   );
 }

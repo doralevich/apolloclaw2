@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "How We Work | Apollo Claw AI Consulting",
@@ -34,19 +35,12 @@ const steps = [
 export default function HowItWorksPage() {
   return (
     <>
-      <section className="bg-background min-h-[40vh] flex items-center relative grid-pattern pt-10 hero-glow">
-        <div className="container mx-auto px-4 md:px-8 py-20 text-center">
-          <h1 className="font-display text-5xl md:text-7xl text-foreground leading-[1.08] max-w-4xl mx-auto opacity-0 animate-fade-up">
-            How It <span className="text-primary">Works</span>
-          </h1>
-          <p className="font-body text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto opacity-0 animate-fade-up-delay-1">
-            From first conversation to fully operational AI agent - four steps, no technical
-            expertise required on your end.
-          </p>
-        </div>
-      </section>
-
-      <div className="section-divider" />
+      <PageHero
+        label="The Process"
+        title="How It"
+        titleAccent="Works"
+        description="From first conversation to fully operational AI agent — four steps, no technical expertise required on your end."
+      />
 
       <section className="bg-surface-alt py-24">
         <div className="container mx-auto px-4 md:px-8 max-w-4xl">

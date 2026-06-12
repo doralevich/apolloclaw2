@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "Accessibility Statement",
@@ -8,16 +9,15 @@ export const metadata: Metadata = {
 
 export default function AccessibilityPage() {
   return (
-    <div className="min-h-screen bg-background py-10 pt-8">
+    <>
+      <PageHero
+        label="Accessibility"
+        title="Accessibility"
+        titleAccent="Statement"
+        description="Our commitment to inclusive design for everyone."
+      />
+      <div className="bg-background py-16">
       <div className="container mx-auto max-w-3xl px-4 md:px-8">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <div className="w-10 h-[3px] bg-primary mb-5 mx-auto" />
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-              Accessibility <span className="text-primary">Statement</span>
-            </h1>
-          </div>
-        </ScrollReveal>
 
         <div className="bauhaus-card p-8 md:p-12 space-y-6">
           <ScrollReveal>
@@ -58,5 +58,6 @@ export default function AccessibilityPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
