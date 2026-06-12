@@ -5,7 +5,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 export const metadata: Metadata = {
   title: "About Apollo Claw | AI Strategy Built by Operators",
   description:
-    "Apollo Claw was founded by David Oralevich — an operator who has been at the edge of every technology wave since the 90s. This isn't consulting. It's execution.",
+    "Apollo Claw was founded by David Oralevich, an operator who has been at the edge of every technology wave since the 90s. This isn't consulting. It's execution.",
 };
 
 const values = [
@@ -15,11 +15,11 @@ const values = [
   },
   {
     title: "Your Data Stays Yours",
-    desc: "We build on your infrastructure. Your business data never leaves your environment — not to a vendor, not to a cloud you don't control.",
+    desc: "We build on your infrastructure. Your business data never leaves your environment: not to a vendor, not to a cloud you don't control.",
   },
   {
     title: "Execution Over Advice",
-    desc: "Anyone can hand you a strategy deck. We stay until it's running. The measure of success is what changed in your business — not what we recommended.",
+    desc: "Anyone can hand you a strategy deck. We stay until it's running. The measure of success is what changed in your business, not what we recommended.",
   },
 ];
 
@@ -78,9 +78,29 @@ export default function AboutPage() {
             }}
           >
             Apollo[Claw] isn&apos;t a software company that stumbled into AI consulting.
-            It was built by an operator who watched every major technology wave arrive —
-            and learned, every time, that the advantage goes to whoever moves first.
+            It was built by an operator who watched every major technology wave arrive.
+            And learned, every time, that the advantage goes to whoever moves first.
           </p>
+          <div style={{ marginTop: 36 }}>
+            <a
+              href="https://calendly.com/therealdaveo/apolloai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+              style={{
+                background: "#D72B2B",
+                color: "#ffffff",
+                fontSize: 13,
+                letterSpacing: "0.1em",
+                padding: "14px 30px",
+                borderRadius: 4,
+                textDecoration: "none",
+                boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
+              }}
+            >
+              Schedule a Free Call
+            </a>
+          </div>
         </div>
       </section>
 
@@ -166,16 +186,16 @@ export default function AboutPage() {
                   style={{ fontSize: "clamp(15px, 1.05vw, 16.5px)", lineHeight: 1.75, color: "#555555" }}
                 >
                   <p style={{ marginBottom: 18 }}>
-                    David Oralevich has spent his career at the intersection of business and technology — not as a spectator, but as a builder. He rode the first wave of the commercial Internet in the late 1990s, managing divisions and sourcing technology while most businesses were still learning to spell &quot;e-commerce.&quot;
+                    David Oralevich has spent his career at the intersection of business and technology, not as a spectator, but as a builder. He rode the first wave of the commercial Internet in the late 1990s, managing divisions and sourcing technology while most businesses were still learning to spell &quot;e-commerce.&quot;
                   </p>
                   <p style={{ marginBottom: 18 }}>
-                    In 2007 he founded Designs By Dave O., a digital agency that has spent nearly two decades helping businesses compete, grow, and adapt online. He knows what it costs to build something from nothing — and what it takes to keep it running.
+                    In 2007 he founded Designs By Dave O., a digital agency that has spent nearly two decades helping businesses compete, grow, and adapt online. He knows what it costs to build something from nothing, and what it takes to keep it running.
                   </p>
                   <p style={{ marginBottom: 18 }}>
-                    Then came AI. Two years before the mainstream moment, David was already in the room — working directly alongside senior engineers at leading Israeli AI startups, watching the innovation happen before it hit the headlines. By the time ChatGPT became a household name, he had already built and deployed real systems.
+                    Then came AI. Two years before the mainstream moment, David was already in the room, working directly alongside senior engineers at leading Israeli AI startups, watching the innovation happen before it hit the headlines. By the time ChatGPT became a household name, he had already built and deployed real systems.
                   </p>
                   <p style={{ marginBottom: 18 }}>
-                    What he saw next changed the trajectory entirely: the personal AI agent. Not a chatbot. Not a productivity tool. A system that operates inside your business, learns your operation, and works autonomously on your behalf — 24 hours a day, without a salary.
+                    What he saw next changed the trajectory entirely: the personal AI agent. Not a chatbot. Not a productivity tool. A system that operates inside your business, learns your operation, and works autonomously on your behalf, 24 hours a day, without a salary.
                   </p>
                   <p>
                     That&apos;s why he co-founded Apollo[Claw]. Not to sell software subscriptions. To sit across from business owners and executives, understand exactly what is eating their time and costing them money, and build the AI infrastructure that solves it. For real. Right now.
