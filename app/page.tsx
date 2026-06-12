@@ -1081,88 +1081,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* REAL USE CASES */}
-      <section className="bg-surface-alt pt-[60px] pb-[60px] relative">
-        <div className="container mx-auto px-4 md:px-8 max-w-6xl">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-semibold">Real Use Cases</span>
-              <h2 className="font-display text-3xl md:text-5xl lg:text-6xl text-foreground mt-4">
-                AI That <span className="text-primary">Actually Works</span>
-              </h2>
-              <p className="font-body text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
-                Here is what our clients are automating right now.
-              </p>
-            </div>
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                industry: "Legal",
-                title: "Contract Review",
-                desc: "AI flags key clauses, summarizes agreements, and cuts review time in half. Built for law firms and legal teams.",
-                result: "60% faster contract turnaround",
-                href: "/use-cases/legal",
-              },
-              {
-                industry: "Accounting",
-                title: "Client Reporting",
-                desc: "Client reports, engagement summaries, and billing narratives generated automatically. More output, less admin.",
-                result: "10+ hours saved per month",
-                href: "/use-cases/accounting",
-              },
-              {
-                industry: "Healthcare",
-                title: "Patient Communication",
-                desc: "Automated appointment reminders, follow-up sequences, and intake workflows. HIPAA-aware and always on.",
-                result: "Fewer no-shows, faster intake",
-                href: "/use-cases/health",
-              },
-              {
-                industry: "E-Commerce",
-                title: "Customer Onboarding",
-                desc: "Automated welcome flows, setup sequences, and post-purchase check-ins. From day one through repeat purchase.",
-                result: "Higher LTV, less support load",
-                href: "/use-cases/ecommerce",
-              },
-              {
-                industry: "Real Estate",
-                title: "Lead Nurturing",
-                desc: "AI qualifies leads, follows up automatically, and keeps prospects warm until they are ready to move.",
-                result: "3x faster lead response time",
-                href: "/use-cases/real-estate",
-              },
-              {
-                industry: "Restaurants",
-                title: "Reservations and Reviews",
-                desc: "Handle reservations, respond to reviews, and run promotions without touching your phone.",
-                result: "Always responsive, zero manual work",
-                href: "/use-cases/restaurants",
-              },
-            ].map((uc, i) => (
-              <ScrollReveal key={i} delay={i * 100}>
-                <a href={uc.href} className="block group">
-                  <div className="bauhaus-card p-8 h-full flex flex-col border-l-2 border-l-primary/40 hover:border-l-primary transition-colors">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-primary font-bold mb-3">{uc.industry}</span>
-                    <h3 className="font-display text-xl md:text-2xl text-foreground mb-3 group-hover:text-primary transition-colors">
-                      {uc.title}
-                    </h3>
-                    <p className="font-body text-sm text-muted-foreground leading-relaxed flex-1 mb-4">{uc.desc}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                      <span className="font-mono text-xs text-primary font-semibold">{uc.result}</span>
-                    </div>
-                  </div>
-                </a>
-              </ScrollReveal>
-            ))}
-          </div>
-
-
-        </div>
-      </section>
-
       {/* FINAL CTA — dark navy banner */}
       <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
         <div
@@ -1225,6 +1143,88 @@ export default async function HomePage() {
               </a>
             </div>
           </ScrollReveal>
+        </div>
+      </section>
+
+      {/* OUR AI AGENTS — white section, scrolling logo marquee */}
+      <section style={{ background: "#FFFFFF", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="py-16 md:py-20">
+          <ScrollReveal>
+            <h2
+              className="font-display leading-[1.05] tracking-tight"
+              style={{
+                fontSize: "clamp(28px, 3.6vw, 44px)",
+                fontWeight: 800,
+                color: "#1A1A1A",
+                margin: "0 0 44px",
+                textAlign: "center",
+              }}
+            >
+              Our <span style={{ color: "#D72B2B" }}>AI Agents</span>
+            </h2>
+          </ScrollReveal>
+
+          <style>{`
+            #apollo-agents-marquee {
+              overflow: hidden;
+              position: relative;
+              -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+              mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+            }
+            #apollo-agents-marquee .marquee-track {
+              display: flex;
+              align-items: center;
+              gap: 72px;
+              width: max-content;
+              padding-right: 72px;
+              animation: apollo-agents-scroll 45s linear infinite;
+            }
+            #apollo-agents-marquee:hover .marquee-track {
+              animation-play-state: paused;
+            }
+            #apollo-agents-marquee img {
+              height: 20px;
+              width: auto;
+              flex-shrink: 0;
+            }
+            @keyframes apollo-agents-scroll {
+              from { transform: translateX(0); }
+              to { transform: translateX(-50%); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              #apollo-agents-marquee .marquee-track { animation: none; flex-wrap: wrap; justify-content: center; width: 100%; }
+            }
+          `}</style>
+
+          <div id="apollo-agents-marquee" aria-label="Apollo Claw AI agent lineup">
+            <div className="marquee-track">
+              {[...Array(2)].map((_, copy) =>
+                [
+                  { src: "/agents/the-ceo-agent.svg", alt: "The CEO [Agent]" },
+                  { src: "/agents/the-medical-agent.svg", alt: "The Medical [Agent]" },
+                  { src: "/agents/the-cfo-agent.svg", alt: "The CFO [Agent]" },
+                  { src: "/agents/the-real-estate-agent.svg", alt: "The Real Estate [Agent]" },
+                  { src: "/agents/the-legal-agent.svg", alt: "The Legal [Agent]" },
+                  { src: "/agents/the-contractors-agent.svg", alt: "The Contractors [Agent]" },
+                  { src: "/agents/the-personal-agent.svg", alt: "The Personal [Agent]" },
+                  { src: "/agents/the-sales-assistant.svg", alt: "The Sales [Assistant]" },
+                  { src: "/agents/the-finance-agent.svg", alt: "The Finance [Agent]" },
+                  { src: "/agents/the-insurance-agent.svg", alt: "The Insurance [Agent]" },
+                  { src: "/agents/the-accounting-agent.svg", alt: "The Accounting [Agent]" },
+                  { src: "/agents/the-brokers-agent.svg", alt: "The Brokers [Agent]" },
+                ].map((logo) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={`${copy}-${logo.src}`}
+                    src={logo.src}
+                    alt={copy === 0 ? logo.alt : ""}
+                    aria-hidden={copy === 1}
+                    loading="lazy"
+                  />
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </>
