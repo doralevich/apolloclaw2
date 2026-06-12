@@ -92,8 +92,9 @@ export default function AboutPage() {
           <ScrollReveal>
             <div className="flex flex-col md:flex-row items-start gap-10 md:gap-16 max-w-5xl mx-auto">
               <div className="w-full md:w-[280px] flex-shrink-0">
-                <div className="w-full rounded-2xl bg-primary/10 aspect-square flex items-center justify-center">
-                  <span className="font-mono text-primary text-6xl font-bold">D</span>
+                <div className="w-full rounded-2xl overflow-hidden aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/david-oralevich.png" alt="David Oralevich" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
                 </div>
                 <div className="mt-5">
                   <h3 className="font-display text-xl text-foreground">David Oralevich</h3>
