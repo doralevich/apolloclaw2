@@ -1,162 +1,268 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "About Apollo Claw | AI Strategy Built by Operators",
   description:
-    "Apollo Claw was built by people who have been in the trenches of business operations and technology. We don't sell software. We build AI strategy for the way your business actually works.",
+    "Apollo Claw was founded by David Oralevich — an operator who has been at the edge of every technology wave since the 90s. This isn't consulting. It's execution.",
 };
 
 const values = [
   {
     title: "Plain English Always",
-    desc: "If we can't explain it without jargon, we haven't understood it well enough.",
+    desc: "If we can't explain it without jargon, we haven't understood it well enough. Every conversation starts with listening, not pitching.",
   },
   {
-    title: "Your Data, Your Property",
-    desc: "We build on your hardware. Your data stays where you can see it.",
+    title: "Your Data Stays Yours",
+    desc: "We build on your infrastructure. Your business data never leaves your environment — not to a vendor, not to a cloud you don't control.",
   },
   {
-    title: "Show, Don't Just Sell",
-    desc: "Every engagement starts with listening. We earn the sale by solving the problem first.",
+    title: "Execution Over Advice",
+    desc: "Anyone can hand you a strategy deck. We stay until it's running. The measure of success is what changed in your business — not what we recommended.",
   },
 ];
 
 export default function AboutPage() {
   return (
     <>
-      {/* Hero */}
-      <section className="bg-background min-h-[calc(70vh-75px)] flex items-center relative grid-pattern pt-10 hero-glow">
-        <div className="container mx-auto px-4 md:px-8 py-20 md:py-32 text-center">
-          <h1 className="font-display text-5xl md:text-7xl lg:text-[88px] text-foreground leading-[1.08] max-w-4xl mx-auto opacity-0 animate-fade-up">
-            Who We Are
+      {/* HERO — dark navy */}
+      <section
+        style={{ background: "#0B1729", color: "#ffffff" }}
+        className="relative overflow-hidden"
+      >
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "-20%",
+            right: "5%",
+            width: "55%",
+            height: "120%",
+            background:
+              "radial-gradient(ellipse at center, rgba(215,43,43,0.09) 0%, transparent 60%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div className="container mx-auto px-5 md:px-8 py-24 md:py-32 max-w-5xl relative z-10 text-center">
+          <span
+            className="inline-block font-mono uppercase mb-7"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.16em",
+              color: "rgba(255,255,255,0.5)",
+            }}
+          >
+            [ About Apollo Claw ]
+          </span>
+          <h1
+            className="font-display leading-[1.05] tracking-tight"
+            style={{
+              fontSize: "clamp(38px, 5.6vw, 72px)",
+              fontWeight: 800,
+              color: "#ffffff",
+              margin: 0,
+            }}
+          >
+            Built by Someone Who&apos;s{" "}
+            <span style={{ color: "#D72B2B" }}>Been in the Room</span>
           </h1>
-          <p className="font-display text-3xl md:text-5xl text-primary mt-4 opacity-0 animate-fade-up-delay-1">
-            Why We Do This
-          </p>
-          <p className="font-body text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto opacity-0 animate-fade-up-delay-1">
-            We are a team of operators, technologists, and security specialists who got tired of
-            watching businesses waste time on work that machines can do.
+          <p
+            className="font-body"
+            style={{
+              fontSize: "clamp(15px, 1.15vw, 18px)",
+              lineHeight: 1.7,
+              color: "rgba(255,255,255,0.7)",
+              maxWidth: 600,
+              margin: "28px auto 0",
+            }}
+          >
+            Apollo[Claw] isn&apos;t a software company that stumbled into AI consulting.
+            It was built by an operator who watched every major technology wave arrive —
+            and learned, every time, that the advantage goes to whoever moves first.
           </p>
         </div>
       </section>
 
-      <div className="section-divider" />
-
-      {/* Mission */}
-      <section className="bg-surface-alt pt-6 md:pt-7 pb-24 md:pb-32">
-        <div className="container mx-auto px-4 md:px-8">
-          <ScrollReveal>
-            <h2 className="font-display text-3xl md:text-5xl text-foreground mb-10 text-center">
-              Our Mission
-            </h2>
-          </ScrollReveal>
-          <div className="bauhaus-card max-w-3xl mx-auto p-8 md:p-12">
+      {/* FOUNDER — cream, 2-col */}
+      <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-6xl">
+          <style>{`
+            #about-founder-grid {
+              display: grid;
+              gap: 3rem;
+              align-items: start;
+              grid-template-columns: 1fr;
+            }
+            @media (min-width: 1024px) {
+              #about-founder-grid {
+                grid-template-columns: 360px 1fr;
+                gap: 5rem;
+              }
+            }
+          `}</style>
+          <div id="about-founder-grid">
+            {/* LEFT — photo + nameplate */}
             <ScrollReveal>
-              <p className="font-body text-lg text-foreground leading-relaxed mb-6 text-center">
-                Our mission is simple: make powerful AI infrastructure accessible to every business -
-                not just the ones that can afford an enterprise software contract.
-              </p>
+              <div>
+                <div
+                  style={{
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    aspectRatio: "1 / 1",
+                    boxShadow: "0 24px 60px rgba(11,23,41,0.14)",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/david-oralevich.png"
+                    alt="David Oralevich"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+                  />
+                </div>
+                <div style={{ marginTop: 22 }}>
+                  <p
+                    className="font-display"
+                    style={{ fontSize: 22, fontWeight: 800, color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}
+                  >
+                    David Oralevich
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "#D72B2B",
+                      marginTop: 6,
+                    }}
+                  >
+                    Founder, Apollo[Claw]
+                  </p>
+                </div>
+              </div>
             </ScrollReveal>
-            <ScrollReveal delay={200}>
-              <p className="font-body text-lg text-foreground/80 leading-relaxed text-center">
-                We believe your data should stay in your building. We believe AI should speak plain
-                English, not developer jargon. And we believe the best digital employee is one that
-                learns your way of doing things - not the other way around.
-              </p>
+
+            {/* RIGHT — bio */}
+            <ScrollReveal delay={120}>
+              <div>
+                <span
+                  className="inline-block font-mono uppercase mb-5"
+                  style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+                >
+                  [ Founder ]
+                </span>
+                <h2
+                  className="font-display leading-[1.05] tracking-tight"
+                  style={{ fontSize: "clamp(28px, 3.6vw, 44px)", fontWeight: 800, color: "#1A1A1A", margin: "0 0 28px" }}
+                >
+                  Thirty Years at the Edge of{" "}
+                  <span style={{ color: "#D72B2B" }}>What&apos;s Next</span>
+                </h2>
+
+                <div
+                  className="font-body"
+                  style={{ fontSize: "clamp(15px, 1.05vw, 16.5px)", lineHeight: 1.75, color: "#555555" }}
+                >
+                  <p style={{ marginBottom: 18 }}>
+                    David Oralevich has spent his career at the intersection of business and technology — not as a spectator, but as a builder. He rode the first wave of the commercial Internet in the late 1990s, managing divisions and sourcing technology while most businesses were still learning to spell &quot;e-commerce.&quot;
+                  </p>
+                  <p style={{ marginBottom: 18 }}>
+                    In 2007 he founded Designs By Dave O., a digital agency that has spent nearly two decades helping businesses compete, grow, and adapt online. He knows what it costs to build something from nothing — and what it takes to keep it running.
+                  </p>
+                  <p style={{ marginBottom: 18 }}>
+                    Then came AI. Two years before the mainstream moment, David was already in the room — working directly alongside senior engineers at leading Israeli AI startups, watching the innovation happen before it hit the headlines. By the time ChatGPT became a household name, he had already built and deployed real systems.
+                  </p>
+                  <p style={{ marginBottom: 18 }}>
+                    What he saw next changed the trajectory entirely: the personal AI agent. Not a chatbot. Not a productivity tool. A system that operates inside your business, learns your operation, and works autonomously on your behalf — 24 hours a day, without a salary.
+                  </p>
+                  <p>
+                    That&apos;s why he co-founded Apollo[Claw]. Not to sell software subscriptions. To sit across from business owners and executives, understand exactly what is eating their time and costing them money, and build the AI infrastructure that solves it. For real. Right now.
+                  </p>
+                </div>
+              </div>
             </ScrollReveal>
           </div>
+        </div>
+      </section>
 
-          <ScrollReveal delay={300}>
-            <div className="flex justify-center mt-12">
-              <a
-                href="https://calendly.com/therealdaveo/apolloai"
-                target="_blank"
-                rel="noopener noreferrer"
+      {/* WHAT WE BELIEVE — dark navy, 3-col */}
+      <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(215,43,43,0.08) 0%, transparent 60%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-6xl relative z-10">
+          <ScrollReveal>
+            <div style={{ textAlign: "center", marginBottom: 56 }}>
+              <span
+                className="inline-block font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: "rgba(255,255,255,0.5)" }}
               >
-                <Button variant="cta" size="xl">
-                  Get in Touch
-                </Button>
-              </a>
+                [ What We Believe ]
+              </span>
+              <h2
+                className="font-display leading-[1.05] tracking-tight"
+                style={{ fontSize: "clamp(30px, 4vw, 50px)", fontWeight: 800, color: "#ffffff", margin: 0 }}
+              >
+                How We Work
+              </h2>
             </div>
           </ScrollReveal>
-        </div>
-      </section>
 
-      <div className="section-divider" />
+          <style>{`
+            #about-values-grid {
+              display: grid;
+              gap: 20px;
+              grid-template-columns: 1fr;
+            }
+            @media (min-width: 768px) {
+              #about-values-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+            }
+            .about-value-card {
+              background: rgba(255,255,255,0.03);
+              border: 1px solid rgba(255,255,255,0.08);
+              border-radius: 12px;
+              padding: 28px 26px;
+              transition: border-color 0.18s, background 0.18s;
+            }
+            .about-value-card:hover {
+              border-color: rgba(215,43,43,0.4);
+              background: rgba(255,255,255,0.05);
+            }
+          `}</style>
 
-      {/* Founder Bio */}
-      <section className="py-24 md:py-32 bg-background">
-        <div className="container mx-auto px-4 md:px-8">
-          <ScrollReveal>
-            <div className="flex flex-col md:flex-row items-start gap-10 md:gap-16 max-w-5xl mx-auto">
-              <div className="w-full md:w-[280px] flex-shrink-0">
-                <div className="w-full rounded-2xl overflow-hidden aspect-square">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/david-oralevich.png" alt="David Oralevich" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-                </div>
-                <div className="mt-5">
-                  <h3 className="font-display text-xl text-foreground">David Oralevich</h3>
-                  <p className="font-mono text-sm mt-1 text-primary">Co-founder, Apollo[Claw]</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-display text-3xl md:text-4xl text-foreground mb-2">
-                  Our Founder
-                </h3>
-                <div className="w-16 h-[3px] bg-primary mb-8 rounded-full" />
-                <div className="font-body text-base leading-relaxed space-y-4 text-foreground/80">
-                  <p>
-                    David Oralevich has spent his career at the edge of what is next. He rode the
-                    first wave of the Internet in the late 90s - managing divisions, sourcing
-                    technology, watching a new world take shape in real time. When that chapter ended,
-                    he built his own.
-                  </p>
-                  <p>
-                    In 2007 he founded Designs By Dave O., a digital agency that has spent nearly two
-                    decades helping businesses compete, grow, and adapt online.
-                  </p>
-                  <p>
-                    Then came AI. Two years ago, David started working directly with senior engineers
-                    at leading Israeli startups - watching the innovation happen before it hit the
-                    headlines. By 2025, the world caught up. ChatGPT. OpenAI. The mainstream moment
-                    everyone talks about. David had already been in the room.
-                  </p>
-                  <p>
-                    What came next changed everything. Early 2026 - the personal AI agent. Not a
-                    chatbot. Not a tool you open and close. A system that works inside your business,
-                    learns your operation, and operates autonomously on your behalf.
-                  </p>
-                  <p>
-                    That is why he co-founded Apollo[Claw]. Not to sell software. To sit across from
-                    business owners and help them understand what is coming, what it means for them
-                    specifically, and how to build it right.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      {/* Values */}
-      <section className="bg-surface-alt py-24 md:py-32">
-        <div className="container mx-auto px-4 md:px-8">
-          <ScrollReveal>
-            <h2 className="font-display text-3xl md:text-5xl text-foreground mb-16 text-center">
-              What We Believe
-            </h2>
-          </ScrollReveal>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div id="about-values-grid">
             {values.map((v, i) => (
-              <ScrollReveal key={i} delay={i * 100}>
-                <div className="bauhaus-card p-8 h-full">
-                  <div className="w-10 h-[3px] bg-primary mb-5 rounded-full" />
-                  <h3 className="font-display text-xl text-foreground mb-3">{v.title}</h3>
-                  <p className="font-body text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
+              <ScrollReveal key={v.title} delay={i * 100}>
+                <div className="about-value-card">
+                  <div
+                    style={{
+                      width: 32,
+                      height: 3,
+                      background: "#D72B2B",
+                      borderRadius: 2,
+                      marginBottom: 20,
+                    }}
+                  />
+                  <h3
+                    className="font-display"
+                    style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", margin: "0 0 10px", letterSpacing: "-0.01em" }}
+                  >
+                    {v.title}
+                  </h3>
+                  <p
+                    className="font-body"
+                    style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.65)", margin: 0 }}
+                  >
+                    {v.desc}
+                  </p>
                 </div>
               </ScrollReveal>
             ))}
@@ -164,31 +270,53 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative pt-[60px] pb-[60px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-primary/5" />
-        <div className="container mx-auto px-4 md:px-8 text-center relative">
+      {/* CTA — cream */}
+      <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 text-center max-w-4xl">
           <ScrollReveal>
-            <h2 className="font-display text-2xl md:text-4xl lg:text-5xl text-foreground">
-              Ready to build your AI strategy?
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(28px, 4vw, 50px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
+            >
+              Ready to find out what AI can{" "}
+              <span style={{ color: "#D72B2B" }}>actually do</span> for your business?
             </h2>
           </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <p className="font-body text-lg text-muted-foreground mt-6 max-w-xl mx-auto">
-              Book a free 30-minute discovery call.
+          <ScrollReveal delay={150}>
+            <p
+              className="font-body"
+              style={{
+                fontSize: "clamp(15px, 1.1vw, 17px)",
+                lineHeight: 1.65,
+                color: "#555555",
+                maxWidth: 500,
+                margin: "22px auto 0",
+              }}
+            >
+              A free 30-minute conversation. No pitch deck. No jargon. Just an honest look at where AI fits in your business right now.
             </p>
           </ScrollReveal>
-          <ScrollReveal delay={400}>
-            <a
-              href="https://calendly.com/therealdaveo/apolloai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-10"
-            >
-              <Button variant="cta" size="xl">
+          <ScrollReveal delay={300}>
+            <div style={{ marginTop: 36 }}>
+              <a
+                href="https://calendly.com/therealdaveo/apolloai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{
+                  background: "#D72B2B",
+                  color: "#ffffff",
+                  fontSize: 13,
+                  letterSpacing: "0.1em",
+                  padding: "14px 32px",
+                  borderRadius: 4,
+                  textDecoration: "none",
+                  boxShadow: "0 8px 24px rgba(215,43,43,0.28)",
+                }}
+              >
                 Schedule Today
-              </Button>
-            </a>
+              </a>
+            </div>
           </ScrollReveal>
         </div>
       </section>
