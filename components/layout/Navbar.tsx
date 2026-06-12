@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Phone } from "lucide-react";
+import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users } from "lucide-react";
 
 const useCaseLinks = [
   { label: "Healthcare", to: "/use-cases/health" },
@@ -15,6 +15,23 @@ const useCaseLinks = [
   { label: "Finance", to: "/use-cases/finance" },
   { label: "Insurance", to: "/use-cases/insurance" },
   { label: "Nonprofit", to: "/use-cases/nonprofit" },
+];
+
+const ICON_BLUE = "#3B6FD4";
+
+const agentLinks = [
+  { label: "The CEO Agent",          icon: Briefcase,  to: "/use-cases/ceo" },
+  { label: "The Medical Agent",      icon: Heart,       to: "/use-cases/health" },
+  { label: "The CFO Agent",          icon: TrendingUp,  to: "/use-cases/cfo" },
+  { label: "The Real Estate Agent",  icon: Home,        to: "/use-cases/real-estate" },
+  { label: "The Legal Agent",        icon: Scale,       to: "/use-cases/legal" },
+  { label: "The Contractors Agent",  icon: Wrench,      to: "/use-cases/construction" },
+  { label: "The Personal Agent",     icon: User,        to: "/use-cases/personal" },
+  { label: "The Sales Assistant",    icon: Target,      to: "/use-cases/sales" },
+  { label: "The Finance Agent",      icon: Wallet,      to: "/use-cases/finance" },
+  { label: "The Insurance Agent",    icon: Shield,      to: "/use-cases/insurance" },
+  { label: "The Accounting Agent",   icon: Calculator,  to: "/use-cases/accounting" },
+  { label: "The Brokers Agent",      icon: Users,       to: "/use-cases/brokers" },
 ];
 
 const NAVY = "#0B1729";
@@ -90,15 +107,14 @@ export default function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-7 flex-1 justify-center">
             {navLink("About", "/about")}
-            {navLink("Services", "/what-we-do")}
 
-            {/* Use Cases dropdown */}
+            {/* Services dropdown */}
             <div className="relative group">
               <button
                 className={navItemClass(isUseCaseActive) + " flex items-center gap-1"}
                 style={{ color: isUseCaseActive ? "#ffffff" : WHITE_MUTED }}
               >
-                Use Cases
+                Services
                 <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
                 {isUseCaseActive && (
                   <span
@@ -109,32 +125,60 @@ export default function Navbar() {
               </button>
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div
-                  className="rounded-xl shadow-2xl py-2 min-w-[380px] grid grid-cols-2"
-                  style={{ background: NAVY_HOVER, border: "1px solid rgba(255,255,255,0.08)" }}
+                  className="rounded-2xl shadow-2xl overflow-hidden"
+                  style={{
+                    background: "#FAFAF7",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    minWidth: 520,
+                  }}
                 >
-                  <div style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}>
-                    {useCaseLinks.slice(0, 5).map((link) => (
-                      <Link
-                        key={link.to}
-                        href={link.to}
-                        className="block px-5 py-1.5 font-body text-sm transition-colors hover:text-white"
-                        style={{ color: pathname === link.to ? "#ffffff" : WHITE_MUTED }}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                  <div>
-                    {useCaseLinks.slice(5).map((link) => (
-                      <Link
-                        key={link.to}
-                        href={link.to}
-                        className="block px-5 py-1.5 font-body text-sm transition-colors hover:text-white"
-                        style={{ color: pathname === link.to ? "#ffffff" : WHITE_MUTED }}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
+                  <div className="grid grid-cols-2" style={{ gap: 0 }}>
+                    {agentLinks.map((link, i) => {
+                      const Icon = link.icon;
+                      const isLeft = i % 2 === 0;
+                      return (
+                        <Link
+                          key={link.to}
+                          href={link.to}
+                          className="flex items-center gap-3 transition-colors group/item"
+                          style={{
+                            padding: "13px 22px",
+                            borderRight: isLeft ? "1px solid rgba(0,0,0,0.06)" : "none",
+                            borderBottom: i < 10 ? "1px solid rgba(0,0,0,0.06)" : "none",
+                            color: pathname === link.to ? "#0B1729" : "#444444",
+                            textDecoration: "none",
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(59,111,212,0.06)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <span
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 8,
+                              background: "rgba(59,111,212,0.1)",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Icon size={15} color={ICON_BLUE} strokeWidth={2} />
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 13.5,
+                              fontWeight: 600,
+                              fontFamily: "Inter, sans-serif",
+                              letterSpacing: "-0.01em",
+                              color: "inherit",
+                            }}
+                          >
+                            {link.label}
+                          </span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -194,15 +238,12 @@ export default function Navbar() {
             <Link href="/about" className="font-display text-2xl text-white">
               About
             </Link>
-            <Link href="/what-we-do" className="font-display text-2xl text-white">
-              Services
-            </Link>
             <div className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setUseCasesOpen(!useCasesOpen)}
                 className="font-display text-2xl text-white flex items-center gap-2"
               >
-                Use Cases
+                Services
                 <ChevronDown
                   size={20}
                   className={`transition-transform duration-300 ${useCasesOpen ? "rotate-180" : ""}`}
@@ -210,16 +251,20 @@ export default function Navbar() {
               </button>
               {useCasesOpen && (
                 <div className="flex flex-col items-center gap-2">
-                  {useCaseLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      href={link.to}
-                      className="font-body text-base"
-                      style={{ color: WHITE_MUTED }}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  {agentLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.to}
+                        href={link.to}
+                        className="flex items-center gap-2 font-body text-base"
+                        style={{ color: WHITE_MUTED }}
+                      >
+                        <Icon size={14} color={ICON_BLUE} strokeWidth={2} />
+                        {link.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

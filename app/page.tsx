@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle, Mail, Calendar, Search, Code, FileText, Plug, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
-import HeroInput from "@/components/HeroInput";
+import HeroAssistantInput from "@/components/HeroAssistantInput";
 import LogoTicker from "@/components/LogoTicker";
 import DayWithJohnEmbed from "@/components/DayWithJohnEmbed";
 import { sanityClient } from "@/lib/sanity";
@@ -182,51 +182,7 @@ export default async function HomePage() {
               >
                 Hi! How can I help you today? Tell me what you&apos;re looking to set up — I&apos;ll push you in the right direction.
               </div>
-              <div
-                style={{
-                  background: "#070F1C",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 10,
-                  padding: "12px 14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  marginTop: "auto",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Type your message…"
-                  style={{
-                    flex: 1,
-                    background: "transparent",
-                    border: "none",
-                    outline: "none",
-                    color: "#ffffff",
-                    fontSize: 13.5,
-                    fontFamily: "inherit",
-                  }}
-                />
-                <button
-                  type="button"
-                  aria-label="Send"
-                  style={{
-                    background: "#D72B2B",
-                    color: "#fff",
-                    border: "none",
-                    width: 30,
-                    height: 30,
-                    borderRadius: 6,
-                    fontSize: 13,
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  →
-                </button>
-              </div>
+              <HeroAssistantInput />
             </div>
           </div>
         </div>
@@ -1149,21 +1105,6 @@ export default async function HomePage() {
       {/* OUR AI AGENTS — white section, scrolling logo marquee */}
       <section style={{ background: "#FFFFFF", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="py-16 md:py-20">
-          <ScrollReveal>
-            <h2
-              className="font-display leading-[1.05] tracking-tight"
-              style={{
-                fontSize: "clamp(28px, 3.6vw, 44px)",
-                fontWeight: 800,
-                color: "#1A1A1A",
-                margin: "0 0 44px",
-                textAlign: "center",
-              }}
-            >
-              Our <span style={{ color: "#D72B2B" }}>AI Agents</span>
-            </h2>
-          </ScrollReveal>
-
           <style>{`
             #apollo-agents-marquee {
               overflow: hidden;
@@ -1177,7 +1118,7 @@ export default async function HomePage() {
               gap: 72px;
               width: max-content;
               padding-right: 72px;
-              animation: apollo-agents-scroll 45s linear infinite;
+              animation: apollo-agents-scroll 80s linear infinite;
             }
             #apollo-agents-marquee:hover .marquee-track {
               animation-play-state: paused;
