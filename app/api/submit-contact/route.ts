@@ -1,0 +1,85 @@
+import { NextRequest, NextResponse } from "next/server";
+import { findOrCreateCrmEntity } from "@/lib/crm";
+import { sendTelegram } from "@/lib/telegram";
+
+const SUPA_URL  = process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
+const SUPA_KEY  = process.env.SUPABASE_SERVICE_KEY || "";
+
+function supaHeaders() {
+  return { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const data = await req.json();
+    const name = [data.firstName, data.lastName].filter(Boolean).join(" ") || data.name || "Unknown";
+
+    const notesLines = [
+      `Contact form submission`,
+      data.company      ? `Company: ${data.company}`           : null,
+      data.industry     ? `Industry: ${data.industry}`         : null,
+      data.companySize  ? `Size: ${data.companySize}`          : null,
+      data.phone        ? `Phone: ${data.phone}`               : null,
+      data.howHeard     ? `How heard: ${data.howHeard}`        : null,
+      data.tasksToAutomate?.length
+        ? `Wants to automate: ${data.tasksToAutomate.join(", ")}` : null,
+      data.challenge    ? `Message: ${data.challenge}`         : null,
+    ].filter(Boolean).join("\n");
+
+    // Create kanban card (status=new_lead → Discovery column)
+    let entityId: string | null = null;
+    try {
+      entityId = await findOrCreateCrmEntity(name, data.email, "new_lead", notesLines);
+    } catch (e) {
+      console.error("[submit-contact] entity creation failed:", e);
+    }
+
+    // Log interaction so the timeline has a record of the form submission
+    if (entityId && SUPA_KEY) {
+      try {
+        await fetch(`${SUPA_URL}/rest/v1/interactions`, {
+          method: "POST",
+          headers: supaHeaders(),
+          body: JSON.stringify({
+            client_id: entityId,
+            business_id: "apolloclaw",
+            type: "note",
+            summary: `Contact form submitted via apolloclaw.ai`,
+            notes: notesLines,
+          }),
+        });
+      } catch (e) {
+        console.error("[submit-contact] interaction log failed:", e);
+      }
+    }
+
+    // Create follow-up task
+    if (entityId && SUPA_KEY) {
+      try {
+        await fetch(`${SUPA_URL}/rest/v1/tasks`, {
+          method: "POST",
+          headers: supaHeaders(),
+          body: JSON.stringify({
+            client_id: entityId,
+            business_id: "apolloclaw",
+            title: `Follow up — ${name} (contact form)`,
+            status: "pending",
+            priority: "high",
+            due_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+          }),
+        });
+      } catch (e) {
+        console.error("[submit-contact] task creation failed:", e);
+      }
+    }
+
+    await sendTelegram(
+      `<b>New Contact Form — Apollo Claw</b>\n<b>Name:</b> ${name}\n<b>Email:</b> ${data.email}${data.company ? `\n<b>Company:</b> ${data.company}` : ""}${data.challenge ? `\n<b>Message:</b> ${data.challenge.substring(0, 200)}` : ""}`,
+    );
+
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("submit-contact error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
