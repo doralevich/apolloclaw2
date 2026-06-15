@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield } from "lucide-react";
+import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield, BookOpen } from "lucide-react";
 
 const useCaseLinks = [
   { label: "Healthcare", to: "/use-cases/health" },
@@ -165,6 +165,55 @@ export default function Navbar() {
 
             {navLink("Case Studies", "/case-studies")}
             {navLink("Blog", "/blog")}
+
+            {/* Resources dropdown */}
+            <div className="relative group">
+              <button
+                className={navItemClass(false) + " flex items-center gap-1"}
+                style={{ color: WHITE_MUTED }}
+              >
+                Resources
+                <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div
+                  className="rounded-xl shadow-2xl overflow-hidden"
+                  style={{
+                    background: "#FAFAF7",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    minWidth: 220,
+                  }}
+                >
+                  {[
+                    { label: "AI 101",          to: "/ai-101" },
+                    { label: "Cost Estimator",  to: "/cost-estimator" },
+                    { label: "Security",        to: "/security" },
+                    { label: "FAQ",             to: "/faq" },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      href={item.to}
+                      className="block"
+                      style={{
+                        padding: "12px 20px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        fontFamily: "Inter, sans-serif",
+                        color: pathname === item.to ? RED : "#0B1729",
+                        textDecoration: "none",
+                        borderBottom: "1px solid rgba(0,0,0,0.06)",
+                        transition: "background 0.15s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {navLink("Contact", "/contact")}
           </div>
 
@@ -240,7 +289,7 @@ export default function Navbar() {
                         className="flex items-center gap-2 font-body text-base"
                         style={{ color: WHITE_MUTED }}
                       >
-                        <Icon size={14} color={ICON_BLUE} strokeWidth={2} />
+                        <Icon size={14} color="rgba(255,255,255,0.4)" strokeWidth={2} />
                         {link.label}
                       </Link>
                     );
@@ -254,6 +303,19 @@ export default function Navbar() {
             <Link href="/blog" className="font-display text-2xl text-white">
               Blog
             </Link>
+            <div className="flex flex-col items-center gap-2">
+              <span className="font-display text-2xl text-white">Resources</span>
+              {[
+                { label: "AI 101",         to: "/ai-101" },
+                { label: "Cost Estimator", to: "/cost-estimator" },
+                { label: "Security",       to: "/security" },
+                { label: "FAQ",            to: "/faq" },
+              ].map((item) => (
+                <Link key={item.to} href={item.to} className="font-body text-base" style={{ color: WHITE_MUTED }}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
             <Link href="/contact" className="font-display text-2xl text-white">
               Contact
             </Link>
