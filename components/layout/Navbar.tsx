@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users } from "lucide-react";
+import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield } from "lucide-react";
 
 const useCaseLinks = [
   { label: "Healthcare", to: "/use-cases/health" },
@@ -17,21 +17,15 @@ const useCaseLinks = [
   { label: "Nonprofit", to: "/use-cases/nonprofit" },
 ];
 
-const ICON_BLUE = "#3B6FD4";
-
 const agentLinks = [
-  { label: "The CEO Agent",          icon: Briefcase,  to: "/use-cases/ceo" },
-  { label: "The Medical Agent",      icon: Heart,       to: "/use-cases/health" },
-  { label: "The CFO Agent",          icon: TrendingUp,  to: "/use-cases/cfo" },
-  { label: "The Real Estate Agent",  icon: Home,        to: "/use-cases/real-estate" },
-  { label: "The Legal Agent",        icon: Scale,       to: "/use-cases/legal" },
-  { label: "The Contractors Agent",  icon: Wrench,      to: "/use-cases/construction" },
-  { label: "The Personal Agent",     icon: User,        to: "/use-cases/personal" },
-  { label: "The Sales Assistant",    icon: Target,      to: "/use-cases/sales" },
-  { label: "The Finance Agent",      icon: Wallet,      to: "/use-cases/finance" },
-  { label: "The Insurance Agent",    icon: Shield,      to: "/use-cases/insurance" },
-  { label: "The Accounting Agent",   icon: Calculator,  to: "/use-cases/accounting" },
-  { label: "The Brokers Agent",      icon: Users,       to: "/use-cases/brokers" },
+  { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,  to: "/use-cases/ceo" },
+  { label: "The CFO Agent",         desc: "Cash forecasts, board prep, monthly close.",      icon: TrendingUp, to: "/use-cases/cfo" },
+  { label: "The Medical Agent",     desc: "Patient triage, intake summaries, faster charting.", icon: Heart,   to: "/use-cases/health" },
+  { label: "The Insurance Agent",   desc: "Quotes, renewals, and follow-ups on autopilot.", icon: Shield,     to: "/use-cases/insurance" },
+  { label: "The Law Agent",         desc: "Intake forms, research, document summaries.",     icon: Scale,      to: "/use-cases/legal" },
+  { label: "The Real Estate Agent", desc: "Listings written, leads sorted, deals closed.",  icon: Home,       to: "/use-cases/real-estate" },
+  { label: "The Sales Agent",       desc: "Cold-to-warm outreach, more closed deals.",      icon: Target,     to: "/use-cases/sales" },
+  { label: "The Sales Assistant",   desc: "Inbox, calendar, contacts — handled.",           icon: User,       to: "/use-cases/personal" },
 ];
 
 const NAVY = "#0B1729";
@@ -125,57 +119,42 @@ export default function Navbar() {
               </button>
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div
-                  className="rounded-2xl shadow-2xl overflow-hidden"
+                  className="rounded-xl shadow-2xl overflow-hidden"
                   style={{
-                    background: "#FAFAF7",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    minWidth: 520,
+                    background: "#0F1E33",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    minWidth: 560,
                   }}
                 >
-                  <div className="grid grid-cols-2" style={{ gap: 0 }}>
+                  <div className="grid grid-cols-2">
                     {agentLinks.map((link, i) => {
                       const Icon = link.icon;
                       const isLeft = i % 2 === 0;
+                      const isActive = pathname === link.to;
                       return (
                         <Link
                           key={link.to}
                           href={link.to}
-                          className="flex items-center gap-3 transition-colors group/item"
+                          className="flex items-start gap-3 group/item"
                           style={{
-                            padding: "13px 22px",
-                            borderRight: isLeft ? "1px solid rgba(0,0,0,0.06)" : "none",
-                            borderBottom: i < 10 ? "1px solid rgba(0,0,0,0.06)" : "none",
-                            color: pathname === link.to ? "#0B1729" : "#444444",
+                            padding: "14px 20px",
+                            borderRight: isLeft ? "1px solid rgba(255,255,255,0.06)" : "none",
+                            borderBottom: i < 6 ? "1px solid rgba(255,255,255,0.06)" : "none",
                             textDecoration: "none",
+                            transition: "background 0.15s",
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(59,111,212,0.06)")}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
                           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                         >
-                          <span
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 8,
-                              background: "rgba(59,111,212,0.1)",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              flexShrink: 0,
-                            }}
-                          >
-                            <Icon size={15} color={ICON_BLUE} strokeWidth={2} />
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 13.5,
-                              fontWeight: 600,
-                              fontFamily: "Inter, sans-serif",
-                              letterSpacing: "-0.01em",
-                              color: "inherit",
-                            }}
-                          >
-                            {link.label}
-                          </span>
+                          <Icon size={15} color={isActive ? RED : "rgba(255,255,255,0.4)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? RED : "#ffffff", fontFamily: "Inter, sans-serif", marginBottom: 2 }}>
+                              {link.label}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
+                              {link.desc}
+                            </div>
+                          </div>
                         </Link>
                       );
                     })}
