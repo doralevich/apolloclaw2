@@ -2,20 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield, BookOpen } from "lucide-react";
-
-const useCaseLinks = [
-  { label: "Healthcare", to: "/use-cases/health" },
-  { label: "Accounting", to: "/use-cases/accounting" },
-  { label: "Legal", to: "/use-cases/legal" },
-  { label: "Real Estate", to: "/use-cases/real-estate" },
-  { label: "Construction", to: "/use-cases/construction" },
-  { label: "Restaurants", to: "/use-cases/restaurants" },
-  { label: "E-Commerce", to: "/use-cases/ecommerce" },
-  { label: "Finance", to: "/use-cases/finance" },
-  { label: "Insurance", to: "/use-cases/insurance" },
-  { label: "Nonprofit", to: "/use-cases/nonprofit" },
-];
+import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield } from "lucide-react";
 
 const agentLinks = [
   { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,  to: "/use-cases/ceo" },
@@ -29,9 +16,8 @@ const agentLinks = [
 ];
 
 const NAVY = "#0B1729";
-const NAVY_HOVER = "#152442";
 const RED = "#D72B2B";
-const WHITE_MUTED = "rgba(255,255,255,0.72)";
+const NAVY_MUTED = "rgba(11,23,41,0.55)";
 
 const ApolloclawLogo = () => (
   <svg viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg" style={{ height: "32px", width: "auto" }} aria-label="Apollo[Claw]">
@@ -41,7 +27,7 @@ const ApolloclawLogo = () => (
       fontSize="48"
       fontWeight="700"
       letterSpacing="-1.5"
-      fill="#ffffff"
+      fill={NAVY}
     >
       Apollo
       <tspan fill={RED}>[</tspan>
@@ -63,8 +49,15 @@ export default function Navbar() {
 
   const isUseCaseActive = pathname.startsWith("/use-cases");
 
-  const navItemClass = (active: boolean) =>
-    `text-[13px] font-medium transition-colors hover:text-white relative pb-1 font-mono ${active ? "text-white" : ""}`;
+  const navItemStyle = (active: boolean) => ({
+    fontSize: 13,
+    fontWeight: 600,
+    fontFamily: "Inter, sans-serif",
+    color: active ? NAVY : NAVY_MUTED,
+    textDecoration: "none",
+    letterSpacing: "0.01em",
+    transition: "color 0.15s",
+  } as React.CSSProperties);
 
   const navLink = (label: string, to: string) => {
     const active = pathname === to;
@@ -72,8 +65,10 @@ export default function Navbar() {
       <Link
         key={to}
         href={to}
-        className={navItemClass(active)}
-        style={{ color: active ? "#ffffff" : WHITE_MUTED }}
+        className="relative pb-1 hover:text-navy transition-colors"
+        style={navItemStyle(active)}
+        onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = NAVY}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = active ? NAVY : NAVY_MUTED}
       >
         {label}
         {active && (
@@ -90,7 +85,7 @@ export default function Navbar() {
     <>
       <nav
         className="fixed top-0 left-0 right-0 z-50"
-        style={{ background: NAVY, borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "#ffffff", borderBottom: "1px solid rgba(11,23,41,0.08)", boxShadow: "0 1px 4px rgba(11,23,41,0.06)" }}
       >
         <div className="container mx-auto flex items-center justify-between h-[72px] px-5 md:px-8">
           {/* Logo */}
@@ -105,8 +100,10 @@ export default function Navbar() {
             {/* Services dropdown */}
             <div className="relative group">
               <button
-                className={navItemClass(isUseCaseActive) + " flex items-center gap-1"}
-                style={{ color: isUseCaseActive ? "#ffffff" : WHITE_MUTED }}
+                className="relative pb-1 flex items-center gap-1"
+                style={navItemStyle(isUseCaseActive)}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = NAVY}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = isUseCaseActive ? NAVY : NAVY_MUTED}
               >
                 Services
                 <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
@@ -121,9 +118,9 @@ export default function Navbar() {
                 <div
                   className="rounded-xl overflow-hidden"
                   style={{
-                    background: "#112236",
-                    border: "1px solid rgba(255,255,255,0.14)",
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
+                    background: "#ffffff",
+                    border: "1px solid rgba(11,23,41,0.1)",
+                    boxShadow: "0 20px 60px rgba(11,23,41,0.12), 0 0 0 1px rgba(11,23,41,0.04)",
                     minWidth: 540,
                   }}
                 >
@@ -135,21 +132,17 @@ export default function Navbar() {
                         <Link
                           key={link.to}
                           href={link.to}
-                          className="flex items-start gap-3 rounded-lg group/item"
-                          style={{
-                            padding: "10px 14px",
-                            textDecoration: "none",
-                            transition: "background 0.15s",
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+                          className="flex items-start gap-3 rounded-lg"
+                          style={{ padding: "10px 14px", textDecoration: "none", transition: "background 0.15s" }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
                           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                         >
-                          <Icon size={14} color={isActive ? RED : "rgba(255,255,255,0.35)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
+                          <Icon size={14} color={isActive ? RED : "rgba(11,23,41,0.3)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
                           <div>
-                            <div style={{ fontSize: 12.5, fontWeight: 600, color: isActive ? RED : "#ffffff", fontFamily: "Inter, sans-serif", marginBottom: 1 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: isActive ? RED : NAVY, fontFamily: "Inter, sans-serif", marginBottom: 1 }}>
                               {link.label}
                             </div>
-                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
+                            <div style={{ fontSize: 11, color: NAVY_MUTED, fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
                               {link.desc}
                             </div>
                           </div>
@@ -167,8 +160,10 @@ export default function Navbar() {
             {/* Resources dropdown */}
             <div className="relative group">
               <button
-                className={navItemClass(false) + " flex items-center gap-1"}
-                style={{ color: WHITE_MUTED }}
+                className="relative pb-1 flex items-center gap-1"
+                style={navItemStyle(false)}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = NAVY}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = NAVY_MUTED}
               >
                 Resources
                 <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
@@ -177,9 +172,9 @@ export default function Navbar() {
                 <div
                   className="rounded-xl overflow-hidden"
                   style={{
-                    background: "#112236",
-                    border: "1px solid rgba(255,255,255,0.14)",
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
+                    background: "#ffffff",
+                    border: "1px solid rgba(11,23,41,0.1)",
+                    boxShadow: "0 20px 60px rgba(11,23,41,0.12), 0 0 0 1px rgba(11,23,41,0.04)",
                     minWidth: 180,
                   }}
                 >
@@ -198,11 +193,11 @@ export default function Navbar() {
                           fontSize: 12.5,
                           fontWeight: 600,
                           fontFamily: "Inter, sans-serif",
-                          color: pathname === item.to ? RED : "#ffffff",
+                          color: pathname === item.to ? RED : NAVY,
                           textDecoration: "none",
                           transition: "background 0.15s",
                         }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                       >
                         {item.label}
@@ -220,8 +215,10 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-5" style={{ flexShrink: 0 }}>
             <a
               href="tel:+19173635487"
-              className="flex items-center gap-1.5 text-[12px] font-mono transition-colors hover:text-white"
-              style={{ color: WHITE_MUTED }}
+              className="flex items-center gap-1.5 text-[12px] font-mono transition-colors"
+              style={{ color: NAVY_MUTED }}
+              onMouseEnter={e => (e.currentTarget.style.color = NAVY)}
+              onMouseLeave={e => (e.currentTarget.style.color = NAVY_MUTED)}
             >
               <Phone size={12} />
               (917) 363-5487
@@ -237,7 +234,8 @@ export default function Navbar() {
                 padding: "10px 22px",
                 borderRadius: 4,
                 letterSpacing: "0.08em",
-                boxShadow: "0 4px 14px rgba(215,43,43,0.35)",
+                boxShadow: "0 4px 14px rgba(215,43,43,0.25)",
+                textDecoration: "none",
               }}
             >
               Schedule Today
@@ -249,7 +247,7 @@ export default function Navbar() {
             className="md:hidden p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
-            style={{ color: "#ffffff" }}
+            style={{ color: NAVY }}
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -260,16 +258,17 @@ export default function Navbar() {
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 flex flex-col pt-24 overflow-y-auto md:hidden"
-          style={{ background: NAVY }}
+          style={{ background: "#ffffff" }}
         >
           <div className="flex flex-col items-center gap-7 py-10">
-            <Link href="/about" className="font-display text-2xl text-white">
+            <Link href="/about" className="font-display text-2xl" style={{ color: NAVY }}>
               About
             </Link>
             <div className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setUseCasesOpen(!useCasesOpen)}
-                className="font-display text-2xl text-white flex items-center gap-2"
+                className="font-display text-2xl flex items-center gap-2"
+                style={{ color: NAVY }}
               >
                 Services
                 <ChevronDown
@@ -286,9 +285,9 @@ export default function Navbar() {
                         key={link.to}
                         href={link.to}
                         className="flex items-center gap-2 font-body text-base"
-                        style={{ color: WHITE_MUTED }}
+                        style={{ color: NAVY_MUTED }}
                       >
-                        <Icon size={14} color="rgba(255,255,255,0.4)" strokeWidth={2} />
+                        <Icon size={14} color="rgba(11,23,41,0.3)" strokeWidth={2} />
                         {link.label}
                       </Link>
                     );
@@ -296,25 +295,25 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-            <Link href="/case-studies" className="font-display text-2xl text-white">
+            <Link href="/case-studies" className="font-display text-2xl" style={{ color: NAVY }}>
               Case Studies
             </Link>
-            <Link href="/blog" className="font-display text-2xl text-white">
+            <Link href="/blog" className="font-display text-2xl" style={{ color: NAVY }}>
               Blog
             </Link>
             <div className="flex flex-col items-center gap-2">
-              <span className="font-display text-2xl text-white">Resources</span>
+              <span className="font-display text-2xl" style={{ color: NAVY }}>Resources</span>
               {[
                 { label: "Cost Estimator", to: "/cost-estimator" },
                 { label: "Security",       to: "/security" },
                 { label: "FAQ",            to: "/faq" },
               ].map((item) => (
-                <Link key={item.to} href={item.to} className="font-body text-base" style={{ color: WHITE_MUTED }}>
+                <Link key={item.to} href={item.to} className="font-body text-base" style={{ color: NAVY_MUTED }}>
                   {item.label}
                 </Link>
               ))}
             </div>
-            <Link href="/contact" className="font-display text-2xl text-white">
+            <Link href="/contact" className="font-display text-2xl" style={{ color: NAVY }}>
               Contact
             </Link>
             <a
@@ -328,6 +327,7 @@ export default function Navbar() {
                 padding: "12px 28px",
                 borderRadius: 4,
                 letterSpacing: "0.08em",
+                textDecoration: "none",
               }}
             >
               Schedule Today
@@ -335,7 +335,7 @@ export default function Navbar() {
             <a
               href="tel:+19173635487"
               className="flex items-center gap-1.5 text-sm font-mono mt-2"
-              style={{ color: WHITE_MUTED }}
+              style={{ color: NAVY_MUTED }}
             >
               <Phone size={14} />
               (917) 363-5487
