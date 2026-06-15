@@ -1142,16 +1142,13 @@ export default async function HomePage() {
               {[...Array(2)].map((_, copy) =>
                 [
                   { src: "/agents/the-ceo-agent.png", alt: "The CEO [Agent]" },
-                  { src: "/agents/the-medical-agent.png", alt: "The Medical [Agent]" },
                   { src: "/agents/the-cfo-agent.png", alt: "The CFO [Agent]" },
-                  { src: "/agents/the-real-estate-agent.png", alt: "The Real Estate [Agent]" },
-                  { src: "/agents/the-legal-agent.png", alt: "The Legal [Agent]" },
-                  { src: "/agents/the-personal-agent.png", alt: "The Personal [Agent]" },
-                  { src: "/agents/the-sales-assistant.png", alt: "The Sales [Assistant]" },
-                  { src: "/agents/the-finance-agent.png", alt: "The Finance [Agent]" },
                   { src: "/agents/the-insurance-agent.png", alt: "The Insurance [Agent]" },
-                  { src: "/agents/the-accounting-agent.png", alt: "The Accounting [Agent]" },
-                  { src: "/agents/the-brokers-agent.png", alt: "The Brokers [Agent]" },
+                  { src: "/agents/the-legal-agent.png", alt: "The Law [Agent]" },
+                  { src: "/agents/the-medical-agent.png", alt: "The Medical [Agent]" },
+                  { src: "/agents/the-real-estate-agent.png", alt: "The Real Estate [Agent]" },
+                  { src: "/agents/the-sales-agent.png", alt: "The Sales [Agent]" },
+                  { src: "/agents/the-sales-assistant.png", alt: "The Sales Assistant" },
                 ].map((logo) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
