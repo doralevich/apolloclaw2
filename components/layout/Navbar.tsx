@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield } from "lucide-react";
+import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, Shield } from "lucide-react";
 
 const agentLinks = [
   { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,  to: "/use-cases/ceo" },
@@ -11,8 +11,6 @@ const agentLinks = [
   { label: "The Insurance Agent",   desc: "Quotes, renewals, and follow-ups on autopilot.", icon: Shield,     to: "/use-cases/insurance" },
   { label: "The Law Agent",         desc: "Intake forms, research, document summaries.",     icon: Scale,      to: "/use-cases/legal" },
   { label: "The Real Estate Agent", desc: "Listings written, leads sorted, deals closed.",  icon: Home,       to: "/use-cases/real-estate" },
-  { label: "The Sales Agent",       desc: "Cold-to-warm outreach, more closed deals.",      icon: Target,     to: "/use-cases/sales" },
-  { label: "The Sales Assistant",   desc: "Inbox, calendar, contacts — handled.",           icon: User,       to: "/use-cases/personal" },
 ];
 
 const NAVY = "#0B1729";
