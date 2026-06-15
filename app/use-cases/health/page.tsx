@@ -217,10 +217,16 @@ export default function HealthcarePage() {
       <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Practices That Are Done Losing Revenue to No-Shows and Admin</h2>
-          <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Practices Ready to Deliver Better Care at Scale</h2>
+          <p className="font-body text-lg leading-relaxed mb-6" style={{ color: "rgba(11,23,41,0.65)" }}>
             Every Medical Agent deployment is custom-scoped to your practice. Pricing is discussed during your consultation based on your patient volume, specialty, and systems.
           </p>
+          <div className="inline-flex items-center gap-2 mb-10 px-4 py-2 rounded-full" style={{ background: "rgba(11,23,41,0.06)", border: "1px solid rgba(11,23,41,0.1)" }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 1L8.5 5H13L9.5 7.5L11 11.5L7 9L3 11.5L4.5 7.5L1 5H5.5L7 1Z" fill={NAVY} opacity="0.6"/>
+            </svg>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: NAVY, opacity: 0.7 }}>HIPAA Compliant</span>
+          </div>
           <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
             Schedule Your Consultation
           </a>
