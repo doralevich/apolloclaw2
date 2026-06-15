@@ -185,7 +185,6 @@ export default function Navbar() {
                 >
                   <div className="p-2 flex flex-col gap-0.5">
                     {[
-                      { label: "AI 101",         to: "/ai-101" },
                       { label: "Cost Estimator", to: "/cost-estimator" },
                       { label: "Security",       to: "/security" },
                       { label: "FAQ",            to: "/faq" },
@@ -306,7 +305,6 @@ export default function Navbar() {
             <div className="flex flex-col items-center gap-2">
               <span className="font-display text-2xl text-white">Resources</span>
               {[
-                { label: "AI 101",         to: "/ai-101" },
                 { label: "Cost Estimator", to: "/cost-estimator" },
                 { label: "Security",       to: "/security" },
                 { label: "FAQ",            to: "/faq" },
