@@ -9,10 +9,6 @@ const agents = [
   { name: "The Real Estate Agent",src: "/agents/the-real-estate-agent.png" },
   { name: "The Sales Agent",      src: "/agents/the-sales-agent.png" },
   { name: "The Sales Assistant",  src: "/agents/the-sales-assistant.png" },
-  { name: "The Accounting Agent", src: "/agents/the-accounting-agent.png" },
-  { name: "The Brokers Agent",    src: "/agents/the-brokers-agent.png" },
-  { name: "The Finance Agent",    src: "/agents/the-finance-agent.png" },
-  { name: "The Personal Agent",   src: "/agents/the-personal-agent.png" },
 ];
 
 export default function LogoTicker() {
