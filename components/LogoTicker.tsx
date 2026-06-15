@@ -59,8 +59,8 @@ export default function LogoTicker() {
               src={agent.src}
               alt={agent.name}
               style={{
-                height: "40px",
-                width: "auto",
+                width: "360px",
+                height: "auto",
                 objectFit: "contain",
                 display: "block",
               }}

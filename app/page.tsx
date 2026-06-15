@@ -1124,8 +1124,8 @@ export default async function HomePage() {
               animation-play-state: paused;
             }
             #apollo-agents-marquee img {
-              height: 20px;
-              width: auto;
+              width: 360px;
+              height: auto;
               flex-shrink: 0;
             }
             @keyframes apollo-agents-scroll {
