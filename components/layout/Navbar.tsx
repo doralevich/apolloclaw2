@@ -119,39 +119,37 @@ export default function Navbar() {
               </button>
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div
-                  className="rounded-xl shadow-2xl overflow-hidden"
+                  className="rounded-xl overflow-hidden"
                   style={{
-                    background: "#FAFAF7",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    minWidth: 560,
+                    background: "#112236",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
+                    minWidth: 540,
                   }}
                 >
-                  <div className="grid grid-cols-2">
-                    {agentLinks.map((link, i) => {
+                  <div className="grid grid-cols-2 p-2 gap-0.5">
+                    {agentLinks.map((link) => {
                       const Icon = link.icon;
-                      const isLeft = i % 2 === 0;
                       const isActive = pathname === link.to;
                       return (
                         <Link
                           key={link.to}
                           href={link.to}
-                          className="flex items-start gap-3 group/item"
+                          className="flex items-start gap-3 rounded-lg group/item"
                           style={{
-                            padding: "14px 20px",
-                            borderRight: isLeft ? "1px solid rgba(0,0,0,0.06)" : "none",
-                            borderBottom: i < 6 ? "1px solid rgba(0,0,0,0.06)" : "none",
+                            padding: "10px 14px",
                             textDecoration: "none",
                             transition: "background 0.15s",
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
                           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                         >
-                          <Icon size={15} color={isActive ? RED : "rgba(11,23,41,0.35)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
+                          <Icon size={14} color={isActive ? RED : "rgba(255,255,255,0.35)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
                           <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? RED : "#0B1729", fontFamily: "Inter, sans-serif", marginBottom: 2 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: isActive ? RED : "#ffffff", fontFamily: "Inter, sans-serif", marginBottom: 1 }}>
                               {link.label}
                             </div>
-                            <div style={{ fontSize: 11.5, color: "rgba(11,23,41,0.45)", fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
                               {link.desc}
                             </div>
                           </div>
@@ -177,39 +175,41 @@ export default function Navbar() {
               </button>
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div
-                  className="rounded-xl shadow-2xl overflow-hidden"
+                  className="rounded-xl overflow-hidden"
                   style={{
-                    background: "#FAFAF7",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    minWidth: 220,
+                    background: "#112236",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
+                    minWidth: 180,
                   }}
                 >
-                  {[
-                    { label: "AI 101",          to: "/ai-101" },
-                    { label: "Cost Estimator",  to: "/cost-estimator" },
-                    { label: "Security",        to: "/security" },
-                    { label: "FAQ",             to: "/faq" },
-                  ].map((item) => (
-                    <Link
-                      key={item.to}
-                      href={item.to}
-                      className="block"
-                      style={{
-                        padding: "12px 20px",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        fontFamily: "Inter, sans-serif",
-                        color: pathname === item.to ? RED : "#0B1729",
-                        textDecoration: "none",
-                        borderBottom: "1px solid rgba(0,0,0,0.06)",
-                        transition: "background 0.15s",
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  <div className="p-2 flex flex-col gap-0.5">
+                    {[
+                      { label: "AI 101",         to: "/ai-101" },
+                      { label: "Cost Estimator", to: "/cost-estimator" },
+                      { label: "Security",       to: "/security" },
+                      { label: "FAQ",            to: "/faq" },
+                    ].map((item) => (
+                      <Link
+                        key={item.to}
+                        href={item.to}
+                        className="block rounded-lg"
+                        style={{
+                          padding: "9px 14px",
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          fontFamily: "Inter, sans-serif",
+                          color: pathname === item.to ? RED : "#ffffff",
+                          textDecoration: "none",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.07)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
