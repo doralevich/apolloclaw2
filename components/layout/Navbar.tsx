@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Phone, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield } from "lucide-react";
+import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, User, Target, Shield } from "lucide-react";
 
 const agentLinks = [
   { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,  to: "/use-cases/ceo" },
@@ -17,10 +17,10 @@ const agentLinks = [
 
 const NAVY = "#0B1729";
 const RED = "#D72B2B";
-const NAVY_MUTED = "rgba(11,23,41,0.55)";
+const NAVY_MUTED = "rgba(11,23,41,0.75)";
 
 const ApolloclawLogo = () => (
-  <svg viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg" style={{ height: "32px", width: "auto" }} aria-label="Apollo[Claw]">
+  <svg viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg" style={{ height: "44px", width: "auto" }} aria-label="Apollo[Claw]">
     <text
       y="62"
       fontFamily="'IBM Plex Mono', 'Courier New', monospace"
@@ -51,7 +51,7 @@ export default function Navbar() {
 
   const navItemStyle = (active: boolean) => ({
     fontSize: 13,
-    fontWeight: 600,
+    fontWeight: 700,
     fontFamily: "Inter, sans-serif",
     color: active ? NAVY : NAVY_MUTED,
     textDecoration: "none",
@@ -211,18 +211,8 @@ export default function Navbar() {
             {navLink("Contact", "/contact")}
           </div>
 
-          {/* Right side: phone + CTA */}
+          {/* Right side: CTA */}
           <div className="hidden md:flex items-center gap-5" style={{ flexShrink: 0 }}>
-            <a
-              href="tel:+19173635487"
-              className="flex items-center gap-1.5 text-[12px] font-mono transition-colors"
-              style={{ color: NAVY_MUTED }}
-              onMouseEnter={e => (e.currentTarget.style.color = NAVY)}
-              onMouseLeave={e => (e.currentTarget.style.color = NAVY_MUTED)}
-            >
-              <Phone size={12} />
-              (917) 363-5487
-            </a>
             <a
               href="https://calendly.com/therealdaveo/apolloai"
               target="_blank"
@@ -331,14 +321,6 @@ export default function Navbar() {
               }}
             >
               Schedule Today
-            </a>
-            <a
-              href="tel:+19173635487"
-              className="flex items-center gap-1.5 text-sm font-mono mt-2"
-              style={{ color: NAVY_MUTED }}
-            >
-              <Phone size={14} />
-              (917) 363-5487
             </a>
           </div>
         </div>

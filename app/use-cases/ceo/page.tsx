@@ -132,12 +132,12 @@ export default function CeoPage() {
         <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-5xl relative z-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://theceoagent.ai/images/The_CEO_Agent.png"
+            src="/the-ceo-agent-white.png"
             alt="The CEO Agent"
-            style={{ height: 72, width: "auto", margin: "0 auto 32px" }}
+            style={{ height: 52, width: "auto", margin: "0 auto 32px" }}
           />
-          <h1 className="font-display leading-[1.05] tracking-tight" style={{ fontSize: "clamp(38px, 5.6vw, 72px)", fontWeight: 800, color: "#ffffff", margin: 0 }}>
-            Run Your Company.{" "}<span style={{ color: RED }}>Let Your Bot Run Everything Else.</span>
+          <h1 className="font-display leading-[1.05] tracking-tight" style={{ fontSize: "3.75em", fontWeight: 800, color: "#ffffff", margin: 0 }}>
+            Run Your Company.<br />Let Your Bot Run Everything Else.
           </h1>
           <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 820, margin: "24px auto 0" }}>
             The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.
