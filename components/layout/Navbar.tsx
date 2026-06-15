@@ -121,8 +121,8 @@ export default function Navbar() {
                 <div
                   className="rounded-xl shadow-2xl overflow-hidden"
                   style={{
-                    background: "#0F1E33",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "#FAFAF7",
+                    border: "1px solid rgba(0,0,0,0.08)",
                     minWidth: 560,
                   }}
                 >
@@ -138,20 +138,20 @@ export default function Navbar() {
                           className="flex items-start gap-3 group/item"
                           style={{
                             padding: "14px 20px",
-                            borderRight: isLeft ? "1px solid rgba(255,255,255,0.06)" : "none",
-                            borderBottom: i < 6 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                            borderRight: isLeft ? "1px solid rgba(0,0,0,0.06)" : "none",
+                            borderBottom: i < 6 ? "1px solid rgba(0,0,0,0.06)" : "none",
                             textDecoration: "none",
                             transition: "background 0.15s",
                           }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
                           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                         >
-                          <Icon size={15} color={isActive ? RED : "rgba(255,255,255,0.4)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
+                          <Icon size={15} color={isActive ? RED : "rgba(11,23,41,0.35)"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
                           <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? RED : "#ffffff", fontFamily: "Inter, sans-serif", marginBottom: 2 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? RED : "#0B1729", fontFamily: "Inter, sans-serif", marginBottom: 2 }}>
                               {link.label}
                             </div>
-                            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
+                            <div style={{ fontSize: 11.5, color: "rgba(11,23,41,0.45)", fontFamily: "Inter, sans-serif", lineHeight: 1.4 }}>
                               {link.desc}
                             </div>
                           </div>
@@ -163,6 +163,7 @@ export default function Navbar() {
               </div>
             </div>
 
+            {navLink("Case Studies", "/case-studies")}
             {navLink("Blog", "/blog")}
             {navLink("Contact", "/contact")}
           </div>
@@ -247,6 +248,9 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+            <Link href="/case-studies" className="font-display text-2xl text-white">
+              Case Studies
+            </Link>
             <Link href="/blog" className="font-display text-2xl text-white">
               Blog
             </Link>
