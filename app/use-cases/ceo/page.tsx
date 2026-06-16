@@ -2,8 +2,41 @@ import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "The CEO Bot | AI Executive Bot for Chief Executives | Apollo[Claw]",
-  description: "The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.",
+  title: "AI Assistant for CEOs | Automate Executive Workflows | Apollo[Claw]",
+  description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck — let your bot run the details.",
+  openGraph: {
+    title: "AI Assistant for CEOs | Automate Executive Workflows",
+    description: "The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.",
+    url: "https://apolloclaw.ai/use-cases/ceo",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/use-cases/ceo#service",
+      name: "The CEO Bot — AI Executive Assistant",
+      description: "AI executive assistant for CEOs that handles briefings, communications, research, and follow-up automatically.",
+      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      url: "https://apolloclaw.ai/use-cases/ceo",
+      serviceType: "AI Automation for Executives",
+      areaServed: "United States",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/use-cases/ceo#faq",
+      mainEntity: [
+        { "@type": "Question", name: "What exactly is an AI bot?", acceptedAnswer: { "@type": "Answer", text: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up — without being asked." } },
+        { "@type": "Question", name: "How is this different from using ChatGPT or a generic AI tool?", acceptedAnswer: { "@type": "Answer", text: "ChatGPT is a conversation tool. The CEO Bot is connected to your systems and configured for your workflows. It knows your voice, your priorities, your team. The difference is a calculator versus a chief of staff." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+        { "@type": "Question", name: "Is my data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We build on your infrastructure wherever possible. All connections use least-privilege access and your data does not pass through servers we do not control." } },
+        { "@type": "Question", name: "Do I need a technical team to run this?", acceptedAnswer: { "@type": "Answer", text: "No. We handle all technical setup. You interact with your bot through Telegram or email, the same way you would communicate with a team member." } },
+      ],
+    },
+  ],
 };
 
 const features = [
@@ -125,6 +158,7 @@ const RED = "#D72B2B";
 export default function CeoPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />

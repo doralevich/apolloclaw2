@@ -1,8 +1,41 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The CFO Agent | AI Finance Intelligence for Finance Leaders | Apollo[Claw]",
-  description: "The CFO Agent handles reporting, cash forecasting, board prep, and month-end close so your finance team focuses on strategy.",
+  title: "AI for CFOs | Automated Financial Reporting & Forecasting | Apollo[Claw]",
+  description: "The CFO Agent closes the books faster, automates financial reporting, and handles board prep so your finance team focuses on strategy — not spreadsheets.",
+  openGraph: {
+    title: "AI for CFOs | Automated Financial Reporting & Forecasting",
+    description: "The CFO Agent closes the books faster, automates reporting, and handles board prep so your finance team focuses on strategy.",
+    url: "https://apolloclaw.ai/use-cases/cfo",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/use-cases/cfo#service",
+      name: "The CFO Agent — AI Financial Intelligence",
+      description: "AI assistant for CFOs that automates financial reporting, cash forecasting, board prep, and month-end close.",
+      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      url: "https://apolloclaw.ai/use-cases/cfo",
+      serviceType: "AI Automation for Finance Leaders",
+      areaServed: "United States",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/use-cases/cfo#faq",
+      mainEntity: [
+        { "@type": "Question", name: "What financial systems does the CFO Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to QuickBooks, NetSuite, Sage, Xero, and most major ERP platforms. We also work with Excel and Google Sheets-based reporting environments." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+        { "@type": "Question", name: "Will it replace my finance team?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the production work — report generation, data pulls, reconciliation tracking — so your team can focus on analysis and decisions." } },
+        { "@type": "Question", name: "Is our financial data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We connect using read-only API credentials wherever possible and use least-privilege access throughout. Your data does not pass through servers we do not control." } },
+        { "@type": "Question", name: "Can it handle multi-entity reporting?", acceptedAnswer: { "@type": "Answer", text: "Yes. Multi-entity consolidation is one of the most common use cases. We configure the agent to handle subsidiaries, intercompany eliminations, and consolidated reporting." } },
+      ],
+    },
+  ],
 };
 
 const features = [
@@ -106,6 +139,7 @@ const RED = "#D72B2B";
 export default function CfoPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />

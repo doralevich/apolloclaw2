@@ -1,8 +1,41 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The Medical Agent | AI for Healthcare & Medical Practices | Apollo[Claw]",
-  description: "The Medical Agent handles scheduling, patient follow-up, documentation prep, and intake so your providers focus on care.",
+  title: "AI for Medical Practices | Reduce No-Shows & Automate Patient Follow-Up | Apollo[Claw]",
+  description: "The Medical Agent automates appointment reminders, patient intake, follow-up, and documentation prep. HIPAA compliant. Most practices see no-shows drop within 30 days.",
+  openGraph: {
+    title: "AI for Medical Practices | Reduce No-Shows & Automate Patient Follow-Up",
+    description: "The Medical Agent handles scheduling, patient follow-up, documentation prep, and intake so your providers stay focused on care.",
+    url: "https://apolloclaw.ai/use-cases/health",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/use-cases/health#service",
+      name: "The Medical Agent — AI for Healthcare Practices",
+      description: "HIPAA-compliant AI assistant for medical practices that automates scheduling, patient follow-up, intake, and documentation prep.",
+      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      url: "https://apolloclaw.ai/use-cases/health",
+      serviceType: "AI Automation for Medical Practices",
+      areaServed: "United States",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/use-cases/health#faq",
+      mainEntity: [
+        { "@type": "Question", name: "What EHR and practice management systems does the Medical Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to athenahealth, Epic, DrChrono, Kareo, Jane App, and most major EHR and practice management platforms." } },
+        { "@type": "Question", name: "Is this HIPAA compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We execute a Business Associate Agreement with every healthcare client. All data handling follows HIPAA requirements throughout." } },
+        { "@type": "Question", name: "Will it replace my front desk staff?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the high-volume repetitive work — reminders, intake collection, follow-up sequences — so your staff can focus on patients in the room." } },
+        { "@type": "Question", name: "How does the scheduling integration work?", acceptedAnswer: { "@type": "Answer", text: "We connect to your existing scheduling system. The agent reads availability and books, confirms, and reschedules appointments automatically." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most practices are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+      ],
+    },
+  ],
 };
 
 const features = [
@@ -106,6 +139,7 @@ const RED = "#D72B2B";
 export default function HealthcarePage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />

@@ -1,8 +1,41 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The Insurance Agent | AI for Insurance Agencies | Apollo[Claw]",
-  description: "The Insurance Agent handles quote follow-up, renewal outreach, claims communication, and client management so your producers focus on selling.",
+  title: "AI for Insurance Agents | Automate Renewals, Quotes & Follow-Up | Apollo[Claw]",
+  description: "The Insurance Agent automates renewal outreach, quote follow-up, and client communication so your producers focus on selling — not chasing paperwork.",
+  openGraph: {
+    title: "AI for Insurance Agents | Automate Renewals, Quotes & Follow-Up",
+    description: "The Insurance Agent handles renewal outreach, quote follow-up, and client communication so your producers focus on selling.",
+    url: "https://apolloclaw.ai/use-cases/insurance",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/use-cases/insurance#service",
+      name: "The Insurance Agent — AI for Insurance Agencies",
+      description: "AI assistant for insurance agencies that automates renewal outreach, quote follow-up, and client communication.",
+      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      url: "https://apolloclaw.ai/use-cases/insurance",
+      serviceType: "AI Automation for Insurance Agencies",
+      areaServed: "United States",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/use-cases/insurance#faq",
+      mainEntity: [
+        { "@type": "Question", name: "What agency management systems does the Insurance Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Applied Epic, Hawksoft, AMS360, EZLynx, and most major AMS platforms. We also work with AgencyZoom and other sales CRMs." } },
+        { "@type": "Question", name: "How does it handle renewal outreach?", acceptedAnswer: { "@type": "Answer", text: "The agent identifies policies approaching renewal, initiates outreach at your configured lead time, and runs a follow-up sequence until the client responds or the renewal closes." } },
+        { "@type": "Question", name: "Will it replace my service team?", acceptedAnswer: { "@type": "Answer", text: "No. It handles the first-touch communication, follow-up sequences, and status updates. Your team handles conversations that require judgment." } },
+        { "@type": "Question", name: "Is client data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We connect using least-privilege API credentials and your data does not pass through servers we do not control." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most agencies are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+      ],
+    },
+  ],
 };
 
 const features = [
@@ -106,6 +139,7 @@ const RED = "#D72B2B";
 export default function InsurancePage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />

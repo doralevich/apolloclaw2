@@ -1,8 +1,41 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The Real Estate Agent | AI for Real Estate Professionals | Apollo[Claw]",
-  description: "The Real Estate Agent handles lead follow-up, listing management, showing coordination, and CRM updates so you can focus on closing deals.",
+  title: "AI for Real Estate Agents | Automate Lead Follow-Up & Listing Management | Apollo[Claw]",
+  description: "The Real Estate Agent follows up with leads in under 2 minutes, manages your CRM, and coordinates showings automatically so you can focus on closing.",
+  openGraph: {
+    title: "AI for Real Estate Agents | Automate Lead Follow-Up & Listing Management",
+    description: "The Real Estate Agent handles lead follow-up, listing management, showing coordination, and CRM updates so you can focus on closing deals.",
+    url: "https://apolloclaw.ai/use-cases/real-estate",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/use-cases/real-estate#service",
+      name: "The Real Estate Agent — AI for Real Estate Professionals",
+      description: "AI assistant for real estate agents that automates lead follow-up, listing management, showing coordination, and CRM updates.",
+      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      url: "https://apolloclaw.ai/use-cases/real-estate",
+      serviceType: "AI Automation for Real Estate Agents",
+      areaServed: "United States",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/use-cases/real-estate#faq",
+      mainEntity: [
+        { "@type": "Question", name: "What CRM systems does the Real Estate Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Follow Up Boss, kvCORE, BoomTown, HubSpot, Salesforce, and most major real estate CRMs." } },
+        { "@type": "Question", name: "How fast does it follow up with new leads?", acceptedAnswer: { "@type": "Answer", text: "Within two minutes of a lead coming in, regardless of time of day. Speed to lead is one of the highest-leverage improvements most agents see immediately." } },
+        { "@type": "Question", name: "Will it sound like me or like a robot?", acceptedAnswer: { "@type": "Answer", text: "We train the agent on your communication style during onboarding. Most clients tell us their prospects can not tell the difference." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+        { "@type": "Question", name: "Do I need a technical team to run this?", acceptedAnswer: { "@type": "Answer", text: "No. We handle all technical setup. You interact with your agent through the same tools you already use every day." } },
+      ],
+    },
+  ],
 };
 
 const features = [
@@ -106,6 +139,7 @@ const RED = "#D72B2B";
 export default function RealEstatePage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />

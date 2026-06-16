@@ -1,8 +1,41 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The Law Agent | AI for Law Firms & Legal Practices | Apollo[Claw]",
-  description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing so your attorneys focus on billable work.",
+  title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines | Apollo[Claw]",
+  description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable hours — not admin.",
+  openGraph: {
+    title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines",
+    description: "The Law Agent handles intake, deadline tracking, document summaries, and billing so your attorneys focus on billable work.",
+    url: "https://apolloclaw.ai/use-cases/legal",
+    type: "website",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/use-cases/legal#service",
+      name: "The Law Agent — AI for Law Firms",
+      description: "AI assistant for law firms that automates client intake, deadline tracking, document summaries, and billing follow-up.",
+      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      url: "https://apolloclaw.ai/use-cases/legal",
+      serviceType: "AI Automation for Law Firms",
+      areaServed: "United States",
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/use-cases/legal#faq",
+      mainEntity: [
+        { "@type": "Question", name: "What case management systems does the Law Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Clio, MyCase, PracticePanther, Filevine, and most major legal practice management platforms." } },
+        { "@type": "Question", name: "How does client intake work?", acceptedAnswer: { "@type": "Answer", text: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects the relevant facts, and schedules consultations with the right attorney." } },
+        { "@type": "Question", name: "Is client data secure and ethically compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is configured to meet your firm's ethical obligations and bar requirements." } },
+        { "@type": "Question", name: "Will it replace my paralegals?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the first-touch admin work — intake, scheduling, status updates, document routing — so your paralegals focus on substantive case support." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+      ],
+    },
+  ],
 };
 
 const features = [
@@ -106,6 +139,7 @@ const RED = "#D72B2B";
 export default function LegalPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       {/* Hero */}
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
