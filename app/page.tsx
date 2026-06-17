@@ -351,23 +351,18 @@ export default async function HomePage() {
 
           <div id="apollo-agents-grid">
             {[
-              { icon: Briefcase, category: "Executive", title: "The CEO Agent", desc: "Faster decisions, fewer status calls." },
-              { icon: Heart, category: "Healthcare", title: "The Medical Agent", desc: "Patient triage, intake summaries, faster charting." },
-              { icon: TrendingUp, category: "Finance Operations", title: "The CFO Agent", desc: "Cash forecasts, board prep, monthly close — drafted before you ask." },
-              { icon: Home, category: "Real Estate", title: "The Real Estate Agent", desc: "New leads sorted, listings written, follow-ups closed automatically." },
-              { icon: Scale, category: "Legal", title: "The Legal Agent", desc: "Intake forms, case research, document summaries — answer-ready in minutes." },
-              { icon: Wrench, category: "Construction", title: "The Contractors Agent", desc: "Estimates drafted, schedules juggled, change orders tracked — without the chaos." },
-              { icon: User, category: "Productivity", title: "The Personal Assistant", desc: "Inbox, calendar, contacts, notes — handled while you focus on the real work." },
-              { icon: Target, category: "Sales", title: "The Sales Agent", desc: "Cold-to-warm outreach, automated follow-ups, more closed deals — without burnout." },
-              { icon: Wallet, category: "Finance", title: "The Finance Agent", desc: "Monthly close support, expense triage, board-ready reports — drafted on time." },
-              { icon: Shield, category: "Insurance", title: "The Insurance Agent", desc: "Quote requests, policy renewals, claims status — answered before clients ask." },
-              { icon: Calculator, category: "Accounting", title: "The Accounting Agent", desc: "Bookkeeping, reconciliations, tax prep flagged early — fewer surprises at year end." },
-              { icon: Users, category: "Brokerage", title: "The Brokers Agent", desc: "Client requests, deal pipelines, KYC docs — kept moving without manual chase." },
+              { icon: Briefcase, category: "Executive",    title: "The CEO Agent",          desc: "Faster decisions, fewer status calls.",                              href: "/use-cases/ceo" },
+              { icon: TrendingUp, category: "Finance",     title: "The CFO Agent",          desc: "Cash forecasts, board prep, monthly close — drafted before you ask.", href: "/use-cases/cfo" },
+              { icon: Heart,      category: "Healthcare",  title: "The Medical Agent",      desc: "Patient triage, intake summaries, faster charting.",                 href: "/use-cases/health" },
+              { icon: Shield,     category: "Insurance",   title: "The Insurance Agent",    desc: "Quote requests, policy renewals, claims status — answered before clients ask.", href: "/use-cases/insurance" },
+              { icon: Scale,      category: "Legal",       title: "The Law Agent",          desc: "Intake forms, case research, document summaries — answer-ready in minutes.", href: "/use-cases/legal" },
+              { icon: Home,       category: "Real Estate", title: "The Real Estate Agent",  desc: "New leads sorted, listings written, follow-ups closed automatically.", href: "/use-cases/real-estate" },
             ].map((agent, i) => {
               const Icon = agent.icon;
               return (
                 <ScrollReveal key={agent.title} delay={(i % 4) * 80}>
-                  <div
+                  <Link
+                    href={agent.href}
                     className="apollo-agent-card"
                     style={{
                       background: "#FFFFFF",
@@ -377,6 +372,7 @@ export default async function HomePage() {
                       height: "100%",
                       display: "flex",
                       flexDirection: "column",
+                      textDecoration: "none",
                     }}
                   >
                     <div
@@ -427,7 +423,7 @@ export default async function HomePage() {
                     >
                       {agent.desc}
                     </p>
-                  </div>
+                  </Link>
                 </ScrollReveal>
               );
             })}
@@ -1147,8 +1143,6 @@ export default async function HomePage() {
                   { src: "/agents/the-legal-agent.png", alt: "The Law [Agent]" },
                   { src: "/agents/the-medical-agent.png", alt: "The Medical [Agent]" },
                   { src: "/agents/the-real-estate-agent.png", alt: "The Real Estate [Agent]" },
-                  { src: "/agents/the-sales-agent.png", alt: "The Sales [Agent]" },
-                  { src: "/agents/the-sales-assistant.png", alt: "The Sales Assistant" },
                 ].map((logo) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
