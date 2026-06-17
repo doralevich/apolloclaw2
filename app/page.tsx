@@ -325,7 +325,7 @@ export default async function HomePage() {
                   margin: "0 0 14px",
                 }}
               >
-                Meet Our <span style={{ color: "#D72B2B" }}>Agents</span>
+                Our <span style={{ color: "#D72B2B" }}>Agents</span>
               </h2>
               <p
                 className="font-body"
