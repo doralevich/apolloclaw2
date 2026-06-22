@@ -211,6 +211,9 @@ export default function Navbar() {
 
           {/* Right side: CTA */}
           <div className="hidden md:flex items-center gap-5" style={{ flexShrink: 0 }}>
+            <Link href="/dashboard" style={navItemStyle(pathname.startsWith("/dashboard"))}>
+              Log in
+            </Link>
             <a
               href="https://calendly.com/therealdaveo/apolloai"
               target="_blank"
@@ -303,6 +306,9 @@ export default function Navbar() {
             </div>
             <Link href="/contact" className="font-display text-2xl" style={{ color: NAVY }}>
               Contact
+            </Link>
+            <Link href="/dashboard" className="font-display text-2xl" style={{ color: NAVY }}>
+              Log in
             </Link>
             <a
               href="https://calendly.com/therealdaveo/apolloai"

@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
-import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -133,7 +132,6 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-body), Inter, sans-serif", "--font-display": "var(--font-body)", "--font-mono": "'IBM Plex Mono', monospace" } as React.CSSProperties}
       >
         <RootShell>{children}</RootShell>
-        <ChatWidget />
         <Toaster richColors />
       </body>
     </html>
