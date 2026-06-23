@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/config/branding";
+import { publicSiteOrigin } from "@/lib/site-url";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -19,7 +20,9 @@ export default function LoginPage() {
     setLoading(true);
     const supabase = createClient();
     const next = new URLSearchParams(window.location.search).get("next") || "/dashboard";
-    const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const callbackUrl = new URL("/auth/callback", publicSiteOrigin(window.location.origin));
+    callbackUrl.searchParams.set("next", next);
+    const emailRedirectTo = callbackUrl.toString();
     const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo } });
     setLoading(false);
     if (error) {
