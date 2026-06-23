@@ -1,5 +1,7 @@
 import { agent37 } from "@/lib/agent37";
-import { requireAdmin, requireEntitled, requireMember, requireUser } from "@/lib/auth";
+import { requireMember, requireUser } from "@/lib/auth";
+import { requirePlatformAdmin } from "@/lib/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
@@ -71,17 +73,31 @@ export const GET = route(async (request: Request) => {
 });
 
 export const POST = route(async (request: Request) => {
-  const { supabase, user } = await requireUser();
+  // Agents are only ever provisioned by platform admins (for any workspace, on a user's
+  // behalf). Regular users can no longer create their own — the dashboard button is gone
+  // and this endpoint enforces it server-side.
+  const { user } = await requirePlatformAdmin();
 
-  // Money gate: no spend without an active entitlement (allowlist now, Stripe later).
-  await requireEntitled(supabase);
-
-  // Shape is fixed server-side (DEFAULT_AGENT); the client only picks the workspace.
+  // Shape is fixed server-side (DEFAULT_AGENT); the caller only picks the workspace.
   const body = await readJson<{ workspace_id?: string }>(request);
 
   const workspaceId = body.workspace_id;
   if (!workspaceId) throw new ApiError(400, "invalid_request", "workspace_id is required");
-  await requireAdmin(supabase, workspaceId, user.id);
+
+  // Service-role client: the admin is provisioning into a workspace they're not a member
+  // of, so RLS (agents_insert checks is_workspace_admin) would reject a user-scoped insert.
+  const db = createAdminClient();
+
+  // Validate the target workspace exists and resolve its owner — the agent is tagged to
+  // the end user in agent37, while created_by records the admin who provisioned it.
+  const { data: workspace, error: wsError } = await db
+    .from("workspaces")
+    .select("owner_id")
+    .eq("id", workspaceId)
+    .maybeSingle();
+  if (wsError) throw new ApiError(500, "db_error", wsError.message);
+  if (!workspace) throw new ApiError(404, "not_found", "Workspace not found");
+  const ownerId = (workspace.owner_id as string) ?? user.id;
 
   const template = await resolveTemplate();
 
@@ -92,12 +108,12 @@ export const POST = route(async (request: Request) => {
       memory: DEFAULT_AGENT.memory,
       disk: DEFAULT_AGENT.disk,
     },
-    user: user.id,
+    user: ownerId,
     metadata: { app_workspace: workspaceId },
     budget: { monthly_cap_micros: usdToMicros(DEFAULT_AGENT.monthlyCapUsd) },
   });
 
-  const { error } = await supabase.from("agents").insert({
+  const { error } = await db.from("agents").insert({
     agent37_id: agent.id,
     workspace_id: workspaceId,
     name: agent.name || null,

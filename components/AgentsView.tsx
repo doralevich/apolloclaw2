@@ -7,7 +7,6 @@ import { apiFetch } from "@/lib/api";
 import { isTransitional, statusVariant } from "@/lib/format";
 import type { MergedAgent, Role } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { CreateAgentButton } from "@/components/CreateAgentButton";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentNameCell } from "@/components/AgentNameCell";
 
@@ -47,23 +46,16 @@ export function AgentsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
-          <p className="text-sm text-muted-foreground">{current.name}</p>
-        </div>
-        {role === "admin" && <CreateAgentButton workspaceId={current.id} onCreated={load} />}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
+        <p className="text-sm text-muted-foreground">{current.name}</p>
       </div>
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : agents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            {role === "admin"
-              ? "No agents yet. Create your first one."
-              : "No agents in this workspace yet."}
-          </p>
+          <p className="text-sm text-muted-foreground">No agents in this workspace yet.</p>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border">

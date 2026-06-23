@@ -11,11 +11,13 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/admin/:path*",
     "/login",
     "/reset-password",
     "/auth/callback",
     "/invite/:path*",
     "/api/agents/:path*",
+    "/api/admin/:path*",
     "/api/workspaces/:path*",
     "/api/invitations/:path*",
   ],

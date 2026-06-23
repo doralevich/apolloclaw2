@@ -99,3 +99,29 @@ export interface MergedAgent extends AgentRow {
   ports: Agent["ports"];
   update_available: boolean;
 }
+
+// ---- Platform admin god-view (/admin) ----
+
+// One row in the all-workspaces table. Counts are computed server-side across every
+// tenant via the service-role client (RLS would otherwise hide other people's data).
+export interface AdminWorkspaceSummary {
+  id: string;
+  name: string;
+  owner_id: string;
+  owner_email: string | null;
+  created_at: string;
+  member_count: number;
+  agent_count: number;
+  running_count: number;
+}
+
+// One instance inside an expanded workspace row, enriched with live agent37 state plus
+// per-instance budget/usage (fetched lazily on expand). budget/usage are null when the
+// agent37 call fails (e.g. unfunded wallet, instance not yet provisioned).
+export interface AdminAgentDetail extends AgentRow {
+  live_status: string | null;
+  status_reason: Agent["status_reason"];
+  past_due: boolean;
+  budget: Budget | null;
+  usage: Usage | null;
+}

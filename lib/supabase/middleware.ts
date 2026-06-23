@@ -31,11 +31,12 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Only guard the dashboard *pages*. The dashboard API routes enforce their own
-  // auth and return JSON 401s (a redirect would corrupt those responses); /login,
-  // /auth and /invite are public. Marketing routes never reach here — the proxy
-  // matcher is scoped to dashboard surfaces only.
-  if (!user && pathname.startsWith("/dashboard")) {
+  // Only guard the dashboard/admin *pages*. The API routes enforce their own auth and
+  // return JSON 401/403s (a redirect would corrupt those responses); /login, /auth and
+  // /invite are public. Marketing routes never reach here — the proxy matcher is scoped
+  // to these surfaces only. The /admin email allowlist is enforced in the admin layout
+  // (a logged-in non-admin gets a 404 there); here we only bounce logged-out users.
+  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
