@@ -5,7 +5,6 @@ import {
   ArrowDownToLine,
   Copy,
   FolderOpen,
-  Gauge,
   LayoutDashboard,
   MoreHorizontal,
   Play,
@@ -35,7 +34,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { BudgetDialog } from "@/components/BudgetDialog";
 
 // The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
 const PORT_ACTIONS = [
@@ -57,7 +55,6 @@ export function AgentActionsMenu({
   const running = agent.live_status === "running";
   const transitional = isTransitional(agent.live_status);
 
-  const [budgeting, setBudgeting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [opening, setOpening] = useState<number | null>(null);
   const { busy, run } = useAsyncAction();
@@ -127,21 +124,6 @@ export function AgentActionsMenu({
             <TooltipContent>{label}</TooltipContent>
           </Tooltip>
         ))}
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-full"
-              onClick={() => setBudgeting(true)}
-              aria-label="Usage"
-            >
-              <Gauge className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Usage</TooltipContent>
-        </Tooltip>
 
         {isAdmin && (
           <Tooltip>
@@ -225,7 +207,6 @@ export function AgentActionsMenu({
       </div>
       </TooltipProvider>
 
-      <BudgetDialog open={budgeting} onOpenChange={setBudgeting} agentId={agent.agent37_id} />
       <ConfirmDialog
         open={deleting}
         onOpenChange={setDeleting}
