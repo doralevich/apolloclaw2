@@ -24,7 +24,7 @@ export async function readJson<T = Record<string, unknown>>(request: Request): P
   }
 }
 
-export function apiError(message: string, status = 400, code = "error") {
+function apiError(message: string, status = 400, code = "error") {
   return NextResponse.json({ error: { code, message } }, { status });
 }
 

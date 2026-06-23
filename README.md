@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Apollo[Claw]
 
-## Getting Started
+Marketing site + self-serve agent dashboard, built on Next.js.
 
-First, run the development server:
+## Running locally
+
+Requires Node.js 20+ and npm.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in the values (see below)
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production build:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+Copy `.env.example` to `.env.local` and set the keys below.
 
-To learn more about Next.js, take a look at the following resources:
+### Agent37 (agent provisioning)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `AGENT37_API_KEY` — funded Agent37 Cloud API key (`sk_live_…`). Get it from <https://www.agent37.com/dashboard/cloud/api-keys>.
+- `AGENT37_API_BASE_URL` — optional; defaults to `https://api.agent37.com`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Supabase (auth + dashboard data)
 
-## Deploy on Vercel
+- `NEXT_PUBLIC_SUPABASE_URL` — project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon / public key.
+- `SUPABASE_SERVICE_ROLE_KEY` — service-role key (server-only; never expose to the client).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### App
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `NEXT_PUBLIC_SITE_URL` — site origin, e.g. `http://localhost:3000`.
+- `NEXT_PUBLIC_APP_NAME` — dashboard name shown in the UI.
+
+### Supabase CLI only (not read by the app)
+
+Needed only to run database migrations via the `supabase` CLI:
+
+- `SUPABASE_ACCESS_TOKEN`, `DASHBOARD_SUPABASE_REF`, `DASHBOARD_SUPABASE_DB_PASSWORD`.

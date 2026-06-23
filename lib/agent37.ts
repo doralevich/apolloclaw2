@@ -70,7 +70,6 @@ export interface ResizeInput {
 
 export const agent37 = {
   listAgents: () => call<{ data: Agent[] }>("/instances"),
-  getAgent: (id: string) => call<Agent>(`/instances/${id}`),
   createAgent: (body: CreateAgentInput) =>
     call<Agent>("/instances", { method: "POST", body: JSON.stringify(body) }),
   deleteAgent: (id: string) =>
@@ -92,6 +91,13 @@ export const agent37 = {
       method: "POST",
       body: JSON.stringify({ port, ...(ttlSeconds ? { ttl_seconds: ttlSeconds } : {}) }),
     }),
+
+  // Run a shell command inside the running instance (docker exec, server-side only).
+  exec: (id: string, command: string) =>
+    call<{ exit_code: number; stdout: string; stderr: string; truncated: boolean }>(
+      `/instances/${id}/exec`,
+      { method: "POST", body: JSON.stringify({ command }) }
+    ),
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
   getUsage: (id: string, month?: string) =>

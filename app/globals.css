@@ -282,3 +282,13 @@ section::before {
   height: 6px;
   border-radius: 9999px;
 }
+
+/* Hand cursor on interactive controls (native buttons aren't pointer by default). */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+}

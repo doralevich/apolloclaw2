@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 
 export function ConfirmDialog({
   open,
@@ -29,18 +28,13 @@ export function ConfirmDialog({
   destructive?: boolean;
   onConfirm: () => Promise<void>;
 }) {
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
-  async function handle() {
-    setBusy(true);
-    try {
+  function handle() {
+    return run(async () => {
       await onConfirm();
       onOpenChange(false);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   return (

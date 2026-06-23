@@ -5,6 +5,7 @@ import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import type { WorkspaceWithRole } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +31,11 @@ export function WorkspaceSwitcher() {
   const { workspaces, current, setCurrentId, refresh } = useWorkspace();
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
-  async function createWorkspace() {
+  function createWorkspace() {
     if (!name.trim()) return;
-    setBusy(true);
-    try {
+    return run(async () => {
       const { workspace } = await apiFetch<{ workspace: WorkspaceWithRole }>("/api/workspaces", {
         method: "POST",
         body: JSON.stringify({ name: name.trim() }),
@@ -45,11 +45,7 @@ export function WorkspaceSwitcher() {
       setName("");
       setCreating(false);
       toast.success("Workspace created");
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   return (

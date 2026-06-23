@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import type { MergedAgent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ export function AgentNameCell({
 }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(agent.name ?? "");
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wasEditing = useRef(false);
 
@@ -38,14 +39,13 @@ export function AgentNameCell({
     setEditing(false);
   }
 
-  async function save() {
+  function save() {
     const trimmed = name.trim();
     if (!trimmed || trimmed === (agent.name ?? "")) {
       cancel();
       return;
     }
-    setBusy(true);
-    try {
+    return run(async () => {
       await apiFetch(`/api/agents/${agent.agent37_id}`, {
         method: "PATCH",
         body: JSON.stringify({ name: trimmed }),
@@ -53,11 +53,7 @@ export function AgentNameCell({
       toast.success("Renamed");
       setEditing(false);
       onRenamed();
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   return (

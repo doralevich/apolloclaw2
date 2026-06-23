@@ -5,6 +5,7 @@ import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +14,8 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
   const [name, setName] = useState(current?.name ?? "");
-  const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { busy, run } = useAsyncAction();
 
   useEffect(() => {
     setName(current?.name ?? "");
@@ -24,21 +25,16 @@ export function SettingsView() {
 
   const isAdmin = current.role === "admin";
 
-  async function save() {
+  function save() {
     if (!current) return;
-    setBusy(true);
-    try {
+    return run(async () => {
       await apiFetch(`/api/workspaces/${current.id}`, {
         method: "PATCH",
         body: JSON.stringify({ name: name.trim() }),
       });
       await refresh();
       toast.success("Workspace renamed");
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   async function remove() {

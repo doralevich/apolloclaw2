@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/dashboard", label: "OpenClaws", icon: LayoutGrid, exact: true },
+  { href: "/dashboard", label: "Agents", icon: LayoutGrid, exact: true },
   { href: "/dashboard/members", label: "Members", icon: Users, exact: false },
   { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
 ];

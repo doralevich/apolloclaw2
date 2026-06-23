@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   ArrowDownToLine,
+  Copy,
   FolderOpen,
   Gauge,
   LayoutDashboard,
@@ -16,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { isTransitional } from "@/lib/format";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import { PORTS } from "@/config/agents";
 import type { MergedAgent, Role } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -37,7 +39,7 @@ import { BudgetDialog } from "@/components/BudgetDialog";
 
 // The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
 const PORT_ACTIONS = [
-  { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the Hermes dashboard", aria: "Open Hermes dashboard" },
+  { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the dashboard", aria: "Open dashboard" },
   { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
   { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
 ] as const;
@@ -57,20 +59,15 @@ export function AgentActionsMenu({
 
   const [budgeting, setBudgeting] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [opening, setOpening] = useState<number | null>(null);
+  const { busy, run } = useAsyncAction();
 
-  async function action(path: string, msg: string) {
-    setBusy(true);
-    try {
+  function action(path: string, msg: string) {
+    return run(async () => {
       await apiFetch(`/api/agents/${agent.agent37_id}/${path}`, { method: "POST" });
       toast.success(msg);
       onChanged();
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   async function openPort(port: number) {
@@ -85,6 +82,21 @@ export function AgentActionsMenu({
       toast.error((e as Error).message);
     } finally {
       setOpening(null);
+    }
+  }
+
+  async function copyDashboardUrl() {
+    const toastId = toast.loading("Preparing dashboard URL…");
+    try {
+      // Same signed URL "Open the dashboard" uses — already carries the #token= fragment.
+      const { url } = await apiFetch<{ url: string }>(
+        `/api/agents/${agent.agent37_id}/signed-url`,
+        { method: "POST", body: JSON.stringify({ port: PORTS.dashboard }) }
+      );
+      await navigator.clipboard.writeText(url);
+      toast.success("Dashboard URL copied to clipboard", { id: toastId });
+    } catch (e) {
+      toast.error((e as Error).message, { id: toastId });
     }
   }
 
@@ -186,6 +198,11 @@ export function AgentActionsMenu({
               <TooltipContent>More actions</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end" className="min-w-[12rem]">
+              <DropdownMenuItem disabled={!running} onClick={copyDashboardUrl}>
+                <Copy />
+                Copy dashboard URL
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {running ? (
                 <DropdownMenuItem onClick={() => action("stop", "Stopping")}>
                   <Square />

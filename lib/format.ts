@@ -28,3 +28,7 @@ export function statusVariant(status?: string | null): StatusVariant {
 export function isTransitional(status?: string | null): boolean {
   return ["provisioning", "starting", "restarting", "updating", "deleting"].includes(status || "");
 }
+
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString();
+}

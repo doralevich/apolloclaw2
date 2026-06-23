@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import { Button } from "@/components/ui/button";
 
 export function CreateAgentButton({
@@ -13,28 +13,23 @@ export function CreateAgentButton({
   workspaceId: string;
   onCreated: () => void;
 }) {
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
-  async function create() {
-    setBusy(true);
-    try {
+  function create() {
+    return run(async () => {
       await apiFetch("/api/agents", {
         method: "POST",
         body: JSON.stringify({ workspace_id: workspaceId }),
       });
-      toast.success("Your OpenClaw is provisioning");
+      toast.success("Your agent is provisioning");
       onCreated();
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   return (
     <Button onClick={create} disabled={busy}>
       <Plus className="h-4 w-4" />
-      {busy ? "Creating..." : "Create my OpenClaw"}
+      {busy ? "Creating..." : "Create agent"}
     </Button>
   );
 }

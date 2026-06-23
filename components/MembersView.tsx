@@ -5,6 +5,8 @@ import { Copy, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
+import { formatDate } from "@/lib/format";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import type { Invitation, Role, WorkspaceMember } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,10 +20,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString();
-}
-
 export function MembersView() {
   const { current } = useWorkspace();
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
@@ -29,7 +27,7 @@ export function MembersView() {
   const [role, setRole] = useState<Role>("admin");
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
   const load = useCallback(async () => {
     if (!current) return;
@@ -54,10 +52,9 @@ export function MembersView() {
 
   const isAdmin = role === "admin";
 
-  async function createInvite() {
+  function createInvite() {
     if (!current) return;
-    setBusy(true);
-    try {
+    return run(async () => {
       const { url } = await apiFetch<{ url: string }>(`/api/workspaces/${current.id}/members`, {
         method: "POST",
       });
@@ -65,11 +62,7 @@ export function MembersView() {
       toast.success("Invite link created and copied");
       setInviteOpen(false);
       load();
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   async function removeMember(userId: string) {

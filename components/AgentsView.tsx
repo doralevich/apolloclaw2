@@ -49,7 +49,7 @@ export function AgentsView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">My OpenClaws</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
           <p className="text-sm text-muted-foreground">{current.name}</p>
         </div>
         {role === "admin" && <CreateAgentButton workspaceId={current.id} onCreated={load} />}
@@ -61,8 +61,8 @@ export function AgentsView() {
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-sm text-muted-foreground">
             {role === "admin"
-              ? "No OpenClaws yet. Create your first one."
-              : "No OpenClaws in this workspace yet."}
+              ? "No agents yet. Create your first one."
+              : "No agents in this workspace yet."}
           </p>
         </div>
       ) : (
