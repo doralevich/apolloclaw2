@@ -12,6 +12,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/login",
+    "/reset-password",
     "/auth/callback",
     "/invite/:path*",
     "/api/agents/:path*",
