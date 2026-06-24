@@ -8,6 +8,14 @@ export type StoredZoomToken = {
   created_at: string;
 };
 
+export type ZoomSafeError = {
+  timestamp: string;
+  event_type: string;
+  meeting_id_or_uuid?: string | null;
+  failed_step: string;
+  message: string;
+};
+
 const defaultSupabaseUrl = "https://moubzvpffhqvumipbnfj.supabase.co";
 const bucketName = process.env.ZOOM_STORAGE_BUCKET || "zoom-integrations";
 
@@ -34,6 +42,16 @@ function textFile(data: string) {
 
 export function safeFilePart(value: string) {
   return value.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 160) || "zoom-meeting";
+}
+
+export function sanitizeErrorMessage(error: unknown) {
+  const raw = error instanceof Error ? error.message : String(error || "Unknown error");
+  return raw
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [REDACTED]")
+    .replace(/Basic\s+[A-Za-z0-9._~+/=-]+/gi, "Basic [REDACTED]")
+    .replace(/access_token[\"'=:\s]+[A-Za-z0-9._~+/=-]+/gi, "access_token=[REDACTED]")
+    .replace(/refresh_token[\"'=:\s]+[A-Za-z0-9._~+/=-]+/gi, "refresh_token=[REDACTED]")
+    .slice(0, 500);
 }
 
 async function ensureBucket() {
@@ -70,7 +88,14 @@ async function downloadPrivateText(path: string) {
   return data.text();
 }
 
+export async function ensureZoomStorageLayout() {
+  await uploadPrivate("pam/events/.keep", textFile(""));
+  await uploadPrivate("pam/events/errors/.keep", textFile(""));
+  await uploadPrivate("pam/transcripts/.keep", textFile(""));
+}
+
 export async function saveZoomTokens(token: StoredZoomToken) {
+  await ensureZoomStorageLayout();
   return uploadPrivate("pam/tokens.json", jsonFile(token));
 }
 
@@ -83,7 +108,7 @@ export async function readZoomTokens(): Promise<StoredZoomToken | null> {
 export function tokenLooksExpired(token: StoredZoomToken) {
   const created = Date.parse(token.created_at);
   if (!Number.isFinite(created)) return true;
-  const safetyWindowMs = 60_000;
+  const safetyWindowMs = 5 * 60_000;
   return Date.now() >= created + token.expires_in * 1000 - safetyWindowMs;
 }
 
@@ -97,6 +122,11 @@ export function storagePathsForMeeting(meetingId: string) {
   };
 }
 
+export function errorPathForMeeting(eventType: string, meetingIdOrUuid?: string | null) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  return `pam/events/errors/${stamp}-${safeFilePart(eventType)}-${safeFilePart(meetingIdOrUuid || "unknown")}.json`;
+}
+
 export async function saveZoomMetadata(path: string, data: unknown) {
   return uploadPrivate(path, jsonFile(data));
 }
@@ -105,6 +135,28 @@ export async function saveZoomTranscript(path: string, transcript: string) {
   return uploadPrivate(path, textFile(transcript));
 }
 
+export async function saveZoomRawEvent(path: string, data: unknown) {
+  return uploadPrivate(path, jsonFile(data));
+}
+
+export async function saveZoomError(error: ZoomSafeError) {
+  return uploadPrivate(errorPathForMeeting(error.event_type, error.meeting_id_or_uuid), jsonFile(error));
+}
+
+export async function objectExists(path: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.storage.from(bucketName).download(path);
+  return Boolean(data && !error);
+}
+
+export async function prefixHasObjects(prefix: string) {
+  const supabase = await ensureBucket();
+  const folder = prefix.replace(/\/$/, "");
+  const { data, error } = await supabase.storage.from(bucketName).list(folder, { limit: 1 });
+  if (error) return false;
+  return Boolean(data && data.length > 0);
+}
+
 export function getStorageDescription() {
-  return `Supabase Storage private bucket ${bucketName}, paths pam/tokens.json, pam/transcripts/, and pam/events/`;
+  return `Supabase Storage private bucket ${bucketName}, paths pam/tokens.json, pam/transcripts/, pam/events/, and pam/events/errors/`;
 }

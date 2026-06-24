@@ -95,3 +95,33 @@ Each transcript metadata JSON is saved in this shape:
 10. Confirm Zoom sends the webhook.
 11. Confirm transcript metadata and VTT are saved in Supabase private bucket `zoom-integrations`.
 12. Confirm transcript can be forwarded to Pam/Hermes.
+
+
+## Hardened first transcript test behavior
+
+Implemented safeguards before the first transcript test:
+
+- Access tokens are checked before Zoom API calls.
+- Tokens refresh when expired or within five minutes of expiring.
+- Refresh uses `POST https://zoom.us/oauth/token` with Basic Auth and `grant_type=refresh_token`.
+- Refreshed tokens overwrite `pam/tokens.json` in the private Supabase bucket.
+- Webhook raw events are saved under `pam/events/`.
+- Safe failures are saved under `pam/events/errors/` with timestamp, event type, meeting ID or UUID when available, failed step, and redacted error message.
+- Transcript files are selected from `recording_files` by preferring `file_type=TRANSCRIPT` or `file_extension=VTT`.
+- Transcript VTT and the Pam/Hermes handoff metadata payload are saved under `pam/transcripts/`.
+- Zoom recording readiness target: `recording.completed`, with broader recording event handling as fallback.
+
+Protected status check:
+
+```text
+GET /pam/zoom/status
+Header: x-zoom-status-token: <ZOOM_STATUS_TOKEN>
+```
+
+Add this Vercel environment variable before using the status endpoint:
+
+```text
+ZOOM_STATUS_TOKEN=<long random internal token>
+```
+
+The status endpoint reports env presence, storage folder/file presence, token presence, token age/expiry status, and scopes without returning access tokens, refresh tokens, client secrets, or webhook secrets.

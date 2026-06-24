@@ -3,7 +3,10 @@ import crypto from "crypto";
 import {
   getStorageDescription,
   readZoomTokens,
+  sanitizeErrorMessage,
+  saveZoomError,
   saveZoomMetadata,
+  saveZoomRawEvent,
   saveZoomTokens,
   saveZoomTranscript,
   storagePathsForMeeting,
@@ -79,8 +82,11 @@ function extractMeetingId(payload: any) {
   return payload?.object?.uuid || payload?.object?.id || payload?.object?.meeting_id || payload?.meeting_id || null;
 }
 
+function getEventType(event: string) {
+  return event || "unknown";
+}
+
 function buildTranscriptRecord(params: {
-  event: string;
   payload: any;
   recordingDetails: any;
   transcriptText: string;
@@ -109,20 +115,74 @@ function buildTranscriptRecord(params: {
   };
 }
 
+function isRecordingReadyEvent(event: string) {
+  const normalized = String(event || "").toLowerCase();
+  return normalized === "recording.completed" || normalized.includes("recording");
+}
+
+async function logSafeError(params: {
+  eventType: string;
+  meetingIdOrUuid?: string | null;
+  failedStep: string;
+  error: unknown;
+}) {
+  try {
+    await saveZoomError({
+      timestamp: new Date().toISOString(),
+      event_type: params.eventType,
+      meeting_id_or_uuid: params.meetingIdOrUuid || null,
+      failed_step: params.failedStep,
+      message: sanitizeErrorMessage(params.error),
+    });
+  } catch {
+    // Do not throw from error logging. Also do not log secrets.
+  }
+}
+
 async function handleRecordingEvent(event: string, payload: any) {
+  const eventType = getEventType(event);
   const meetingId = extractMeetingId(payload);
-  if (!meetingId) throw new Error("Zoom recording event missing meeting ID or UUID");
+  const paths = storagePathsForMeeting(String(meetingId || "unknown"));
 
-  const accessToken = await getAccessToken();
+  try {
+    await saveZoomRawEvent(paths.event, {
+      source: "zoom",
+      event_type: eventType,
+      received_at: new Date().toISOString(),
+      payload,
+    });
+  } catch (error) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "save_raw_webhook_event", error });
+  }
+
+  if (!meetingId) {
+    const error = new Error("Zoom recording event missing meeting ID or UUID");
+    await logSafeError({ eventType, meetingIdOrUuid: null, failedStep: "extract_meeting_id", error });
+    throw error;
+  }
+
+  let accessToken: string;
+  try {
+    accessToken = await getAccessToken();
+  } catch (error) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "get_or_refresh_access_token", error });
+    throw error;
+  }
+
   const encodedMeetingId = encodeZoomMeetingId(String(meetingId));
-  const response = await fetch(`https://api.zoom.us/v2/meetings/${encodedMeetingId}/recordings`, {
-    headers: { authorization: `Bearer ${accessToken}` },
-    cache: "no-store",
-  });
+  let recordingDetails: any;
+  try {
+    const response = await fetch(`https://api.zoom.us/v2/meetings/${encodedMeetingId}/recordings`, {
+      headers: { authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    });
 
-  if (!response.ok) throw new Error(`Zoom recording details failed: ${response.status}`);
-  const recordingDetails = await response.json();
-  const paths = storagePathsForMeeting(String(meetingId));
+    if (!response.ok) throw new Error(`Zoom recording details failed: ${response.status}`);
+    recordingDetails = await response.json();
+  } catch (error) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "fetch_recording_details", error });
+    throw error;
+  }
 
   const transcriptFile = (recordingDetails.recording_files || []).find((file: any) => {
     const fileType = String(file.file_type || "").toUpperCase();
@@ -133,26 +193,43 @@ async function handleRecordingEvent(event: string, payload: any) {
   let transcriptPath: string | null = null;
   let transcriptText = "";
   if (transcriptFile?.download_url) {
-    const transcriptResponse = await fetch(transcriptFile.download_url, {
-      headers: { authorization: `Bearer ${accessToken}` },
-      cache: "no-store",
+    try {
+      const transcriptResponse = await fetch(transcriptFile.download_url, {
+        headers: { authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      });
+      if (!transcriptResponse.ok) throw new Error(`Zoom transcript download failed: ${transcriptResponse.status}`);
+      transcriptText = await transcriptResponse.text();
+      transcriptPath = await saveZoomTranscript(paths.transcript, transcriptText);
+    } catch (error) {
+      await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "download_or_save_transcript", error });
+      throw error;
+    }
+  } else {
+    await logSafeError({
+      eventType,
+      meetingIdOrUuid: meetingId,
+      failedStep: "find_transcript_file",
+      error: new Error("No transcript file found in recording_files"),
     });
-    if (!transcriptResponse.ok) throw new Error(`Zoom transcript download failed: ${transcriptResponse.status}`);
-    transcriptText = await transcriptResponse.text();
-    transcriptPath = await saveZoomTranscript(paths.transcript, transcriptText);
   }
 
-  const receivedAt = new Date().toISOString();
-  const metadataPath = await saveZoomMetadata(paths.metadata, buildTranscriptRecord({
-    event,
-    payload,
-    recordingDetails,
-    transcriptText,
-    receivedAt,
-  }));
+  let metadataPath: string;
+  try {
+    metadataPath = await saveZoomMetadata(paths.metadata, buildTranscriptRecord({
+      payload,
+      recordingDetails,
+      transcriptText,
+      receivedAt: new Date().toISOString(),
+    }));
+  } catch (error) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "save_handoff_payload", error });
+    throw error;
+  }
 
   return {
     meetingId,
+    eventType,
     transcriptSaved: Boolean(transcriptPath),
     metadataPath,
     transcriptPath,
@@ -170,6 +247,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  const eventType = getEventType(body.event);
+  const meetingId = extractMeetingId(body.payload);
+
   if (body.event === "endpoint.url_validation") {
     const plainToken = body?.payload?.plainToken;
     if (!plainToken) return NextResponse.json({ error: "Missing plainToken" }, { status: 400 });
@@ -178,29 +258,30 @@ export async function POST(req: NextRequest) {
   }
 
   if (secret && !verifyZoomSignature(rawBody, req, secret)) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "verify_webhook_signature", error: new Error("Invalid Zoom webhook signature") });
     return NextResponse.json({ error: "Invalid Zoom webhook signature" }, { status: 401 });
   }
 
-  if (String(body.event || "").includes("recording")) {
+  if (isRecordingReadyEvent(body.event)) {
     try {
       const result = await handleRecordingEvent(body.event, body.payload);
       return NextResponse.json({ ok: true, ...result });
-    } catch (error) {
-      console.error("Zoom recording webhook processing failed", error instanceof Error ? error.message : "Unknown error");
+    } catch {
       return NextResponse.json({ ok: false, error: "Recording webhook processing failed" }, { status: 202 });
     }
   }
 
   try {
-    const eventMeetingId = extractMeetingId(body.payload) || "unknown";
-    const paths = storagePathsForMeeting(String(eventMeetingId));
-    const eventPath = await saveZoomMetadata(paths.event, {
-      event: body.event,
+    const paths = storagePathsForMeeting(String(meetingId || "unknown"));
+    const eventPath = await saveZoomRawEvent(paths.event, {
+      source: "zoom",
+      event_type: eventType,
       received_at: new Date().toISOString(),
       payload: body.payload,
     });
     return NextResponse.json({ ok: true, eventPath, storage: getStorageDescription() });
-  } catch {
+  } catch (error) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "save_non_recording_event", error });
     return NextResponse.json({ ok: true, storage: getStorageDescription() });
   }
 }
