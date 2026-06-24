@@ -79,6 +79,36 @@ function extractMeetingId(payload: any) {
   return payload?.object?.uuid || payload?.object?.id || payload?.object?.meeting_id || payload?.meeting_id || null;
 }
 
+function buildTranscriptRecord(params: {
+  event: string;
+  payload: any;
+  recordingDetails: any;
+  transcriptText: string;
+  receivedAt: string;
+}) {
+  const object = params.payload?.object || {};
+  const details = params.recordingDetails || {};
+  const meetingUuid = object.uuid || details.uuid || "";
+  const meetingId = object.id || object.meeting_id || details.id || "";
+  const durationMinutes = details.duration || object.duration || "";
+
+  return {
+    source: "zoom",
+    event_type: "meeting_transcript_ready",
+    meeting_id: meetingId ? String(meetingId) : "",
+    meeting_uuid: meetingUuid ? String(meetingUuid) : "",
+    topic: details.topic || object.topic || "",
+    start_time: details.start_time || object.start_time || "",
+    duration_minutes: durationMinutes === "" ? "" : String(durationMinutes),
+    host_email: details.host_email || object.host_email || "",
+    participants: Array.isArray(object.participants) ? object.participants : [],
+    recording_url: details.share_url || details.recording_play_url || "",
+    transcript_text: params.transcriptText || "",
+    transcript_format: "vtt",
+    received_at: params.receivedAt,
+  };
+}
+
 async function handleRecordingEvent(event: string, payload: any) {
   const meetingId = extractMeetingId(payload);
   if (!meetingId) throw new Error("Zoom recording event missing meeting ID or UUID");
@@ -101,23 +131,25 @@ async function handleRecordingEvent(event: string, payload: any) {
   });
 
   let transcriptPath: string | null = null;
+  let transcriptText = "";
   if (transcriptFile?.download_url) {
     const transcriptResponse = await fetch(transcriptFile.download_url, {
       headers: { authorization: `Bearer ${accessToken}` },
       cache: "no-store",
     });
     if (!transcriptResponse.ok) throw new Error(`Zoom transcript download failed: ${transcriptResponse.status}`);
-    transcriptPath = await saveZoomTranscript(paths.transcript, await transcriptResponse.text());
+    transcriptText = await transcriptResponse.text();
+    transcriptPath = await saveZoomTranscript(paths.transcript, transcriptText);
   }
 
-  const metadataPath = await saveZoomMetadata(paths.metadata, {
+  const receivedAt = new Date().toISOString();
+  const metadataPath = await saveZoomMetadata(paths.metadata, buildTranscriptRecord({
     event,
-    meeting_id: meetingId,
-    received_at: new Date().toISOString(),
-    recording_details: recordingDetails,
-    transcript_saved: Boolean(transcriptPath),
-    transcript_path: transcriptPath,
-  });
+    payload,
+    recordingDetails,
+    transcriptText,
+    receivedAt,
+  }));
 
   return {
     meetingId,
