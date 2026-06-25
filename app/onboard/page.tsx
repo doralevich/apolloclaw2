@@ -37,11 +37,16 @@ const BIZ_SIZES    = ["Just me (Solo)","2–5 people","6–10 people","11–25 p
 const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k–$10k/mo","$10k–$25k/mo","$25k–$50k/mo","$50k–$100k/mo","$100k–$250k/mo","$250k–$500k/mo","$500k+/mo","Prefer not to say"];
 const BIZ_AGE      = ["Less than 6 months","6–12 months","1–2 years","2–5 years","5–10 years","10+ years"];
 const BIZ_MODEL    = ["Service-based (sell time/expertise)","Physical product","SaaS / Digital product","Marketplace / Platform","Subscription / Membership","Hybrid (products + services)","Agency / Reseller","Franchise / Licensed model"];
-const STACK_CRM    = ["HubSpot","Salesforce","Pipedrive","Zoho CRM","Close.io","Keap / Infusionsoft","ActiveCampaign","Monday.com CRM","No CRM currently","Other"];
-const STACK_ECOM   = ["Shopify","WooCommerce","BigCommerce","Magento","Squarespace","Amazon Seller","Etsy","Not applicable","Other"];
-const STACK_COMMS  = ["Gmail / Google Workspace","Outlook / Microsoft 365","Slack","Microsoft Teams","Discord","Zoom","Google Meet","Fathom","Fireflies","WhisperFlow","Tailscale","Tavily","Other"];
+const STACK_CRM    = ["Salesforce","HubSpot","Pipedrive","Zoho CRM","Microsoft Dynamics 365","Freshsales","SugarCRM","Insightly","Creatio","Bitrix24","Close","Copper","Nutshell","Keap","Salesflare","Pipeline CRM","Zoho Bigin","Less Annoying CRM","Capsule CRM","Vtiger","Nimble","Agile CRM","Streak","Folk","Attio","Affinity","EngageBay","Maximizer","SuiteCRM","No CRM currently","Other"];
+const STACK_COMMS  = ["Google Workspace","Microsoft Office 365","Google Meet","Microsoft Teams","Granola","Zoom","Slack","Telegram","Discord","Loom","Fathom","Fireflies","Otter.ai","WhisperFlow","Other"];
 const STACK_PM     = ["Notion","Asana","ClickUp","Trello","Monday.com","Basecamp","Jira","Linear","No PM tool","Other"];
-const STACK_BILLING= ["QuickBooks","Xero","FreshBooks","Wave","Stripe","Square","PayPal","Bill.com","None","Other"];
+const STACK_BILLING= [
+  "QuickBooks Online","QuickBooks Desktop","Xero","FreshBooks","Wave","Sage Intacct","Oracle NetSuite","SAP S/4HANA","Microsoft Dynamics 365 Finance","Workday Financial Management",
+  "Stripe","Square","PayPal","Braintree","Adyen","Authorize.net",
+  "Bill.com","Tipalti","Coupa","Airbase","Ramp","Brex","Divvy / BILL Spend","Expensify","SAP Concur","Zip",
+  "Chargebee","Recurly","Zuora","Avalara (tax compliance)",
+  "None","Other"
+];
 const STACK_MKTG   = ["Mailchimp","Klaviyo","ConvertKit","ActiveCampaign","Drip","Constant Contact","Brevo","None","Other"];
 const STACK_AUTO   = ["Zapier","Make (Integromat)","n8n","Pipedream","Power Automate","None","Other"];
 const STACK_SUPPORT= ["Zendesk","Intercom","Freshdesk","Help Scout","Gorgias","Front","None","Other"];
@@ -70,7 +75,7 @@ const MONEY_MIND   = ["I invest aggressively when I see ROI potential","I'm caut
 const AGENCY_HIST  = ["Never hired an agency or consultant before","Had great experiences - agencies have delivered","Mixed - some good, some bad","Mostly bad - agencies have let me down","Got burned badly - very hesitant now","Currently working with another agency"];
 const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive"];
 const CONTENT_COMF = ["I love writing - it comes naturally","I can write but it takes effort","I write when I have to, hate it","I dictate and have someone clean it up","I avoid writing at all costs - I prefer talking"];
-const BRAND_LIKE   = ["Gary Vaynerchuk - raw, loud, authentic","Alex Hormozi - direct, value-packed, no fluff","Simon Sinek - thoughtful, story-driven, purposeful","Seth Godin - pithy, philosophical, surprising","Brené Brown - vulnerable, human, research-backed","Tim Ferriss - experimental, optimizing, tactical","Donald Miller - clear, simple, customer-focused","None of these - I'll describe my own"];
+const BRAND_LIKE   = ["Gary Vaynerchuk - raw, loud, authentic","Alex Hormozi - direct, value-packed, no fluff","Simon Sinek - thoughtful, story-driven, purposeful","Seth Godin - pithy, philosophical, surprising","Brené Brown - vulnerable, human, research-backed","Tim Ferriss - experimental, optimizing, tactical","Donald Miller - clear, simple, customer-focused","Marie Forleo - energetic, fun, empowering","Mel Robbins - direct, actionable, no excuses","Amy Porterfield - educational, warm, step-by-step","Oprah Winfrey - empathetic, inspirational, grounded","Sara Blakely - authentic, scrappy, entrepreneurial","Rachel Hollis - bold, personal, motivational","Jasmine Star - relatable, social-savvy, aspirational","Jenna Kutcher - warm, personal brand, purpose-driven","None of these - I'll describe my own"];
 const SOCIAL_ACTIVE= ["Very active - post daily or near-daily","Moderate - a few times per week","Inconsistent - when I remember","Minimal - profiles exist but rarely post","Non-existent - I don't do social media"];
 const PLATFORMS    = ["Email / Newsletter","LinkedIn","Instagram","Facebook","TikTok","Twitter / X","YouTube","Blog / SEO","Podcast","SMS / Text campaigns","None - internal use only"];
 const AI_GOALS     = ["Inbox management","Lead qualification","Auto follow-up sequences","Customer support / chat","Appointment scheduling","Proposal & quote generation","Social media content creation","Research & competitive intel","Order management","Internal workflow automation","CRM data entry & updates","Employee onboarding","Invoice & billing automation","SEO & content creation","Market research","Custom - I'll describe below"];
@@ -219,9 +224,10 @@ function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; to
 // ════════════════════════════════════════════════════════════
 // GATEKEEPER
 // ════════════════════════════════════════════════════════════
-interface GateData { first: string; last: string; email: string; phone: string; heard: string[]; tz: string; title: string; linkedin: string; company: string }
+interface GateData { first: string; last: string; email: string; personalEmail: string; phone: string; heard: string[]; tz: string; title: string; linkedin: string; company: string }
 function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
-  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "" });
+  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "" });
+
   const [err, setErr] = useState("");
   const set = (k: keyof GateData, v: string | string[]) => setD(p => ({ ...p, [k]: v }));
   const submit = () => {
@@ -233,7 +239,7 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
         <h1 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
-          Let's Build Something <span style={{ color: R }}>That Works</span>
+          Let's Build Something <span style={{ color: R }}>Amazing!</span>
         </h1>
         <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto" }}>Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result.</p>
       </div>
@@ -249,10 +255,11 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
               <FF label="First Name" required><TInput value={d.first} onChange={v => set("first", v)} placeholder="Jane" /></FF>
               <FF label="Last Name" required><TInput value={d.last} onChange={v => set("last", v)} placeholder="Smith" /></FF>
             </Row2>
-            <FF label="Business Email" required><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
+            <Row2>
+              <FF label="Business Email" required><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
+              <FF label="Personal Email"><TInput type="email" value={d.personalEmail} onChange={v => set("personalEmail", v)} placeholder="jane@gmail.com" /></FF>
+            </Row2>
             <FF label="Phone Number" required><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
-            <FF label="Company Name"><TInput value={d.company} onChange={v => set("company", v)} placeholder="Acme Corp" /></FF>
-            <FF label="LinkedIn Profile URL"><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="https://linkedin.com/in/yourname" /></FF>
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
           <button type="button" onClick={submit} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
@@ -359,7 +366,7 @@ function Success({ track }: { track: string }) {
 // ════════════════════════════════════════════════════════════
 // BUSINESS TRACK
 // ════════════════════════════════════════════════════════════
-const BIZ_STEPS = Array.from({length: 18}, (_, i) => `Step ${i + 1}`);
+const BIZ_STEPS = Array.from({length: 23}, (_, i) => `Step ${i + 1}`);
 function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
   const [step, setStep] = useState(0);
   const [s1, setS1] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[], contact: "", besttime: "", tz: "", title: "", linkedin: "" });
@@ -369,8 +376,9 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const [s5, setS5] = useState({ decStyle: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "" });
   const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", voiceDesc: "", loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
   const [s7, setS7] = useState({ goals: [] as string[], metric: "", priority: "", prior: "", past: "", teamSent: "" });
-  const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", constraints: "", agree: false });
+  const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", agree: false });
   const [agreeErr, setAgreeErr] = useState(false);
+  const [stepErr, setStepErr] = useState<number | null>(null);
   const f1 = (k: string, v: unknown) => setS1(p => ({ ...p, [k]: v }));
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
@@ -380,128 +388,138 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
   const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, source: s1.heard, contactMethod: s1.contact, bestTime: s1.besttime, linkedin: gate.linkedin, companyName: gate.company || s2.biz, website: s2.url, industry: s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, webPlatform: s2.webplat, crmTools: s2.crm, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, fixedLooksLike: s3.fixed, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceDesc, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorityWorkflow: s7.priority, priorAI: s7.prior, pastExperience: s7.past, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budget: s8.budget, timeline: s8.timeline, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
-  const next = () => { setStep(s => Math.min(s + 1, pages.length - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const next = () => {
+    if (step === 1 && !s2.desc.trim()) { setStepErr(1); return; }
+    setStepErr(null);
+    setStep(s => Math.min(s + 1, pages.length - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   const back = () => { setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const submit = () => { if (!s8.agree) { setAgreeErr(true); return; } setAgreeErr(false); onDone(buildData(), "business"); };
   const pages = [
 
     <Stack key="s2a">
-      <SHead stepNum={1} total={15} title="Your Business" subtitle="A few quick facts to get us started." badge="Business" />
+      <SHead stepNum={1} total={13} title="Your Business" subtitle="A few quick facts to get us started." badge="Business" />
+      <FF label="Company / Business Name" required><TInput value={s2.biz} onChange={v => f2("biz", v)} placeholder="Acme Corp" /></FF>
+      <FF label="Your Role / Title"><TInput value={s1.title} onChange={v => f1("title", v)} placeholder="e.g. CEO, Founder, Operations Manager" /></FF>
       <Row2><FF label="Industry" required><TSelect value={s2.industry} onChange={v => f2("industry", v)} options={INDUSTRIES} /></FF><FF label="Team Size" required><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF></Row2>
       <Row2><FF label="Monthly Revenue" required><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF><FF label="Years in Business" required><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
       <FF label="Business Model" required><TSelect value={s2.model} onChange={v => f2("model", v)} options={BIZ_MODEL} /></FF>
     </Stack>,
     <Stack key="s2b">
-      <SHead stepNum={2} total={15} title="What Do You Do?" subtitle="Tell us about your business — who you serve and what makes you different." badge="Business" />
-      <FF label="Describe your business" hint="Who do you serve, what do you deliver, what makes you stand out?" required><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]. What clients say they love about us is..." rows={5} /></FF>
+      <SHead stepNum={2} total={13} title="What Do You Do?" subtitle="Tell us about your business. Who you serve, what you deliver, and what makes you stand out." badge="Business" />
+      <FF label="Describe your business" hint="Who do you serve, what do you deliver, what makes you stand out?" required><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]. What clients say they love about us is..." rows={10} /></FF>
+      {stepErr === 1 && <p style={{ fontSize: 13, color: "#dc2626" }}>Please fill in Company Name and Description before continuing.</p>}
     </Stack>,
     <Stack key="s2c">
-      <SHead stepNum={3} total={15} title="CRM / Sales Tools" subtitle="What do you use to manage contacts and sales?" badge="Business" />
-      <CheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} cols={2} />
+      <SHead stepNum={3} total={17} title="CRM / Sales Tools" subtitle="What do you use to manage contacts and sales?" badge="Business" />
+      <CheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} cols={3} />
       {s2.crm.includes("Other") && <FF label="Which tool?"><TInput value={s2.crmOther || ""} onChange={v => f2("crmOther", v)} placeholder="Name the tool" /></FF>}
     </Stack>,
-    <Stack key="s2d">
-      <SHead stepNum={4} total={15} title="E-Commerce Platform" subtitle="Do you sell online? What platform do you use?" badge="Business" />
-      <CheckGroup options={STACK_ECOM} value={s2.ecom} onChange={v => f2("ecom", v)} cols={2} />
-      {s2.ecom.includes("Other") && <FF label="Which platform?"><TInput value={s2.ecomOther || ""} onChange={v => f2("ecomOther", v)} placeholder="Name the platform" /></FF>}
-    </Stack>,
     <Stack key="s2e">
-      <SHead stepNum={5} total={15} title="Communications" subtitle="How does your team communicate internally and with clients?" badge="Business" />
+      <SHead stepNum={4} total={17} title="Communications" subtitle="How does your team communicate internally and with clients?" badge="Business" />
       <CheckGroup options={STACK_COMMS} value={s2.comms} onChange={v => f2("comms", v)} cols={2} />
       {s2.comms.includes("Other") && <FF label="Which tool?"><TInput value={s2.commsOther || ""} onChange={v => f2("commsOther", v)} placeholder="Name the tool" /></FF>}
     </Stack>,
     <Stack key="s2f">
-      <SHead stepNum={6} total={15} title="Project Management" subtitle="How do you track work and manage projects?" badge="Business" />
+      <SHead stepNum={5} total={17} title="Project Management" subtitle="How do you track work and manage projects?" badge="Business" />
       <CheckGroup options={STACK_PM} value={s2.pm} onChange={v => f2("pm", v)} cols={2} />
       {s2.pm.includes("Other") && <FF label="Which tool?"><TInput value={s2.pmOther || ""} onChange={v => f2("pmOther", v)} placeholder="Name the tool" /></FF>}
     </Stack>,
     <Stack key="s2g">
-      <SHead stepNum={7} total={15} title="Billing & Payments" subtitle="What do you use for invoicing and payments?" badge="Business" />
+      <SHead stepNum={6} total={13} title="Billing & Payments" subtitle="What do you use for invoicing and payments?" badge="Business" />
       <CheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} cols={2} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
     </Stack>,
-    <Stack key="s2h">
-      <SHead stepNum={8} total={15} title="Email Marketing" subtitle="How do you stay in touch with your audience?" badge="Business" />
-      <CheckGroup options={STACK_MKTG} value={s2.mktg} onChange={v => f2("mktg", v)} cols={2} />
-    </Stack>,
-    <Stack key="s2i">
-      <SHead stepNum={9} total={15} title="Automation Tools" subtitle="What do you use to automate tasks and workflows?" badge="Business" />
-      <CheckGroup options={STACK_AUTO} value={s2.auto} onChange={v => f2("auto", v)} cols={2} />
-      {s2.auto.includes("Other") && <FF label="Which tool?"><TInput value={s2.autoOther || ""} onChange={v => f2("autoOther", v)} placeholder="Name the tool" /></FF>}
-    </Stack>,
-    <Stack key="s2j">
-      <SHead stepNum={10} total={15} title="Customer Support" subtitle="How do you handle customer questions and support tickets?" badge="Business" />
-      <CheckGroup options={STACK_SUPPORT} value={s2.support} onChange={v => f2("support", v)} cols={2} />
-      {s2.support.includes("Other") && <FF label="Which tool?"><TInput value={s2.supportOther || ""} onChange={v => f2("supportOther", v)} placeholder="Name the tool" /></FF>}
-    </Stack>,
-    <Stack key="s2k">
-      <SHead stepNum={11} total={18} title="Cloud & Hosting" subtitle="Where does your business run?" badge="Business" />
-      <CheckGroup options={IT_HOSTING} value={s8.hosting} onChange={v => f8("hosting", v)} cols={2} />
-    </Stack>,
-    <Stack key="s2l">
-      <SHead stepNum={12} total={18} title="Operating System & Devices" subtitle="What does your team work on?" badge="Business" />
-      <CheckGroup label="Operating Systems & Devices" hint="Select all that apply" options={IT_OS} value={Array.isArray(s8.os) ? s8.os : (s8.os ? [s8.os] : [])} onChange={v => f8("os", v)} cols={2} />
-    </Stack>,
     <Stack key="s2m">
-      <SHead stepNum={13} total={18} title="Compliance Requirements" subtitle="Are there regulations your business must follow?" badge="Business" />
+      <SHead stepNum={7} total={12} title="Compliance Requirements" subtitle="Are there regulations your business must follow?" badge="Business" />
       <CheckGroup options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
     </Stack>,
     <Stack key="s3">
-      <SHead stepNum={14} total={18} title="Pain Points & Operations" subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
+      <SHead stepNum={8} total={12} title="Pain Points & Operations" subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
       <FF label="Describe Your Biggest Operational Headache Right Now" required><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
       <CheckGroup label="Which Areas Feel Most Broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
-      <Row2><FF label="Hours/Week on Manual Tasks" required><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF><FF label="How Long Has This Been a Problem?" required><TSelect value={s3.duration} onChange={v => f3("duration", v)} options={PAIN_DURATION} /></FF></Row2>
       <FF label="The One Thing You Wish You Could Make Disappear" required><TArea value={s3.hate} onChange={v => f3("hate", v)} placeholder="The task that makes you groan every time." rows={2} /></FF>
       <CheckGroup label="What Have You Already Tried?" hint="Select all that apply" options={TRIED_BEFORE} value={s3.tried} onChange={v => f3("tried", v)} cols={2} />
       <FF label="Tell Us More About What You've Already Done" hint="Free text — what worked, what didn't, what you learned"><TArea value={s3.triedDetail || ""} onChange={v => f3("triedDetail", v)} placeholder="e.g. We tried Zapier for 6 months but it kept breaking. We hired a VA but couldn't get consistent results..." rows={3} /></FF>
-      <FF label="Business Impact of This Problem" required><TSelect value={s3.costImpact} onChange={v => f3("costImpact", v)} options={COST_IMPACT} /></FF>
       <FF label="What Does 'Fixed' Look Like?" hint="Describe your business in 12 months if this is completely solved."><TArea value={s3.fixed} onChange={v => f3("fixed", v)} placeholder="What does your day look like? What numbers have changed?" rows={3} /></FF>
     </Stack>,
     <Stack key="s4">
-      <SHead stepNum={15} total={18} title="Family & Life Context" subtitle="Understanding your life outside the business helps us build something that actually fits." badge="Business" />
+      <SHead stepNum={9} total={12} title="Family & Life Context" subtitle="Understanding your life outside the business helps us build something that actually fits." badge="Business" />
       <Row2><FF label="Relationship Status"><TSelect value={s4.marital} onChange={v => f4("marital", v)} options={MARITAL} /></FF><FF label="Children"><TSelect value={s4.kids} onChange={v => f4("kids", v)} options={KIDS_COUNT} /></FF></Row2>
       <CheckGroup label="Ages of Your Children" hint="Skip if no children" options={["Infant / Toddler (0–3)","Young children (4–8)","Pre-teen (9–12)","Teenager (13–17)","Young adults (18–25)","Adult children (25+)","N/A"]} value={s4.kidsAges} onChange={v => f4("kidsAges", v)} cols={3} />
-      <CheckGroup label="Caregiving Responsibilities" options={CARETAKING} value={s4.caretaking} onChange={v => f4("caretaking", v)} cols={2} />
       <RadioGroup label="Your Work / Home Situation" options={HOME_LIFE} value={s4.homeLife} onChange={v => f4("homeLife", v)} />
       <CheckGroup label="What Are You Most Protecting Right Now?" options={["My family's financial security","My health and energy","My time and freedom","My marriage / relationship","My kids' future","My retirement / exit plan","My peace of mind","My reputation"]} value={s4.protect} onChange={v => f4("protect", v)} cols={2} />
       <RadioGroup label="Where Are You in Your Business Journey?" options={LIFE_STAGE} value={s4.lifeStage} onChange={v => f4("lifeStage", v)} />
       <CheckGroup label="What Do You Want Your Business to Do For You in 3 Years?" options={TIMELINE_3YR} value={s4.timeline3yr} onChange={v => f4("timeline3yr", v)} cols={2} />
       <FF label="Describe Your Personal 3-Year Vision" hint="Not metrics — your actual life."><TArea value={s4.personalGoal} onChange={v => f4("personalGoal", v)} placeholder="Be honest. What are you really building toward?" rows={3} /></FF>
     </Stack>,
-    <Stack key="s5">
-      <SHead stepNum={16} total={18} title="Your Psychology & Mindset" subtitle="This is how we know who we're working with — not just what the business needs, but how YOU think." badge="Business" />
-      <RadioGroup label="How Do You Make Big Decisions?" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} />
-      <RadioGroup label="When Things Get Hard or Uncertain, You…" options={STRESS_RESP} value={s5.stressResp} onChange={v => f5("stressResp", v)} />
+    <Stack key="s5a">
+      <SHead stepNum={10} total={16} title="How Do You Make Big Decisions?" subtitle="Understanding your decision-making style helps us work with you, not against you." badge="Business" />
+      <RadioGroup options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} />
+    </Stack>,
+    <Stack key="s5b">
+      <SHead stepNum={11} total={16} title="When Things Get Hard or Uncertain…" subtitle="How you respond under pressure shapes how we'll support you." badge="Business" />
+      <RadioGroup options={STRESS_RESP} value={s5.stressResp} onChange={v => f5("stressResp", v)} />
+    </Stack>,
+    <Stack key="s5c">
+      <SHead stepNum={12} total={16} title="Motivation & Resistance" subtitle="What drives you — and what holds you back." badge="Business" />
       <CheckGroup label="What Motivates You at the Deepest Level?" hint="Select your top 3" options={MOTIVATORS} value={s5.motivators} onChange={v => f5("motivators", v)} cols={2} />
       <CheckGroup label="What Creates Internal Resistance?" hint="Select all that are true" options={BLOCKERS} value={s5.blockers} onChange={v => f5("blockers", v)} cols={2} />
-      
-      <RadioGroup label="Your History With Consultants and Agencies" options={AGENCY_HIST} value={s5.agencyHist} onChange={v => f5("agencyHist", v)} />
-      <Divider label="Trust Scales" />
+    </Stack>,
+    <Stack key="s5d">
+      <SHead stepNum={13} total={16} title="Your History With Consultants & Agencies" subtitle="We want to know what you've experienced before — good or bad." badge="Business" />
+      <RadioGroup options={AGENCY_HIST} value={s5.agencyHist} onChange={v => f5("agencyHist", v)} />
+    </Stack>,
+    <Stack key="s5e">
+      <SHead stepNum={14} total={16} title="Trust & Expectations" subtitle="How you think about technology and what success looks like for you." badge="Business" />
       <ScaleRow label="How Much Do You Trust Technology to Handle Critical Business Tasks?" low="Not at all — want humans involved" high="Fully — automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
       <ScaleRow label="How Comfortable Are You Giving Up Control to an AI System?" low="Very uncomfortable" high="Completely comfortable" value={s5.controlComfort} onChange={v => f5("controlComfort", v)} />
       <FF label="What Would Make This Engagement 100% Worth It?"><TArea value={s5.worthIt} onChange={v => f5("worthIt", v)} placeholder="Specific outcomes, feelings, changes in your daily life — what's the real bar?" rows={3} /></FF>
     </Stack>,
-    <Stack key="s6">
-      <SHead stepNum={17} total={18} title="Your Voice & Communication Style" subtitle="AI that sounds like you is the goal. Help us understand how you communicate." badge="Business" />
-      <CheckGroup label="Your Natural Communication Tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone ? [s6.tone] : []} onChange={v => f6("tone", v[v.length-1] || "")} cols={2} />
-      <CheckGroup label="Your Relationship With Writing" hint="Select all that apply" options={CONTENT_COMF} value={s6.writingComf ? [s6.writingComf] : []} onChange={v => f6("writingComf", v[v.length-1] || "")} cols={2} />
-      <CheckGroup label="Who Do You Sound Most Like?" hint="Pick up to 3" options={BRAND_LIKE.filter(b => b !== "None of these - I’ll describe my own")} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
-      <FF label="Describe Your Ideal Voice in Your Own Words"><TArea value={s6.voiceDesc} onChange={v => f6("voiceDesc", v)} placeholder="e.g. Confident but not arrogant. Clear, direct. Never corporate." rows={3} /></FF>
-      <FF label="Share a Sample of Your Voice" hint="Optional. Paste an email, your LinkedIn summary, or any writing that sounds like you."><TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="Ideas: a long email, your LinkedIn About section, a client proposal, or a Slack message that sounds like you..." rows={4} /></FF>
+    <Stack key="s6a">
+      <SHead stepNum={15} total={19} title="Your Communication Tone" subtitle="AI that sounds like you is the goal. How would you describe your natural style?" badge="Business" />
+      <CheckGroup hint="Select all that apply" options={WRITING_TONE} value={s6.tone ? [s6.tone] : []} onChange={v => f6("tone", v[v.length-1] || "")} cols={2} />
     </Stack>,
-    <Stack key="s7">
-      <SHead stepNum={18} total={18} title="AI Goals & Vision" subtitle="Tell us what success looks like. We design around outcomes, not tools." badge="Business" />
+    <Stack key="s6b">
+      <SHead stepNum={16} total={19} title="Your Relationship With Writing" subtitle="How comfortable are you with written communication?" badge="Business" />
+      <CheckGroup hint="Select all that apply" options={CONTENT_COMF} value={s6.writingComf ? [s6.writingComf] : []} onChange={v => f6("writingComf", v[v.length-1] || "")} cols={2} />
+    </Stack>,
+    <Stack key="s6c">
+      <SHead stepNum={17} total={19} title="Who Do You Sound Most Like?" subtitle="Pick up to 3 voices that resonate with how you communicate." badge="Business" />
+      <CheckGroup hint="Pick up to 3" options={BRAND_LIKE.filter(b => b !== "None of these - I’ll describe my own")} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
+    </Stack>,
+    <Stack key="s6d">
+      <SHead stepNum={18} total={19} title="Your Voice in Your Own Words" subtitle="Describe how you sound — and share a writing sample if you have one." badge="Business" />
+      <FF label="Describe Your Ideal Voice"><TArea value={s6.voiceDesc} onChange={v => f6("voiceDesc", v)} placeholder="e.g. Confident but not arrogant. Clear, direct. Never corporate." rows={3} /></FF>
+      <FF label="Share a Sample of Your Voice" hint="Optional. Paste an email, LinkedIn summary, or any writing that sounds like you."><TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="Ideas: a long email, your LinkedIn About section, a client proposal, or a Slack message that sounds like you..." rows={4} /></FF>
+    </Stack>,
+    <Stack key="s7a">
+      <SHead stepNum={19} total={23} title="Your AI History" subtitle="Tell us what you've already explored — good experiences and bad ones both help." badge="Business" />
       <FF label="Have You Tried AI Automation Before?" hint="Tell us what you've explored or attempted." required><TArea value={s7.prior} onChange={v => f7("prior", v)} placeholder="e.g. We tried ChatGPT for content, used a Zapier automation for leads, hired someone to build a bot..." rows={3} /></FF>
       <FF label="What Happened With Previous Attempts?"><TArea value={s7.past} onChange={v => f7("past", v)} placeholder="What worked, what didn't, what you learned." rows={3} /></FF>
-      <CheckGroup label="What Do You Want AI to Handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
-      <CheckGroup label="Primary Success Metric" hint="What does winning look like?" options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
-      <FF label="Describe the #1 Workflow You Want Automated First" hint="From trigger to outcome — step by step."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={4} /></FF>
-      <RadioGroup label="What Does Your Team Think About Bringing in AI?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
+    </Stack>,
+    <Stack key="s7b">
+      <SHead stepNum={20} total={23} title="What Do You Want AI to Handle?" subtitle="Select every area you'd like AI to take off your plate." badge="Business" />
+      <CheckGroup hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+    </Stack>,
+    <Stack key="s7c">
+      <SHead stepNum={21} total={23} title="What Does Winning Look Like?" subtitle="Pick the metric that matters most to you." badge="Business" />
+      <CheckGroup hint="Select all that apply" options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
+    </Stack>,
+    <Stack key="s7d">
+      <SHead stepNum={22} total={23} title="Your #1 Workflow to Automate" subtitle="Walk us through it from trigger to outcome — the more specific, the better." badge="Business" />
+      <FF label="Describe the #1 Workflow You Want Automated First" hint="From trigger to outcome — step by step."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={5} /></FF>
+    </Stack>,
+    <Stack key="s7e">
+      <SHead stepNum={23} total={23} title="Your Team & AI" subtitle="How does your team feel about bringing AI into the business?" badge="Business" />
+      <RadioGroup options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
     </Stack>,
     <Stack key="s8">
-      <SHead stepNum={18} total={18} title="IT Infrastructure & Scope" subtitle="Your existing tech environment and project parameters." badge="Business" />
+      <SHead stepNum={23} total={23} title="IT Infrastructure & Scope" subtitle="Your existing tech environment and project parameters." badge="Business" />
       <FF label="Desired Timeline" required><TSelect value={s8.timeline} onChange={v => f8("timeline", v)} options={TIMELINES} /></FF>
       <RadioGroup label="Type of Engagement" options={ENGAGEMENTS} value={s8.engagement} onChange={v => f8("engagement", v)} />
+      <RadioGroup label="Is Anyone From IT Involved in Evaluating This Project?" options={["Yes — IT is actively involved in the decision","IT will need to approve before we move forward","I am the IT person","We don't have a dedicated IT staff","No — this is my decision alone","Not sure yet"]} value={s8.itInvolved} onChange={v => f8("itInvolved", v)} />
       <FF label="Internal Technical Resources After Launch" required><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <FF label="Hard Constraints or Non-Negotiables"><TArea value={s8.constraints} onChange={v => f8("constraints", v)} rows={2} /></FF>
       <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", padding: "14px 16px", borderRadius: 6, cursor: "pointer", fontSize: 13, fontFamily: "inherit", lineHeight: 1.55, background: s8.agree ? "rgba(215,43,43,0.1)" : agreeErr ? "rgba(215,43,43,0.05)" : SRF2, border: `1px solid ${s8.agree ? "rgba(215,43,43,0.45)" : agreeErr ? "rgba(215,43,43,0.5)" : BDR}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TXM }}>
