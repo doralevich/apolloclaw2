@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import createGlobe from "cobe";
 
 const ICON_CARDS = [
   // FAR LEFT edge
@@ -153,10 +154,9 @@ export default function GlobeSection() {
       canvasRef.current.width  = width * dpr;
       canvasRef.current.height = width * dpr;
 
-      import("cobe").then(({ default: createGlobe }) => {
-        if (destroyed || !canvasRef.current) return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        globe = (createGlobe as any)(canvasRef.current, {
+      if (destroyed || !canvasRef.current) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      globe = (createGlobe as any)(canvasRef.current, {
           devicePixelRatio: dpr,
           width:  width * dpr,
           height: width * dpr,
@@ -173,7 +173,6 @@ export default function GlobeSection() {
             state.width  = width * dpr;
             state.height = width * dpr;
           },
-        });
       });
     };
 
