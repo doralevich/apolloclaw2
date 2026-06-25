@@ -615,7 +615,7 @@ function AgencyTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<s
 // ════════════════════════════════════════════════════════════
 export default function OnboardPage() {
   const [phase, setPhase] = useState<"gate" | "track" | "form" | "submitting" | "done">("gate");
-  const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "" });
+  const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "" });
   const [track, setTrack] = useState("");
   const [doneTrack, setDoneTrack] = useState("");
   const handleGate = (info: GateData) => { setGate(info); setTrack("business"); setPhase("form"); };
