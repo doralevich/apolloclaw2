@@ -139,42 +139,54 @@ export default function GlobeSection() {
     let phi = 0.4;
     let width = 0;
     let globe: { destroy: () => void } | null = null;
+    let destroyed = false;
+
+    const dpr = window.devicePixelRatio || 2;
+
+    const initGlobe = () => {
+      if (destroyed || !wrapRef.current || !canvasRef.current) return;
+      width = wrapRef.current.offsetWidth;
+      if (width === 0) {
+        requestAnimationFrame(initGlobe);
+        return;
+      }
+      canvasRef.current.width  = width * dpr;
+      canvasRef.current.height = width * dpr;
+
+      import("cobe").then(({ default: createGlobe }) => {
+        if (destroyed || !canvasRef.current) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        globe = (createGlobe as any)(canvasRef.current, {
+          devicePixelRatio: dpr,
+          width:  width * dpr,
+          height: width * dpr,
+          phi: 0.4, theta: 0.2, dark: 0, diffuse: 1.4,
+          mapSamples: 20000, mapBrightness: 5,
+          baseColor: [0.92, 0.92, 0.97],
+          markerColor: [0.85, 0.17, 0.17],
+          glowColor: [0.88, 0.88, 1.0],
+          markers: MARKERS,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onRender(state: any) {
+            state.phi = phi;
+            phi += 0.004;
+            state.width  = width * dpr;
+            state.height = width * dpr;
+          },
+        });
+      });
+    };
 
     const onResize = () => {
-      if (!wrapRef.current || !canvasRef.current) return;
+      if (!wrapRef.current) return;
       width = wrapRef.current.offsetWidth;
-      canvasRef.current.width = width * window.devicePixelRatio;
-      canvasRef.current.height = width * window.devicePixelRatio;
     };
     window.addEventListener("resize", onResize);
-    onResize();
 
-    import("cobe").then(({ default: createGlobe }) => {
-      if (!canvasRef.current) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      globe = (createGlobe as any)(canvasRef.current, {
-        devicePixelRatio: window.devicePixelRatio || 2,
-        width: width * (window.devicePixelRatio || 2),
-        height: width * (window.devicePixelRatio || 2),
-        phi: 0.4, theta: 0.2, dark: 0, diffuse: 1.4,
-        mapSamples: 20000, mapBrightness: 5,
-        baseColor: [0.92, 0.92, 0.97],
-        markerColor: [0.85, 0.17, 0.17],
-        glowColor: [0.88, 0.88, 1.0],
-        markers: MARKERS,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onRender(state: any) {
-          state.phi = phi;
-          phi += 0.004;
-          if (state.width !== width * (window.devicePixelRatio || 2)) {
-            state.width  = width * (window.devicePixelRatio || 2);
-            state.height = width * (window.devicePixelRatio || 2);
-          }
-        },
-      });
-    });
+    requestAnimationFrame(initGlobe);
 
     return () => {
+      destroyed = true;
       window.removeEventListener("resize", onResize);
       globe?.destroy();
     };
