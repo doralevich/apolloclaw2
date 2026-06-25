@@ -160,11 +160,11 @@ export default function GlobeSection() {
           devicePixelRatio: dpr,
           width:  width * dpr,
           height: width * dpr,
-          phi: 0.4, theta: 0.2, dark: 0, diffuse: 1.4,
-          mapSamples: 20000, mapBrightness: 5,
-          baseColor: [0.92, 0.92, 0.97],
+          phi: 0.4, theta: 0.2, dark: 1, diffuse: 1.2,
+          mapSamples: 20000, mapBrightness: 1.8,
+          baseColor: [0.18, 0.18, 0.28],
           markerColor: [0.85, 0.17, 0.17],
-          glowColor: [0.88, 0.88, 1.0],
+          glowColor: [0.3, 0.3, 0.6],
           markers: MARKERS,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onRender(state: any) {
