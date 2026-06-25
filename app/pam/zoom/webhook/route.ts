@@ -43,7 +43,7 @@ function encodeZoomMeetingId(meetingId: string) {
   return /[^A-Za-z0-9_-]/.test(meetingId) ? encodeURIComponent(encoded) : encoded;
 }
 
-async function refreshAccessToken(refreshToken: string) {
+async function refreshAccessToken(refreshToken: string, existingScope?: string) {
   const clientId = process.env.ZOOM_CLIENT_ID;
   const clientSecret = process.env.ZOOM_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error("Missing Zoom client credentials");
@@ -64,7 +64,7 @@ async function refreshAccessToken(refreshToken: string) {
     access_token: token.access_token,
     refresh_token: token.refresh_token || refreshToken,
     expires_in: token.expires_in,
-    scope: token.scope,
+    scope: token.scope || existingScope,
     created_at: new Date().toISOString(),
   };
   await saveZoomTokens(stored);
@@ -75,7 +75,7 @@ async function getAccessToken() {
   const token = await readZoomTokens();
   if (!token) throw new Error("No stored Zoom OAuth token");
   if (!tokenLooksExpired(token)) return token.access_token;
-  return refreshAccessToken(token.refresh_token);
+  return refreshAccessToken(token.refresh_token, token.scope);
 }
 
 function extractMeetingId(payload: any) {
