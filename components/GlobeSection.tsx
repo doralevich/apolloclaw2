@@ -14,6 +14,7 @@ const ICON_CARDS = [
   { slug: "linkedin",       alt: "LinkedIn",          size: "xs", left: "11%",  top: "42%" },
   { slug: "supabase",       alt: "Supabase",          size: "xs", left: "18%",  top: "87%" },
   // TOP
+  { slug: "canva",          alt: "Canva",             size: "md", left: "22%",  top: "8%"  },
   { slug: "googledrive",    alt: "Google Drive",      size: "sm", left: "28%",  top: "4%"  },
   { slug: "figma",          alt: "Figma",             size: "md", left: "40%",  top: "1%"  },
   { slug: "linear",         alt: "Linear",            size: "sm", left: "60%",  top: "3%"  },
