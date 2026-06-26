@@ -166,9 +166,9 @@ export default function GlobeSection() {
       diffuse: 1.4,
       mapSamples: 20000,
       mapBrightness: 5,
-      baseColor: [0.92, 0.92, 0.97],
+      baseColor: [0.55, 0.6, 0.75],
       markerColor: [0.85, 0.17, 0.17],
-      glowColor: [0.88, 0.88, 1.0],
+      glowColor: [0.75, 0.8, 1.0],
       markers: MARKERS,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onRender: (state: any) => {
