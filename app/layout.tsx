@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -131,6 +132,15 @@ export default function RootLayout({
         className={`${inter.variable} font-body`}
         style={{ fontFamily: "var(--font-body), Inter, sans-serif", "--font-display": "var(--font-body)", "--font-mono": "'IBM Plex Mono', monospace" } as React.CSSProperties}
       >
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-4ZR38XGEME" strategy="afterInteractive" />
+        <Script id="apollo-ga4" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4ZR38XGEME');
+          `}
+        </Script>
         <RootShell>{children}</RootShell>
         <Toaster richColors />
       </body>
