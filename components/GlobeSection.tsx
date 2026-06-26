@@ -134,31 +134,59 @@ const MARKERS: { location: [number, number]; size: number }[] = [
 
 export default function GlobeSection() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
+
     let phi = 0.4;
+    let width = 0;
+    let destroyed = false;
+
+    const devicePixelRatio = window.devicePixelRatio || 2;
+    const resize = () => {
+      width = wrap.offsetWidth;
+      canvas.width = width * devicePixelRatio;
+      canvas.height = width * devicePixelRatio;
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const globe = (createGlobe as any)(canvasRef.current!, {
-      devicePixelRatio: 2,
-      width: 800,
-      height: 800,
+    const globe = (createGlobe as any)(canvas, {
+      devicePixelRatio,
+      width: width * devicePixelRatio,
+      height: width * devicePixelRatio,
       phi: 0.4,
       theta: 0.2,
       dark: 0,
-      diffuse: 1.2,
+      diffuse: 1.4,
       mapSamples: 20000,
-      mapBrightness: 10,
-      baseColor: [0.6, 0.65, 0.78],
+      mapBrightness: 5,
+      baseColor: [0.92, 0.92, 0.97],
       markerColor: [0.85, 0.17, 0.17],
-      glowColor: [0.75, 0.78, 0.92],
+      glowColor: [0.88, 0.88, 1.0],
       markers: MARKERS,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onRender(state: any) {
+      onRender: (state: any) => {
+        if (destroyed) return;
         state.phi = phi;
         phi += 0.004;
+        if (state.width !== width * devicePixelRatio) {
+          state.width = width * devicePixelRatio;
+          state.height = width * devicePixelRatio;
+        }
       },
     });
-    return () => globe.destroy();
+
+    return () => {
+      destroyed = true;
+      window.removeEventListener("resize", resize);
+      globe.destroy();
+    };
   }, []);
 
   return (
@@ -202,8 +230,8 @@ export default function GlobeSection() {
         {/* Full-width stage: icons span the entire section, globe centered */}
         <div style={{ position: "relative", width: "100%", height: "min(420px, 70vw)" }}>
           {/* Globe */}
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(420px, 55vw)", aspectRatio: "1", zIndex: 1 }}>
-            <canvas ref={canvasRef} style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block" }} />
+          <div ref={wrapRef} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(420px, 55vw)", aspectRatio: "1", zIndex: 1 }}>
+            <canvas ref={canvasRef} style={{ width: "100% !important" as "100%", height: "100% !important" as "100%", borderRadius: "50%", display: "block" }} />
           </div>
 
           {/* Icon cards — positioned relative to full-width stage */}
