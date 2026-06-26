@@ -51,7 +51,7 @@ const SIZE_MAP: Record<string, { width: number; borderRadius: number }> = {
   xs: { width: 30, borderRadius: 8 },
 };
 
-const MARKERS = [
+const MARKERS: { location: [number, number]; size: number }[] = [
   // USA
   { location: [37.78, -122.41], size: 0.05 }, // San Francisco
   { location: [34.05, -118.24], size: 0.06 }, // Los Angeles
@@ -133,62 +133,32 @@ const MARKERS = [
 ];
 
 export default function GlobeSection() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     let phi = 0.4;
-    let width = 0;
-    let globe: { destroy: () => void } | null = null;
-    let destroyed = false;
-
-    const dpr = window.devicePixelRatio || 2;
-
-    const initGlobe = () => {
-      if (destroyed || !wrapRef.current || !canvasRef.current) return;
-      width = wrapRef.current.offsetWidth;
-      if (width === 0) {
-        requestAnimationFrame(initGlobe);
-        return;
-      }
-      canvasRef.current.width  = width * dpr;
-      canvasRef.current.height = width * dpr;
-
-      if (destroyed || !canvasRef.current) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const globe = (createGlobe as any)(canvasRef.current!, {
+      devicePixelRatio: 2,
+      width: 800,
+      height: 800,
+      phi: 0.4,
+      theta: 0.2,
+      dark: 0,
+      diffuse: 1.2,
+      mapSamples: 20000,
+      mapBrightness: 10,
+      baseColor: [0.6, 0.65, 0.78],
+      markerColor: [0.85, 0.17, 0.17],
+      glowColor: [0.75, 0.78, 0.92],
+      markers: MARKERS,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      globe = (createGlobe as any)(canvasRef.current, {
-          devicePixelRatio: dpr,
-          width:  width * dpr,
-          height: width * dpr,
-          phi: 0.4, theta: 0.2, dark: 1, diffuse: 1.2,
-          mapSamples: 20000, mapBrightness: 1.8,
-          baseColor: [0.18, 0.18, 0.28],
-          markerColor: [0.85, 0.17, 0.17],
-          glowColor: [0.3, 0.3, 0.6],
-          markers: MARKERS,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onRender(state: any) {
-            state.phi = phi;
-            phi += 0.004;
-            state.width  = width * dpr;
-            state.height = width * dpr;
-          },
-      });
-    };
-
-    const onResize = () => {
-      if (!wrapRef.current) return;
-      width = wrapRef.current.offsetWidth;
-    };
-    window.addEventListener("resize", onResize);
-
-    requestAnimationFrame(initGlobe);
-
-    return () => {
-      destroyed = true;
-      window.removeEventListener("resize", onResize);
-      globe?.destroy();
-    };
+      onRender(state: any) {
+        state.phi = phi;
+        phi += 0.004;
+      },
+    });
+    return () => globe.destroy();
   }, []);
 
   return (
@@ -232,11 +202,8 @@ export default function GlobeSection() {
         {/* Full-width stage: icons span the entire section, globe centered */}
         <div style={{ position: "relative", width: "100%", height: "min(420px, 70vw)" }}>
           {/* Globe */}
-          <div
-            ref={wrapRef}
-            style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(420px, 55vw)", aspectRatio: "1", zIndex: 1 }}
-          >
-            <canvas ref={canvasRef} style={{ width: "100%", height: "100%", borderRadius: "50%" }} />
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(420px, 55vw)", aspectRatio: "1", zIndex: 1 }}>
+            <canvas ref={canvasRef} style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block" }} />
           </div>
 
           {/* Icon cards — positioned relative to full-width stage */}
