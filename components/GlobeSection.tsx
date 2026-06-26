@@ -228,14 +228,10 @@ export default function GlobeSection() {
           </p>
         </div>
 
-        {/* Full-width stage: icons span the entire section, globe centered */}
-        <div style={{ position: "relative", width: "100%", height: "min(420px, 70vw)" }}>
-          {/* Globe */}
-          <div ref={wrapRef} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(420px, 55vw)", aspectRatio: "1", zIndex: 1 }}>
-            <canvas ref={canvasRef} style={{ width: "100% !important" as "100%", height: "100% !important" as "100%", borderRadius: "50%", display: "block" }} />
-          </div>
-
-          {/* Icon cards — positioned relative to full-width stage */}
+        {/* Globe wrap — normally flowed so offsetWidth is reliable */}
+        <div ref={wrapRef} style={{ position: "relative", aspectRatio: "1", width: "min(580px, 86vw)", margin: "0 auto" }}>
+          <canvas ref={canvasRef} style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block" }} />
+          {/* Icon cards positioned relative to the wrap */}
           {ICON_CARDS.map((card, i) => {
             const s = SIZE_MAP[card.size];
             return (
