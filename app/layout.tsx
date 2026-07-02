@@ -48,6 +48,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@apolloclaw",
   },
+  alternates: {
+    canonical: "https://apolloclaw.ai",
+  },
   robots: {
     index: true,
     follow: true,
