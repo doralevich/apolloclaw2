@@ -775,6 +775,39 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* INTERNAL NAV LINKS — white strip for crawlability & UX */}
+      <section style={{ background: "#FFFFFF", color: "#1A1A1A", borderTop: "1px solid rgba(0,0,0,0.06)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+        <div className="container mx-auto px-5 md:px-8 py-8 max-w-7xl">
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "center" }}>
+            {[
+              { label: "How It Works",      href: "/how-it-works" },
+              { label: "Pricing",           href: "/pricing" },
+              { label: "Get Started",       href: "/get-started" },
+              { label: "FAQ",               href: "/faq" },
+              { label: "Use Cases",         href: "/use-cases/ceo" },
+              { label: "About Apollo Claw", href: "/about" },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#0B1729",
+                  textDecoration: "none",
+                  padding: "8px 18px",
+                  borderRadius: 4,
+                  border: "1px solid rgba(11,23,41,0.12)",
+                  transition: "border-color 0.15s, background 0.15s",
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* FINAL CTA — dark navy banner */}
       <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
         <div

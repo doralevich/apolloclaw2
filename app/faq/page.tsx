@@ -4,9 +4,18 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "FAQ — Frequently Asked Questions",
+  title: "FAQ | AI Consulting Questions Answered",
   description:
-    "Common questions about Apollo[Claw] AI consulting, our bot tiers, pricing, and implementation process.",
+    "Get straight answers about Apollo Claw AI consulting: what AI agents do, how they connect to your tools, setup timelines, data security, and how we're different from ChatGPT. No jargon, no pitch.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/faq",
+  },
+  openGraph: {
+    title: "FAQ | AI Consulting Questions Answered",
+    description:
+      "Get straight answers about Apollo Claw AI consulting: what AI agents do, how they connect to your tools, setup timelines, data security, and how we're different from ChatGPT.",
+    url: "https://apolloclaw.ai/faq",
+  },
 };
 
 const faqs = [

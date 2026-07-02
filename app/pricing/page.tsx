@@ -4,9 +4,18 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "AI Consulting Investment | Apollo Claw",
+  title: "AI Consulting Pricing | Starter, Pro & Enterprise Plans",
   description:
-    "Apollo Claw engagements are scoped to your organization's complexity and goals. Enterprise AI strategy starts with a discovery call — no published rates, no surprises.",
+    "Apollo Claw AI consulting is priced by engagement — Starter for solo operators, Pro for growing teams, Enterprise for multi-agent deployments. Accessible for small business, pays for itself fast. Get a custom quote in a 30-minute call.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/pricing",
+  },
+  openGraph: {
+    title: "AI Consulting Pricing | Starter, Pro & Enterprise Plans",
+    description:
+      "Apollo Claw AI consulting is priced by engagement — Starter for solo operators, Pro for growing teams, Enterprise for multi-agent deployments. Get a custom quote in a free 30-minute call.",
+    url: "https://apolloclaw.ai/pricing",
+  },
 };
 
 export default function PricingPage() {

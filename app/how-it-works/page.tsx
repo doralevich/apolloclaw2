@@ -4,9 +4,18 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "How We Work | Apollo Claw AI Consulting",
+  title: "How It Works | AI Agent Implementation Process",
   description:
-    "Discovery. Strategy. Execution. Apollo Claw's process is designed for decision makers who need clarity fast and a partner who can actually build. Here's exactly how we do it.",
+    "From discovery to deployment in four clear steps. Apollo Claw's AI implementation process is designed for executives who need clarity fast — no technical background required. See how we go from first call to live AI agent.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/how-it-works",
+  },
+  openGraph: {
+    title: "How It Works | AI Agent Implementation Process",
+    description:
+      "From discovery to deployment in four clear steps. Apollo Claw's AI implementation process is designed for executives who need clarity fast — no technical background required.",
+    url: "https://apolloclaw.ai/how-it-works",
+  },
 };
 
 const steps = [
