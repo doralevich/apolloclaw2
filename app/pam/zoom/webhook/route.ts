@@ -138,6 +138,18 @@ async function logSafeError(params: {
   }
 }
 
+async function sendToPam(text: string) {
+  const botToken = process.env.PAM_TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.PAM_TELEGRAM_CHAT_ID;
+  if (!botToken || !chatId) return;
+  await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+    cache: "no-store",
+  });
+}
+
 async function handleRecordingEvent(event: string, payload: any) {
   const eventType = getEventType(event);
   const meetingId = extractMeetingId(payload);
@@ -226,6 +238,13 @@ async function handleRecordingEvent(event: string, payload: any) {
     throw error;
   }
 
+  try {
+    const pamMessage = await buildPamMessage(payload, recordingDetails, transcriptText);
+    await sendToPam(pamMessage);
+  } catch (error) {
+    await logSafeError({ eventType, meetingIdOrUuid: meetingId, failedStep: "send_to_pam_telegram", error });
+  }
+
   return {
     meetingId,
     eventType,
@@ -233,6 +252,28 @@ async function handleRecordingEvent(event: string, payload: any) {
     metadataPath,
     transcriptPath,
   };
+}
+
+async function buildPamMessage(payload: any, recordingDetails: any, transcriptText: string) {
+  const object = payload?.object || {};
+  const topic = recordingDetails?.topic || object?.topic || "Meeting";
+  const startTime = recordingDetails?.start_time || object?.start_time || "";
+  const duration = recordingDetails?.duration || object?.duration || "";
+  const hostEmail = recordingDetails?.host_email || object?.host_email || "";
+  const date = startTime ? new Date(startTime).toLocaleString("en-US", { timeZone: "America/New_York" }) : "";
+
+  return [
+    `<b>New Zoom Recording: ${topic}</b>`,
+    date ? `Date: ${date}` : "",
+    duration ? `Duration: ${duration} minutes` : "",
+    hostEmail ? `Host: ${hostEmail}` : "",
+    "",
+    "Please review this transcript, summarize the key points, action items, and any follow-ups Taylor should be aware of.",
+    "",
+    "<b>Transcript:</b>",
+    transcriptText.slice(0, 3500),
+    transcriptText.length > 3500 ? "\n[Transcript truncated — full version saved to storage]" : "",
+  ].filter(Boolean).join("\n");
 }
 
 export async function POST(req: NextRequest) {
