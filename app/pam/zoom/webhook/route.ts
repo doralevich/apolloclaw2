@@ -43,28 +43,28 @@ function encodeZoomMeetingId(meetingId: string) {
   return /[^A-Za-z0-9_-]/.test(meetingId) ? encodeURIComponent(encoded) : encoded;
 }
 
-async function refreshAccessToken(refreshToken: string, existingScope?: string) {
+async function fetchServerToServerToken(): Promise<string> {
   const clientId = process.env.ZOOM_CLIENT_ID;
   const clientSecret = process.env.ZOOM_CLIENT_SECRET;
-  if (!clientId || !clientSecret) throw new Error("Missing Zoom client credentials");
+  const accountId = process.env.ZOOM_ACCOUNT_ID;
+  if (!clientId || !clientSecret || !accountId) throw new Error("Missing Zoom Server-to-Server credentials");
 
-  const response = await fetch("https://zoom.us/oauth/token", {
+  const response = await fetch(`https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${accountId}`, {
     method: "POST",
     headers: {
       authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       "content-type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken }),
     cache: "no-store",
   });
 
-  if (!response.ok) throw new Error(`Zoom refresh failed: ${response.status}`);
+  if (!response.ok) throw new Error(`Zoom S2S token fetch failed: ${response.status}`);
   const token = await response.json();
   const stored = {
     access_token: token.access_token,
-    refresh_token: token.refresh_token || refreshToken,
-    expires_in: token.expires_in,
-    scope: token.scope || existingScope,
+    refresh_token: "",
+    expires_in: token.expires_in || 3599,
+    scope: token.scope,
     created_at: new Date().toISOString(),
   };
   await saveZoomTokens(stored);
@@ -72,10 +72,9 @@ async function refreshAccessToken(refreshToken: string, existingScope?: string) 
 }
 
 async function getAccessToken() {
-  const token = await readZoomTokens();
-  if (!token) throw new Error("No stored Zoom OAuth token");
-  if (!tokenLooksExpired(token)) return token.access_token;
-  return refreshAccessToken(token.refresh_token, token.scope);
+  const cached = await readZoomTokens();
+  if (cached && !tokenLooksExpired(cached)) return cached.access_token;
+  return fetchServerToServerToken();
 }
 
 function extractMeetingId(payload: any) {
