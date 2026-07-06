@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
+import { ActiveAgentProvider } from "@/components/ActiveAgentProvider";
 import { DashboardShell } from "@/components/DashboardShell";
 import { PendingApproval } from "@/components/PendingApproval";
 import { mapMembershipsToWorkspaces } from "@/lib/workspaces";
@@ -49,7 +50,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <WorkspaceProvider initialWorkspaces={workspaces} userEmail={user.email ?? ""}>
-      <DashboardShell>{children}</DashboardShell>
+      <ActiveAgentProvider>
+        <DashboardShell>{children}</DashboardShell>
+      </ActiveAgentProvider>
     </WorkspaceProvider>
   );
 }

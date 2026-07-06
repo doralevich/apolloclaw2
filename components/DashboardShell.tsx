@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, LogOut, Settings, Users } from "lucide-react";
+import { Blocks, CreditCard, LayoutGrid, LogOut, MessageSquare, Settings, Users } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
+import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Agents", icon: LayoutGrid, exact: true },
+  { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Blocks, exact: false },
+  { href: "/dashboard/credits", label: "API Credits", icon: CreditCard, exact: false },
   { href: "/dashboard/members", label: "Members", icon: Users, exact: false },
   { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
 ];
@@ -31,8 +35,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <span className="truncate font-semibold">{branding.appName}</span>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 space-y-2">
           <WorkspaceSwitcher />
+          <AgentSwitcher />
         </div>
 
         <nav className="mt-6 flex flex-col gap-1">

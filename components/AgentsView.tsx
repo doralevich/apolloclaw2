@@ -1,61 +1,52 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { apiFetch } from "@/lib/api";
-import { isTransitional, statusVariant } from "@/lib/format";
-import type { MergedAgent, Role } from "@/lib/types";
+import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { statusVariant } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentNameCell } from "@/components/AgentNameCell";
+import { CreateAgentModal } from "@/components/CreateAgentModal";
 
+// The Agents table reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
+// lifecycle actions here — create/start/stop/delete/rename — immediately update Chat,
+// Integrations, and Credits too. The provider also owns the transitional-status poll.
 export function AgentsView() {
   const { current } = useWorkspace();
-  const [agents, setAgents] = useState<MergedAgent[]>([]);
-  const [role, setRole] = useState<Role>("admin");
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (!current) return;
-    try {
-      const data = await apiFetch<{ agents: MergedAgent[]; role: Role }>(
-        `/api/agents?workspace=${current.id}`
-      );
-      setAgents(data.agents);
-      setRole(data.role);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [current]);
-
-  useEffect(() => {
-    setLoading(true);
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    if (!agents.some((a) => isTransitional(a.live_status))) return;
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
-  }, [agents, load]);
+  const { agents, role, loading, error, refresh } = useActiveAgent();
 
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
-        <p className="text-sm text-muted-foreground">{current.name}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
+          <p className="text-sm text-muted-foreground">{current.name}</p>
+        </div>
+        {/* Visible to every member — the server enforces entitlement + the per-type cap. */}
+        <CreateAgentModal triggerSize="sm" />
       </div>
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
+      ) : agents.length === 0 && error ? (
+        // Fetch failed with nothing cached — don't masquerade as an empty workspace.
+        <div className="flex items-center justify-between gap-3 rounded-lg border p-6">
+          <p className="text-sm text-muted-foreground">
+            We couldn&apos;t load this workspace&apos;s agents just now. It usually comes right back.
+          </p>
+          <Button variant="outline" size="sm" onClick={refresh}>
+            Retry
+          </Button>
+        </div>
       ) : agents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-sm text-muted-foreground">No agents in this workspace yet.</p>
+          <div className="mt-4 flex justify-center">
+            <CreateAgentModal />
+          </div>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border">
@@ -73,7 +64,7 @@ export function AgentsView() {
               {agents.map((a) => (
                 <tr key={a.agent37_id} className="border-t [&>td]:align-middle">
                   <td className="px-4 py-3">
-                    <AgentNameCell agent={a} canEdit={role === "admin"} onRenamed={load} />
+                    <AgentNameCell agent={a} canEdit={role === "admin"} onRenamed={refresh} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
@@ -94,7 +85,7 @@ export function AgentsView() {
                     {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
                   </td>
                   <td className="px-4 py-3">
-                    <AgentActionsMenu agent={a} role={role} onChanged={load} />
+                    <AgentActionsMenu agent={a} role={role} onChanged={refresh} />
                   </td>
                 </tr>
               ))}

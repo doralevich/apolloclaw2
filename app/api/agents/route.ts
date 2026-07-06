@@ -1,8 +1,9 @@
 import { agent37 } from "@/lib/agent37";
-import { requireMember, requireUser } from "@/lib/auth";
+import { requireEntitled, requireMember, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT } from "@/config/agents";
+import { getAgentType, type AgentType } from "@/config/agent-types";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import type { Agent, AgentRow, MergedAgent } from "@/lib/types";
@@ -17,6 +18,101 @@ async function resolveTemplate(): Promise<string | undefined> {
   } catch {
     return DEFAULT_AGENT.template;
   }
+}
+
+// Template check for the typed self-serve flow. Mirrors resolveTemplate's tolerance for a
+// listTemplates hiccup (createAgent will still fail loudly if the template truly doesn't
+// exist), but unlike the admin flow there is NO fallback to an arbitrary builtin — a typed
+// create must never provision the wrong kind of agent, so a listing that's missing the
+// template fails fast with a clear message.
+async function verifyTypedTemplate(type: AgentType): Promise<string> {
+  let templates;
+  try {
+    ({ data: templates } = await agent37.listTemplates());
+  } catch {
+    return type.template;
+  }
+  const match = templates.find((t) => t.name === type.template);
+  if (!match) {
+    throw new ApiError(
+      502,
+      "template_unavailable",
+      `The ${type.label} template isn't registered yet. Please try again later.`
+    );
+  }
+  return match.name;
+}
+
+// Self-serve provisioning: any entitled member of the workspace can create one agent per
+// type. Everything spend-shaped (template, machine size, budget cap) comes from the
+// agent-type registry — never from the client.
+async function createTypedAgent(typeId: string, workspaceId: string | undefined, rawName: string | undefined) {
+  const { supabase, user } = await requireUser();
+  if (!workspaceId) throw new ApiError(400, "invalid_request", "workspace_id is required");
+  await requireMember(supabase, workspaceId, user.id);
+  await requireEntitled(supabase);
+
+  const type = getAgentType(typeId);
+  if (!type) throw new ApiError(404, "not_found", "Unknown agent type");
+  if (!type.available) {
+    throw new ApiError(400, "invalid_request", `${type.label} isn't available yet — coming soon.`);
+  }
+
+  // Service-role client past this point: the guard chain above (member + entitled) is the
+  // authorization, matching how the admin flow and the per-agent routes write rows.
+  const db = createAdminClient();
+
+  // Cap: one agent of each type per workspace (keyed by template, which is what the row
+  // actually stores). Best-effort check — two simultaneous creates could race past it, but
+  // the modal disables the card as soon as the list refreshes.
+  const { data: existing, error: capError } = await db
+    .from("agents")
+    .select("agent37_id")
+    .eq("workspace_id", workspaceId)
+    .eq("template", type.template)
+    .limit(1);
+  if (capError) throw new ApiError(500, "db_error", capError.message);
+  if (existing && existing.length > 0) {
+    throw new ApiError(
+      409,
+      "conflict",
+      `This workspace already has a ${type.label}. Each workspace can have one agent per type.`
+    );
+  }
+
+  const template = await verifyTypedTemplate(type);
+
+  const agent = await agent37.createAgent({
+    template,
+    resources: { cpu: type.resources.cpu, memory: type.resources.memory, disk: type.resources.disk },
+    user: user.id,
+    name: rawName?.trim() || type.label,
+    metadata: { app_workspace: workspaceId, agent_type: type.id },
+    budget: { monthly_cap_micros: usdToMicros(type.monthlyCapUsd) },
+  });
+
+  const { error } = await db.from("agents").insert({
+    agent37_id: agent.id,
+    workspace_id: workspaceId,
+    name: agent.name || null,
+    status: agent.status,
+    template: agent.template,
+    cpu: agent.resources.cpu,
+    memory: agent.resources.memory,
+    disk: agent.resources.disk,
+    created_by: user.id,
+  });
+  if (error) {
+    // Roll back the orphaned agent so we never bill for an untracked box.
+    try {
+      await agent37.deleteAgent(agent.id);
+    } catch (rollbackErr) {
+      console.error("[agents:rollback-failed]", agent.id, rollbackErr);
+    }
+    throw new ApiError(500, "db_error", error.message);
+  }
+
+  return json(agent, 201);
 }
 
 export const GET = route(async (request: Request) => {
@@ -73,14 +169,19 @@ export const GET = route(async (request: Request) => {
 });
 
 export const POST = route(async (request: Request) => {
-  // Agents are only ever provisioned by platform admins (for any workspace, on a user's
-  // behalf). Regular users can no longer create their own — the dashboard button is gone
-  // and this endpoint enforces it server-side.
+  const body = await readJson<{ workspace_id?: string; type?: string; name?: string }>(request);
+
+  // `type` present -> self-serve flow: an entitled workspace member provisions a typed
+  // agent from the registry (config/agent-types.ts).
+  if (body.type !== undefined) {
+    return createTypedAgent(body.type, body.workspace_id, body.name);
+  }
+
+  // No `type` -> the original platform-admin flow, unchanged: admins provision the default
+  // OpenClaw agent (for any workspace, on a user's behalf).
   const { user } = await requirePlatformAdmin();
 
   // Shape is fixed server-side (DEFAULT_AGENT); the caller only picks the workspace.
-  const body = await readJson<{ workspace_id?: string }>(request);
-
   const workspaceId = body.workspace_id;
   if (!workspaceId) throw new ApiError(400, "invalid_request", "workspace_id is required");
 

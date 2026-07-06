@@ -36,6 +36,36 @@ export function handleError(e: unknown) {
   return apiError("Internal server error", 500, "internal_error");
 }
 
+// Turn an Agent37 instance's error body into a user-safe message. The Agents API returns
+// `{ error: { message } }` or `{ message }`; a non-JSON body (e.g. a gateway HTML 502) is
+// logged server-side under `context` and collapsed to `fallback` so we never echo internals.
+// Takes the already-read body text (the manual streaming/multipart routes read it once and
+// reuse it for the success path) rather than the Response, to avoid double-consuming the body.
+export function upstreamErrorMessage(text: string, status: number, context: string, fallback: string): string {
+  try {
+    const j = JSON.parse(text) as { error?: { message?: string }; message?: string };
+    return j.error?.message || j.message || fallback;
+  } catch {
+    if (text) console.error(`[${context}] non-JSON upstream`, status, text.slice(0, 500));
+    return fallback;
+  }
+}
+
+// Throw a mapped ApiError when an Agent37 instance Response failed, reading its body once for
+// the message. Returns immediately on success WITHOUT touching the body, so the streaming /
+// multipart routes can still consume `upstream.body`/`upstream.text()` themselves. (The
+// `agent37.*` JSON helpers already throw Agent37Error, so they don't need this.)
+export async function assertUpstreamOk(
+  upstream: Response,
+  context: string,
+  fallback: string,
+  code: string
+): Promise<void> {
+  if (upstream.ok) return;
+  const text = await upstream.text().catch(() => "");
+  throw new ApiError(upstream.status || 502, code, upstreamErrorMessage(text, upstream.status, context, fallback));
+}
+
 // Wraps a route handler so every thrown ApiError/Agent37Error becomes a clean JSON
 // response and unexpected errors a 500 — instead of hand-copying try/catch into each
 // handler. Use as: `export const POST = route(async (req, { params }) => { ... })`.
