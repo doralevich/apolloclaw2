@@ -6,7 +6,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import HeroAssistantInput from "@/components/HeroAssistantInput";
 import LogoTicker from "@/components/LogoTicker";
 import DayWithJohnEmbed from "@/components/DayWithJohnEmbed";
-import GlobeSection from "@/components/GlobeSection";
+import IntegrationGlobe from "@/components/IntegrationGlobe";
 import { sanityClient } from "@/lib/sanity";
 import { POSTS_QUERY } from "@/lib/sanity-queries";
 
@@ -433,7 +433,11 @@ export default async function HomePage() {
       </section>
 
       {/* GLOBE — Works with the tools you already use */}
-      <GlobeSection />
+      <IntegrationGlobe
+        kicker="Integrations"
+        title={<>Works with the tools<br />you already use</>}
+        subtitle="Connect to 250+ apps, from Gmail and Slack to Salesforce and Stripe, right out of the box."
+      />
 
       {/* AI AGENTS IN ACTION — Section 6 (cream, centered header + 2-col cases) */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
