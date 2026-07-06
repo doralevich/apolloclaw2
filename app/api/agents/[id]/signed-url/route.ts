@@ -1,9 +1,7 @@
 import { agent37 } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { PORTS } from "@/config/agents";
+import { PORTS, portsForTemplate } from "@/config/agents";
 import { ApiError, json, readJson, route } from "@/lib/http";
-
-const ALLOWED_PORTS = Object.values(PORTS) as number[];
 
 // Reads OpenClaw's gateway auth token from the instance config. The Control UI served on the
 // dashboard port (18789) reads this token from the URL fragment to authenticate the browser
@@ -29,12 +27,16 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
-  await requireAgentAccess(id, "member");
+  const { row } = await requireAgentAccess(id, "member");
 
   const { port, ttl_seconds } = await readJson<{ port?: number; ttl_seconds?: number }>(request);
   if (!port) throw new ApiError(400, "invalid_request", "port is required");
-  // Enforce the allowlist server-side: a member must not open an arbitrary internal port.
-  if (!ALLOWED_PORTS.includes(port)) throw new ApiError(400, "invalid_request", "port is not openable");
+  // Enforce the allowlist server-side, scoped to what this agent's template actually serves:
+  // a member must not open an arbitrary internal port.
+  const allowedPorts = Object.values(portsForTemplate(row.template)) as number[];
+  if (!allowedPorts.includes(port)) {
+    throw new ApiError(400, "invalid_request", "port is not openable for this agent");
+  }
 
   // The OpenClaw Control UI (dashboard port) authenticates off the gateway token carried in the
   // URL fragment. Mint the signed URL and read that token concurrently — they're independent —

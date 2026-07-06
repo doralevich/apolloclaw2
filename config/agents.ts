@@ -13,3 +13,24 @@ export const PORTS = {
   terminal: 7681,
   files: 8080,
 } as const;
+
+export type PortName = keyof typeof PORTS;
+
+// Which openable ports each template actually serves. The college-agent template remaps
+// its internal surfaces (Hermes dashboard 9120, ttyd 7682, filebrowser 8081) and none of
+// the standard ports are enabled on its instances, so it exposes no port actions. Unknown
+// templates fall back to the OpenClaw set.
+const TEMPLATE_PORTS: Record<string, readonly PortName[]> = {
+  "agent37-openclaw": ["dashboard", "terminal", "files"],
+  "college-agent": [],
+};
+
+export function portsForTemplate(
+  template: string | null | undefined
+): Partial<Record<PortName, number>> {
+  const names =
+    (template ? TEMPLATE_PORTS[template] : undefined) ?? TEMPLATE_PORTS["agent37-openclaw"];
+  const ports: Partial<Record<PortName, number>> = {};
+  for (const name of names) ports[name] = PORTS[name];
+  return ports;
+}

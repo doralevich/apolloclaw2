@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { isTransitional } from "@/lib/format";
 import { useAsyncAction } from "@/lib/useAsyncAction";
-import { PORTS } from "@/config/agents";
+import { portsForTemplate, type PortName } from "@/config/agents";
 import type { MergedAgent, Role } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,11 +36,17 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
-const PORT_ACTIONS = [
-  { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the dashboard", aria: "Open dashboard" },
-  { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
-  { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
-] as const;
+// Only rendered for ports the agent's template actually serves (portsForTemplate).
+const PORT_ACTIONS: ReadonlyArray<{
+  name: PortName;
+  Icon: typeof LayoutDashboard;
+  label: string;
+  aria: string;
+}> = [
+  { name: "dashboard", Icon: LayoutDashboard, label: "Open the dashboard", aria: "Open dashboard" },
+  { name: "files", Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
+  { name: "terminal", Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
+];
 
 export function AgentActionsMenu({
   agent,
@@ -54,6 +60,8 @@ export function AgentActionsMenu({
   const isAdmin = role === "admin";
   const running = agent.live_status === "running";
   const transitional = isTransitional(agent.live_status);
+  const ports = portsForTemplate(agent.template);
+  const portActions = PORT_ACTIONS.filter(({ name }) => ports[name] !== undefined);
 
   const [deleting, setDeleting] = useState(false);
   const [opening, setOpening] = useState<number | null>(null);
@@ -83,12 +91,13 @@ export function AgentActionsMenu({
   }
 
   async function copyDashboardUrl() {
+    if (ports.dashboard === undefined) return;
     const toastId = toast.loading("Preparing dashboard URL…");
     try {
       // Same signed URL "Open the dashboard" uses — already carries the #token= fragment.
       const { url } = await apiFetch<{ url: string }>(
         `/api/agents/${agent.agent37_id}/signed-url`,
-        { method: "POST", body: JSON.stringify({ port: PORTS.dashboard }) }
+        { method: "POST", body: JSON.stringify({ port: ports.dashboard }) }
       );
       await navigator.clipboard.writeText(url);
       toast.success("Dashboard URL copied to clipboard", { id: toastId });
@@ -107,15 +116,15 @@ export function AgentActionsMenu({
     <>
       <TooltipProvider delayDuration={200}>
       <div className="flex items-center justify-center gap-2">
-        {PORT_ACTIONS.map(({ port, Icon, label, aria }) => (
-          <Tooltip key={port}>
+        {portActions.map(({ name, Icon, label, aria }) => (
+          <Tooltip key={name}>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full"
-                disabled={!running || opening === port}
-                onClick={() => openPort(port)}
+                disabled={!running || opening === ports[name]}
+                onClick={() => openPort(ports[name]!)}
                 aria-label={aria}
               >
                 <Icon className="h-4 w-4" />
@@ -180,11 +189,15 @@ export function AgentActionsMenu({
               <TooltipContent>More actions</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end" className="min-w-[12rem]">
-              <DropdownMenuItem disabled={!running} onClick={copyDashboardUrl}>
-                <Copy />
-                Copy dashboard URL
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              {ports.dashboard !== undefined && (
+                <>
+                  <DropdownMenuItem disabled={!running} onClick={copyDashboardUrl}>
+                    <Copy />
+                    Copy dashboard URL
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               {running ? (
                 <DropdownMenuItem onClick={() => action("stop", "Stopping")}>
                   <Square />
