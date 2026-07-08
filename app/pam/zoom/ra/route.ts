@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -6,8 +5,23 @@ export const dynamic = "force-dynamic";
 
 // ---------------------------------------------------------------------------
 // Zoom Revenue Accelerator (ZRA) API route
-// Correct base paths: /zra/conversations  (was incorrectly /revenue_accelerator/calls)
-// Reference: https://developers.zoom.us/docs/api/iq
+//
+// Correct ZRA paths (v2):
+//   /zra/conversations              — list conversations
+//   /zra/conversations/:id          — conversation detail
+//   /zra/conversations/:id/interactions — transcript/interactions
+//
+// Legacy IQ fallback paths:
+//   /iq/conversations
+//   /iq/conversations/:id
+//   /iq/conversations/:id/interactions
+//
+// Zoom error code reference:
+//   124 = invalid/expired access token OR missing OAuth scope
+//   2300 = endpoint not recognized (wrong path)
+//   3309 = transcript not ready yet
+//   3301 = consent not accepted
+//   3302 = recording failed
 // ---------------------------------------------------------------------------
 
 async function fetchServerToServerToken(): Promise<string> {
@@ -28,8 +42,12 @@ async function fetchServerToServerToken(): Promise<string> {
       cache: "no-store",
     }
   );
-  if (!response.ok) throw new Error(`Zoom token fetch failed: ${response.status}`);
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Zoom S2S token fetch failed: ${response.status} ${body}`);
+  }
   const data = await response.json();
+  if (!data.access_token) throw new Error("Zoom S2S token response missing access_token");
   return data.access_token;
 }
 
@@ -67,6 +85,15 @@ async function zoomGetRaw(path: string, token: string): Promise<ZoomApiResult> {
   return { ok: true, status: response.status, body };
 }
 
+// Check if the token itself is valid by calling /users/me
+async function checkTokenHealth(token: string): Promise<{ valid: boolean; scopes?: string; userId?: string }> {
+  const result = await zoomGetRaw("/users/me", token);
+  if (result.ok) {
+    return { valid: true, userId: result.body?.id };
+  }
+  return { valid: false };
+}
+
 async function zoomGetWithFallback(
   primaryPath: string,
   fallbackPath: string,
@@ -86,8 +113,14 @@ async function zoomGetWithFallback(
     fallbackAttempted: false,
   }));
 
-  // 404 with Zoom error code 2300 = "endpoint not recognized" — try fallback
-  if (!primary.ok && (primary.status === 404 || primary.errorCode === 2300)) {
+  // Try fallback on: 404/2300 (endpoint not recognized), 403 (forbidden), or 401/124 (scope issue)
+  const shouldFallback =
+    !primary.ok &&
+    (primary.status === 404 || primary.errorCode === 2300 ||
+     primary.status === 403 ||
+     (primary.status === 401 && primary.errorCode === 124));
+
+  if (shouldFallback) {
     const fallback = await zoomGetRaw(fallbackPath, token);
 
     console.log(JSON.stringify({
@@ -124,13 +157,11 @@ function normalizeCall(conv: any): {
     topic: conv.conversation_topic ?? conv.topic ?? "",
     start_time: conv.meeting_start_time ?? conv.start_time ?? "",
     duration: typeof conv.duration === "number" ? conv.duration : 0,
-    // ZRA list endpoint returns host_id not host_email; detail may have host_email
     host_email: conv.host_email ?? conv.host_id ?? "",
   };
 }
 
-// Flatten ZRA interactions participants into transcript sentences
-// interactions response: { participants: [{ display_name, speaker_type, transcripts: [{ text, start_time, end_time }] }] }
+// Flatten ZRA interactions into transcript sentences
 function normalizeTranscript(interactions: any): {
   available: boolean;
   reason?: string;
@@ -159,7 +190,6 @@ function normalizeTranscript(interactions: any): {
     return { available: false, reason: "no_transcript_found", sentences: [] };
   }
 
-  // Sort by start_time if they are strings (ISO timestamps)
   sentences.sort((a, b) => {
     const ta = String(a.start_time);
     const tb = String(b.start_time);
@@ -171,11 +201,24 @@ function normalizeTranscript(interactions: any): {
 
 function zoomErrorToTranscriptReason(errorCode?: number): string {
   if (!errorCode) return "unknown";
-  // ZRA-specific processing codes (from Zoom docs)
   if (errorCode === 3309) return "processing_not_ready";
   if (errorCode === 3301) return "consent_not_accepted";
   if (errorCode === 3302) return "recording_failed";
   return "unknown";
+}
+
+// Build a human-readable hint for common Zoom errors
+function zoomErrorHint(code?: number, httpStatus?: number): string {
+  if (code === 124 || httpStatus === 401) {
+    return "Zoom S2S OAuth token is invalid or the app is missing Revenue Accelerator scopes (zra:read:admin). Go to Zoom Marketplace → your Server-to-Server app → Scopes, add 'Revenue Accelerator' scopes, then re-generate credentials in Vercel.";
+  }
+  if (code === 2300 || httpStatus === 404) {
+    return "Zoom endpoint path not recognized. The ZRA API may require Revenue Accelerator to be enabled as a product on Taylor's Zoom account.";
+  }
+  if (httpStatus === 403) {
+    return "Access forbidden. The Zoom app may lack admin privileges or ZRA is not licensed on this account.";
+  }
+  return "Unexpected Zoom API error.";
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +249,17 @@ export async function GET(req: NextRequest) {
       );
 
       if (!result.ok) {
+        const tokenHealth = await checkTokenHealth(token);
+        console.log(JSON.stringify({
+          level: "warn",
+          tag: "[pam/zoom/ra]",
+          action: "list:token_health",
+          tokenValid: tokenHealth.valid,
+          userId: tokenHealth.userId ?? null,
+          zoomErrorCode: result.errorCode,
+          zoomErrorMessage: result.errorMessage,
+        }));
+
         return NextResponse.json({
           success: false,
           source: "zoom_revenue_accelerator",
@@ -213,8 +267,13 @@ export async function GET(req: NextRequest) {
             message: result.errorMessage ?? "Zoom API error",
             code: result.errorCode ?? result.status,
             http_status: result.status,
+            hint: zoomErrorHint(result.errorCode, result.status),
           },
-          diagnostics: { endpoint_used: endpointUsed, fallback_used: fallbackUsed },
+          diagnostics: {
+            endpoint_used: endpointUsed,
+            fallback_used: fallbackUsed,
+            token_health: tokenHealth,
+          },
         }, { status: 502 });
       }
 
@@ -243,6 +302,17 @@ export async function GET(req: NextRequest) {
       );
 
       if (!result.ok) {
+        const tokenHealth = await checkTokenHealth(token);
+        console.log(JSON.stringify({
+          level: "warn",
+          tag: "[pam/zoom/ra]",
+          action: "latest:token_health",
+          tokenValid: tokenHealth.valid,
+          userId: tokenHealth.userId ?? null,
+          zoomErrorCode: result.errorCode,
+          zoomErrorMessage: result.errorMessage,
+        }));
+
         return NextResponse.json({
           success: false,
           source: "zoom_revenue_accelerator",
@@ -250,8 +320,13 @@ export async function GET(req: NextRequest) {
             message: result.errorMessage ?? "Zoom API error",
             code: result.errorCode ?? result.status,
             http_status: result.status,
+            hint: zoomErrorHint(result.errorCode, result.status),
           },
-          diagnostics: { endpoint_used: endpointUsed, fallback_used: fallbackUsed },
+          diagnostics: {
+            endpoint_used: endpointUsed,
+            fallback_used: fallbackUsed,
+            token_health: tokenHealth,
+          },
         }, { status: 502 });
       }
 
@@ -270,7 +345,6 @@ export async function GET(req: NextRequest) {
       const call = normalizeCall(conv);
       const convId = call.id;
 
-      // Fetch detail + interactions in parallel
       const [detailResult, interactionsResult] = await Promise.all([
         zoomGetRaw(
           endpointUsed.startsWith("/iq") ? `/iq/conversations/${convId}` : `/zra/conversations/${convId}`,
@@ -294,7 +368,6 @@ export async function GET(req: NextRequest) {
         interactionsErrorCode: interactionsResult.errorCode ?? null,
       }));
 
-      // Merge detail fields into call if available
       if (detailResult.ok) {
         const d = detailResult.body;
         call.host_email = d.host_email ?? d.host_id ?? call.host_email;
@@ -333,7 +406,6 @@ export async function GET(req: NextRequest) {
       const fallbackDetailPath = `/iq/conversations/${callId}`;
       const fallbackInteractionsPath = `/iq/conversations/${callId}/interactions`;
 
-      // Try primary detail first
       const detailResult = await zoomGetRaw(primaryDetailPath, token);
       console.log(JSON.stringify({
         level: "info",
@@ -345,7 +417,12 @@ export async function GET(req: NextRequest) {
         zoomErrorCode: detailResult.errorCode ?? null,
       }));
 
-      const useFallback = !detailResult.ok && (detailResult.status === 404 || detailResult.errorCode === 2300);
+      const useFallback =
+        !detailResult.ok &&
+        (detailResult.status === 404 || detailResult.errorCode === 2300 ||
+         detailResult.status === 403 ||
+         (detailResult.status === 401 && detailResult.errorCode === 124));
+
       const detailPath = useFallback ? fallbackDetailPath : primaryDetailPath;
       const interactionsPath = useFallback ? fallbackInteractionsPath : primaryInteractionsPath;
 
@@ -373,6 +450,7 @@ export async function GET(req: NextRequest) {
             message: finalDetailResult.errorMessage ?? "Conversation not found",
             code: finalDetailResult.errorCode ?? finalDetailResult.status,
             http_status: finalDetailResult.status,
+            hint: zoomErrorHint(finalDetailResult.errorCode, finalDetailResult.status),
           },
           diagnostics: { endpoint_used: detailPath, fallback_used: useFallback },
         }, { status: 502 });
