@@ -9,10 +9,18 @@ import PageHero from "@/components/PageHero";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "AI Insights Blog",
+  title: "Apollo Claw Blog: AI Agent Guides for Law, Real Estate & Insurance",
   description:
-    "Expert insights on AI automation, strategy, and implementation for business owners.",
-  keywords: ["AI blog", "AI automation tips", "AI for business", "Apollo Claw insights"],
+    "Learn how AI agents handle client intake, follow-ups, and communication for law firms, insurance agencies, and real estate teams.",
+  keywords: ["AI blog", "AI automation tips", "AI for business", "Apollo Claw insights", "AI agents for law firms", "AI agents for real estate", "AI agents for insurance"],
+  alternates: {
+    canonical: "https://apolloclaw.ai/blog",
+  },
+  openGraph: {
+    title: "Apollo Claw Blog: AI Agent Guides for Law, Real Estate & Insurance",
+    description:
+      "Learn how AI agents handle client intake, follow-ups, and communication for law firms, insurance agencies, and real estate teams.",
+  },
 };
 
 async function getPosts() {
