@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI for CFOs | Automated Financial Reporting & Forecasting | Apollo[Claw]",
-  description: "The CFO Agent closes the books faster, automates financial reporting, and handles board prep so your finance team focuses on strategy — not spreadsheets.",
+  title: "The CFO Agent: AI Financial Agent for Small Business",
+  description: "The CFO Agent is your AI financial advisor for small business — automating financial reporting, cash forecasts, and board prep so your team drives strategy.",
+  alternates: {
+    canonical: "https://thecfoagent.ai",
+  },
   openGraph: {
-    title: "AI for CFOs | Automated Financial Reporting & Forecasting",
-    description: "The CFO Agent closes the books faster, automates reporting, and handles board prep so your finance team focuses on strategy.",
+    title: "The CFO Agent: AI Financial Agent for Small Business",
+    description: "The CFO Agent is your AI financial advisor for small business — automated financial reporting AI that handles your close cycle so you focus on decisions.",
     url: "https://apolloclaw.ai/use-cases/cfo",
     type: "website",
   },
@@ -174,6 +177,27 @@ export default function CfoPage() {
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             The CFO Agent handles the production work — reports, forecasts, reconciliations, deck assembly — automatically and on schedule. Your team shows up to review, not to build.
           </p>
+        </div>
+      </section>
+
+      {/* What is an AI CFO Agent? — SEO Section */}
+      <section style={{ background: CREAM }} className="py-20">
+        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+          <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>About</p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
+            What is an AI CFO Agent?
+          </h2>
+          <div className="flex flex-col gap-4 font-body text-base leading-relaxed" style={{ color: "rgba(11,23,41,0.7)" }}>
+            <p>
+              An <strong>AI CFO agent</strong> is a purpose-built AI system that takes over the recurring financial operations a CFO and finance team spend the most time on — monthly close support, variance reporting, cash flow forecasting, board pack assembly, and audit preparation. Unlike a generic AI chatbot, an AI CFO agent is connected to your actual systems: your ERP, your accounting platform, your reporting workflows. It runs on schedule, without being asked.
+            </p>
+            <p>
+              Think of it as an <strong>AI financial advisor for small business</strong> that never sleeps. It monitors actuals against budget, flags the variances that matter, drafts the narratives your leadership needs to make decisions, and prepares the materials before the meeting — not the night before. Small and mid-size businesses in particular gain the most: the analytical horsepower of a full finance team at a fraction of the cost.
+            </p>
+            <p>
+              The CFO Agent from Apollo Claw is our <strong>automated financial reporting AI</strong> — onboarded on your specific close cycle, trained on your reporting style, and configured for the systems you already use. It doesn&apos;t replace your finance team. It removes the production work so your team can focus on the analysis and decisions that actually move the business.
+            </p>
+          </div>
         </div>
       </section>
 
