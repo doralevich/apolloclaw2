@@ -490,7 +490,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <CheckGroup hint="Pick up to 3" options={BRAND_LIKE.filter(b => b !== "None of these - I’ll describe my own")} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
     </Stack>,
     <Stack key="s6d">
-      <SHead stepNum={18} total={19} title="Your Voice in Your Own Words" subtitle="Describe how you sound — and share a writing sample if you have one." badge="Business" />
+      <SHead stepNum={18} total={19} title="Your Voice in Your Own Words" subtitle="Describe how you sound, and share a writing sample if you have one." badge="Business" />
       <FF label="Describe Your Ideal Voice"><TArea value={s6.voiceDesc} onChange={v => f6("voiceDesc", v)} placeholder="e.g. Confident but not arrogant. Clear, direct. Never corporate." rows={3} /></FF>
       <FF label="Share a Sample of Your Voice" hint="Optional. Paste an email, LinkedIn summary, or any writing that sounds like you."><TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="Ideas: a long email, your LinkedIn About section, a client proposal, or a Slack message that sounds like you..." rows={4} /></FF>
     </Stack>,
