@@ -115,5 +115,7 @@ export const POST = route(async (request: Request) => {
     )
   );
 
-  return json({ ok: true, agent_provisioned: !!agentId });
+  // workspace_id feeds the post-submit "building your agent" screen, which polls the
+  // workspace's agent list until the webhook-provisioned agent shows up running.
+  return json({ ok: true, agent_provisioned: !!agentId, workspace_id: workspaceId });
 });
