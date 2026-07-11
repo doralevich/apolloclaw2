@@ -40,6 +40,20 @@ Copy `.env.example` to `.env.local` and set the keys below.
 - `NEXT_PUBLIC_SITE_URL` — site origin, e.g. `http://localhost:3000`.
 - `NEXT_PUBLIC_APP_NAME` — dashboard name shown in the UI.
 
+### Stripe (agent storefront)
+
+- `STRIPE_SECRET_KEY` — Stripe secret key (`sk_test_…` to verify, `sk_live_…` in production).
+- `STRIPE_WEBHOOK_SECRET` — signing secret for this deployment's `/api/stripe/webhook` endpoint.
+
+Sync the product/price catalog (idempotent; safe to rerun):
+
+```bash
+node scripts/seed-stripe-catalog.mjs --dry-run   # preview
+node scripts/seed-stripe-catalog.mjs             # apply
+```
+
+or, on a deployed environment, `POST /api/admin/stripe/sync` as a platform admin.
+
 ### Supabase CLI only (not read by the app)
 
 Needed only to run database migrations via the `supabase` CLI:

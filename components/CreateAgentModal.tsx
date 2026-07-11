@@ -1,9 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bot, Briefcase, GraduationCap, Plus, type LucideIcon } from "lucide-react";
+import {
+  Bot,
+  Briefcase,
+  Calculator,
+  GraduationCap,
+  Home,
+  Plus,
+  Scale,
+  ShieldCheck,
+  Stethoscope,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AGENT_TYPES } from "@/config/agent-types";
+import { BUNDLE_PRICE_LABEL } from "@/lib/pricing/catalog";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@/lib/useAsyncAction";
@@ -26,13 +39,24 @@ import type { Agent } from "@/lib/types";
 
 // Registry icons are stored as lucide icon NAMES (plain strings, so the config stays
 // server-safe); resolve them here with a generic fallback.
-const TYPE_ICONS: Record<string, LucideIcon> = { GraduationCap, Briefcase };
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  GraduationCap,
+  Briefcase,
+  Calculator,
+  Scale,
+  Stethoscope,
+  ShieldCheck,
+  Home,
+  TrendingUp,
+};
 
-// Self-serve "Create Agent" dialog: one card per registry type, an optional name, and a
-// POST /api/agents { workspace_id, type, name }. The server enforces the real gates
-// (membership, entitlement, one-per-type cap) — the UI just mirrors them: types the
-// workspace already has render disabled with an "Already created" hint, and coming-soon
-// types are never selectable.
+// Self-serve "Create Agent" dialog: one card per registry type and an optional name.
+// Free types (College Agent) POST /api/agents { workspace_id, type, name } directly; PAID
+// types (planKey set) POST /api/build/checkout and redirect to Stripe — the webhook
+// provisions after payment. The server enforces the real gates (membership, entitlement,
+// payment, one-per-type cap) — the UI just mirrors them: types the workspace already has
+// render disabled with an "Already created" hint, and coming-soon types are never
+// selectable.
 export function CreateAgentModal({
   onCreated,
   triggerVariant,
@@ -50,11 +74,18 @@ export function CreateAgentModal({
   const [selected, setSelected] = useState<string | null>(null);
   const [name, setName] = useState("");
 
-  // Templates this workspace already runs — drives the "Already created" state.
-  const existingTemplates = useMemo(
-    () => new Set(agents.map((a) => a.template).filter((t): t is string => !!t)),
+  // Types this workspace already runs — drives the "Already created" state. Matched by
+  // agent_type when the row has one, with template as the legacy fallback (paid agents can
+  // share a fallback template, so template alone isn't enough).
+  const existing = useMemo(
+    () =>
+      new Set(
+        agents.flatMap((a) => [a.agent_type, a.template]).filter((t): t is string => !!t)
+      ),
     [agents]
   );
+  const alreadyHas = (t: (typeof AGENT_TYPES)[number]) =>
+    existing.has(t.id) || existing.has(t.template);
 
   const selectedType = AGENT_TYPES.find((t) => t.id === selected) ?? null;
 
@@ -63,13 +94,28 @@ export function CreateAgentModal({
     if (next) {
       // Fresh form on every open, preselecting the first type that can actually be created.
       setName("");
-      setSelected(AGENT_TYPES.find((t) => t.available && !existingTemplates.has(t.template))?.id ?? null);
+      setSelected(AGENT_TYPES.find((t) => t.available && !alreadyHas(t))?.id ?? null);
     }
   }
 
   function submit() {
     if (!current || !selectedType) return;
     return run(async () => {
+      // Paid agents: hand off to Stripe Checkout. The webhook provisions after payment
+      // and the buyer lands back on the dashboard with ?checkout=success.
+      if (selectedType.planKey) {
+        const { url } = await apiFetch<{ url: string }>("/api/build/checkout", {
+          method: "POST",
+          body: JSON.stringify({
+            workspace_id: current.id,
+            type: selectedType.id,
+            name: name.trim() || undefined,
+          }),
+        });
+        window.location.assign(url);
+        return;
+      }
+
       const created = await apiFetch<Agent>("/api/agents", {
         method: "POST",
         body: JSON.stringify({
@@ -109,7 +155,7 @@ export function CreateAgentModal({
         <div className="space-y-2">
           {AGENT_TYPES.map((t) => {
             const Icon = (t.icon && TYPE_ICONS[t.icon]) || Bot;
-            const alreadyCreated = t.available && existingTemplates.has(t.template);
+            const alreadyCreated = t.available && alreadyHas(t);
             const disabled = !t.available || alreadyCreated;
             const isSelected = selectedType?.id === t.id;
             return (
@@ -135,6 +181,9 @@ export function CreateAgentModal({
                     {alreadyCreated && <Badge variant="muted">Already created</Badge>}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
+                  {t.planKey && !alreadyCreated && (
+                    <p className="mt-1 text-xs font-medium">{BUNDLE_PRICE_LABEL}</p>
+                  )}
                 </div>
               </button>
             );
@@ -158,7 +207,13 @@ export function CreateAgentModal({
             Cancel
           </Button>
           <Button onClick={submit} disabled={busy || !selectedType}>
-            {busy ? "Creating..." : "Create Agent"}
+            {selectedType?.planKey
+              ? busy
+                ? "Redirecting to checkout..."
+                : "Continue to Checkout"
+              : busy
+                ? "Creating..."
+                : "Create Agent"}
           </Button>
         </DialogFooter>
       </DialogContent>

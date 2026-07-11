@@ -23,7 +23,14 @@ export interface AgentType {
   comingSoon?: boolean;
   // Lucide icon name (resolved by the UI); omit for a generic fallback.
   icon?: string;
+  // Stripe catalog key (lib/pricing/catalog.ts). Present -> the type is PAID: creating it
+  // goes through Checkout ($4,500 build + $189/mo hosting) and is provisioned by the
+  // Stripe webhook. Absent -> the original entitlement-gated direct create (College Agent).
+  planKey?: string;
 }
+
+// Shared shape for the paid Apollo agents — one machine size and spend cap across the line.
+const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 5 };
 
 export const AGENT_TYPES: AgentType[] = [
   {
@@ -41,11 +48,70 @@ export const AGENT_TYPES: AgentType[] = [
     label: "CEO Agent",
     description: "An AI chief of staff that runs your inbox, calendar, and follow-ups.",
     template: "ceo-agent",
-    resources: { cpu: 2, memory: 4, disk: 12 },
-    monthlyCapUsd: 5,
-    available: false,
-    comingSoon: true,
+    ...PAID_AGENT,
+    available: true,
     icon: "Briefcase",
+    planKey: "ceo_plan",
+  },
+  {
+    id: "cfo",
+    label: "CFO Agent",
+    description: "An AI finance lead for budgets, cash-flow forecasts, models, and board-ready numbers.",
+    template: "cfo-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "Calculator",
+    planKey: "cfo_plan",
+  },
+  {
+    id: "legal",
+    label: "Legal Agent",
+    description: "Drafts and reviews common contracts, explains clauses in plain English, tracks obligations.",
+    template: "legal-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "Scale",
+    planKey: "legal_plan",
+  },
+  {
+    id: "medical",
+    label: "Medical Agent",
+    description: "Administrative support for clinicians — literature summaries, patient comms, billing prep.",
+    template: "medical-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "Stethoscope",
+    planKey: "medical_plan",
+  },
+  {
+    id: "insurance",
+    label: "Insurance Agent",
+    description: "Compares policies, explains coverage, preps quotes, and tracks renewals and claims.",
+    template: "insurance-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "ShieldCheck",
+    planKey: "insurance_plan",
+  },
+  {
+    id: "realestate",
+    label: "Real Estate Agent",
+    description: "Listings, comps research, transaction checklists, follow-ups, and investment math.",
+    template: "realestate-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "Home",
+    planKey: "realestate_plan",
+  },
+  {
+    id: "sales",
+    label: "Sales Agent",
+    description: "Prospect research, personalized outreach, call prep, follow-up cadences, and pipeline notes.",
+    template: "sales-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "TrendingUp",
+    planKey: "sales_plan",
   },
 ];
 
