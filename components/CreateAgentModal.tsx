@@ -100,6 +100,11 @@ export function CreateAgentModal({
 
   function submit() {
     if (!current || !selectedType) return;
+    // Sold on a partner site (The College Agent): the CTA is a hand-off, nothing to POST.
+    if (selectedType.externalUrl) {
+      window.location.assign(selectedType.externalUrl);
+      return;
+    }
     return run(async () => {
       // Paid agents: hand off to Stripe Checkout. The webhook provisions after payment
       // and the buyer lands back on the dashboard with ?checkout=success.
@@ -187,6 +192,9 @@ export function CreateAgentModal({
                   {t.planKey && !alreadyCreated && (
                     <p className="mt-1 text-xs font-medium">{BUNDLE_PRICE_LABEL}</p>
                   )}
+                  {t.externalUrl && !alreadyCreated && (
+                    <p className="mt-1 text-xs font-medium">{t.priceLabel} · at thecollegeagent.ai</p>
+                  )}
                 </div>
               </button>
             );
@@ -210,13 +218,15 @@ export function CreateAgentModal({
             Cancel
           </Button>
           <Button onClick={submit} disabled={busy || !selectedType}>
-            {selectedType?.planKey
-              ? busy
-                ? "Redirecting to checkout..."
-                : "Continue to Checkout"
-              : busy
-                ? "Creating..."
-                : "Create Agent"}
+            {selectedType?.externalUrl
+              ? "Get it at thecollegeagent.ai"
+              : selectedType?.planKey
+                ? busy
+                  ? "Redirecting to checkout..."
+                  : "Continue to Checkout"
+                : busy
+                  ? "Creating..."
+                  : "Create Agent"}
           </Button>
         </DialogFooter>
       </DialogContent>

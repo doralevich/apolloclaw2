@@ -27,6 +27,12 @@ export interface AgentType {
   // goes through Checkout ($4,500 build + $189/mo hosting) and is provisioned by the
   // Stripe webhook. Absent -> the original entitlement-gated direct create (College Agent).
   planKey?: string;
+  // Sold on ANOTHER site: every CTA links here instead of ApolloClaw checkout/create.
+  // Payment, intake, and provisioning all happen there (The College Agent).
+  externalUrl?: string;
+  // Price line shown on storefront cards for external types (paid types use the shared
+  // BUNDLE_PRICE_LABEL from lib/pricing/catalog.ts).
+  priceLabel?: string;
 }
 
 // Shared shape for the paid Apollo agents — one machine size and spend cap across the line.
@@ -35,13 +41,16 @@ const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 
 export const AGENT_TYPES: AgentType[] = [
   {
     id: "college",
-    label: "College Agent",
-    description: "An AI agent that keeps a student's classes, email, and deadlines on track.",
+    label: "The College Agent",
+    description:
+      "An AI agent for a student's whole college life — classes, deadlines, studying, professor emails, internships.",
     template: "college-agent",
     resources: { cpu: 2, memory: 4, disk: 12 },
     monthlyCapUsd: 5,
     available: true,
     icon: "GraduationCap",
+    externalUrl: "https://thecollegeagent.ai/build",
+    priceLabel: "$599 one-time + hosting",
   },
   {
     id: "ceo",
