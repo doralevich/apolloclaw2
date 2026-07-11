@@ -174,7 +174,13 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
   cfo: {
     title: "Your numbers, honestly",
     questions: [
-      { id: "accounting_stack", label: "Accounting platform and who keeps the books", type: "text", required: true, placeholder: "QuickBooks + outside bookkeeper / Xero, I do it myself / spreadsheets" },
+      {
+        id: "accounting_stack",
+        label: "Accounting / finance software",
+        type: "multiselect",
+        options: ["QuickBooks Online", "QuickBooks Desktop", "Xero", "FreshBooks", "Wave", "NetSuite", "Bill.com / Ramp / Brex", "Spreadsheets", "None of these"],
+      },
+      { id: "bookkeeper", label: "Who keeps the books today?", type: "text", placeholder: "Outside bookkeeper / my office manager / me, badly" },
       {
         id: "revenue_model",
         label: "Revenue model",
@@ -261,7 +267,12 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
     title: "Your practice, day to day",
     questions: [
       { id: "practice_type", label: "Practice type, specialty, and size", type: "text", required: true, placeholder: "Family medicine, 3 providers + 4 staff / solo dermatology practice" },
-      { id: "ehr", label: "EHR / practice management software", type: "text", placeholder: "Epic, Athena, SimplePractice..." },
+      {
+        id: "ehr",
+        label: "EHR / practice management software",
+        type: "multiselect",
+        options: ["Epic", "Cerner / Oracle Health", "Athenahealth", "eClinicalWorks", "NextGen", "Kareo / Tebra", "SimplePractice", "DrChrono", "None of these"],
+      },
       {
         id: "admin_pain",
         label: "Where does admin time actually go?",
@@ -283,7 +294,13 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
         type: "multiselect",
         options: ["Personal P&C", "Commercial P&C", "Life", "Health", "Medicare", "Specialty"],
       },
-      { id: "carriers", label: "Carriers you quote most, and your AMS / rater", type: "textarea", required: true, placeholder: "Progressive, Travelers, Chubb for commercial; EZLynx for rating; HawkSoft AMS." },
+      {
+        id: "ams",
+        label: "AMS / rating software",
+        type: "multiselect",
+        options: ["EZLynx", "Applied Epic", "HawkSoft", "AMS360", "NowCerts", "QQCatalyst", "Canopy Connect", "None of these"],
+      },
+      { id: "carriers", label: "Carriers you quote most", type: "textarea", required: true, placeholder: "Progressive and Travelers for personal lines; Chubb and Hartford for commercial..." },
       {
         id: "book_size",
         label: "Clients in your book",
@@ -312,7 +329,12 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
         type: "select",
         options: ["1–5", "5–15", "15–40", "40+"],
       },
-      { id: "re_tools", label: "MLS, CRM, and marketing tools", type: "text", placeholder: "MLS, Follow Up Boss, Canva, Zillow Premier..." },
+      {
+        id: "re_tools",
+        label: "Real estate software you use",
+        type: "multiselect",
+        options: ["Follow Up Boss", "kvCORE", "BoomTown", "Chime / Lofty", "Wise Agent", "Zillow Premier Agent", "DocuSign / Dotloop", "Canva / marketing tools", "None of these"],
+      },
       { id: "pipeline_now", label: "What's in your pipeline right now?", type: "textarea", required: true, placeholder: "3 active listings, 2 buyers under contract, 40 leads from the spring open houses going cold..." },
       { id: "deal_friction", label: "Which part of a transaction goes sideways most often?", type: "textarea", required: true, placeholder: "Inspection negotiations, lender delays, listing prep, keeping sellers informed..." },
       { id: "followup_today", label: "What does your follow-up actually look like today?", type: "textarea", placeholder: "Honest answer — who follows up, how fast, and where leads die." },
@@ -324,7 +346,13 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
     questions: [
       { id: "offer", label: "What do you sell, at what price, and what does the buyer get?", type: "textarea", required: true },
       { id: "icp", label: "Your ideal customer — and the pain that makes them buy", type: "textarea", required: true, placeholder: "Title, company size, industry, and the moment they realize they need you." },
-      { id: "crm", label: "CRM and how religiously it's kept up", type: "text", placeholder: "HubSpot, updated weekly / Salesforce, honestly a mess / spreadsheet" },
+      {
+        id: "crm",
+        label: "CRM / sales tools",
+        type: "multiselect",
+        options: ["HubSpot", "Salesforce", "Pipedrive", "Close", "GoHighLevel", "Zoho CRM", "Apollo / outreach tools", "Spreadsheet / none"],
+      },
+      { id: "crm_hygiene", label: "Honestly — how well is it kept up?", type: "select", options: ["Religiously updated", "Mostly current", "Honestly a mess", "What CRM?"] },
       {
         id: "channels",
         label: "Where your deals actually come from",
