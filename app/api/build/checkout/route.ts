@@ -83,7 +83,9 @@ export const POST = route(async (request: Request) => {
     client_reference_id: user.id,
     metadata,
     subscription_data: { metadata },
-    success_url: `${origin}/dashboard?checkout=success&type=${encodeURIComponent(type.id)}`,
+    // Success lands on the setup questionnaire — the thing to do while the webhook
+    // provisions the agent. (?ws pins the workspace the purchase was made for.)
+    success_url: `${origin}/onboard/${encodeURIComponent(type.id)}?ws=${encodeURIComponent(body.workspace_id)}&paid=1`,
     cancel_url: `${origin}/dashboard?checkout=cancelled`,
     allow_promotion_codes: true,
   });
