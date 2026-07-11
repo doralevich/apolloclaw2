@@ -30,8 +30,21 @@ export const CORE_QUESTIONS: SetupQuestion[] = [
   {
     id: "tools",
     label: "What tools does the business run on?",
-    type: "textarea",
-    placeholder: "Email, calendar, CRM, accounting, project management...",
+    type: "multiselect",
+    options: [
+      "Google Workspace",
+      "Microsoft 365",
+      "Slack",
+      "Zoom",
+      "Salesforce",
+      "HubSpot",
+      "QuickBooks",
+      "Xero",
+      "Notion",
+      "Asana / ClickUp / Monday",
+      "Shopify",
+      "Stripe / Square",
+    ],
   },
   {
     id: "communication_style",
