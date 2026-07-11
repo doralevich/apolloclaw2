@@ -371,7 +371,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const [step, setStep] = useState(0);
   const [s1, setS1] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[], contact: "", besttime: "", tz: "", title: "", linkedin: "" });
   const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "" });
-  const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], triedDetail: "", costImpact: "", fixed: "" });
+  const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", fixed: "" });
   const [s4, setS4] = useState({ marital: "", kids: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
   const [s5, setS5] = useState({ decStyle: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "" });
   const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", voiceDesc: "", loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
@@ -441,11 +441,11 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <CheckGroup label="Which Areas Feel Most Broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
       <FF label="The One Thing You Wish You Could Make Disappear" required><TArea value={s3.hate} onChange={v => f3("hate", v)} placeholder="The task that makes you groan every time." rows={2} /></FF>
       <CheckGroup label="What Have You Already Tried?" hint="Select all that apply" options={TRIED_BEFORE} value={s3.tried} onChange={v => f3("tried", v)} cols={2} />
-      <FF label="Tell Us More About What You've Already Done" hint="Free text — what worked, what didn't, what you learned"><TArea value={s3.triedDetail || ""} onChange={v => f3("triedDetail", v)} placeholder="e.g. We tried Zapier for 6 months but it kept breaking. We hired a VA but couldn't get consistent results..." rows={3} /></FF>
       <FF label="What Does 'Fixed' Look Like?" hint="Describe your business in 12 months if this is completely solved."><TArea value={s3.fixed} onChange={v => f3("fixed", v)} placeholder="What does your day look like? What numbers have changed?" rows={3} /></FF>
     </Stack>,
     <Stack key="s4">
-      <SHead stepNum={9} total={12} title="Family & Life Context" subtitle="Understanding your life outside the business helps us build something that actually fits." badge="Business" />
+      <SHead stepNum={9} total={12} title="Family & Life Context (Optional)" subtitle="Understanding your life outside the business helps us build something that actually fits. Feel free to skip this step." badge="Business" />
+      <button type="button" onClick={next} style={{ alignSelf: "flex-start", background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>Skip this step →</button>
       <Row2><FF label="Relationship Status"><TSelect value={s4.marital} onChange={v => f4("marital", v)} options={MARITAL} /></FF><FF label="Children"><TSelect value={s4.kids} onChange={v => f4("kids", v)} options={KIDS_COUNT} /></FF></Row2>
       <CheckGroup label="Ages of Your Children" hint="Skip if no children" options={["Infant / Toddler (0–3)","Young children (4–8)","Pre-teen (9–12)","Teenager (13–17)","Young adults (18–25)","Adult children (25+)","N/A"]} value={s4.kidsAges} onChange={v => f4("kidsAges", v)} cols={3} />
       <RadioGroup label="Your Work / Home Situation" options={HOME_LIFE} value={s4.homeLife} onChange={v => f4("homeLife", v)} />
