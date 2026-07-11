@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { setupQuestionsFor, type SetupQuestion } from "@/config/onboarding";
+import { setupSectionsFor, type SetupQuestion } from "@/config/onboarding";
 import { apiFetch } from "@/lib/api";
 import type { MergedAgent } from "@/lib/types";
 
@@ -226,14 +226,7 @@ export function AgentSetupForm({
   workspaceId?: string;
   justPaid: boolean;
 }) {
-  const { core, module } = useMemo(() => setupQuestionsFor(agentTypeId), [agentTypeId]);
-  const steps = useMemo(
-    () => [
-      { title: "Tell us about your business", subtitle: "Everything here goes straight to your agent — the more real detail, the more useful its first day.", questions: core },
-      ...(module ? [{ title: module.title, subtitle: `The specifics that make your ${agentLabel} actually yours.`, questions: module.questions }] : []),
-    ],
-    [core, module, agentLabel]
-  );
+  const steps = useMemo(() => setupSectionsFor(agentTypeId, agentLabel), [agentTypeId, agentLabel]);
 
   // Fresh from Stripe, the buyer first gets a full "Payment Received" landing moment;
   // Get Started drops them into the questionnaire. Direct visits skip straight to it.

@@ -82,6 +82,70 @@ export const CORE_QUESTIONS: SetupQuestion[] = [
     type: "textarea",
     placeholder: "e.g. Send anything to a client, commit to dates or prices, touch anything involving the board...",
   },
+  {
+    id: "regulations",
+    label: "Are there regulations your business must follow?",
+    type: "multiselect",
+    options: [
+      "HIPAA (healthcare)",
+      "PCI-DSS (payments)",
+      "GDPR (EU data)",
+      "CCPA (California)",
+      "SOC 2",
+      "FINRA / SEC",
+      "State bar / professional ethics rules",
+      "None / not sure",
+    ],
+  },
+];
+
+// Step 2 — the personal/family/life context carried over from the original /onboard
+// questionnaire. All optional: it shapes how the agent fits the owner's life (what it
+// protects, when it stays quiet), not whether it can do the job.
+export const PERSONAL_QUESTIONS: SetupQuestion[] = [
+  {
+    id: "life_stage",
+    label: "Where are you in the journey?",
+    type: "select",
+    options: [
+      "Building - early, grinding hard",
+      "Scaling - growing fast, feeling stretched",
+      "Optimizing - established, refining",
+      "Exiting - preparing to sell or step back",
+      "Pivoting - changing direction",
+      "Surviving - navigating a hard period",
+    ],
+  },
+  {
+    id: "work_rhythm",
+    label: "How does work fit your life?",
+    type: "select",
+    options: [
+      "I work from home full-time",
+      "I have a separate office outside the home",
+      "I split time between home and office",
+      "I travel frequently / location-independent",
+      "My family is involved in the business",
+    ],
+  },
+  {
+    id: "family_context",
+    label: "Family and life context your agent should respect",
+    type: "textarea",
+    placeholder: "Kids' schedules, a spouse in the business, aging parents, Fridays off — whatever shapes your time.",
+  },
+  {
+    id: "protecting",
+    label: "What are you protecting — the non-negotiables?",
+    type: "textarea",
+    placeholder: "Dinner with the family, weekends, your health, time to think. Your agent defends these.",
+  },
+  {
+    id: "three_year",
+    label: "Where do you want to be in 3 years?",
+    type: "textarea",
+    placeholder: "Sell the business, run it without you, double revenue, buy back your time...",
+  },
 ];
 
 export const AGENT_MODULES: Record<string, { title: string; questions: SetupQuestion[] }> = {
@@ -130,27 +194,67 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
     ],
   },
   legal: {
-    title: "Your contracts and risk, specifically",
+    title: "Your legal work, specifically",
     questions: [
-      { id: "entity", label: "Business structure and where it's registered", type: "text", required: true, placeholder: "Delaware C-corp / Florida LLC / sole prop..." },
-      { id: "jurisdiction", label: "States / jurisdictions where you actually do business", type: "text", required: true, placeholder: "Operating in FL and GA, customers nationwide" },
       {
-        id: "contract_types",
-        label: "Agreements you deal with most",
-        type: "multiselect",
-        options: ["NDAs", "MSAs / service agreements", "Employment / contractor", "Vendor agreements", "Leases", "Partnership / licensing", "Privacy policy / terms of service"],
+        id: "practice_context",
+        label: "Which best describes you?",
+        type: "select",
+        options: [
+          "I run a law firm / I'm an attorney",
+          "In-house legal or legal operations",
+          "Business owner handling my own legal",
+          "Other professional working with legal documents",
+        ],
       },
       {
+        id: "practice_areas",
+        label: "Practice / legal areas you work in",
+        type: "multiselect",
+        options: [
+          "Litigation",
+          "Corporate / M&A",
+          "Contracts / Commercial",
+          "Real estate",
+          "Employment / Labor",
+          "Bankruptcy",
+          "Estate planning / Probate",
+          "Family law",
+          "Immigration",
+          "IP / Trademark",
+          "Personal injury",
+          "Criminal defense",
+        ],
+      },
+      {
+        id: "legal_software",
+        label: "Legal software you use",
+        type: "multiselect",
+        options: [
+          "Clio",
+          "MyCase",
+          "PracticePanther",
+          "Smokeball",
+          "Filevine",
+          "Westlaw / LexisNexis",
+          "NetDocuments / iManage",
+          "DocuSign / Adobe Sign",
+          "None of these",
+        ],
+      },
+      { id: "entity", label: "Business structure and where it's registered", type: "text", placeholder: "Delaware C-corp / Florida LLC / FL PLLC law firm..." },
+      { id: "jurisdiction", label: "States / jurisdictions where you practice or do business", type: "text", required: true, placeholder: "Licensed in FL and GA / operating in TX, customers nationwide" },
+      {
         id: "review_volume",
-        label: "Contracts touched per month",
+        label: "Matters or contracts touched per month",
         type: "select",
         options: ["1–5", "5–20", "20–50", "50+"],
       },
-      { id: "high_stakes", label: "Describe the highest-stakes agreement in your world right now", type: "textarea", required: true, placeholder: "The client contract that's 40% of revenue, the lease you're negotiating, the partnership deal..." },
-      { id: "redlines", label: "Terms you always push back on — and terms you'll never accept", type: "textarea", required: true, placeholder: "e.g. No unlimited liability, no auto-renewals over 12 months, IP stays ours, payment net-30 max. This becomes your agent's negotiation playbook." },
-      { id: "templates", label: "Do you have templates or past contracts the agent should learn from?", type: "text", placeholder: "Yes — I'll upload our MSA and NDA / no, start from scratch" },
-      { id: "counsel", label: "Outside counsel: who, and for what do they get the call?", type: "text", placeholder: "Smith & Assoc. for anything we sign over $50k / no counsel currently" },
-      { id: "obligations", label: "What deadlines, renewals, or obligations are you tracking in your head right now?", type: "textarea", placeholder: "Office lease renews in March, client SLA reviews quarterly, contractor agreements expire year-end..." },
+      { id: "high_stakes", label: "Describe the highest-stakes matter or agreement on your desk right now", type: "textarea", required: true, placeholder: "The case going to mediation, the client contract that's 40% of revenue, the lease you're negotiating..." },
+      { id: "redlines", label: "Terms you always push back on — and terms you'll never accept", type: "textarea", required: true, placeholder: "e.g. No unlimited liability, no auto-renewals over 12 months, IP stays ours, payment net-30 max. This becomes your agent's drafting playbook." },
+      { id: "templates", label: "Do you have templates, forms, or past documents the agent should learn from?", type: "text", placeholder: "Yes — our MSA, NDA, and engagement letter / no, start from scratch" },
+      { id: "counsel", label: "Who gets the call when something needs a licensed attorney's sign-off?", type: "text", placeholder: "Me — I'm the attorney / Smith & Assoc. for anything over $50k / no counsel currently" },
+      { id: "obligations", label: "What deadlines, renewals, or filing dates are you tracking in your head right now?", type: "textarea", placeholder: "Office lease renews in March, discovery deadline June 2, contractor agreements expire year-end..." },
     ],
   },
   medical: {
@@ -240,6 +344,28 @@ export const AGENT_MODULES: Record<string, { title: string; questions: SetupQues
   },
 };
 
-export function setupQuestionsFor(agentTypeId: string): { core: SetupQuestion[]; module?: { title: string; questions: SetupQuestion[] } } {
-  return { core: CORE_QUESTIONS, module: AGENT_MODULES[agentTypeId] };
+export interface SetupSection {
+  title: string;
+  subtitle: string;
+  questions: SetupQuestion[];
+}
+
+/** The full wizard for an agent type: business core -> personal context -> role module. */
+export function setupSectionsFor(agentTypeId: string, agentLabel: string): SetupSection[] {
+  const module = AGENT_MODULES[agentTypeId];
+  return [
+    {
+      title: "Tell us about your business",
+      subtitle: "Everything here goes straight to your agent — the more real detail, the more useful its first day.",
+      questions: CORE_QUESTIONS,
+    },
+    {
+      title: "About you (optional)",
+      subtitle: "Your agent works for a person, not just a business. Skip anything you'd rather not share.",
+      questions: PERSONAL_QUESTIONS,
+    },
+    ...(module
+      ? [{ title: module.title, subtitle: `The specifics that make your ${agentLabel} actually yours.`, questions: module.questions }]
+      : []),
+  ];
 }
