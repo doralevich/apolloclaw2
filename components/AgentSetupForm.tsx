@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { setupQuestionsFor, type SetupQuestion } from "@/config/onboarding";
 import { apiFetch } from "@/lib/api";
+import type { MergedAgent } from "@/lib/types";
 
 // The post-purchase agent setup wizard (/onboard/[agent]). Deliberately built in the SAME
 // design language as the sales questionnaire at app/onboard/page.tsx — same tokens, same
@@ -115,6 +116,89 @@ function SHead({ stepNum, total, title, subtitle }: { stepNum: number; total: nu
 
 type Answers = Record<string, string | string[]>;
 
+// ── Post-submit: the agent build screen ──────────────────────────────────────
+// Polls the workspace's agent list until the webhook-provisioned agent exists and is
+// running, walking a checklist (profile saved -> building -> starting up), then enters
+// the dashboard automatically. If anything is slow, a manual dashboard link appears.
+
+function StepRow({ state, label }: { state: "done" | "active" | "pending"; label: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 0", opacity: state === "pending" ? 0.45 : 1 }}>
+      <span style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${state === "pending" ? "rgba(0,0,0,0.15)" : R}`, background: state === "done" ? "rgba(215,43,43,0.1)" : "transparent" }}>
+        {state === "done" && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5L4.5 9L10 3" stroke={R} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+        {state === "active" && <span className="ac-spin" style={{ width: 12, height: 12, borderRadius: "50%", border: `2px solid rgba(215,43,43,0.25)`, borderTopColor: R }} />}
+      </span>
+      <span style={{ fontSize: 15, fontWeight: state === "active" ? 700 : 500, color: state === "pending" ? TXM : TX }}>{label}</span>
+    </div>
+  );
+}
+
+function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTypeId: string; agentLabel: string; workspaceId?: string }) {
+  // created: the agent row exists; running: the instance reports running.
+  const [phase, setPhase] = useState<"provisioning" | "starting" | "ready" | "slow">(workspaceId ? "provisioning" : "slow");
+  const phaseRef = useRef(phase);
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+    const started = Date.now();
+
+    const tick = async () => {
+      if (cancelled || phaseRef.current === "ready") return;
+      try {
+        const { agents } = await apiFetch<{ agents: MergedAgent[] }>(`/api/agents?workspace=${encodeURIComponent(workspaceId)}`);
+        const mine = agents.find((a) => a.agent_type === agentTypeId);
+        if (mine) {
+          if (mine.live_status === "running") {
+            setPhase("ready");
+            setTimeout(() => { if (!cancelled) window.location.assign("/dashboard"); }, 1800);
+            return;
+          }
+          setPhase("starting");
+        }
+      } catch {
+        // transient — keep polling
+      }
+      // After 4 minutes stop implying live progress and hand over a manual link.
+      if (Date.now() - started > 240_000 && phaseRef.current !== "ready") setPhase("slow");
+      if (!cancelled) setTimeout(tick, 5000);
+    };
+    void tick();
+    return () => { cancelled = true; };
+  }, [workspaceId, agentTypeId]);
+
+  const provisioned = phase === "starting" || phase === "ready";
+  return (
+    <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+      <style>{`.ac-spin{animation:acspin 0.9s linear infinite}@keyframes acspin{to{transform:rotate(360deg)}}`}</style>
+      <ApolloWordmark size={17} sublabel="Agent Build" />
+      <div style={{ width: "100%", maxWidth: 480, marginTop: 28, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "32px 36px", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
+        <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 6px", letterSpacing: "-0.02em" }}>Building Your {agentLabel}</h2>
+        <p style={{ fontSize: 13, color: TXM, margin: "0 0 18px", lineHeight: 1.6 }}>This usually takes a minute or two. You&apos;ll be taken to your dashboard the moment it&apos;s ready.</p>
+        <div style={{ borderTop: `1px solid ${BDR}` }}>
+          <StepRow state="done" label="Business profile saved" />
+          <StepRow state={provisioned ? "done" : "active"} label={`Provisioning your ${agentLabel}`} />
+          <StepRow state={phase === "ready" ? "done" : phase === "starting" ? "active" : "pending"} label="Starting it up" />
+          <StepRow state={phase === "ready" ? "active" : "pending"} label="Entering your dashboard" />
+        </div>
+        {phase === "slow" && (
+          <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
+            Your agent is still being built in the background — it will appear in your dashboard
+            automatically once it&apos;s ready.
+          </div>
+        )}
+        <a href="/dashboard" style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" ? R : "transparent", color: phase === "slow" ? "#fff" : TXM, border: phase === "slow" ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
+          Go to My Dashboard →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function QuestionField({ q, value, onChange }: { q: SetupQuestion; value: string | string[] | undefined; onChange: (v: string | string[]) => void }) {
   const str = typeof value === "string" ? value : "";
   const arr = Array.isArray(value) ? value : [];
@@ -152,7 +236,10 @@ export function AgentSetupForm({
   const [answers, setAnswers] = useState<Answers>({});
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
+  // After submit: no static "submitted" page — the flow rolls straight into a live
+  // "building your agent" screen that polls until the agent is up, then enters the
+  // dashboard on its own.
+  const [building, setBuilding] = useState<null | { workspaceId?: string }>(null);
 
   const setAnswer = (id: string, v: string | string[]) => setAnswers((a) => ({ ...a, [id]: v }));
 
@@ -180,11 +267,11 @@ export function AgentSetupForm({
     setErr("");
     setBusy(true);
     try {
-      await apiFetch("/api/agent-setup", {
+      const res = await apiFetch<{ workspace_id?: string }>("/api/agent-setup", {
         method: "POST",
         body: JSON.stringify({ workspace_id: workspaceId, agent_type: agentTypeId, answers }),
       });
-      setDone(true);
+      setBuilding({ workspaceId: workspaceId || res.workspace_id });
       window.scrollTo({ top: 0 });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Couldn't save — please try again");
@@ -193,20 +280,8 @@ export function AgentSetupForm({
     }
   };
 
-  if (done) {
-    return (
-      <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 24px" }}>
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </div>
-        <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>Your {agentLabel} Knows the Plan</h2>
-        <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 28px" }}>
-          We&apos;ve saved your setup and are writing it into your agent right now. It&apos;ll be in
-          your dashboard, ready to work, within a couple of minutes.
-        </p>
-        <a href="/dashboard" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Go to My Dashboard →</a>
-      </div>
-    );
+  if (building) {
+    return <BuildScreen agentTypeId={agentTypeId} agentLabel={agentLabel} workspaceId={building.workspaceId} />;
   }
 
   return (
