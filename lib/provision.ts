@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
 import { DEFAULT_AGENT } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
+import { AGENT_MODULES, CORE_QUESTIONS } from "@/config/onboarding";
 import { personaForAgentType } from "@/config/personas";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
@@ -28,33 +29,85 @@ export interface ProvisionInput {
 }
 
 // Where OpenClaw keeps its workspace on the instance (same state dir the signed-url
-// route reads the gateway token from). SOUL.md there is the agent's persona.
-const WRITE_SOUL_CMD_PREFIX =
+// route reads the gateway token from). SOUL.md there is the agent's persona; USER.md is
+// what the agent knows about its owner's business (from the setup questionnaire).
+const WRITE_FILE_CMD_PREFIX =
   'WS="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; mkdir -p "$WS" && ';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Best-effort persona injection for instances provisioned on the generic template (a
-// dedicated template like ceo-agent carries its persona baked in — never overwrite it).
-// The instance boots asynchronously after create, so retry exec for a while; a miss is
-// logged, not thrown — the agent exists and an admin can re-run the write by hand.
-async function injectPersona(agentId: string, typeId: string): Promise<void> {
-  const persona = personaForAgentType(typeId);
-  if (!persona) return;
-
-  const b64 = Buffer.from(persona, "utf8").toString("base64");
-  const cmd = `${WRITE_SOUL_CMD_PREFIX}printf '%s' '${b64}' | base64 -d > "$WS/SOUL.md" && echo PERSONA_OK`;
+// Best-effort write of a markdown file into the instance's OpenClaw workspace. The
+// instance boots asynchronously after create, so retry exec for a while; a miss is
+// logged and reported (false), not thrown — the agent exists and the write can rerun.
+export async function injectAgentFile(
+  agentId: string,
+  filename: "SOUL.md" | "USER.md",
+  content: string
+): Promise<boolean> {
+  const b64 = Buffer.from(content, "utf8").toString("base64");
+  const cmd = `${WRITE_FILE_CMD_PREFIX}printf '%s' '${b64}' | base64 -d > "$WS/${filename}" && echo WRITE_OK`;
 
   for (let attempt = 1; attempt <= 6; attempt++) {
     try {
       const { stdout } = await agent37.exec(agentId, cmd);
-      if (stdout.includes("PERSONA_OK")) return;
+      if (stdout.includes("WRITE_OK")) return true;
     } catch {
       // instance still provisioning/booting — wait and retry
     }
     await sleep(15_000);
   }
-  console.error("[provision:persona-inject-failed]", agentId, typeId);
+  console.error("[provision:file-inject-failed]", agentId, filename);
+  return false;
+}
+
+// Render questionnaire answers as the USER.md the agent reads. Labels come from the
+// questionnaire config so the file reads like notes, not a form dump.
+export function buildUserMd(typeLabel: string, answers: Record<string, unknown>): string {
+  const labelById = new Map<string, string>();
+  for (const q of CORE_QUESTIONS) labelById.set(q.id, q.label);
+  for (const m of Object.values(AGENT_MODULES)) for (const q of m.questions) labelById.set(q.id, q.label);
+
+  const lines: string[] = [
+    `# About the business you work for`,
+    ``,
+    `Notes from your owner's ${typeLabel} setup questionnaire. Treat this as ground truth`,
+    `about who you work for — and update it as you learn more.`,
+    ``,
+  ];
+  for (const [id, value] of Object.entries(answers)) {
+    const rendered = Array.isArray(value) ? value.join(", ") : String(value ?? "").trim();
+    if (!rendered) continue;
+    lines.push(`## ${labelById.get(id) ?? id}`, ``, rendered, ``);
+  }
+  return lines.join("\n");
+}
+
+// Post-create injection for a paid agent: persona (fallback template only — dedicated
+// templates carry their own) and USER.md from any setup answers already submitted for
+// this workspace + type. Marks agent_setup.injected_at when the USER.md write lands.
+async function injectAfterProvision(agentId: string, type: AgentType, workspaceId: string, fellBack: boolean): Promise<void> {
+  if (fellBack) {
+    const persona = personaForAgentType(type.id);
+    if (persona) await injectAgentFile(agentId, "SOUL.md", persona);
+  }
+
+  const db = createAdminClient();
+  const { data: setup } = await db
+    .from("agent_setup")
+    .select("answers")
+    .eq("workspace_id", workspaceId)
+    .eq("agent_type", type.id)
+    .maybeSingle();
+  if (!setup?.answers) return;
+
+  const ok = await injectAgentFile(agentId, "USER.md", buildUserMd(type.label, setup.answers as Record<string, unknown>));
+  if (ok) {
+    await db
+      .from("agent_setup")
+      .update({ injected_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("workspace_id", workspaceId)
+      .eq("agent_type", type.id);
+  }
 }
 
 // Resolve which Agent37 template to actually provision. A listTemplates hiccup is
@@ -143,11 +196,10 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     throw new ApiError(500, "db_error", error.message);
   }
 
-  // Generic-template instances need the persona written in; runs after the response so
-  // neither the API caller nor Stripe's webhook delivery waits on the instance booting.
-  if (fellBack) {
-    after(() => injectPersona(agent.id, type.id));
-  }
+  // Persona (fallback template only) + any already-submitted setup answers get written
+  // into the instance after the response, so neither the API caller nor Stripe's webhook
+  // delivery waits on the instance booting.
+  after(() => injectAfterProvision(agent.id, type, workspaceId, fellBack));
 
   return agent;
 }

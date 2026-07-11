@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { statusVariant } from "@/lib/format";
@@ -17,6 +18,28 @@ import { CreateAgentModal } from "@/components/CreateAgentModal";
 export function AgentsView() {
   const { current } = useWorkspace();
   const { agents, role, loading, error, refresh } = useActiveAgent();
+
+  // Storefront deep link (/agents -> /dashboard?buy=cfo, surviving login): as soon as the
+  // workspace is known, start checkout for the requested type and hand off to Stripe. The
+  // param is stripped first so a failed attempt doesn't loop on refresh.
+  const buyFired = useRef(false);
+  useEffect(() => {
+    if (!current || buyFired.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const buy = params.get("buy");
+    if (!buy) return;
+    buyFired.current = true;
+    params.delete("buy");
+    const qs = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+    toast.info("Taking you to checkout...");
+    apiFetch<{ url: string }>("/api/build/checkout", {
+      method: "POST",
+      body: JSON.stringify({ workspace_id: current.id, type: buy }),
+    })
+      .then(({ url }) => window.location.assign(url))
+      .catch((e) => toast.error(e instanceof Error ? e.message : "Couldn't start checkout"));
+  }, [current]);
 
   // Landing back from Stripe Checkout (?checkout=success|cancelled). Provisioning happens
   // in the webhook, so on success the new agent appears once it lands — poll the list a
