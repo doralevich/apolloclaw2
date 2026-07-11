@@ -4,6 +4,7 @@ import {
   Briefcase,
   Calculator,
   CheckCircle,
+  GraduationCap,
   Home,
   Scale,
   ShieldCheck,
@@ -99,10 +100,24 @@ const SHOWCASE: Record<
       "Proposal drafts and CRM notes",
     ],
   },
+  college: {
+    icon: GraduationCap,
+    tagline: "Your whole college life, handled",
+    bullets: [
+      "Classes, deadlines, and assignments on track",
+      "Studying, notes, and exam prep",
+      "Professor emails that get answered",
+      "Internships and career prep",
+    ],
+  },
 };
 
 export default function AgentsPage() {
-  const agents = AGENT_TYPES.filter((t) => t.planKey && t.available && SHOWCASE[t.id]);
+  // Purchasable through ApolloClaw checkout (planKey) or sold on a partner site
+  // (externalUrl — The College Agent, bought at thecollegeagent.ai).
+  const agents = AGENT_TYPES.filter(
+    (t) => (t.planKey || t.externalUrl) && t.available && SHOWCASE[t.id]
+  );
 
   return (
     <>
@@ -173,15 +188,31 @@ export default function AgentsPage() {
                 </ul>
                 <div className="mt-6 border-t pt-4" style={{ borderColor: "rgba(11,23,41,0.08)" }}>
                   <p className="text-sm font-semibold" style={{ color: NAVY }}>
-                    $4,500 build <span className="font-normal" style={{ color: "#6b7686" }}>+ $189/mo hosting</span>
+                    {t.externalUrl ? (
+                      t.priceLabel
+                    ) : (
+                      <>
+                        $4,500 build <span className="font-normal" style={{ color: "#6b7686" }}>+ $189/mo hosting</span>
+                      </>
+                    )}
                   </p>
-                  <Link
-                    href={`/dashboard?buy=${t.id}`}
-                    className="mt-3 inline-block w-full rounded-md px-4 py-2.5 text-center text-sm font-bold text-white"
-                    style={{ background: RED }}
-                  >
-                    Get the {t.label}
-                  </Link>
+                  {t.externalUrl ? (
+                    <a
+                      href={t.externalUrl}
+                      className="mt-3 inline-block w-full rounded-md px-4 py-2.5 text-center text-sm font-bold text-white"
+                      style={{ background: RED }}
+                    >
+                      Get {t.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={`/dashboard?buy=${t.id}`}
+                      className="mt-3 inline-block w-full rounded-md px-4 py-2.5 text-center text-sm font-bold text-white"
+                      style={{ background: RED }}
+                    >
+                      Get the {t.label}
+                    </Link>
+                  )}
                 </div>
               </div>
             );

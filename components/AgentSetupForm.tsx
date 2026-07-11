@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { setupQuestionsFor, type SetupQuestion } from "@/config/onboarding";
+import { setupSectionsFor, type SetupQuestion } from "@/config/onboarding";
 import { apiFetch } from "@/lib/api";
 import type { MergedAgent } from "@/lib/types";
 
@@ -226,15 +226,11 @@ export function AgentSetupForm({
   workspaceId?: string;
   justPaid: boolean;
 }) {
-  const { core, module } = useMemo(() => setupQuestionsFor(agentTypeId), [agentTypeId]);
-  const steps = useMemo(
-    () => [
-      { title: "Tell us about your business", subtitle: "Everything here goes straight to your agent — the more real detail, the more useful its first day.", questions: core },
-      ...(module ? [{ title: module.title, subtitle: `The specifics that make your ${agentLabel} actually yours.`, questions: module.questions }] : []),
-    ],
-    [core, module, agentLabel]
-  );
+  const steps = useMemo(() => setupSectionsFor(agentTypeId, agentLabel), [agentTypeId, agentLabel]);
 
+  // Fresh from Stripe, the buyer first gets a full "Payment Received" landing moment;
+  // Get Started drops them into the questionnaire. Direct visits skip straight to it.
+  const [started, setStarted] = useState(!justPaid);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [err, setErr] = useState("");
@@ -287,6 +283,32 @@ export function AgentSetupForm({
     return <BuildScreen agentTypeId={agentTypeId} agentLabel={agentLabel} workspaceId={building.workspaceId} />;
   }
 
+  if (!started) {
+    return (
+      <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column" }}>
+        <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", height: 60, borderBottom: `1px solid ${BDR}`, background: "rgba(250,250,247,0.97)" }}>
+          <ApolloWordmark size={17} />
+          <span style={{ fontSize: 12, color: TXM }}>{agentLabel} Setup</span>
+        </nav>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%)` }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 26px" }}>
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </div>
+          <h1 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px" }}>
+            Payment Received.<br /><span style={{ color: R }}>Your {agentLabel} is ready to be built.</span>
+          </h1>
+          <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto 32px", lineHeight: 1.65 }}>
+            Next, tell us about your business — about 10 minutes — so your agent starts day one
+            already knowing you.
+          </p>
+          <button type="button" onClick={() => setStarted(true)} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 16, padding: "16px 44px", borderRadius: 8, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
+            Click Here to Get Started →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`.oc-ph::placeholder{color:#6b7280!important}`}</style>
@@ -294,18 +316,6 @@ export function AgentSetupForm({
         <ApolloWordmark size={17} />
         <span style={{ fontSize: 12, color: TXM }}>{agentLabel} Setup</span>
       </nav>
-
-      {justPaid && (
-        <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "44px 32px 36px", textAlign: "center" }}>
-          <h1 style={{ fontSize: "clamp(26px,4.5vw,44px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px", color: TX }}>
-            Payment Received. <span style={{ color: R }}>Your {agentLabel} is being built.</span>
-          </h1>
-          <p style={{ fontSize: 15, color: TXM, maxWidth: 540, margin: "0 auto" }}>
-            It takes a couple of minutes to boot. While it does, tell it about your business —
-            about 10 minutes, and it starts day one already knowing you.
-          </p>
-        </div>
-      )}
 
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px 100px" }}>
         <div style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "36px 40px", position: "relative", overflow: "hidden" }}>

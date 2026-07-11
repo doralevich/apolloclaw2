@@ -100,6 +100,11 @@ export function CreateAgentModal({
 
   function submit() {
     if (!current || !selectedType) return;
+    // Sold on a partner site (The College Agent): the CTA is a hand-off, nothing to POST.
+    if (selectedType.externalUrl) {
+      window.location.assign(selectedType.externalUrl);
+      return;
+    }
     return run(async () => {
       // Paid agents: hand off to Stripe Checkout. The webhook provisions after payment
       // and the buyer lands back on the dashboard with ?checkout=success.
@@ -144,7 +149,10 @@ export function CreateAgentModal({
           Create Agent
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      {/* Eight type cards overflow a viewport, so the dialog caps its height and the card
+          list scrolls internally — the name field and the checkout/create button must
+          always stay visible. */}
+      <DialogContent className="flex max-h-[85vh] flex-col">
         <DialogHeader>
           <DialogTitle>Create an agent</DialogTitle>
           <DialogDescription>
@@ -152,7 +160,7 @@ export function CreateAgentModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
           {AGENT_TYPES.map((t) => {
             const Icon = (t.icon && TYPE_ICONS[t.icon]) || Bot;
             const alreadyCreated = t.available && alreadyHas(t);
@@ -184,6 +192,9 @@ export function CreateAgentModal({
                   {t.planKey && !alreadyCreated && (
                     <p className="mt-1 text-xs font-medium">{BUNDLE_PRICE_LABEL}</p>
                   )}
+                  {t.externalUrl && !alreadyCreated && (
+                    <p className="mt-1 text-xs font-medium">{t.priceLabel} · at thecollegeagent.ai</p>
+                  )}
                 </div>
               </button>
             );
@@ -207,13 +218,15 @@ export function CreateAgentModal({
             Cancel
           </Button>
           <Button onClick={submit} disabled={busy || !selectedType}>
-            {selectedType?.planKey
-              ? busy
-                ? "Redirecting to checkout..."
-                : "Continue to Checkout"
-              : busy
-                ? "Creating..."
-                : "Create Agent"}
+            {selectedType?.externalUrl
+              ? "Get it at thecollegeagent.ai"
+              : selectedType?.planKey
+                ? busy
+                  ? "Redirecting to checkout..."
+                  : "Continue to Checkout"
+                : busy
+                  ? "Creating..."
+                  : "Create Agent"}
           </Button>
         </DialogFooter>
       </DialogContent>

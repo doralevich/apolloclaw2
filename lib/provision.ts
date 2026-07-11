@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
 import { DEFAULT_AGENT } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
-import { AGENT_MODULES, CORE_QUESTIONS } from "@/config/onboarding";
+import { AGENT_MODULES, CORE_QUESTIONS, PERSONAL_QUESTIONS } from "@/config/onboarding";
 import { personaForAgentType } from "@/config/personas";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
@@ -65,6 +65,7 @@ export async function injectAgentFile(
 export function buildUserMd(typeLabel: string, answers: Record<string, unknown>): string {
   const labelById = new Map<string, string>();
   for (const q of CORE_QUESTIONS) labelById.set(q.id, q.label);
+  for (const q of PERSONAL_QUESTIONS) labelById.set(q.id, q.label);
   for (const m of Object.values(AGENT_MODULES)) for (const q of m.questions) labelById.set(q.id, q.label);
 
   const lines: string[] = [
