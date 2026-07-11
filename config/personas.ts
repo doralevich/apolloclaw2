@@ -1,6 +1,6 @@
 import "server-only";
 
-// Personas for the paid Apollo Cloud agents — the SOUL.md written into a freshly
+// Personas for the paid ApolloClaw agents — the SOUL.md written into a freshly
 // provisioned instance's OpenClaw workspace (see lib/provision.ts). Keyed by agent-type id
 // (config/agent-types.ts). The persona is what makes a generic instance behave like its
 // role, exactly the way the CEO agent's template carries its own persona.

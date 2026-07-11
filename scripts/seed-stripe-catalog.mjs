@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * seed-stripe-catalog.mjs — sync the Apollo Cloud catalog into Stripe.
+ * seed-stripe-catalog.mjs — sync the ApolloClaw catalog into Stripe.
  *
  * Standalone CLI twin of lib/stripe/seed-catalog.ts (same logic, runnable without the app —
  * e.g. against production with the LIVE key). The deployed app exposes the same sync at
@@ -31,7 +31,7 @@ const CATALOG = [
   { catalogKey: "insurance_plan", name: "The Insurance Agent", amountCents: 450000 },
   { catalogKey: "realestate_plan", name: "The Real Estate Agent", amountCents: 450000 },
   { catalogKey: "sales_plan", name: "The Sales Agent", amountCents: 450000 },
-  { catalogKey: "apollo_hosting", name: "Apollo Cloud Agent Hosting", amountCents: 18900, interval: "month" },
+  { catalogKey: "apollo_hosting", name: "ApolloClaw Agent Hosting", amountCents: 18900, interval: "month" },
 ];
 
 // ── Load .env.local (same pattern as apollo-setup-followup.mjs) ────────────────
@@ -58,7 +58,7 @@ if (!key) {
 }
 const dryRun = process.argv.includes("--dry-run");
 const mode = key.startsWith("sk_live") ? "LIVE" : "test";
-console.log(`Syncing Apollo Cloud catalog (${CATALOG.length} entries) in ${mode} mode${dryRun ? " [dry-run]" : ""}…`);
+console.log(`Syncing ApolloClaw catalog (${CATALOG.length} entries) in ${mode} mode${dryRun ? " [dry-run]" : ""}…`);
 
 const stripe = new Stripe(key);
 

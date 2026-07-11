@@ -116,7 +116,7 @@ async function seedEntry(stripe: Stripe, entry: SeedEntry): Promise<SeedAction> 
   };
 }
 
-/** Sync the full Apollo Cloud catalog (7 agent plans + hosting). Returns one action per entry. */
+/** Sync the full ApolloClaw catalog (7 agent plans + hosting). Returns one action per entry. */
 export async function seedStripeCatalog(stripe: Stripe): Promise<SeedAction[]> {
   const results: SeedAction[] = [];
   for (const entry of entries()) {

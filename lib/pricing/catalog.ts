@@ -1,4 +1,4 @@
-// The Apollo Cloud Stripe catalog — the single source of truth for what the storefront
+// The ApolloClaw Stripe catalog — the single source of truth for what the storefront
 // sells. Every purchasable agent bundles its one-time build fee with the shared monthly
 // hosting subscription at checkout.
 //
@@ -41,7 +41,7 @@ export const AGENT_PLANS: CatalogPlan[] = [
 /** Shared recurring hosting price — every agent purchase subscribes to this. */
 export const HOSTING_PLAN = {
   catalogKey: "apollo_hosting",
-  name: "Apollo Cloud Agent Hosting",
+  name: "ApolloClaw Agent Hosting",
   amountCents: 18900,
   interval: "month",
 } as const;
