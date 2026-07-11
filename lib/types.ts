@@ -34,6 +34,8 @@ export interface AgentRow {
   name: string | null;
   status: string | null;
   template: string | null;
+  // Storefront agent-type id (config/agent-types.ts); null on rows that predate it.
+  agent_type: string | null;
   cpu: number | null;
   memory: number | null;
   disk: number | null;

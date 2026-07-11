@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { statusVariant } from "@/lib/format";
@@ -15,6 +17,32 @@ import { CreateAgentModal } from "@/components/CreateAgentModal";
 export function AgentsView() {
   const { current } = useWorkspace();
   const { agents, role, loading, error, refresh } = useActiveAgent();
+
+  // Landing back from Stripe Checkout (?checkout=success|cancelled). Provisioning happens
+  // in the webhook, so on success the new agent appears once it lands — poll the list a
+  // few times rather than making the user mash refresh. window.location (not
+  // useSearchParams) keeps this page statically prerenderable.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    if (!checkout) return;
+    if (checkout === "success") {
+      toast.success("Payment received — your agent is being provisioned and will appear here shortly.");
+      const timers = [5_000, 15_000, 30_000].map((ms) => setTimeout(() => void refresh(), ms));
+      params.delete("checkout");
+      params.delete("type");
+      const qs = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+      return () => timers.forEach(clearTimeout);
+    }
+    if (checkout === "cancelled") {
+      toast.info("Checkout cancelled — you weren't charged.");
+      params.delete("checkout");
+      const qs = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
 
