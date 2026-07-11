@@ -352,7 +352,7 @@ export interface SetupSection {
 
 /** The full wizard for an agent type: business core -> personal context -> role module. */
 export function setupSectionsFor(agentTypeId: string, agentLabel: string): SetupSection[] {
-  const module = AGENT_MODULES[agentTypeId];
+  const roleModule = AGENT_MODULES[agentTypeId];
   return [
     {
       title: "Tell us about your business",
@@ -364,8 +364,8 @@ export function setupSectionsFor(agentTypeId: string, agentLabel: string): Setup
       subtitle: "Your agent works for a person, not just a business. Skip anything you'd rather not share.",
       questions: PERSONAL_QUESTIONS,
     },
-    ...(module
-      ? [{ title: module.title, subtitle: `The specifics that make your ${agentLabel} actually yours.`, questions: module.questions }]
+    ...(roleModule
+      ? [{ title: roleModule.title, subtitle: `The specifics that make your ${agentLabel} actually yours.`, questions: roleModule.questions }]
       : []),
   ];
 }
