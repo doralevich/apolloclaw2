@@ -145,9 +145,12 @@ function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTypeId: st
     if (!workspaceId) return;
     let cancelled = false;
     const started = Date.now();
+    // Read through a function: the ref mutates between polls, so inline comparisons
+    // would get (wrongly) narrowed by TS control-flow analysis.
+    const isReady = () => phaseRef.current === "ready";
 
     const tick = async () => {
-      if (cancelled || phaseRef.current === "ready") return;
+      if (cancelled || isReady()) return;
       try {
         const { agents } = await apiFetch<{ agents: MergedAgent[] }>(`/api/agents?workspace=${encodeURIComponent(workspaceId)}`);
         const mine = agents.find((a) => a.agent_type === agentTypeId);
@@ -163,7 +166,7 @@ function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTypeId: st
         // transient — keep polling
       }
       // After 4 minutes stop implying live progress and hand over a manual link.
-      if (Date.now() - started > 240_000 && phaseRef.current !== "ready") setPhase("slow");
+      if (Date.now() - started > 240_000 && !isReady()) setPhase("slow");
       if (!cancelled) setTimeout(tick, 5000);
     };
     void tick();
