@@ -3,7 +3,7 @@ import { findOrCreateCrmEntity } from "@/lib/crm";
 import { sendTelegram } from "@/lib/telegram";
 
 const SUPA_URL  = process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
-const SUPA_KEY  = process.env.SUPABASE_SERVICE_KEY || "";
+const SUPA_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
 
 function supaHeaders() {
   return { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };

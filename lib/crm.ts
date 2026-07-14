@@ -1,5 +1,7 @@
 const SUPA_URL = process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
-const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || "";
+// Vercel stores this as SUPABASE_SERVICE_ROLE_KEY; keep SUPABASE_SERVICE_KEY as a fallback
+// for older/local envs. Without the ROLE name, every CRM write here silently no-ops in prod.
+const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
 
 function supaHeaders(extra: Record<string, string> = {}): Record<string, string> {
   return {

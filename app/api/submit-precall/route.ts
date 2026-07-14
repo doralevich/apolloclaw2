@@ -8,7 +8,7 @@ import puppeteer from "puppeteer";
 const MANDRILL_KEY   = process.env.MANDRILL_API_KEY || "";
 const BCC_EMAIL      = "david@apolloclaw.ai";
 const SUPABASE_URL   = process.env.SUPABASE_URL || "";
-const SUPABASE_SKEY  = process.env.SUPABASE_SERVICE_KEY || "";
+const SUPABASE_SKEY  = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
 const STORAGE_BUCKET = "intake-docs";
 
 // ── Upload PDF to Supabase Storage, return public URL ───────────────────────
