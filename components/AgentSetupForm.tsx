@@ -100,12 +100,9 @@ function FF({ label, required, hint, children }: { label?: string; required?: bo
   );
 }
 
-function SHead({ stepNum, total, title, subtitle }: { stepNum: number; total: number; title: string; subtitle?: string }) {
+function SHead({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div style={{ marginBottom: 28 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R }}>Step {stepNum} of {total}</span>
-      </div>
       <h2 style={{ fontSize: 26, fontWeight: 900, color: TX, margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>{title}</h2>
       {subtitle && <p style={{ fontSize: 14, color: TXM, lineHeight: 1.65, margin: 0 }}>{subtitle}</p>}
     </div>
@@ -320,7 +317,7 @@ export function AgentSetupForm({
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px 100px" }}>
         <div style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "36px 40px", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
-          <SHead stepNum={step + 1} total={steps.length} title={steps[step].title} subtitle={steps[step].subtitle} />
+          <SHead title={steps[step].title} subtitle={steps[step].subtitle} />
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
             {steps[step].questions.map((q) => (
               <QuestionField key={q.id} q={q} value={answers[q.id]} onChange={(v) => setAnswer(q.id, v)} />
