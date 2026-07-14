@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendTelegram } from "@/lib/telegram";
-import { execFile } from "child_process";
-import { promisify } from "util";
 import * as path from "path";
 import * as fs from "fs";
 import { upsertMailchimpContact, tagMailchimpContact } from "@/lib/mailchimp";
 import { createAttioDeal, findAttioDealByEmail, updateAttioDealStage } from "@/lib/attio";
-
-const execFileAsync = promisify(execFile);
+import { renderSectionsPdf, type PdfSectionInput } from "@/lib/pdf";
 
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
@@ -23,16 +20,207 @@ const trackLabel: Record<string, string> = {
   agency: "Agency / Reseller",
 };
 
-// ─── Generate PDF via Puppeteer child process ─────────────────────────────────
+// ─── Build the intake sections, grouped by track ──────────────────────────────
+// Ports the section layout of the old Puppeteer template. Empty rows/sections are
+// dropped by the renderer, so listing every possible field is safe.
+function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
+  const track = String(d.trackType || "");
+  const sections: PdfSectionInput[] = [];
+
+  sections.push({
+    title: "Contact Information",
+    rows: [
+      { label: "First Name", value: d.firstName },
+      { label: "Last Name", value: d.lastName },
+      { label: "Email", value: d.email },
+      { label: "Phone", value: d.phone },
+      { label: "Track", value: trackLabel[track] || track },
+      { label: "How They Heard", value: d.source },
+      { label: "Contact Preference", value: d.contactMethod },
+      { label: "Best Time to Reach", value: d.bestTime },
+      { label: "Timezone", value: d.timezone },
+      { label: "Job Title", value: d.jobTitle },
+      { label: "LinkedIn", value: d.linkedin },
+    ],
+  });
+
+  if (track === "business" || track === "personal") {
+    sections.push({
+      title: "Business Profile",
+      rows: [
+        { label: "Company", value: d.companyName },
+        { label: "Website", value: d.website },
+        { label: "Industry", value: d.industry },
+        { label: "Team Size", value: d.companySize },
+        { label: "Monthly Revenue", value: d.revenue },
+        { label: "Years in Business", value: d.businessAge },
+        { label: "Business Model", value: d.businessModel },
+        { label: "Description", value: d.businessDescription },
+        { label: "Differentiation", value: d.differentiation },
+        { label: "Web Platform", value: d.webPlatform },
+        { label: "CRM Tools", value: d.crmTools },
+        { label: "CRM (Other)", value: d.crmToolsOther },
+        { label: "E-commerce", value: d.ecomTools },
+        { label: "Communications", value: d.commsTools },
+        { label: "Project Mgmt", value: d.pmTools },
+        { label: "Billing Tools", value: d.billingTools },
+        { label: "Marketing Tools", value: d.mktgTools },
+        { label: "Automation Tools", value: d.autoTools },
+        { label: "Support Tools", value: d.supportTools },
+      ],
+    });
+    sections.push({
+      title: "Pain Points & Operations",
+      rows: [
+        { label: "Main Pain Point", value: d.mainPain },
+        { label: "Broken Areas", value: d.brokenAreas },
+        { label: "Hours/Wk on Manual Tasks", value: d.manualHours },
+        { label: "Pain Duration", value: d.painDuration },
+        { label: "Task They Hate Most", value: d.hatedTasks },
+        { label: "Already Tried", value: d.triedBefore },
+        { label: "Business Impact", value: d.costImpact },
+        { label: "What Fixed Looks Like", value: d.fixedLooksLike },
+      ],
+    });
+    sections.push({
+      title: "Family & Life Context",
+      rows: [
+        { label: "Relationship Status", value: d.maritalStatus },
+        { label: "Children", value: d.children },
+        { label: "Children Ages", value: d.childrenAges },
+        { label: "Caregiving", value: d.caretaking },
+        { label: "Home / Work Situation", value: d.homeLife },
+        { label: "Protecting", value: d.protecting },
+        { label: "Life Stage", value: d.lifeStage },
+        { label: "3-Year Goals", value: d.threeYearGoals },
+        { label: "Personal Vision", value: d.personalGoal },
+      ],
+    });
+    sections.push({
+      title: "Psychology & Mindset",
+      rows: [
+        { label: "Decision Style", value: d.decisionStyle },
+        { label: "Stress Response", value: d.stressResponse },
+        { label: "Motivators", value: d.motivators },
+        { label: "Internal Blockers", value: d.blockers },
+        { label: "Money Mindset", value: d.moneyMindset },
+        { label: "Agency History", value: d.agencyHistory },
+        { label: "Tech Trust (1–10)", value: d.techTrust },
+        { label: "Control Comfort (1–10)", value: d.controlComfort },
+        { label: "What Makes It Worth It", value: d.worthIt },
+      ],
+    });
+    sections.push({
+      title: "Voice & Communication Style",
+      rows: [
+        { label: "Writing Tone", value: d.writingTone },
+        { label: "Comfort With Writing", value: d.writingComfort },
+        { label: "Brand Voice Like", value: d.brandVoiceLike },
+        { label: "Voice Description", value: d.voiceDescription },
+        { label: "Loves These Words/Phrases", value: d.loveWords },
+        { label: "Hates These Words/Styles", value: d.hateWords },
+        { label: "Social Presence", value: d.socialPresence },
+        { label: "Platforms", value: d.platforms },
+        { label: "Writing Sample", value: d.writingSample },
+      ],
+    });
+    sections.push({
+      title: "AI Goals & Vision",
+      rows: [
+        { label: "AI Goals", value: d.aiGoals },
+        { label: "Primary Success Metric", value: d.successMetric },
+        { label: "#1 Workflow to Automate", value: d.priorityWorkflow },
+        { label: "Prior AI Experience", value: d.priorAI },
+        { label: "Past AI Attempts", value: d.pastExperience },
+        { label: "Team Sentiment", value: d.teamSentiment },
+      ],
+    });
+    sections.push({
+      title: "IT Infrastructure & Scope",
+      rows: [
+        { label: "Hosting / Cloud", value: d.hosting },
+        { label: "Operating System", value: d.os },
+        { label: "Security Measures", value: d.securityMeasures },
+        { label: "Data Types Stored", value: d.dataTypes },
+        { label: "Compliance", value: d.compliance },
+        { label: "Budget", value: d.budget },
+        { label: "Timeline", value: d.timeline },
+        { label: "Engagement Type", value: d.engagement },
+        { label: "Internal Tech Resources", value: d.internalTech },
+        { label: "Constraints", value: d.constraints },
+      ],
+    });
+  }
+
+  if (track === "student") {
+    sections.push({
+      title: "Academic Profile",
+      rows: [
+        { label: "School", value: d.school },
+        { label: "School Type", value: d.schoolType },
+        { label: "Year", value: d.year },
+        { label: "Major", value: d.major },
+        { label: "AI Bot Uses", value: d.uses },
+        { label: "Current AI Tools", value: d.currentTools },
+        { label: "Biggest Challenge", value: d.goalShort },
+        { label: "Longer-Term Goal", value: d.goalLong },
+        { label: "Budget", value: d.budget },
+        { label: "Timeline", value: d.timeline },
+      ],
+    });
+  }
+
+  if (track === "admin") {
+    sections.push({
+      title: "Institutional Profile",
+      rows: [
+        { label: "Role", value: d.adminRole },
+        { label: "School", value: d.school },
+        { label: "School Type", value: d.schoolType },
+        { label: "AI Bot Uses", value: d.uses },
+        { label: "Compliance", value: d.compliance },
+        { label: "Budget", value: d.budget },
+        { label: "Timeline", value: d.timeline },
+      ],
+    });
+  }
+
+  if (track === "agency") {
+    sections.push({
+      title: "Agency Profile",
+      rows: [
+        { label: "Agency Name", value: d.agencyName },
+        { label: "Website", value: d.website },
+        { label: "Agency Size", value: d.size },
+        { label: "Agency Model", value: d.model },
+        { label: "Client Types", value: d.clientTypes },
+        { label: "Client Count", value: d.clientCount },
+        { label: "Services Offered", value: d.services },
+        { label: "Why Partner", value: d.whyPartner },
+        { label: "Revenue Goal", value: d.revenue },
+        { label: "Timeline", value: d.timeline },
+        { label: "Questions", value: d.questions },
+      ],
+    });
+  }
+
+  return sections;
+}
+
+// ─── Generate the intake PDF (serverless-safe, @react-pdf/renderer) ────────────
 async function generateIntakePdf(data: Record<string, unknown>): Promise<Buffer | null> {
   try {
-    const scriptPath = path.join(process.cwd(), "lib", "intake-pdf-gen.cjs");
-    const b64Input = Buffer.from(JSON.stringify(data)).toString("base64");
-    const { stdout } = await execFileAsync("node", [scriptPath, b64Input], {
-      maxBuffer: 20 * 1024 * 1024,
-      timeout: 60000,
+    const track = String(data.trackType || "");
+    const name = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+    const heading = [name, data.email].filter(Boolean).join(" • ");
+    const submittedAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    return await renderSectionsPdf({
+      docTitle: "Client Intake Form",
+      heading,
+      submittedAt,
+      badge: trackLabel[track] || track,
+      sections: buildIntakeSections(data),
     });
-    return Buffer.from(stdout, "base64");
   } catch (err) {
     console.error("PDF generation failed:", err);
     return null;

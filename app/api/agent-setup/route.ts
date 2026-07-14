@@ -1,41 +1,19 @@
-import { execFile } from "child_process";
-import path from "path";
-import { promisify } from "util";
 import { after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
 import { setupSectionsFor } from "@/config/onboarding";
 import { requireMember, requireUser } from "@/lib/auth";
 import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { renderSectionsPdf } from "@/lib/pdf";
 import { buildUserMd, injectAgentFile } from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegram } from "@/lib/telegram";
-
-const execFileAsync = promisify(execFile);
 
 // A section of the emailed submission: labeled answers grouped by questionnaire step.
 type SetupSection = { title: string; rows: { label: string; value: string | string[] }[] };
 
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-// Render the buyer's answers to a PDF via the same Puppeteer child-process mechanism the
-// intake form uses (lib/agent-setup-pdf-gen.cjs). Best-effort — a failure returns null and
-// the email still goes out with the answers inline.
-async function generateSetupPdf(payload: object): Promise<Buffer | null> {
-  try {
-    const scriptPath = path.join(process.cwd(), "lib", "agent-setup-pdf-gen.cjs");
-    const b64 = Buffer.from(JSON.stringify(payload)).toString("base64");
-    const { stdout } = await execFileAsync("node", [scriptPath, b64], {
-      maxBuffer: 20 * 1024 * 1024,
-      timeout: 60_000,
-    });
-    return Buffer.from(stdout, "base64");
-  } catch (err) {
-    console.error("[agent-setup] PDF generation failed:", err);
-    return null;
-  }
 }
 
 // POST /api/agent-setup { workspace_id?, agent_type, answers }
@@ -163,13 +141,18 @@ export const POST = route(async (request: Request) => {
     );
 
     const submittedAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-    const pdf = await generateSetupPdf({
-      agentLabel: type.label,
-      businessName,
-      email: user.email ?? "",
-      submittedAt,
-      sections,
-    });
+    let pdf: Buffer | null = null;
+    try {
+      pdf = await renderSectionsPdf({
+        docTitle: `${type.label} — Setup Profile`,
+        heading: [businessName, user.email].filter(Boolean).join(" • "),
+        submittedAt,
+        badge: type.label,
+        sections,
+      });
+    } catch (err) {
+      console.error("[agent-setup] PDF generation failed:", err);
+    }
 
     const inlineHtml = sections
       .map(
