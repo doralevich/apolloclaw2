@@ -1,10 +1,12 @@
 import type Stripe from "stripe";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
 import { ApiError } from "@/lib/http";
 import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendTelegram } from "@/lib/telegram";
+import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 
 // Stripe webhook — the provisioning side of the storefront.
 //
@@ -107,6 +109,15 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       allowTemplateFallback: true,
     });
     console.log("[stripe-webhook] provisioned", type.id, agent.id, "for session", session.id);
+
+    // Notify the team of the sale — Telegram + email — after the response so a slow
+    // Mandrill/Telegram call never delays Stripe's 200 or risks a retry.
+    const amount =
+      session.amount_total != null
+        ? `$${(session.amount_total / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+        : "";
+    const buyer = session.customer_details?.email || email || userId;
+    after(() => notifyPurchase({ label: type.label, agentId: agent.id, buyer, amount, sessionId: session.id }));
   } catch (err) {
     if (err instanceof ApiError && err.status === 409) {
       // Duplicate delivery (or a second purchase attempt for a type the workspace already
@@ -116,6 +127,32 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     }
     throw err;
   }
+}
+
+// Team alert on a completed purchase: Telegram (same channel as the intake flows) plus an
+// email to the notify address. Best-effort — both helpers swallow their own errors.
+async function notifyPurchase(o: {
+  label: string;
+  agentId: string;
+  buyer: string;
+  amount: string;
+  sessionId: string;
+}): Promise<void> {
+  const line = `🟢 New agent purchased: ${o.label}${o.amount ? ` (${o.amount})` : ""}`;
+  await sendTelegram(`${line}\nBuyer: ${o.buyer}\nAgent: ${o.agentId}\nProvisioned ✅`);
+  await sendMandrillEmail({
+    to: NOTIFY_EMAIL,
+    subject: `New ApolloClaw sale — ${o.label}${o.amount ? ` (${o.amount})` : ""}`,
+    html:
+      `<h2 style="font-family:sans-serif;color:#0B1729">New agent purchased</h2>` +
+      `<table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Agent</td><td>${o.label}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Amount</td><td>${o.amount || "—"}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Buyer</td><td>${o.buyer}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Agent ID</td><td>${o.agentId}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Session</td><td>${o.sessionId}</td></tr>` +
+      `</table><p style="font-family:sans-serif;color:#6b7280;font-size:13px">The agent has been provisioned. The buyer's setup questionnaire (with a PDF) follows separately when they complete it.</p>`,
+  });
 }
 
 // Hosting subscription cancelled -> flip the Stripe-managed entitlement off. Only rows

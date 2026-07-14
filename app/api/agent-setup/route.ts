@@ -1,10 +1,42 @@
+import { execFile } from "child_process";
+import path from "path";
+import { promisify } from "util";
 import { after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
+import { setupSectionsFor } from "@/config/onboarding";
 import { requireMember, requireUser } from "@/lib/auth";
+import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { buildUserMd, injectAgentFile } from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegram } from "@/lib/telegram";
+
+const execFileAsync = promisify(execFile);
+
+// A section of the emailed submission: labeled answers grouped by questionnaire step.
+type SetupSection = { title: string; rows: { label: string; value: string | string[] }[] };
+
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Render the buyer's answers to a PDF via the same Puppeteer child-process mechanism the
+// intake form uses (lib/agent-setup-pdf-gen.cjs). Best-effort — a failure returns null and
+// the email still goes out with the answers inline.
+async function generateSetupPdf(payload: object): Promise<Buffer | null> {
+  try {
+    const scriptPath = path.join(process.cwd(), "lib", "agent-setup-pdf-gen.cjs");
+    const b64 = Buffer.from(JSON.stringify(payload)).toString("base64");
+    const { stdout } = await execFileAsync("node", [scriptPath, b64], {
+      maxBuffer: 20 * 1024 * 1024,
+      timeout: 60_000,
+    });
+    return Buffer.from(stdout, "base64");
+  } catch (err) {
+    console.error("[agent-setup] PDF generation failed:", err);
+    return null;
+  }
+}
 
 // POST /api/agent-setup { workspace_id?, agent_type, answers }
 //
@@ -105,15 +137,67 @@ export const POST = route(async (request: Request) => {
     });
   }
 
-  // Heads-up to the team, same channel as the intake forms. Best-effort.
-  after(() =>
-    sendTelegram(
+  // Team heads-up: Telegram (same channel as the intake flows) + an email with a PDF of
+  // the full submission. Runs after the response so PDF rendering / email never blocks the
+  // buyer's "building your agent" screen.
+  const businessName = typeof answers.business_name === "string" ? answers.business_name : "";
+  const sections: SetupSection[] = setupSectionsFor(type.id, type.label)
+    .map((s) => ({
+      title: s.title,
+      rows: s.questions
+        .map((q) => ({ label: q.label, value: answers[q.id] }))
+        .filter((r): r is { label: string; value: string | string[] } => {
+          const v = r.value;
+          return v != null && (Array.isArray(v) ? v.length > 0 : v.trim().length > 0);
+        }),
+    }))
+    .filter((s) => s.rows.length > 0);
+  const buyer = user.email ?? user.id;
+
+  after(async () => {
+    await sendTelegram(
       `🤖 ${type.label} setup completed\n` +
-        `Business: ${typeof answers.business_name === "string" ? answers.business_name : "?"}\n` +
-        `By: ${user.email ?? user.id}\n` +
+        `Business: ${businessName || "?"}\n` +
+        `By: ${buyer}\n` +
         `Agent provisioned: ${agentId ? "yes — profile injected" : "not yet — will inject at provision"}`
-    )
-  );
+    );
+
+    const submittedAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    const pdf = await generateSetupPdf({
+      agentLabel: type.label,
+      businessName,
+      email: user.email ?? "",
+      submittedAt,
+      sections,
+    });
+
+    const inlineHtml = sections
+      .map(
+        (s) =>
+          `<h3 style="font-family:sans-serif;color:#E8342A;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin:14px 0 4px">${esc(s.title)}</h3>` +
+          `<table style="font-family:sans-serif;font-size:13px;border-collapse:collapse">` +
+          s.rows
+            .map(
+              (r) =>
+                `<tr><td style="padding:3px 12px 3px 0;color:#6b7280;vertical-align:top">${esc(r.label)}</td>` +
+                `<td>${esc(Array.isArray(r.value) ? r.value.join(", ") : r.value)}</td></tr>`
+            )
+            .join("") +
+          `</table>`
+      )
+      .join("");
+
+    await sendMandrillEmail({
+      to: NOTIFY_EMAIL,
+      subject: `${type.label} setup — ${businessName || buyer}`,
+      html:
+        `<h2 style="font-family:sans-serif;color:#0B1729">${esc(type.label)} setup completed</h2>` +
+        `<p style="font-family:sans-serif;font-size:13px;color:#6b7280">By ${esc(buyer)}. ` +
+        `${pdf ? "Full profile attached as a PDF." : "PDF unavailable — full details below."}</p>` +
+        inlineHtml,
+      attachments: pdf ? [{ filename: `${type.id}-setup.pdf`, content: pdf }] : undefined,
+    });
+  });
 
   // workspace_id feeds the post-submit "building your agent" screen, which polls the
   // workspace's agent list until the webhook-provisioned agent shows up running.
