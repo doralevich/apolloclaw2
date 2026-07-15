@@ -431,9 +431,8 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <SHead stepNum={4} total={9} title="Operations & Pain Points" subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
       <FF label="Your biggest operational headache right now" required><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
       <CheckGroup label="Which areas feel most broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
-      <FF label="The one thing you'd make disappear tomorrow" required><TArea value={s3.hate} onChange={v => f3("hate", v)} placeholder="The task that makes you groan every time." rows={2} /></FF>
       <Row2>
-        <FF label="Hours lost to manual work each week"><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF>
+        <FF label="Hours lost to administrative tasks each week"><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF>
         <FF label="What's this costing the business?"><TSelect value={s3.costImpact} onChange={v => f3("costImpact", v)} options={COST_IMPACT} /></FF>
       </Row2>
       <FF label="What does 'fixed' look like in 12 months?" hint="What does your day look like? What numbers have changed?"><TArea value={s3.fixed} onChange={v => f3("fixed", v)} placeholder="Be specific about the outcome you're buying." rows={3} /></FF>
@@ -443,10 +442,8 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <SHead stepNum={5} total={9} title="Executive Profile" subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
       <FF label="Your biggest strategic bet in the next 12 months" required><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most - a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
       <RadioGroup label="Where's the real bottleneck to growth right now?" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} />
-      <FF label="A decision you're stuck on for lack of the right information"><TArea value={s5.stuckDecision} onChange={v => f5("stuckDecision", v)} placeholder="What would you decide tomorrow if you had the numbers or clarity in front of you?" rows={2} /></FF>
       <RadioGroup label="How do you make big decisions?" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} />
       <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
-      <FF label="What would make this engagement 100% worth it?"><TArea value={s5.worthIt} onChange={v => f5("worthIt", v)} placeholder="The real bar - the specific outcome that would make this a clear win." rows={3} /></FF>
     </Stack>,
     // 6 - Life context (optional, trimmed)
     <Stack key="s4">
@@ -468,7 +465,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     // 8 - Goals & AI scope
     <Stack key="s7">
       <SHead stepNum={8} total={9} title="Goals & AI Scope" subtitle="What you want AI to own, and what winning looks like." badge="Business" />
-      <CheckGroup label="What do you want AI to handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+      <CheckGroup label="What do you want your Agent to handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
       <FF label="The #1 workflow you want automated first" hint="From trigger to outcome - the more specific, the better."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={4} /></FF>
       <CheckGroup label="What does winning look like?" hint="Select all that apply" options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
       <FF label="Have you tried AI or automation before?" hint="What you've explored, and what happened."><TArea value={s7.prior} onChange={v => f7("prior", v)} placeholder="e.g. We tried ChatGPT for content, a Zapier automation for leads, hired someone to build a bot - here's how it went..." rows={3} /></FF>
