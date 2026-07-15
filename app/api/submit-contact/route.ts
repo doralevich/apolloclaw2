@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { findOrCreateCrmEntity } from "@/lib/crm";
 import { sendTelegram } from "@/lib/telegram";
 
-const SUPA_URL  = process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
-const SUPA_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
+// CRM writes go to the separate "Brain" Supabase project. Prefer a dedicated
+// CRM_SUPABASE_SERVICE_KEY — the shared SUPABASE_SERVICE_ROLE_KEY is the dashboard
+// project's key and 401s against the Brain.
+const SUPA_URL  = process.env.CRM_SUPABASE_URL || process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
+const SUPA_KEY  = process.env.CRM_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
 
 function supaHeaders() {
   return { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };

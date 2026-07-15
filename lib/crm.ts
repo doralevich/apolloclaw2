@@ -1,7 +1,10 @@
-const SUPA_URL = process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
-// Vercel stores this as SUPABASE_SERVICE_ROLE_KEY; keep SUPABASE_SERVICE_KEY as a fallback
-// for older/local envs. Without the ROLE name, every CRM write here silently no-ops in prod.
-const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
+// The CRM lives in a SEPARATE Supabase project (the "Brain") from the storefront/dashboard
+// DB. The dashboard's SUPABASE_SERVICE_ROLE_KEY belongs to a DIFFERENT project, so reusing it
+// here authenticates against the wrong project (401) and every CRM write silently no-ops.
+// Prefer a dedicated CRM_SUPABASE_SERVICE_KEY (the Brain project's service_role key); the
+// legacy names remain as fallbacks for older/local envs.
+const SUPA_URL = process.env.CRM_SUPABASE_URL || process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
+const SUPA_KEY = process.env.CRM_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
 
 function supaHeaders(extra: Record<string, string> = {}): Record<string, string> {
   return {
