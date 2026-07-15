@@ -476,22 +476,17 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     </Stack>,
     // 9 - Scope & next steps
     <Stack key="s8">
-      <SHead stepNum={9} total={9} title="Scope & Next Steps" subtitle="Budget, timeline, and how you'd like to work together." badge="Business" />
-      <Row2>
-        <FF label="Budget for this project" required><TSelect value={s8.budget} onChange={v => f8("budget", v)} options={BUDGETS} /></FF>
-        <FF label="Desired timeline" required><TSelect value={s8.timeline} onChange={v => f8("timeline", v)} options={TIMELINES} /></FF>
-      </Row2>
+      <SHead stepNum={9} total={9} title="Scope & Next Steps" subtitle="A few final details so we can prepare for our conversation." badge="Business" />
       <RadioGroup label="Type of engagement" options={ENGAGEMENTS} value={s8.engagement} onChange={v => f8("engagement", v)} />
       <FF label="Internal technical resources after launch" required><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
-      <FF label="Hard constraints or non-negotiables"><TArea value={s8.constraints} onChange={v => f8("constraints", v)} rows={2} /></FF>
-      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", padding: "14px 16px", borderRadius: 6, cursor: "pointer", fontSize: 13, fontFamily: "inherit", lineHeight: 1.55, background: s8.agree ? "rgba(215,43,43,0.1)" : agreeErr ? "rgba(215,43,43,0.05)" : SRF2, border: `1px solid ${s8.agree ? "rgba(215,43,43,0.45)" : agreeErr ? "rgba(215,43,43,0.5)" : BDR}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TXM }}>
-        <span style={{ width: 16, height: 16, borderRadius: 3, flexShrink: 0, marginTop: 2, border: `1.5px solid ${s8.agree ? R : "rgba(0,0,0,0.2)"}`, background: s8.agree ? R : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {s8.agree && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? "rgba(215,43,43,0.12)" : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? R : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? "0 0 0 4px rgba(215,43,43,0.12)" : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? R : "rgba(0,0,0,0.28)"}`, background: s8.agree ? R : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
         </span>
         I've answered honestly and I'm ready for a conversation about how Apollo[Claw] can help my business.
       </button>
-      {agreeErr && <p style={{ fontSize: 12, color: "#dc2626", marginTop: -14 }}>Please check this box before submitting.</p>}
+      {agreeErr && <p style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginTop: 6 }}>Please check this box before submitting.</p>}
     </Stack>,
   ];
   return <Shell steps={BIZ_STEPS} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === pages.length - 1}>{pages[step]}</Shell>;
