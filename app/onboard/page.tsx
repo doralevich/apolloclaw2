@@ -431,9 +431,8 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <SHead stepNum={4} total={9} title="Operations & Pain Points" subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
       <FF label="Your biggest operational headache right now" required><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
       <CheckGroup label="Which areas feel most broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
-      <FF label="The one thing you'd make disappear tomorrow" required><TArea value={s3.hate} onChange={v => f3("hate", v)} placeholder="The task that makes you groan every time." rows={2} /></FF>
       <Row2>
-        <FF label="Hours lost to manual work each week"><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF>
+        <FF label="Hours lost to administrative tasks each week"><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF>
         <FF label="What's this costing the business?"><TSelect value={s3.costImpact} onChange={v => f3("costImpact", v)} options={COST_IMPACT} /></FF>
       </Row2>
       <FF label="What does 'fixed' look like in 12 months?" hint="What does your day look like? What numbers have changed?"><TArea value={s3.fixed} onChange={v => f3("fixed", v)} placeholder="Be specific about the outcome you're buying." rows={3} /></FF>
@@ -443,10 +442,8 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <SHead stepNum={5} total={9} title="Executive Profile" subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
       <FF label="Your biggest strategic bet in the next 12 months" required><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most - a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
       <RadioGroup label="Where's the real bottleneck to growth right now?" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} />
-      <FF label="A decision you're stuck on for lack of the right information"><TArea value={s5.stuckDecision} onChange={v => f5("stuckDecision", v)} placeholder="What would you decide tomorrow if you had the numbers or clarity in front of you?" rows={2} /></FF>
       <RadioGroup label="How do you make big decisions?" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} />
       <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
-      <FF label="What would make this engagement 100% worth it?"><TArea value={s5.worthIt} onChange={v => f5("worthIt", v)} placeholder="The real bar - the specific outcome that would make this a clear win." rows={3} /></FF>
     </Stack>,
     // 6 - Life context (optional, trimmed)
     <Stack key="s4">
@@ -468,7 +465,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     // 8 - Goals & AI scope
     <Stack key="s7">
       <SHead stepNum={8} total={9} title="Goals & AI Scope" subtitle="What you want AI to own, and what winning looks like." badge="Business" />
-      <CheckGroup label="What do you want AI to handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+      <CheckGroup label="What do you want your Agent to handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
       <FF label="The #1 workflow you want automated first" hint="From trigger to outcome - the more specific, the better."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={4} /></FF>
       <CheckGroup label="What does winning look like?" hint="Select all that apply" options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
       <FF label="Have you tried AI or automation before?" hint="What you've explored, and what happened."><TArea value={s7.prior} onChange={v => f7("prior", v)} placeholder="e.g. We tried ChatGPT for content, a Zapier automation for leads, hired someone to build a bot - here's how it went..." rows={3} /></FF>
@@ -476,22 +473,17 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     </Stack>,
     // 9 - Scope & next steps
     <Stack key="s8">
-      <SHead stepNum={9} total={9} title="Scope & Next Steps" subtitle="Budget, timeline, and how you'd like to work together." badge="Business" />
-      <Row2>
-        <FF label="Budget for this project" required><TSelect value={s8.budget} onChange={v => f8("budget", v)} options={BUDGETS} /></FF>
-        <FF label="Desired timeline" required><TSelect value={s8.timeline} onChange={v => f8("timeline", v)} options={TIMELINES} /></FF>
-      </Row2>
+      <SHead stepNum={9} total={9} title="Scope & Next Steps" subtitle="A few final details so we can prepare for our conversation." badge="Business" />
       <RadioGroup label="Type of engagement" options={ENGAGEMENTS} value={s8.engagement} onChange={v => f8("engagement", v)} />
       <FF label="Internal technical resources after launch" required><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
-      <FF label="Hard constraints or non-negotiables"><TArea value={s8.constraints} onChange={v => f8("constraints", v)} rows={2} /></FF>
-      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", padding: "14px 16px", borderRadius: 6, cursor: "pointer", fontSize: 13, fontFamily: "inherit", lineHeight: 1.55, background: s8.agree ? "rgba(215,43,43,0.1)" : agreeErr ? "rgba(215,43,43,0.05)" : SRF2, border: `1px solid ${s8.agree ? "rgba(215,43,43,0.45)" : agreeErr ? "rgba(215,43,43,0.5)" : BDR}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TXM }}>
-        <span style={{ width: 16, height: 16, borderRadius: 3, flexShrink: 0, marginTop: 2, border: `1.5px solid ${s8.agree ? R : "rgba(0,0,0,0.2)"}`, background: s8.agree ? R : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {s8.agree && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? "rgba(215,43,43,0.12)" : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? R : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? "0 0 0 4px rgba(215,43,43,0.12)" : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? R : "rgba(0,0,0,0.28)"}`, background: s8.agree ? R : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
         </span>
         I've answered honestly and I'm ready for a conversation about how Apollo[Claw] can help my business.
       </button>
-      {agreeErr && <p style={{ fontSize: 12, color: "#dc2626", marginTop: -14 }}>Please check this box before submitting.</p>}
+      {agreeErr && <p style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginTop: 6 }}>Please check this box before submitting.</p>}
     </Stack>,
   ];
   return <Shell steps={BIZ_STEPS} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === pages.length - 1}>{pages[step]}</Shell>;
