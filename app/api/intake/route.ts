@@ -8,8 +8,11 @@ import { renderSectionsPdf, type PdfSectionInput } from "@/lib/pdf";
 
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
-const SUPA_URL = process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
-const SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
+// CRM writes go to the separate "Brain" Supabase project. Prefer a dedicated
+// CRM_SUPABASE_SERVICE_KEY (that project's service_role key) — the shared
+// SUPABASE_SERVICE_ROLE_KEY belongs to the storefront/dashboard project and 401s here.
+const SUPA_URL = process.env.CRM_SUPABASE_URL || process.env.SUPABASE_URL || "https://moubzvpffhqvumipbnfj.supabase.co";
+const SUPA_KEY = process.env.CRM_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "";
 const MANDRILL_KEY = process.env.MANDRILL_API_KEY || "";
 
 const trackLabel: Record<string, string> = {
