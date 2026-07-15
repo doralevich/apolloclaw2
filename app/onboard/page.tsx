@@ -30,12 +30,12 @@ function ApolloWordmark({ size = 18, sublabel = "AI Consulting" }: { size?: numb
 // ════════════════════════════════════════════════════════════
 const HOW_HEARD = ["Google / Search","LinkedIn","Facebook / Instagram","YouTube","Podcast","Friend / Colleague referral","Client referral","Conference or event","Cold email / DM","Blog post / Article","Reddit","Twitter / X","Agency or partner","Other"];
 const CONTACT_PREF = ["Email","Phone call","Text / SMS","Telegram","WhatsApp","Video call (Zoom/Meet)"];
-const BEST_TIME    = ["Early morning (6–9am)","Morning (9am–12pm)","Early afternoon (12–3pm)","Late afternoon (3–6pm)","Evening (6–9pm)","Flexible / Anytime"];
+const BEST_TIME    = ["Early morning (6-9am)","Morning (9am-12pm)","Early afternoon (12-3pm)","Late afternoon (3-6pm)","Evening (6-9pm)","Flexible / Anytime"];
 const TIMEZONES    = ["Eastern (ET)","Central (CT)","Mountain (MT)","Pacific (PT)","Alaska (AKT)","Hawaii (HST)","GMT / London","CET / Europe","IST / India","AEST / Australia","Other"];
 const INDUSTRIES   = ["E-commerce / Retail","Professional Services","Healthcare / Medical","Real Estate","SaaS / Software","Marketing / Ad Agency","Finance / Accounting / Legal","Hospitality / Food & Beverage","Education / Coaching","Manufacturing / Logistics","Construction / Trades","Non-profit","Consulting","Media / Entertainment","Other"];
-const BIZ_SIZES    = ["Just me (Solo)","2–5 people","6–10 people","11–25 people","26–50 people","51–100 people","100+ people"];
-const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k–$10k/mo","$10k–$25k/mo","$25k–$50k/mo","$50k–$100k/mo","$100k–$250k/mo","$250k–$500k/mo","$500k+/mo","Prefer not to say"];
-const BIZ_AGE      = ["Less than 6 months","6–12 months","1–2 years","2–5 years","5–10 years","10+ years"];
+const BIZ_SIZES    = ["Just me (Solo)","2-5 people","6-10 people","11-25 people","26-50 people","51-100 people","100+ people"];
+const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k-$10k/mo","$10k-$25k/mo","$25k-$50k/mo","$50k-$100k/mo","$100k-$250k/mo","$250k-$500k/mo","$500k+/mo","Prefer not to say"];
+const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years"];
 const BIZ_MODEL    = ["Service-based (sell time/expertise)","Physical product","SaaS / Digital product","Marketplace / Platform","Subscription / Membership","Hybrid (products + services)","Agency / Reseller","Franchise / Licensed model"];
 const STACK_CRM    = ["Salesforce","HubSpot","Pipedrive","Zoho CRM","Keap","Close","No CRM currently","Other"];
 const STACK_COMMS  = ["Google Workspace","Microsoft 365 / Teams","Slack","Zoom","Google Meet","Telegram","Meeting notes (Otter / Fathom / Fireflies)","Other"];
@@ -51,8 +51,8 @@ const IT_SECURITY  = ["We have a dedicated IT team or MSP","We use a password ma
 const IT_DATA      = ["Customer contact data","Credit card / payment info","Health / medical records","Legal documents","Employee records","Financial records","Proprietary IP / trade secrets","Nothing particularly sensitive"];
 const IT_COMPLY    = ["HIPAA (healthcare)","PCI-DSS (payments)","GDPR (EU data)","CCPA (California)","SOC 2","None / Not applicable","Not sure","Multiple"];
 const BROKEN_AREAS = ["Sales / Lead Generation","Customer Support / Service","Operations / Admin","Marketing & Content","Invoicing & Finance","Scheduling & Calendar","Hiring & HR","Reporting & Analytics","Order Fulfillment / Shipping","Email & Inbox","Team Communication","Vendor / Supplier Management","Project Management","Customer Onboarding","Contracts & Proposals"];
-const HOURS_WASTED = ["Less than 5 hrs/wk","5–10 hrs/wk","10–20 hrs/wk","20–30 hrs/wk","30–40 hrs/wk","40+ hrs/wk (a full-time job)","Not sure - it's everywhere"];
-const PAIN_DURATION= ["Under 3 months","3–6 months","6–12 months","1–2 years","2+ years","Since the business launched"];
+const HOURS_WASTED = ["Less than 5 hrs/wk","5-10 hrs/wk","10-20 hrs/wk","20-30 hrs/wk","30-40 hrs/wk","40+ hrs/wk (a full-time job)","Not sure - it's everywhere"];
+const PAIN_DURATION= ["Under 3 months","3-6 months","6-12 months","1-2 years","2+ years","Since the business launched"];
 const TRIED_BEFORE = ["Nothing - haven't addressed it yet","Hired employees to handle it","Tried software tools","Hired a consultant or agency","Built internal tools","Used basic AI (ChatGPT, etc.)","Multiple approaches - nothing worked","Currently patching it together"];
 const COST_IMPACT  = ["Minor inconvenience","Moderate - costing real money","Significant - blocking growth","Critical - threatening the business","Unknown - hard to quantify"];
 const MARITAL      = ["Single","In a relationship","Engaged","Married","Domestic partnership","Divorced / Separated","Widowed","Prefer not to say"];
@@ -76,13 +76,13 @@ const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","All of the above"];
 const PRIOR_AI     = ["No - first time exploring this","Yes - Zapier / Make / n8n","Yes - ChatGPT or similar chatbots","Yes - custom development work","Yes - hired another agency","Yes - multiple tools, nothing stuck"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
-const BUDGETS      = ["Under $2,500","$2,500–$5,000","$5,000–$10,000","$10,000–$25,000","$25,000–$50,000","$50,000+","Not sure - need a scoping call first"];
-const TIMELINES    = ["ASAP - this is urgent","Within 30 days","1–3 months","3–6 months","No hard deadline","Just exploring / planning stage"];
+const BUDGETS      = ["Under $2,500","$2,500-$5,000","$5,000-$10,000","$10,000-$25,000","$25,000-$50,000","$50,000+","Not sure - need a scoping call first"];
+const TIMELINES    = ["ASAP - this is urgent","Within 30 days","1-3 months","3-6 months","No hard deadline","Just exploring / planning stage"];
 const ENGAGEMENTS  = ["One-time build - deploy and hand off to my team","Build + ongoing support / optimization retainer","Full-service - you manage and run everything","Consulting only - guide my internal team","White-label - I want to resell this to my clients","Not sure - open to your recommendation"];
-const INTERNAL_TECH= ["Yes — we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
+const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
 const COL_ROLE     = ["Undergraduate student","Graduate / PhD student","Student athlete","Student organization leader","Academic advisor","Department administrator","Faculty / Professor","Dean / Associate Dean","IT staff","Enrollment / Admissions staff","Financial aid staff","Library staff","Registrar staff","Other administrator"];
 const COL_SCHOOL_TYPE = ["Community college","4-year public university","4-year private university","Liberal arts college","Technical / Vocational school","Online-only institution","Graduate / Professional school","K-12 school or district","Other"];
-const COL_SCHOOL_SIZE = ["Under 1,000 students","1,000–5,000 students","5,000–15,000 students","15,000–30,000 students","30,000–60,000 students","60,000+ students"];
+const COL_SCHOOL_SIZE = ["Under 1,000 students","1,000-5,000 students","5,000-15,000 students","15,000-30,000 students","30,000-60,000 students","60,000+ students"];
 const COL_YEAR     = ["Freshman (1st year)","Sophomore (2nd year)","Junior (3rd year)","Senior (4th year)","5th year / Super senior","Graduate student - Master's","Graduate student - PhD / Doctoral","Not applicable"];
 const COL_MAJOR    = ["Business / Finance / Economics","Computer Science / IT","Engineering","Pre-med / Health Sciences","Law / Pre-law","Education","Arts / Humanities","Social Sciences","Communications / Media","Natural Sciences","Undecided","Other"];
 const COL_BOT_USE_STUD = ["Study help & tutoring","Essay drafting & writing assistance","Research assistance","Note-taking & summarization","Exam prep & flashcards","Citation & bibliography help","Time management & scheduling","Mental health & wellness support","Career advising & job prep","Campus navigation & resources","Financial aid questions","Course registration help","Other"];
@@ -92,7 +92,7 @@ const COL_CURR_TOOLS = ["ChatGPT (personal use)","Grammarly","Google Bard / Gemi
 const COL_CONCERN_STUD = ["Academic integrity / plagiarism concerns","Privacy of my data","Accuracy of AI responses","Over-reliance on AI","Cost / accessibility","Professors banning AI use","None - I'm comfortable with AI","Other"];
 const COL_CONCERN_ADMIN = ["FERPA / student data privacy","Accreditation implications","Faculty acceptance / adoption","Budget and procurement","Integration with existing LMS/SIS","AI accuracy for student support","Academic integrity policies","IT security and compliance","None - we're ready to move forward","Other"];
 const COL_SIS      = ["Banner (Ellucian)","PeopleSoft / Oracle","Colleague (Ellucian)","Jenzabar","PowerSchool","Skyward","Not sure what system we use","Other"];
-const COL_BUDGET_ADMIN = ["Under $5,000","$5,000–$15,000","$15,000–$50,000","$50,000–$150,000","$150,000+","No budget allocated yet","Need to apply for a grant or funding"];
+const COL_BUDGET_ADMIN = ["Under $5,000","$5,000-$15,000","$15,000-$50,000","$50,000-$150,000","$150,000+","No budget allocated yet","Need to apply for a grant or funding"];
 const COL_TIMELINE_ADMIN = ["This semester","Next semester","This academic year","Next academic year","Planning stage only","Tied to grant / funding approval"];
 const COL_DECISION_ROLE = ["I am the sole decision-maker","I influence but need approval","I'm part of a committee","I'm researching for someone else","Faculty champion - need admin buy-in","IT must approve first"];
 const COL_PILOT    = ["Yes - I want a small pilot first","Yes - one department before campus-wide","No - we want full implementation","Not sure yet"];
@@ -313,7 +313,7 @@ function Shell({ steps, step, gate, children, onBack, onNext, onSubmit, isLast }
         <ApolloWordmark size={17} />
         <span style={{ fontSize: 12, color: TXM }}>{stepLabel || "Apollo[Claw] Onboarding"}</span>
       </nav>
-      {/* Continuous progress bar — fills as you advance. No step numbers (they miscount). */}
+      {/* Continuous progress bar - fills as you advance. No step numbers (they miscount). */}
       <div style={{ position: "sticky", top: 60, zIndex: 49, height: 3, background: SRF2 }}>
         <div style={{ height: "100%", width: `${pct}%`, background: R, transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
       </div>
@@ -342,7 +342,7 @@ function Shell({ steps, step, gate, children, onBack, onNext, onSubmit, isLast }
 // ════════════════════════════════════════════════════════════
 function Success({ track }: { track: string }) {
   const msgs: Record<string, string> = {
-    business: "This is one of the most comprehensive applications we receive. That tells us you're serious — and we take that seriously.",
+    business: "This is one of the most comprehensive applications we receive. That tells us you're serious - and we take that seriously.",
     student: "Thanks for sharing your academic goals. We'll match you with the right tools to make your studies more efficient.",
     admin: "We understand the weight of an institutional deployment. We'll review your submission and come prepared.",
     agency: "White-label partner applications are reviewed within 48 hours. We'll reach out with next steps.",
@@ -363,7 +363,7 @@ function Success({ track }: { track: string }) {
 // BUSINESS TRACK
 // ════════════════════════════════════════════════════════════
 const BIZ_STEPS = ["Your Business", "What You Do", "Tech Stack", "Operations", "Executive Profile", "Life Context", "Your Voice", "Goals & AI", "Scope"];
-const GROWTH_BOTTLENECK = ["Me — my time and attention are the ceiling","My team — capacity, skills, or hiring","My systems & processes — too much is manual","Demand — not enough qualified pipeline","Capital — funding constrains the next move","Not sure — that's part of why I'm here"];
+const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","My team - capacity, skills, or hiring","My systems & processes - too much is manual","Demand - not enough qualified pipeline","Capital - funding constrains the next move","Not sure - that's part of why I'm here"];
 function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
   const [step, setStep] = useState(0);
   const [s1, setS1] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[], contact: "", besttime: "", tz: "", title: "", linkedin: "" });
@@ -394,7 +394,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const back = () => { setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const submit = () => { if (!s8.agree) { setAgreeErr(true); return; } setAgreeErr(false); onDone(buildData(), "business"); };
   const pages = [
-    // 1 — Business facts
+    // 1 - Business facts
     <Stack key="s2a">
       <SHead stepNum={1} total={9} title="Your Business" subtitle="A few quick facts to get us started." badge="Business" />
       <FF label="Company / Business Name" required><TInput value={s2.biz} onChange={v => f2("biz", v)} placeholder="Acme Corp" /></FF>
@@ -403,16 +403,16 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <Row2><FF label="Monthly Revenue" required><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF><FF label="Years in Business" required><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
       <FF label="Business Model" required><TSelect value={s2.model} onChange={v => f2("model", v)} options={BIZ_MODEL} /></FF>
     </Stack>,
-    // 2 — What you do
+    // 2 - What you do
     <Stack key="s2b">
       <SHead stepNum={2} total={9} title="What Do You Do?" subtitle="Who you serve, what you deliver, and the edge that wins you business." badge="Business" />
       <FF label="Describe your business" hint="Who do you serve, and what do you deliver for them?" required><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
-      <FF label="What makes you different?" hint="Why clients choose you over the alternatives — your real edge."><TArea value={s2.differentiate} onChange={v => f2("differentiate", v)} placeholder="e.g. We're the only firm in the region that..., our turnaround is 3x faster, we own a proprietary process..." rows={3} /></FF>
+      <FF label="What makes you different?" hint="Why clients choose you over the alternatives - your real edge."><TArea value={s2.differentiate} onChange={v => f2("differentiate", v)} placeholder="e.g. We're the only firm in the region that..., our turnaround is 3x faster, we own a proprietary process..." rows={3} /></FF>
       {stepErr === 1 && <p style={{ fontSize: 13, color: "#dc2626" }}>Please fill in Company Name and Description before continuing.</p>}
     </Stack>,
-    // 3 — Tech stack (all tool pickers on one page, trimmed)
+    // 3 - Tech stack (all tool pickers on one page, trimmed)
     <Stack key="s2stack">
-      <SHead stepNum={3} total={9} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies — this tells us what your agent has to work with." badge="Business" />
+      <SHead stepNum={3} total={9} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
       <Divider label="Sales & CRM" />
       <CheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} cols={2} />
       {s2.crm.includes("Other") && <FF label="Which CRM?"><TInput value={s2.crmOther || ""} onChange={v => f2("crmOther", v)} placeholder="Name the tool" /></FF>}
@@ -426,7 +426,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <CheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} cols={2} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
     </Stack>,
-    // 4 — Operations & pain (with cost framing)
+    // 4 - Operations & pain (with cost framing)
     <Stack key="s3">
       <SHead stepNum={4} total={9} title="Operations & Pain Points" subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
       <FF label="Your biggest operational headache right now" required><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
@@ -438,43 +438,43 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       </Row2>
       <FF label="What does 'fixed' look like in 12 months?" hint="What does your day look like? What numbers have changed?"><TArea value={s3.fixed} onChange={v => f3("fixed", v)} placeholder="Be specific about the outcome you're buying." rows={3} /></FF>
     </Stack>,
-    // 5 — Executive profile (strategic + decision-making)
+    // 5 - Executive profile (strategic + decision-making)
     <Stack key="s5exec">
-      <SHead stepNum={5} total={9} title="Executive Profile" subtitle="The strategic picture — how you think, where you're stuck, and what a win is worth." badge="Business" />
-      <FF label="Your biggest strategic bet in the next 12 months" required><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most — a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
+      <SHead stepNum={5} total={9} title="Executive Profile" subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
+      <FF label="Your biggest strategic bet in the next 12 months" required><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most - a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
       <RadioGroup label="Where's the real bottleneck to growth right now?" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} />
       <FF label="A decision you're stuck on for lack of the right information"><TArea value={s5.stuckDecision} onChange={v => f5("stuckDecision", v)} placeholder="What would you decide tomorrow if you had the numbers or clarity in front of you?" rows={2} /></FF>
       <RadioGroup label="How do you make big decisions?" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} />
-      <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all — want humans involved" high="Fully — automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
-      <FF label="What would make this engagement 100% worth it?"><TArea value={s5.worthIt} onChange={v => f5("worthIt", v)} placeholder="The real bar — the specific outcome that would make this a clear win." rows={3} /></FF>
+      <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
+      <FF label="What would make this engagement 100% worth it?"><TArea value={s5.worthIt} onChange={v => f5("worthIt", v)} placeholder="The real bar - the specific outcome that would make this a clear win." rows={3} /></FF>
     </Stack>,
-    // 6 — Life context (optional, trimmed)
+    // 6 - Life context (optional, trimmed)
     <Stack key="s4">
       <SHead stepNum={6} total={9} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />
       <button type="button" onClick={next} style={{ alignSelf: "flex-start", background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>Skip this step →</button>
       <FF label="Relationship status"><TSelect value={s4.marital} onChange={v => f4("marital", v)} options={MARITAL} /></FF>
       <RadioGroup label="Where are you in your business journey?" options={LIFE_STAGE} value={s4.lifeStage} onChange={v => f4("lifeStage", v)} />
       <CheckGroup label="What do you want your business to do for you in 3 years?" options={TIMELINE_3YR} value={s4.timeline3yr} onChange={v => f4("timeline3yr", v)} cols={2} />
-      <FF label="Your personal 3-year vision" hint="Not metrics — your actual life."><TArea value={s4.personalGoal} onChange={v => f4("personalGoal", v)} placeholder="Be honest. What are you really building toward?" rows={3} /></FF>
+      <FF label="Your personal 3-year vision" hint="Not metrics - your actual life."><TArea value={s4.personalGoal} onChange={v => f4("personalGoal", v)} placeholder="Be honest. What are you really building toward?" rows={3} /></FF>
     </Stack>,
-    // 7 — Voice (all voice/tone on one page)
+    // 7 - Voice (all voice/tone on one page)
     <Stack key="s6voice">
       <SHead stepNum={7} total={9} title="Your Voice" subtitle="AI that sounds like you is the goal. Help us capture how you communicate." badge="Business" />
       <CheckGroup label="Your natural tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone ? [s6.tone] : []} onChange={v => f6("tone", v[v.length-1] || "")} cols={2} />
-      <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3 — or skip and describe your own below" options={BRAND_LIKE} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
+      <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3 - or skip and describe your own below" options={BRAND_LIKE} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
       <FF label="Describe your ideal voice"><TArea value={s6.voiceDesc} onChange={v => f6("voiceDesc", v)} placeholder="e.g. Confident but not arrogant. Clear, direct. Never corporate." rows={2} /></FF>
       <FF label="Share a sample of your voice" hint="Optional. Paste an email, LinkedIn summary, or any writing that sounds like you."><TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="A long email, your LinkedIn About section, a proposal, or a Slack message that sounds like you..." rows={4} /></FF>
     </Stack>,
-    // 8 — Goals & AI scope
+    // 8 - Goals & AI scope
     <Stack key="s7">
       <SHead stepNum={8} total={9} title="Goals & AI Scope" subtitle="What you want AI to own, and what winning looks like." badge="Business" />
       <CheckGroup label="What do you want AI to handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
-      <FF label="The #1 workflow you want automated first" hint="From trigger to outcome — the more specific, the better."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={4} /></FF>
+      <FF label="The #1 workflow you want automated first" hint="From trigger to outcome - the more specific, the better."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={4} /></FF>
       <CheckGroup label="What does winning look like?" hint="Select all that apply" options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
-      <FF label="Have you tried AI or automation before?" hint="What you've explored, and what happened."><TArea value={s7.prior} onChange={v => f7("prior", v)} placeholder="e.g. We tried ChatGPT for content, a Zapier automation for leads, hired someone to build a bot — here's how it went..." rows={3} /></FF>
+      <FF label="Have you tried AI or automation before?" hint="What you've explored, and what happened."><TArea value={s7.prior} onChange={v => f7("prior", v)} placeholder="e.g. We tried ChatGPT for content, a Zapier automation for leads, hired someone to build a bot - here's how it went..." rows={3} /></FF>
       <RadioGroup label="How does your team feel about bringing in AI?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
     </Stack>,
-    // 9 — Scope & next steps
+    // 9 - Scope & next steps
     <Stack key="s8">
       <SHead stepNum={9} total={9} title="Scope & Next Steps" subtitle="Budget, timeline, and how you'd like to work together." badge="Business" />
       <Row2>
@@ -531,10 +531,10 @@ function ColTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const ADMIN_STEPS = ["Your Role", "Institution", "AI Deployment", "IT & Budget"];
   const curSteps = isStud ? STUD_STEPS : ADMIN_STEPS;
   const studPages = [
-    <Stack key="st1"><SHead stepNum={1} total={4} title="Your Academic Role" badge="Student" /><FF label="School / University Name" required><TInput value={stud.school} onChange={v => ss("school", v)} placeholder="e.g. Tulane University" /></FF><Row2><FF label="Institution Type" required><TSelect value={stud.schoolType} onChange={v => ss("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="School Size"><TSelect value={stud.schoolSize} onChange={v => ss("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><Row2><FF label="Academic Year" required><TSelect value={stud.year} onChange={v => ss("year", v)} options={COL_YEAR} /></FF><FF label="Major / Field of Study" required><TSelect value={stud.major} onChange={v => ss("major", v)} options={COL_MAJOR} /></FF></Row2><FF label="GPA Range (Optional)"><TSelect value={stud.gpa} onChange={v => ss("gpa", v)} options={["Under 2.0","2.0–2.5","2.5–3.0","3.0–3.5","3.5–4.0","4.0 (Perfect)","Not applicable","Prefer not to say"]} /></FF><FF label="Clubs, Sports, or Activities"><TInput value={stud.clubs} onChange={v => ss("clubs", v)} placeholder="e.g. Debate club, student newspaper, varsity soccer…" /></FF></Stack>,
+    <Stack key="st1"><SHead stepNum={1} total={4} title="Your Academic Role" badge="Student" /><FF label="School / University Name" required><TInput value={stud.school} onChange={v => ss("school", v)} placeholder="e.g. Tulane University" /></FF><Row2><FF label="Institution Type" required><TSelect value={stud.schoolType} onChange={v => ss("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="School Size"><TSelect value={stud.schoolSize} onChange={v => ss("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><Row2><FF label="Academic Year" required><TSelect value={stud.year} onChange={v => ss("year", v)} options={COL_YEAR} /></FF><FF label="Major / Field of Study" required><TSelect value={stud.major} onChange={v => ss("major", v)} options={COL_MAJOR} /></FF></Row2><FF label="GPA Range (Optional)"><TSelect value={stud.gpa} onChange={v => ss("gpa", v)} options={["Under 2.0","2.0-2.5","2.5-3.0","3.0-3.5","3.5-4.0","4.0 (Perfect)","Not applicable","Prefer not to say"]} /></FF><FF label="Clubs, Sports, or Activities"><TInput value={stud.clubs} onChange={v => ss("clubs", v)} placeholder="e.g. Debate club, student newspaper, varsity soccer…" /></FF></Stack>,
     <Stack key="st2"><SHead stepNum={2} total={4} title="Academic Profile & AI Experience" badge="Student" /><FF label="Your School's LMS"><TSelect value={stud.lms} onChange={v => ss("lms", v)} options={COL_LMS} /></FF><CheckGroup label="AI Tools You Currently Use" options={COL_CURR_TOOLS} value={stud.currentTools} onChange={v => ss("currentTools", v)} cols={2} /><RadioGroup label="Your Prior Experience With AI Tools" options={["I've never used AI tools","I've tried them once or twice","I use them occasionally","I use AI tools regularly","I'm very experienced - daily power user"]} value={stud.aiExperience} onChange={v => ss("aiExperience", v)} /><CheckGroup label="What Do You Want an AI Bot to Help You With?" options={COL_BOT_USE_STUD} value={stud.uses} onChange={v => ss("uses", v)} cols={2} /><CheckGroup label="Concerns or Hesitations About Using AI" options={COL_CONCERN_STUD} value={stud.concerns} onChange={v => ss("concerns", v)} cols={2} /></Stack>,
     <Stack key="st3"><SHead stepNum={3} total={4} title="Your Academic Goals" badge="Student" /><FF label="What's Your Biggest Academic Challenge Right Now?" required><TArea value={stud.goalShort} onChange={v => ss("goalShort", v)} placeholder="Keeping up with coursework? Study skills? Writing?" rows={3} /></FF><FF label="What's Your Longer-Term Academic or Career Goal?"><TArea value={stud.goalLong} onChange={v => ss("goalLong", v)} rows={2} /></FF></Stack>,
-    <Stack key="st4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Student" /><FF label="Monthly Budget for AI Tools" required><TSelect value={stud.budget} onChange={v => ss("budget", v)} options={["Free only - I cannot spend anything","Under $10/mo","$10–$20/mo","$20–$50/mo","$50+/mo","My school would pay for it","Not sure yet"]} /></FF><RadioGroup label="When Do You Want to Get Started?" options={["This week - ASAP","This semester","Next semester","Just researching for now"]} value={stud.timeline} onChange={v => ss("timeline", v)} /></Stack>,
+    <Stack key="st4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Student" /><FF label="Monthly Budget for AI Tools" required><TSelect value={stud.budget} onChange={v => ss("budget", v)} options={["Free only - I cannot spend anything","Under $10/mo","$10-$20/mo","$20-$50/mo","$50+/mo","My school would pay for it","Not sure yet"]} /></FF><RadioGroup label="When Do You Want to Get Started?" options={["This week - ASAP","This semester","Next semester","Just researching for now"]} value={stud.timeline} onChange={v => ss("timeline", v)} /></Stack>,
   ];
   const admPages = [
     <Stack key="ad1"><SHead stepNum={1} total={4} title="Your Institutional Role" badge="Administrator" /><FF label="Your Role at the Institution" required><TSelect value={adm.adminRole} onChange={v => sa("adminRole", v)} options={COL_ROLE} /></FF><FF label="School / Institution Name" required><TInput value={adm.school} onChange={v => sa("school", v)} placeholder="e.g. University of Texas at Austin" /></FF><Row2><FF label="Institution Type" required><TSelect value={adm.schoolType} onChange={v => sa("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="Institution Size" required><TSelect value={adm.schoolSize} onChange={v => sa("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><FF label="Your Department or Division"><TInput value={adm.dept} onChange={v => sa("dept", v)} placeholder="e.g. Office of Student Success, IT, Admissions…" /></FF><RadioGroup label="Your Role in This Decision" options={COL_DECISION_ROLE} value={adm.decisionRole} onChange={v => sa("decisionRole", v)} /><CheckGroup label="Other Stakeholders Involved" options={ADMIN_STAKEHOLDERS} value={adm.stakeholders} onChange={v => sa("stakeholders", v)} cols={2} /></Stack>,
@@ -568,8 +568,8 @@ function AgencyTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<s
   const submit = () => onDone(buildData(), "agency");
   const pages = [
     <Stack key="ag1"><SHead stepNum={1} total={3} title="Your Agency" badge="Agency / Reseller" /><FF label="Agency Name" required><TInput value={d.agencyName} onChange={v => sd("agencyName", v)} placeholder="Your Agency LLC" /></FF><FF label="Website"><TInput type="url" value={d.url} onChange={v => sd("url", v)} placeholder="https://youragency.com" /></FF><Row2><FF label="Agency Size"><TSelect value={d.size} onChange={v => sd("size", v)} options={BIZ_SIZES} /></FF><FF label="Agency Model"><TSelect value={d.model} onChange={v => sd("model", v)} options={["Full-service digital agency","Web design / dev shop","Marketing agency","SEO / PPC specialist","Consulting / advisory firm","IT managed services (MSP)","Other"]} /></FF></Row2><CheckGroup label="Services You Currently Offer" options={["Web design & development","SEO & content marketing","Paid advertising (PPC)","Social media management","Email marketing","CRM & automation","AI / chatbot implementation","Business consulting","IT managed services","Other"]} value={d.services} onChange={v => sd("services", v)} cols={2} /></Stack>,
-    <Stack key="ag2"><SHead stepNum={2} total={3} title="Your Client Base" badge="Agency / Reseller" /><CheckGroup label="Types of Clients You Serve" options={["Small businesses (under $1M revenue)","Mid-market ($1M–$10M revenue)","Enterprise ($10M+ revenue)","E-commerce brands","Healthcare / medical practices","Law firms","Real estate companies","Restaurants / hospitality","Non-profits","Educational institutions","Other"]} value={d.clientTypes} onChange={v => sd("clientTypes", v)} cols={2} /><FF label="Approximate Number of Active Clients"><TSelect value={d.clientCount} onChange={v => sd("clientCount", v)} options={["1–5 clients","6–15 clients","16–30 clients","31–60 clients","60–100 clients","100+ clients"]} /></FF></Stack>,
-    <Stack key="ag3"><SHead stepNum={3} total={3} title="Partnership Goals" badge="Agency / Reseller" /><FF label="Why Do You Want to Partner With Apollo[Claw]?" required><TArea value={d.whyPartner} onChange={v => sd("whyPartner", v)} placeholder="What gap are you trying to fill? What are clients asking for that you can't deliver today?" rows={3} /></FF><FF label="Revenue Goal From This Partnership"><TSelect value={d.revenue} onChange={v => sd("revenue", v)} options={["Under $1k/mo additional revenue","$1k–$5k/mo","$5k–$15k/mo","$15k–$50k/mo","$50k+/mo","Not focused on revenue — it's a client retention play"]} /></FF><FF label="Desired Start Timeline"><TSelect value={d.timeline} onChange={v => sd("timeline", v)} options={["ASAP","Within 30 days","1–3 months","3–6 months","Just exploring"]} /></FF><FF label="Questions or Anything Else We Should Know"><TArea value={d.questions} onChange={v => sd("questions", v)} rows={3} /></FF></Stack>,
+    <Stack key="ag2"><SHead stepNum={2} total={3} title="Your Client Base" badge="Agency / Reseller" /><CheckGroup label="Types of Clients You Serve" options={["Small businesses (under $1M revenue)","Mid-market ($1M-$10M revenue)","Enterprise ($10M+ revenue)","E-commerce brands","Healthcare / medical practices","Law firms","Real estate companies","Restaurants / hospitality","Non-profits","Educational institutions","Other"]} value={d.clientTypes} onChange={v => sd("clientTypes", v)} cols={2} /><FF label="Approximate Number of Active Clients"><TSelect value={d.clientCount} onChange={v => sd("clientCount", v)} options={["1-5 clients","6-15 clients","16-30 clients","31-60 clients","60-100 clients","100+ clients"]} /></FF></Stack>,
+    <Stack key="ag3"><SHead stepNum={3} total={3} title="Partnership Goals" badge="Agency / Reseller" /><FF label="Why Do You Want to Partner With Apollo[Claw]?" required><TArea value={d.whyPartner} onChange={v => sd("whyPartner", v)} placeholder="What gap are you trying to fill? What are clients asking for that you can't deliver today?" rows={3} /></FF><FF label="Revenue Goal From This Partnership"><TSelect value={d.revenue} onChange={v => sd("revenue", v)} options={["Under $1k/mo additional revenue","$1k-$5k/mo","$5k-$15k/mo","$15k-$50k/mo","$50k+/mo","Not focused on revenue - it's a client retention play"]} /></FF><FF label="Desired Start Timeline"><TSelect value={d.timeline} onChange={v => sd("timeline", v)} options={["ASAP","Within 30 days","1-3 months","3-6 months","Just exploring"]} /></FF><FF label="Questions or Anything Else We Should Know"><TArea value={d.questions} onChange={v => sd("questions", v)} rows={3} /></FF></Stack>,
   ];
   return <Shell steps={AGY_STEPS} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === 2}>{pages[step]}</Shell>;
 }
@@ -596,7 +596,7 @@ export default function OnboardPage() {
       alert("Something went wrong submitting your application. Please try again.");
     }
   };
-  // Gate removed — form starts at track selection directly
+  // Gate removed - form starts at track selection directly
   if (phase === "gate") return <Gatekeeper onPass={handleGate} />;
   if (phase === "track") return <TrackSelector gate={gate!} onSelect={handleTrack} />;
   if (phase === "submitting") return (
