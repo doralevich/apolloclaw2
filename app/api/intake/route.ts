@@ -284,12 +284,20 @@ async function findOrCreateCrmClient(
   };
   const enc = encodeURIComponent(email);
   const label = trackLabel[trackType] || trackType;
+  if (!SUPA_KEY) {
+    console.error("[intake][crm] SUPABASE service-role key is MISSING — CRM writes skipped (email/PDF still send)");
+    return null;
+  }
   try {
     // 1. Find or create a company entity keyed by email (the pipeline board card)
     const cardSearch = await fetch(
       `${SUPA_URL}/rest/v1/entities?kind=eq.company&email=eq.${enc}&business_id=eq.apolloclaw&limit=1`,
       { headers: sbHeaders }
     );
+    if (!cardSearch.ok) {
+      console.error(`[intake][crm] entity lookup rejected — HTTP ${cardSearch.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardSearch.text()).slice(0, 300));
+      return null;
+    }
     const cardFound = await cardSearch.json() as Array<{ id: string }>;
     let cardId: string | null = null;
 
@@ -307,6 +315,10 @@ async function findOrCreateCrmClient(
           referral_source: "intake_form",
         }),
       });
+      if (!cardRes.ok) {
+        console.error(`[intake][crm] entity create rejected — HTTP ${cardRes.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardRes.text()).slice(0, 300));
+        return null;
+      }
       const cardCreated = await cardRes.json() as Array<{ id: string }>;
       if (Array.isArray(cardCreated) && cardCreated.length > 0) {
         cardId = cardCreated[0].id;
@@ -419,6 +431,13 @@ export async function POST(req: NextRequest) {
     const fullName = `${firstName} ${lastName}`.trim();
     const track = trackLabel[trackType] || trackType;
     const company = (data.companyName || data.agencyName || data.school || "") as string;
+
+    // Config visibility: on every submission, surface whether the CRM is wired up correctly
+    // in the Vercel logs — without ever printing the secret. A "MISSING" key here is the
+    // usual reason emails arrive but no CRM card appears.
+    console.log(
+      `[intake][config] supabaseUrl=${SUPA_URL} serviceRoleKey=${SUPA_KEY ? `present(len ${SUPA_KEY.length})` : "MISSING"}`
+    );
 
     // 0. Save raw form data to CRM immediately — before any other processing
     // If PDF generation, emails, or storage fail, the submission is still captured
@@ -537,6 +556,7 @@ export async function POST(req: NextRequest) {
 
     // 6. CRM — find or create client, log note
     const clientId = await findOrCreateCrmClient(fullName, email, phone, company, trackType);
+    let crmStatus: "ok" | "write_failed" | "no_service_key";
     if (clientId) {
       // Attach intake PDF to the Documents section of the CRM card
       if (docUrl) {
@@ -556,8 +576,11 @@ export async function POST(req: NextRequest) {
 
       await logCrmNote(clientId, noteLines.join("\n"));
       await sendTelegram(`<b>✅ CRM logged</b> — ${fullName} under Apollo[Claw] prospects. Emails delivered.`);
+      crmStatus = "ok";
     } else {
-      await sendTelegram(`<b>⚠️ CRM client not created</b> for ${fullName}. Emails still sent.`);
+      crmStatus = SUPA_KEY ? "write_failed" : "no_service_key";
+      console.error(`[intake][crm] result=${crmStatus} — email/PDF sent but no CRM card for ${email}`);
+      await sendTelegram(`<b>⚠️ CRM NOT logged</b> (${crmStatus}) for ${fullName}. Emails still sent.`);
     }
 
     // Cleanup any temp files
@@ -601,7 +624,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true });
+    // `crm` lets the browser (and you, in the network tab) see whether the CRM write
+    // landed — "ok", "write_failed" (bad/rotated key or wrong project), or
+    // "no_service_key" (env var missing) — without waiting on a Supabase query.
+    return NextResponse.json({ ok: true, crm: crmStatus });
   } catch (err) {
     console.error("Intake API error:", err);
     return NextResponse.json({ ok: false, error: "Submission failed" }, { status: 500 });
