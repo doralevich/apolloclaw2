@@ -130,7 +130,7 @@ function CheckGroup({ label, hint, options, value = [], onChange, cols = 2 }: { 
   const toggle = (opt: string) => onChange(value.includes(opt) ? value.filter(v => v !== opt) : [...value, opt]);
   return (
     <FF label={label} hint={hint}>
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 8, marginTop: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${cols >= 3 ? 150 : 220}px), 1fr))`, gap: 8, marginTop: 4 }}>
         {options.map(opt => {
           const on = value.includes(opt);
           return (
@@ -201,7 +201,9 @@ function Divider({ label }: { label?: string }) {
     </div>
   );
 }
-function Row2({ children }: { children: React.ReactNode }) { return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>{children}</div>; }
+// Auto-fit so paired fields sit side-by-side on desktop but stack to one column on
+// narrow (mobile) screens instead of squishing and truncating.
+function Row2({ children }: { children: React.ReactNode }) { return <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>{children}</div>; }
 function Stack({ children }: { children: React.ReactNode }) { return <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>{children}</div>; }
 function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; total: number; title: string; subtitle?: string; badge?: string }) {
   return (
@@ -239,7 +241,7 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
         <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto" }}>Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result.</p>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-        <div style={{ width: "100%", maxWidth: 700, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "36px 40px", position: "relative", overflow: "hidden" }}>
+        <div style={{ width: "100%", maxWidth: 700, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
           <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: `1px solid ${BDR}` }}>
             <p style={{ fontWeight: 700, fontSize: 16, color: TX, margin: "0 0 4px" }}>Start here</p>
@@ -319,7 +321,7 @@ function Shell({ steps, step, gate, children, onBack, onNext, onSubmit, isLast }
       </div>
 
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px 100px" }}>
-        <div key={step} style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "36px 40px", animation: "oc-fade 0.35s ease" }}>{children}</div>
+        <div key={step} style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", animation: "oc-fade 0.35s ease" }}>{children}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 20 }}>
           {step > 0 ? <button type="button" onClick={onBack} style={{ background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "10px 20px", borderRadius: 6, cursor: "pointer" }}>← Back</button> : <div />}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
