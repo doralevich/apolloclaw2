@@ -36,6 +36,7 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
       { label: "First Name", value: d.firstName },
       { label: "Last Name", value: d.lastName },
       { label: "Email", value: d.email },
+      { label: "Personal Email", value: d.personalEmail },
       { label: "Phone", value: d.phone },
       { label: "Track", value: trackLabel[track] || track },
       { label: "How They Heard", value: d.source },
