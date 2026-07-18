@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
+import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 // ════════════════════════════════════════════════════════════
 // DESIGN TOKENS
 // ════════════════════════════════════════════════════════════
@@ -8,9 +10,9 @@ const BG = "#FAFAF7";
 const SRF = "#F2F1ED";
 const SRF2 = "#E8E7E3";
 const BDR = "rgba(0,0,0,0.08)";
-const TX = "#1A1A1A";
-const TXM = "#555555";
-const TXD = "#888888";
+const TX = "#000000";
+const TXM = "#1A1A1A";
+const TXD = "#4A4A4A";
 function ApolloWordmark({ size = 18, sublabel = "AI Consulting" }: { size?: number; sublabel?: string }) {
   const subtitleSize = Math.max(8, Math.round(size * 0.44));
   return (
@@ -38,7 +40,7 @@ const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k-$10k/mo","$10k-$25k/mo",
 const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years"];
 const BIZ_MODEL    = ["Service-based (sell time/expertise)","Physical product","SaaS / Digital product","Marketplace / Platform","Subscription / Membership","Hybrid (products + services)","Agency / Reseller","Franchise / Licensed model"];
 const STACK_CRM    = ["Salesforce","HubSpot","Pipedrive","Zoho CRM","Keap","Close","No CRM currently","Other"];
-const STACK_COMMS  = ["Google Workspace","Microsoft 365 / Teams","Slack","Zoom","Google Meet","Telegram","Meeting notes (Otter / Fathom / Fireflies)","Other"];
+const STACK_COMMS  = ["Google Workspace","Office 365","Slack","Zoom","Google Meet","Telegram","Otter","Fathom","Fireflies","Other"];
 const STACK_PM     = ["Notion","Asana","ClickUp","Trello","Monday.com","Jira / Linear","No PM tool","Other"];
 const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBooks","NetSuite","Bill.com","Ramp / Brex","Stripe","Square","PayPal","None","Other"];
 const STACK_MKTG   = ["Mailchimp","Klaviyo","ConvertKit","ActiveCampaign","Drip","Constant Contact","Brevo","None","Other"];
@@ -221,15 +223,17 @@ function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; to
 // ════════════════════════════════════════════════════════════
 // GATEKEEPER
 // ════════════════════════════════════════════════════════════
-interface GateData { first: string; last: string; email: string; personalEmail: string; phone: string; heard: string[]; tz: string; title: string; linkedin: string; company: string }
+interface GateData { first: string; last: string; email: string; personalEmail: string; phone: string; heard: string[]; tz: string; title: string; linkedin: string; company: string; referralSource: string; referralName: string }
+const REFERRAL_SOURCE = ["Referral from someone I know","Steven Cronin","Antwon Burton","LinkedIn","Search","Podcast / newsletter","Event or conference","Other"];
 function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
-  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "" });
+  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "", referralSource: "", referralName: "" });
 
   const [err, setErr] = useState("");
   const set = (k: keyof GateData, v: string | string[]) => setD(p => ({ ...p, [k]: v }));
   const submit = () => {
     if (!d.first.trim() || !d.last.trim() || !d.email.trim() || !d.phone.trim()) { setErr("Please fill in all required fields to continue."); return; }
     if (!/\S+@\S+\.\S+/.test(d.email)) { setErr("Please enter a valid email address."); return; }
+    if (!d.referralSource) { setErr("Please let us know how you heard about us."); return; }
     setErr(""); onPass(d);
   };
   return (
@@ -249,14 +253,18 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
           </div>
           <Stack>
             <Row2>
-              <FF label="First Name" required><TInput value={d.first} onChange={v => set("first", v)} placeholder="Jane" /></FF>
-              <FF label="Last Name" required><TInput value={d.last} onChange={v => set("last", v)} placeholder="Smith" /></FF>
+              <FF label="First Name"><TInput value={d.first} onChange={v => set("first", v)} placeholder="Jane" /></FF>
+              <FF label="Last Name"><TInput value={d.last} onChange={v => set("last", v)} placeholder="Smith" /></FF>
             </Row2>
             <Row2>
-              <FF label="Business Email" required><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
+              <FF label="Business Email"><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
               <FF label="Personal Email"><TInput type="email" value={d.personalEmail} onChange={v => set("personalEmail", v)} placeholder="jane@gmail.com" /></FF>
             </Row2>
-            <FF label="Phone Number" required><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
+            <FF label="Phone Number"><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
+            <FF label="How did you hear about us?" required><TSelect value={d.referralSource} onChange={v => set("referralSource", v)} options={REFERRAL_SOURCE} /></FF>
+            {(d.referralSource === "Referral from someone I know" || d.referralSource === "Other") && (
+              <FF label="Who should we thank?"><TInput value={d.referralName} onChange={v => set("referralName", v)} placeholder="Name of the person or source" /></FF>
+            )}
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
           <button type="button" onClick={submit} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
@@ -366,18 +374,61 @@ function Success({ track }: { track: string }) {
 // ════════════════════════════════════════════════════════════
 const BIZ_STEPS = ["Your Business", "What You Do", "Tech Stack", "Operations", "Executive Profile", "Life Context", "Your Voice", "Goals & AI", "Scope"];
 const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","My team - capacity, skills, or hiring","My systems & processes - too much is manual","Demand - not enough qualified pipeline","Capital - funding constrains the next move","Not sure - that's part of why I'm here"];
+// Gap fields (from the onboarding review spec, Part 4).
+const ACCESS_READINESS = ["I have admin access to all of them","My team controls logins but can grant access","We use them but access is scattered","Not sure"];
+const PROCESS_DOCS = ["Documented SOPs exist","Some are written down","It is mostly in my head and my team's heads","We are starting from scratch"];
+const OPS_VOLUME = ["Under 25","25 to 100","100 to 500","500+","Not sure"];
+const BUDGET_RANGE = ["Under $10k","$10k to $25k","$25k to $50k","$50k+","Need guidance on this"];
+const TIMELINE_LIVE = ["ASAP","This quarter","Next 6 months","Just exploring"];
+const DECISION_AUTHORITY = ["Just me","Me plus one partner or exec","A committee or board","Someone else owns the decision"];
+
+// Renders the dynamic "Industry Deep-Dive" step from an industryConfig branch,
+// mapping each field type onto the form's existing primitives.
+function IndustryStep({ branch, values, onChange, otherLabel }: { branch: IndustryBranch; values: Record<string, string | string[]>; onChange: (k: string, v: string | string[]) => void; otherLabel?: string }) {
+  const isGeneric = branch.fields[0]?.key === "industry_detail";
+  const subtitle = isGeneric && otherLabel ? `A bit more about your ${otherLabel} business.` : branch.stepSubtitle;
+  return (
+    <Stack>
+      <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge="Industry" />
+      {branch.fields.map(f => {
+        const val = values[f.key];
+        const str = typeof val === "string" ? val : "";
+        const arr = Array.isArray(val) ? val : [];
+        if (f.type === "dropdown") return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><TSelect value={str} onChange={v => onChange(f.key, v)} options={f.options ?? []} /></FF>;
+        if (f.type === "multiselect") return <CheckGroup key={f.key} label={f.label} hint={f.helper ?? "Select all that apply"} options={f.options ?? []} value={arr} onChange={v => onChange(f.key, v)} cols={2} />;
+        if (f.type === "radio") return <RadioGroup key={f.key} label={f.label} hint={f.helper} options={f.options ?? []} value={str} onChange={v => onChange(f.key, v)} />;
+        if (f.type === "scale") return <ScaleRow key={f.key} label={f.label} low="Low" high="High" value={str ? Number(str) : null} onChange={v => onChange(f.key, String(v))} />;
+        if (f.type === "textarea") return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><TArea value={str} onChange={v => onChange(f.key, v)} placeholder={f.placeholder} rows={3} /></FF>;
+        return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><TInput value={str} onChange={v => onChange(f.key, v)} placeholder={f.placeholder} /></FF>;
+      })}
+    </Stack>
+  );
+}
 function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
   const [step, setStep] = useState(0);
   const [s1, setS1] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[], contact: "", besttime: "", tz: "", title: "", linkedin: "" });
-  const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "" });
-  const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", fixed: "" });
+  const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
+  const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", fixed: "", opsVolume: "" });
   const [s4, setS4] = useState({ marital: "", kids: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
   const [s5, setS5] = useState({ decStyle: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: "", stuckDecision: "" });
-  const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", voiceDesc: "", loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
-  const [s7, setS7] = useState({ goals: [] as string[], metric: "", priority: "", prior: "", past: "", teamSent: "" });
-  const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", agree: false });
+  const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
+  const [s7, setS7] = useState({ goals: [] as string[], metric: "", priority: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "" });
+  const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", accessReadiness: "", processDocs: "", decisionAuthority: "", agree: false });
+  const [companies, setCompanies] = useState<Company[]>([emptyCompany()]);
+  const [primaryIndex, setPrimaryIndex] = useState(0);
+  const [portfolio, setPortfolio] = useState<PortfolioMeta>(emptyPortfolio());
+  const [industryDetails, setIndustryDetails] = useState<Record<string, string | string[]>>({});
   const [agreeErr, setAgreeErr] = useState(false);
-  const [stepErr, setStepErr] = useState<number | null>(null);
+  const [vErr, setVErr] = useState("");
+  const setIndustry = (k: string, v: string | string[]) => setIndustryDetails(p => ({ ...p, [k]: v }));
+  const primaryCompany = companies[primaryIndex] || companies[0];
+  const primaryName = primaryCompany?.name?.trim() || "your business";
+  const branch = getIndustryBranch(primaryCompany?.industry);
+  const branchHasVolume = branch ? branch.fields.some(f => /volume|count|sku/i.test(f.key)) : false;
+  // Ordered step keys (mirrors allPages below); the Industry Deep-Dive only appears once
+  // the primary company has an industry. Defined up front so navigation/validation never
+  // reference allPages before it is built.
+  const pageKeys = ["biz", "whatyoudo", ...(branch ? ["industry"] : []), "stack", "ops", "exec", "life", "voice", "goals", "scope"];
   const f1 = (k: string, v: unknown) => setS1(p => ({ ...p, [k]: v }));
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
@@ -386,35 +437,74 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, source: s1.heard, contactMethod: s1.contact, bestTime: s1.besttime, linkedin: gate.linkedin, companyName: gate.company || s2.biz, website: s2.url, industry: s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, fixedLooksLike: s3.fixed, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceDesc, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorityWorkflow: s7.priority, priorAI: s7.prior, pastExperience: s7.past, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budget: s8.budget, timeline: s8.timeline, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, referralSource: gate.referralSource, referralName: gate.referralName, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, source: s1.heard, contactMethod: s1.contact, bestTime: s1.besttime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: primaryCompany?.role || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, fixedLooksLike: s3.fixed, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorityWorkflow: s7.priority, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, accessReadiness: s8.accessReadiness, processDocs: s8.processDocs, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const validate = (key?: string): string => {
+    if (key === "biz") {
+      const p = companies[primaryIndex] || companies[0];
+      if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
+      if (p.industry === "Other" && !p.industryOther?.trim()) return "Please tell us the primary business industry.";
+      for (const c of companies) { if (c.name.trim() && !c.industry) return "Each business you add needs an industry."; }
+      if (companies.length > 1) {
+        if (!companies[primaryIndex]?.name) return "Please choose which business your agent should focus on first.";
+        if (!portfolio.structure || !portfolio.sharedOps) return "Please tell us how the businesses are connected and whether they share operations.";
+      }
+      if (!s2.web_presence.trim()) return "Please add a website or LinkedIn.";
+    }
+    if (key === "industry" && branch) {
+      for (const f of branch.fields) {
+        if (!f.required) continue;
+        const v = industryDetails[f.key];
+        if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
+      }
+    }
+    if (key === "stack") {
+      if (!s8.accessReadiness) return "Please tell us who controls access to your systems.";
+      if (!s8.processDocs) return "Please tell us how documented your processes are.";
+    }
+    if (key === "scope") {
+      if (!s8.budget) return "Please choose an investment range.";
+      if (!s8.timeline) return "Please choose a timeline.";
+      if (!s8.decisionAuthority) return "Please tell us who signs off.";
+    }
+    return "";
+  };
   const next = () => {
-    if (step === 1 && !s2.desc.trim()) { setStepErr(1); return; }
-    setStepErr(null);
-    setStep(s => Math.min(s + 1, pages.length - 1));
+    const err = validate(pageKeys[step]);
+    if (err) { setVErr(err); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    setVErr("");
+    setStep(s => Math.min(s + 1, pageKeys.length - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const back = () => { setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const submit = () => { if (!s8.agree) { setAgreeErr(true); return; } setAgreeErr(false); onDone(buildData(), "business"); };
-  const pages = [
-    // 1 - Business facts
+  const back = () => { setVErr(""); setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const submit = () => {
+    const err = validate(pageKeys[step]);
+    if (err) { setVErr(err); return; }
+    if (!s8.agree) { setAgreeErr(true); return; }
+    setAgreeErr(false); onDone(buildData(), "business");
+  };
+  const allPages: { key: string; label: string; node: React.ReactNode }[] = [
+    { key: "biz", label: "Your Business", node: (
     <Stack key="s2a">
-      <SHead stepNum={1} total={9} title="Your Business" subtitle="A few quick facts to get us started." badge="Business" />
-      <FF label="Company / Business Name" required><TInput value={s2.biz} onChange={v => f2("biz", v)} placeholder="Acme Corp" /></FF>
-      <FF label="Your Role / Title"><TInput value={s1.title} onChange={v => f1("title", v)} placeholder="e.g. CEO, Founder, Operations Manager" /></FF>
-      <Row2><FF label="Industry" required><TSelect value={s2.industry} onChange={v => f2("industry", v)} options={INDUSTRIES} /></FF><FF label="Team Size" required><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF></Row2>
-      <Row2><FF label="Monthly Revenue" required><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF><FF label="Years in Business" required><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
-      <FF label="Business Model" required><TSelect value={s2.model} onChange={v => f2("model", v)} options={BIZ_MODEL} /></FF>
-    </Stack>,
-    // 2 - What you do
+      <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
+      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} />
+      <FF label="Website / LinkedIn" hint="Helps us research before our call."><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com or linkedin.com/in/you" /></FF>
+      <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
+      <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF><FF label="Business Model"><TSelect value={s2.model} onChange={v => f2("model", v)} options={BIZ_MODEL} /></FF></Row2>
+    </Stack>
+    ) },
+    { key: "whatyoudo", label: "What You Do", node: (
     <Stack key="s2b">
-      <SHead stepNum={2} total={9} title="What Do You Do?" subtitle="Who you serve, what you deliver, and the edge that wins you business." badge="Business" />
-      <FF label="Describe your business" hint="Who do you serve, and what do you deliver for them?" required><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
+      <SHead stepNum={2} total={0} title="What Do You Do?" subtitle="Who you serve, what you deliver, and the edge that wins you business." badge="Business" />
+      <FF label="Describe your business" hint="Who do you serve, and what do you deliver for them?"><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
       <FF label="What makes you different?" hint="Why clients choose you over the alternatives - your real edge."><TArea value={s2.differentiate} onChange={v => f2("differentiate", v)} placeholder="e.g. We're the only firm in the region that..., our turnaround is 3x faster, we own a proprietary process..." rows={3} /></FF>
-      {stepErr === 1 && <p style={{ fontSize: 13, color: "#dc2626" }}>Please fill in Company Name and Description before continuing.</p>}
-    </Stack>,
-    // 3 - Tech stack (all tool pickers on one page, trimmed)
+    </Stack>
+    ) },
+    ...(branch ? [{ key: "industry", label: "Industry", node: (
+      <IndustryStep branch={branch} values={industryDetails} onChange={setIndustry} otherLabel={primaryCompany?.industryOther} />
+    ) }] : []),
+    { key: "stack", label: "Tech Stack", node: (
     <Stack key="s2stack">
-      <SHead stepNum={3} total={9} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
+      <SHead stepNum={3} total={0} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
       <Divider label="Sales & CRM" />
       <CheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} cols={2} />
       {s2.crm.includes("Other") && <FF label="Which CRM?"><TInput value={s2.crmOther || ""} onChange={v => f2("crmOther", v)} placeholder="Name the tool" /></FF>}
@@ -427,57 +517,77 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       <Divider label="Finance & Billing" />
       <CheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} cols={2} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
-    </Stack>,
-    // 4 - Operations & pain (with cost framing)
+      <Divider label="Access & Documentation" />
+      <RadioGroup label="Who controls access to these systems?" options={ACCESS_READINESS} value={s8.accessReadiness} onChange={v => f8("accessReadiness", v)} />
+      <RadioGroup label="How documented are your processes today?" options={PROCESS_DOCS} value={s8.processDocs} onChange={v => f8("processDocs", v)} />
+    </Stack>
+    ) },
+    { key: "ops", label: "Operations", node: (
     <Stack key="s3">
-      <SHead stepNum={4} total={9} title="Operations & Pain Points" subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
-      <FF label="Your biggest operational headache right now" required><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
+      <SHead stepNum={4} total={0} title={`Operations & Pain Points for ${primaryName}`} subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
+      <FF label="Your biggest operational headache right now"><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
       <CheckGroup label="Which areas feel most broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
       <Row2>
         <FF label="Hours lost to administrative tasks each week"><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF>
         <FF label="What's this costing the business?"><TSelect value={s3.costImpact} onChange={v => f3("costImpact", v)} options={COST_IMPACT} /></FF>
       </Row2>
+      {!branchHasVolume && <FF label="Rough weekly volume on your busiest workflow"><TSelect value={s3.opsVolume} onChange={v => f3("opsVolume", v)} options={OPS_VOLUME} /></FF>}
       <FF label="What does 'fixed' look like in 12 months?" hint="What does your day look like? What numbers have changed?"><TArea value={s3.fixed} onChange={v => f3("fixed", v)} placeholder="Be specific about the outcome you're buying." rows={3} /></FF>
-    </Stack>,
-    // 5 - Executive profile (strategic + decision-making)
+    </Stack>
+    ) },
+    { key: "exec", label: "Executive Profile", node: (
     <Stack key="s5exec">
-      <SHead stepNum={5} total={9} title="Executive Profile" subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
-      <FF label="Your biggest strategic bet in the next 12 months" required><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most - a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
+      <SHead stepNum={5} total={0} title={`Executive Profile for ${primaryName}`} subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
+      <FF label="Your biggest strategic bet in the next 12 months"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most - a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
       <RadioGroup label="Where's the real bottleneck to growth right now?" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} />
       <RadioGroup label="How do you make big decisions?" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} />
       <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
-    </Stack>,
-    // 6 - Life context (optional, trimmed)
+    </Stack>
+    ) },
+    { key: "life", label: "Life Context", node: (
     <Stack key="s4">
-      <SHead stepNum={6} total={9} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />
+      <SHead stepNum={6} total={0} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />
       <button type="button" onClick={next} style={{ alignSelf: "flex-start", background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>Skip this step →</button>
       <FF label="Relationship status"><TSelect value={s4.marital} onChange={v => f4("marital", v)} options={MARITAL} /></FF>
       <RadioGroup label="Where are you in your business journey?" options={LIFE_STAGE} value={s4.lifeStage} onChange={v => f4("lifeStage", v)} />
       <CheckGroup label="What do you want your business to do for you in 3 years?" options={TIMELINE_3YR} value={s4.timeline3yr} onChange={v => f4("timeline3yr", v)} cols={2} />
       <FF label="Your personal 3-year vision" hint="Not metrics - your actual life."><TArea value={s4.personalGoal} onChange={v => f4("personalGoal", v)} placeholder="Be honest. What are you really building toward?" rows={3} /></FF>
-    </Stack>,
-    // 7 - Voice (all voice/tone on one page)
+    </Stack>
+    ) },
+    { key: "voice", label: "Your Voice", node: (
     <Stack key="s6voice">
-      <SHead stepNum={7} total={9} title="Your Voice" subtitle="AI that sounds like you is the goal. Help us capture how you communicate." badge="Business" />
+      <SHead stepNum={7} total={0} title="Your Voice" subtitle="AI that sounds like you is the goal. Help us capture how you communicate." badge="Business" />
       <CheckGroup label="Your natural tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone ? [s6.tone] : []} onChange={v => f6("tone", v[v.length-1] || "")} cols={2} />
       <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3 - or skip and describe your own below" options={BRAND_LIKE} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
-      <FF label="Describe your ideal voice"><TArea value={s6.voiceDesc} onChange={v => f6("voiceDesc", v)} placeholder="e.g. Confident but not arrogant. Clear, direct. Never corporate." rows={2} /></FF>
+      <CheckGroup label="Describe your ideal voice" hint="Select all that apply" options={["Confident, not arrogant","Clear and direct","Warm and personable","Professional and polished","Casual and conversational","Bold and punchy","Empathetic and supportive","Witty and clever","Authoritative and expert","Never corporate or stiff"]} value={s6.voiceStyle} onChange={v => f6("voiceStyle", v)} cols={2} />
       <FF label="Share a sample of your voice" hint="Optional. Paste an email, LinkedIn summary, or any writing that sounds like you."><TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="A long email, your LinkedIn About section, a proposal, or a Slack message that sounds like you..." rows={4} /></FF>
-    </Stack>,
-    // 8 - Goals & AI scope
+    </Stack>
+    ) },
+    { key: "goals", label: "Goals & AI", node: (
     <Stack key="s7">
-      <SHead stepNum={8} total={9} title="Goals & AI Scope" subtitle="What you want AI to own, and what winning looks like." badge="Business" />
-      <CheckGroup label="What do you want your Agent to handle?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
-      <FF label="The #1 workflow you want automated first" hint="From trigger to outcome - the more specific, the better."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form → gets an auto-reply → is scored → if qualified, booked on my calendar…'" rows={4} /></FF>
+      <SHead stepNum={8} total={0} title="Goals & AI Scope" subtitle="What you want AI to own, and what winning looks like." badge="Business" />
+      <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+      <FF label="The #1 workflow you want automated first" hint="From trigger to outcome - the more specific, the better."><TArea value={s7.priority} onChange={v => f7("priority", v)} placeholder="e.g. 'Lead fills a form, gets an auto-reply, is scored, and if qualified is booked on my calendar...'" rows={4} /></FF>
       <CheckGroup label="What does winning look like?" hint="Select all that apply" options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
-      <FF label="Have you tried AI or automation before?" hint="What you've explored, and what happened."><TArea value={s7.prior} onChange={v => f7("prior", v)} placeholder="e.g. We tried ChatGPT for content, a Zapier automation for leads, hired someone to build a bot - here's how it went..." rows={3} /></FF>
+      <RadioGroup label="Have you tried AI or automation before?" options={["Yes","No"]} value={s7.prior} onChange={v => f7("prior", v)} />
+      {s7.prior === "Yes" && (
+        <>
+          <FF label="What did you use? Which programs or tools?"><TArea value={s7.past} onChange={v => f7("past", v)} placeholder="e.g. ChatGPT for content, a Zapier automation for leads, a hired dev who built a bot..." rows={2} /></FF>
+          <FF label="What did you and/or your team think about it?"><TArea value={s7.aiThoughts} onChange={v => f7("aiThoughts", v)} placeholder="What worked, what fell short, how the team felt about it." rows={2} /></FF>
+          <FF label="How was the implementation / startup?"><TArea value={s7.aiStartup} onChange={v => f7("aiStartup", v)} placeholder="How smooth or rough was getting it set up and adopted?" rows={2} /></FF>
+        </>
+      )}
       <RadioGroup label="How does your team feel about bringing in AI?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
-    </Stack>,
-    // 9 - Scope & next steps
+    </Stack>
+    ) },
+    { key: "scope", label: "Scope", node: (
     <Stack key="s8">
-      <SHead stepNum={9} total={9} title="Scope & Next Steps" subtitle="A few final details so we can prepare for our conversation." badge="Business" />
+      <SHead stepNum={9} total={0} title="Scope & Next Steps" subtitle="A few final details so we can prepare for our conversation." badge="Business" />
+      <FF label="What investment range are you considering?" required><TSelect value={s8.budget} onChange={v => f8("budget", v)} options={BUDGET_RANGE} /></FF>
+      <RadioGroup label="When do you want this live?" options={TIMELINE_LIVE} value={s8.timeline} onChange={v => f8("timeline", v)} />
+      <RadioGroup label="Who signs off on moving forward?" options={DECISION_AUTHORITY} value={s8.decisionAuthority} onChange={v => f8("decisionAuthority", v)} />
       <RadioGroup label="Type of engagement" options={ENGAGEMENTS} value={s8.engagement} onChange={v => f8("engagement", v)} />
-      <FF label="Internal technical resources after launch" required><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
+      <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
       <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? "rgba(215,43,43,0.12)" : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? R : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? "0 0 0 4px rgba(215,43,43,0.12)" : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
         <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? R : "rgba(0,0,0,0.28)"}`, background: s8.agree ? R : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -486,9 +596,12 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
         I've answered honestly and I'm ready for a conversation about how Apollo[Claw] can help my business.
       </button>
       {agreeErr && <p style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginTop: 6 }}>Please check this box before submitting.</p>}
-    </Stack>,
+    </Stack>
+    ) },
   ];
-  return <Shell steps={BIZ_STEPS} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === pages.length - 1}>{pages[step]}</Shell>;
+  const stepLabels = allPages.map(p => p.label);
+  const cur = allPages[step] || allPages[allPages.length - 1];
+  return <Shell steps={stepLabels} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
 }
 // ════════════════════════════════════════════════════════════
 // COLLEGIATE TRACK
@@ -525,16 +638,16 @@ function ColTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const ADMIN_STEPS = ["Your Role", "Institution", "AI Deployment", "IT & Budget"];
   const curSteps = isStud ? STUD_STEPS : ADMIN_STEPS;
   const studPages = [
-    <Stack key="st1"><SHead stepNum={1} total={4} title="Your Academic Role" badge="Student" /><FF label="School / University Name" required><TInput value={stud.school} onChange={v => ss("school", v)} placeholder="e.g. Tulane University" /></FF><Row2><FF label="Institution Type" required><TSelect value={stud.schoolType} onChange={v => ss("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="School Size"><TSelect value={stud.schoolSize} onChange={v => ss("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><Row2><FF label="Academic Year" required><TSelect value={stud.year} onChange={v => ss("year", v)} options={COL_YEAR} /></FF><FF label="Major / Field of Study" required><TSelect value={stud.major} onChange={v => ss("major", v)} options={COL_MAJOR} /></FF></Row2><FF label="GPA Range (Optional)"><TSelect value={stud.gpa} onChange={v => ss("gpa", v)} options={["Under 2.0","2.0-2.5","2.5-3.0","3.0-3.5","3.5-4.0","4.0 (Perfect)","Not applicable","Prefer not to say"]} /></FF><FF label="Clubs, Sports, or Activities"><TInput value={stud.clubs} onChange={v => ss("clubs", v)} placeholder="e.g. Debate club, student newspaper, varsity soccer…" /></FF></Stack>,
+    <Stack key="st1"><SHead stepNum={1} total={4} title="Your Academic Role" badge="Student" /><FF label="School / University Name"><TInput value={stud.school} onChange={v => ss("school", v)} placeholder="e.g. Tulane University" /></FF><Row2><FF label="Institution Type"><TSelect value={stud.schoolType} onChange={v => ss("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="School Size"><TSelect value={stud.schoolSize} onChange={v => ss("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><Row2><FF label="Academic Year"><TSelect value={stud.year} onChange={v => ss("year", v)} options={COL_YEAR} /></FF><FF label="Major / Field of Study"><TSelect value={stud.major} onChange={v => ss("major", v)} options={COL_MAJOR} /></FF></Row2><FF label="GPA Range (Optional)"><TSelect value={stud.gpa} onChange={v => ss("gpa", v)} options={["Under 2.0","2.0-2.5","2.5-3.0","3.0-3.5","3.5-4.0","4.0 (Perfect)","Not applicable","Prefer not to say"]} /></FF><FF label="Clubs, Sports, or Activities"><TInput value={stud.clubs} onChange={v => ss("clubs", v)} placeholder="e.g. Debate club, student newspaper, varsity soccer…" /></FF></Stack>,
     <Stack key="st2"><SHead stepNum={2} total={4} title="Academic Profile & AI Experience" badge="Student" /><FF label="Your School's LMS"><TSelect value={stud.lms} onChange={v => ss("lms", v)} options={COL_LMS} /></FF><CheckGroup label="AI Tools You Currently Use" options={COL_CURR_TOOLS} value={stud.currentTools} onChange={v => ss("currentTools", v)} cols={2} /><RadioGroup label="Your Prior Experience With AI Tools" options={["I've never used AI tools","I've tried them once or twice","I use them occasionally","I use AI tools regularly","I'm very experienced - daily power user"]} value={stud.aiExperience} onChange={v => ss("aiExperience", v)} /><CheckGroup label="What Do You Want an AI Bot to Help You With?" options={COL_BOT_USE_STUD} value={stud.uses} onChange={v => ss("uses", v)} cols={2} /><CheckGroup label="Concerns or Hesitations About Using AI" options={COL_CONCERN_STUD} value={stud.concerns} onChange={v => ss("concerns", v)} cols={2} /></Stack>,
-    <Stack key="st3"><SHead stepNum={3} total={4} title="Your Academic Goals" badge="Student" /><FF label="What's Your Biggest Academic Challenge Right Now?" required><TArea value={stud.goalShort} onChange={v => ss("goalShort", v)} placeholder="Keeping up with coursework? Study skills? Writing?" rows={3} /></FF><FF label="What's Your Longer-Term Academic or Career Goal?"><TArea value={stud.goalLong} onChange={v => ss("goalLong", v)} rows={2} /></FF></Stack>,
-    <Stack key="st4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Student" /><FF label="Monthly Budget for AI Tools" required><TSelect value={stud.budget} onChange={v => ss("budget", v)} options={["Free only - I cannot spend anything","Under $10/mo","$10-$20/mo","$20-$50/mo","$50+/mo","My school would pay for it","Not sure yet"]} /></FF><RadioGroup label="When Do You Want to Get Started?" options={["This week - ASAP","This semester","Next semester","Just researching for now"]} value={stud.timeline} onChange={v => ss("timeline", v)} /></Stack>,
+    <Stack key="st3"><SHead stepNum={3} total={4} title="Your Academic Goals" badge="Student" /><FF label="What's Your Biggest Academic Challenge Right Now?"><TArea value={stud.goalShort} onChange={v => ss("goalShort", v)} placeholder="Keeping up with coursework? Study skills? Writing?" rows={3} /></FF><FF label="What's Your Longer-Term Academic or Career Goal?"><TArea value={stud.goalLong} onChange={v => ss("goalLong", v)} rows={2} /></FF></Stack>,
+    <Stack key="st4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Student" /><FF label="Monthly Budget for AI Tools"><TSelect value={stud.budget} onChange={v => ss("budget", v)} options={["Free only - I cannot spend anything","Under $10/mo","$10-$20/mo","$20-$50/mo","$50+/mo","My school would pay for it","Not sure yet"]} /></FF><RadioGroup label="When Do You Want to Get Started?" options={["This week - ASAP","This semester","Next semester","Just researching for now"]} value={stud.timeline} onChange={v => ss("timeline", v)} /></Stack>,
   ];
   const admPages = [
-    <Stack key="ad1"><SHead stepNum={1} total={4} title="Your Institutional Role" badge="Administrator" /><FF label="Your Role at the Institution" required><TSelect value={adm.adminRole} onChange={v => sa("adminRole", v)} options={COL_ROLE} /></FF><FF label="School / Institution Name" required><TInput value={adm.school} onChange={v => sa("school", v)} placeholder="e.g. University of Texas at Austin" /></FF><Row2><FF label="Institution Type" required><TSelect value={adm.schoolType} onChange={v => sa("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="Institution Size" required><TSelect value={adm.schoolSize} onChange={v => sa("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><FF label="Your Department or Division"><TInput value={adm.dept} onChange={v => sa("dept", v)} placeholder="e.g. Office of Student Success, IT, Admissions…" /></FF><RadioGroup label="Your Role in This Decision" options={COL_DECISION_ROLE} value={adm.decisionRole} onChange={v => sa("decisionRole", v)} /><CheckGroup label="Other Stakeholders Involved" options={ADMIN_STAKEHOLDERS} value={adm.stakeholders} onChange={v => sa("stakeholders", v)} cols={2} /></Stack>,
+    <Stack key="ad1"><SHead stepNum={1} total={4} title="Your Institutional Role" badge="Administrator" /><FF label="Your Role at the Institution"><TSelect value={adm.adminRole} onChange={v => sa("adminRole", v)} options={COL_ROLE} /></FF><FF label="School / Institution Name"><TInput value={adm.school} onChange={v => sa("school", v)} placeholder="e.g. University of Texas at Austin" /></FF><Row2><FF label="Institution Type"><TSelect value={adm.schoolType} onChange={v => sa("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="Institution Size"><TSelect value={adm.schoolSize} onChange={v => sa("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><FF label="Your Department or Division"><TInput value={adm.dept} onChange={v => sa("dept", v)} placeholder="e.g. Office of Student Success, IT, Admissions…" /></FF><RadioGroup label="Your Role in This Decision" options={COL_DECISION_ROLE} value={adm.decisionRole} onChange={v => sa("decisionRole", v)} /><CheckGroup label="Other Stakeholders Involved" options={ADMIN_STAKEHOLDERS} value={adm.stakeholders} onChange={v => sa("stakeholders", v)} cols={2} /></Stack>,
     <Stack key="ad2"><SHead stepNum={2} total={4} title="Institution Profile & Current Tech" badge="Administrator" /><CheckGroup label="Learning Management Systems in Use" options={COL_LMS} value={adm.lms} onChange={v => sa("lms", v)} cols={2} /><FF label="Student Information System (SIS)"><TSelect value={adm.sis} onChange={v => sa("sis", v)} options={COL_SIS} /></FF><CheckGroup label="AI Tools Currently in Use or Evaluated" options={COL_CURR_TOOLS} value={adm.currentTools} onChange={v => sa("currentTools", v)} cols={2} /><CheckGroup label="What Do You Want AI to Handle?" options={COL_BOT_USE_ADMIN} value={adm.uses} onChange={v => sa("uses", v)} cols={2} /><CheckGroup label="Key Concerns or Barriers" options={COL_CONCERN_ADMIN} value={adm.concerns} onChange={v => sa("concerns", v)} cols={2} /></Stack>,
     <Stack key="ad3"><SHead stepNum={3} total={4} title="AI Deployment & Compliance" badge="Administrator" /><CheckGroup label="Compliance Requirements" options={["FERPA (student data privacy)","COPPA (under-13 users)","HIPAA (health/counseling data)","ADA / Section 508 (accessibility)","State privacy laws","Regional accreditation standards","None / Not sure"]} value={adm.compliance} onChange={v => sa("compliance", v)} cols={2} /><CheckGroup label="Types of Student / Institutional Data Involved" options={["Student academic records","Student contact information","Financial aid data","Health / counseling records","Admissions data","Alumni / donor data","Faculty / staff records","Nothing sensitive"]} value={adm.dataTypes} onChange={v => sa("dataTypes", v)} cols={2} /><FF label="Key Systems That Must Be Integrated"><TArea value={adm.integrations} onChange={v => sa("integrations", v)} placeholder="e.g. Must integrate with Canvas LMS, Banner SIS, and Microsoft Azure SSO…" rows={3} /></FF><RadioGroup label="Pilot or Full Deployment?" options={COL_PILOT} value={adm.pilot} onChange={v => sa("pilot", v)} /><FF label="How Will You Measure Success?"><TArea value={adm.successMetric} onChange={v => sa("successMetric", v)} rows={2} /></FF></Stack>,
-    <Stack key="ad4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Administrator" /><FF label="Projected Budget" required><TSelect value={adm.budget} onChange={v => sa("budget", v)} options={COL_BUDGET_ADMIN} /></FF><FF label="Desired Go-Live Timeline" required><TSelect value={adm.timeline} onChange={v => sa("timeline", v)} options={COL_TIMELINE_ADMIN} /></FF></Stack>,
+    <Stack key="ad4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Administrator" /><FF label="Projected Budget"><TSelect value={adm.budget} onChange={v => sa("budget", v)} options={COL_BUDGET_ADMIN} /></FF><FF label="Desired Go-Live Timeline"><TSelect value={adm.timeline} onChange={v => sa("timeline", v)} options={COL_TIMELINE_ADMIN} /></FF></Stack>,
   ];
   const curPages = isStud ? studPages : admPages;
   const submitData = isStud
@@ -561,9 +674,9 @@ function AgencyTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<s
   const back = () => { setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const submit = () => onDone(buildData(), "agency");
   const pages = [
-    <Stack key="ag1"><SHead stepNum={1} total={3} title="Your Agency" badge="Agency / Reseller" /><FF label="Agency Name" required><TInput value={d.agencyName} onChange={v => sd("agencyName", v)} placeholder="Your Agency LLC" /></FF><FF label="Website"><TInput type="url" value={d.url} onChange={v => sd("url", v)} placeholder="https://youragency.com" /></FF><Row2><FF label="Agency Size"><TSelect value={d.size} onChange={v => sd("size", v)} options={BIZ_SIZES} /></FF><FF label="Agency Model"><TSelect value={d.model} onChange={v => sd("model", v)} options={["Full-service digital agency","Web design / dev shop","Marketing agency","SEO / PPC specialist","Consulting / advisory firm","IT managed services (MSP)","Other"]} /></FF></Row2><CheckGroup label="Services You Currently Offer" options={["Web design & development","SEO & content marketing","Paid advertising (PPC)","Social media management","Email marketing","CRM & automation","AI / chatbot implementation","Business consulting","IT managed services","Other"]} value={d.services} onChange={v => sd("services", v)} cols={2} /></Stack>,
+    <Stack key="ag1"><SHead stepNum={1} total={3} title="Your Agency" badge="Agency / Reseller" /><FF label="Agency Name"><TInput value={d.agencyName} onChange={v => sd("agencyName", v)} placeholder="Your Agency LLC" /></FF><FF label="Website"><TInput type="url" value={d.url} onChange={v => sd("url", v)} placeholder="https://youragency.com" /></FF><Row2><FF label="Agency Size"><TSelect value={d.size} onChange={v => sd("size", v)} options={BIZ_SIZES} /></FF><FF label="Agency Model"><TSelect value={d.model} onChange={v => sd("model", v)} options={["Full-service digital agency","Web design / dev shop","Marketing agency","SEO / PPC specialist","Consulting / advisory firm","IT managed services (MSP)","Other"]} /></FF></Row2><CheckGroup label="Services You Currently Offer" options={["Web design & development","SEO & content marketing","Paid advertising (PPC)","Social media management","Email marketing","CRM & automation","AI / chatbot implementation","Business consulting","IT managed services","Other"]} value={d.services} onChange={v => sd("services", v)} cols={2} /></Stack>,
     <Stack key="ag2"><SHead stepNum={2} total={3} title="Your Client Base" badge="Agency / Reseller" /><CheckGroup label="Types of Clients You Serve" options={["Small businesses (under $1M revenue)","Mid-market ($1M-$10M revenue)","Enterprise ($10M+ revenue)","E-commerce brands","Healthcare / medical practices","Law firms","Real estate companies","Restaurants / hospitality","Non-profits","Educational institutions","Other"]} value={d.clientTypes} onChange={v => sd("clientTypes", v)} cols={2} /><FF label="Approximate Number of Active Clients"><TSelect value={d.clientCount} onChange={v => sd("clientCount", v)} options={["1-5 clients","6-15 clients","16-30 clients","31-60 clients","60-100 clients","100+ clients"]} /></FF></Stack>,
-    <Stack key="ag3"><SHead stepNum={3} total={3} title="Partnership Goals" badge="Agency / Reseller" /><FF label="Why Do You Want to Partner With Apollo[Claw]?" required><TArea value={d.whyPartner} onChange={v => sd("whyPartner", v)} placeholder="What gap are you trying to fill? What are clients asking for that you can't deliver today?" rows={3} /></FF><FF label="Revenue Goal From This Partnership"><TSelect value={d.revenue} onChange={v => sd("revenue", v)} options={["Under $1k/mo additional revenue","$1k-$5k/mo","$5k-$15k/mo","$15k-$50k/mo","$50k+/mo","Not focused on revenue - it's a client retention play"]} /></FF><FF label="Desired Start Timeline"><TSelect value={d.timeline} onChange={v => sd("timeline", v)} options={["ASAP","Within 30 days","1-3 months","3-6 months","Just exploring"]} /></FF><FF label="Questions or Anything Else We Should Know"><TArea value={d.questions} onChange={v => sd("questions", v)} rows={3} /></FF></Stack>,
+    <Stack key="ag3"><SHead stepNum={3} total={3} title="Partnership Goals" badge="Agency / Reseller" /><FF label="Why Do You Want to Partner With Apollo[Claw]?"><TArea value={d.whyPartner} onChange={v => sd("whyPartner", v)} placeholder="What gap are you trying to fill? What are clients asking for that you can't deliver today?" rows={3} /></FF><FF label="Revenue Goal From This Partnership"><TSelect value={d.revenue} onChange={v => sd("revenue", v)} options={["Under $1k/mo additional revenue","$1k-$5k/mo","$5k-$15k/mo","$15k-$50k/mo","$50k+/mo","Not focused on revenue - it's a client retention play"]} /></FF><FF label="Desired Start Timeline"><TSelect value={d.timeline} onChange={v => sd("timeline", v)} options={["ASAP","Within 30 days","1-3 months","3-6 months","Just exploring"]} /></FF><FF label="Questions or Anything Else We Should Know"><TArea value={d.questions} onChange={v => sd("questions", v)} rows={3} /></FF></Stack>,
   ];
   return <Shell steps={AGY_STEPS} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === 2}>{pages[step]}</Shell>;
 }
@@ -572,7 +685,7 @@ function AgencyTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<s
 // ════════════════════════════════════════════════════════════
 export default function OnboardPage() {
   const [phase, setPhase] = useState<"gate" | "track" | "form" | "submitting" | "done">("gate");
-  const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "" });
+  const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "", referralSource: "", referralName: "" });
   const [track, setTrack] = useState("");
   const [doneTrack, setDoneTrack] = useState("");
   const handleGate = (info: GateData) => { setGate(info); setTrack("business"); setPhase("form"); };

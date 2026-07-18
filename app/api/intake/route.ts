@@ -39,6 +39,8 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
       { label: "Phone", value: d.phone },
       { label: "Track", value: trackLabel[track] || track },
       { label: "How They Heard", value: d.source },
+      { label: "Referral Source", value: d.referralSource },
+      { label: "Referral Name", value: d.referralName },
       { label: "Contact Preference", value: d.contactMethod },
       { label: "Best Time to Reach", value: d.bestTime },
       { label: "Timezone", value: d.timezone },
@@ -48,6 +50,33 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
   });
 
   if (track === "business" || track === "personal") {
+    const companiesArr = Array.isArray(d.companies) ? (d.companies as Array<Record<string, unknown>>) : [];
+    if (companiesArr.length) {
+      const pi = Number(d.primaryCompanyIndex) || 0;
+      const pf = d.portfolio && typeof d.portfolio === "object" ? (d.portfolio as Record<string, unknown>) : {};
+      sections.push({
+        title: "Companies & Portfolio",
+        rows: [
+          ...companiesArr.map((c, i) => ({
+            label: i === pi ? `Business ${i + 1} (Primary)` : `Business ${i + 1}`,
+            value: [c.name, c.industry === "Other" ? c.industryOther : c.industry, c.role, c.ownership].filter(Boolean).join(" | "),
+          })),
+          { label: "Portfolio Structure", value: pf.structure },
+          { label: "Shared Operations", value: pf.sharedOps },
+          { label: "Expansion Ambition", value: pf.ambition },
+        ],
+      });
+    }
+    const idet = d.industryDetails && typeof d.industryDetails === "object" ? (d.industryDetails as Record<string, unknown>) : {};
+    if (Object.keys(idet).length) {
+      sections.push({
+        title: "Industry Deep-Dive",
+        rows: Object.entries(idet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [
@@ -78,6 +107,7 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
         { label: "Main Pain Point", value: d.mainPain },
         { label: "Broken Areas", value: d.brokenAreas },
         { label: "Hours/Wk on Manual Tasks", value: d.manualHours },
+        { label: "Busiest Workflow Volume", value: d.opsVolume },
         { label: "Pain Duration", value: d.painDuration },
         { label: "Task They Hate Most", value: d.hatedTasks },
         { label: "Already Tried", value: d.triedBefore },
@@ -145,9 +175,12 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
         { label: "Operating System", value: d.os },
         { label: "Security Measures", value: d.securityMeasures },
         { label: "Data Types Stored", value: d.dataTypes },
+        { label: "Access Readiness", value: d.accessReadiness },
+        { label: "Process Documentation", value: d.processDocs },
         { label: "Compliance", value: d.compliance },
-        { label: "Budget", value: d.budget },
+        { label: "Budget Range", value: d.budget },
         { label: "Timeline", value: d.timeline },
+        { label: "Decision Authority", value: d.decisionAuthority },
         { label: "Engagement Type", value: d.engagement },
         { label: "Internal Tech Resources", value: d.internalTech },
         { label: "Constraints", value: d.constraints },
