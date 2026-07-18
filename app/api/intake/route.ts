@@ -278,6 +278,7 @@ async function sendEmail(opts: {
   html: string;
   pdfBuffer?: Buffer;
   pdfFilename?: string;
+  extraAttachments?: Array<{ name: string; type: string; contentBase64: string }>;
 }): Promise<boolean> {
   try {
     const message: Record<string, unknown> = {
@@ -290,13 +291,14 @@ async function sendEmail(opts: {
       important: true,
     };
 
+    const attachments: Array<{ type: string; name: string; content: string }> = [];
     if (opts.pdfBuffer && opts.pdfFilename) {
-      message.attachments = [{
-        type: "application/pdf",
-        name: opts.pdfFilename,
-        content: opts.pdfBuffer.toString("base64"),
-      }];
+      attachments.push({ type: "application/pdf", name: opts.pdfFilename, content: opts.pdfBuffer.toString("base64") });
     }
+    for (const a of opts.extraAttachments ?? []) {
+      if (a.contentBase64) attachments.push({ type: a.type || "application/octet-stream", name: a.name || "file", content: a.contentBase64 });
+    }
+    if (attachments.length) message.attachments = attachments;
 
     const res = await fetch("https://mandrillapp.com/api/1.0/messages/send", {
       method: "POST",
@@ -605,6 +607,14 @@ export async function POST(req: NextRequest) {
       html: davidHtml,
       pdfBuffer: pdfBuffer || undefined,
       pdfFilename: pdfBuffer ? filename : undefined,
+      // Attach the client's uploaded materials to the internal email as well.
+      extraAttachments: (Array.isArray(data.uploadedFiles) ? (data.uploadedFiles as Array<Record<string, unknown>>) : [])
+        .map((u) => ({
+          name: typeof u.name === "string" ? u.name : "file",
+          type: typeof u.type === "string" ? u.type : "application/octet-stream",
+          contentBase64: typeof u.dataBase64 === "string" ? u.dataBase64 : "",
+        }))
+        .filter((a) => a.contentBase64),
     });
 
     // 5. Upload PDF to Supabase Storage and attach to CRM entity card
