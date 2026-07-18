@@ -450,6 +450,9 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       }
       if (!s2.web_presence.trim()) return "Please add a website or LinkedIn.";
     }
+    if (key === "whatyoudo") {
+      if (!s2.desc.trim()) return "Please describe your business.";
+    }
     if (key === "industry" && branch) {
       for (const f of branch.fields) {
         if (!f.required) continue;
@@ -495,7 +498,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     { key: "whatyoudo", label: "What You Do", node: (
     <Stack key="s2b">
       <SHead stepNum={2} total={0} title="What Do You Do?" subtitle="Who you serve, what you deliver, and the edge that wins you business." badge="Business" />
-      <FF label="Describe your business" hint="Who do you serve, and what do you deliver for them?"><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
+      <FF label="Describe your business" required hint="Who do you serve, and what do you deliver for them?"><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
       <FF label="What makes you different?" hint="Why clients choose you over the alternatives - your real edge."><TArea value={s2.differentiate} onChange={v => f2("differentiate", v)} placeholder="e.g. We're the only firm in the region that..., our turnaround is 3x faster, we own a proprietary process..." rows={3} /></FF>
     </Stack>
     ) },
@@ -538,7 +541,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     { key: "exec", label: "Executive Profile", node: (
     <Stack key="s5exec">
       <SHead stepNum={5} total={0} title={`Executive Profile for ${primaryName}`} subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
-      <FF label="Your biggest strategic bet in the next 12 months"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move you're making that matters most - a market, a product, a hire, a raise, an acquisition..." rows={3} /></FF>
+      <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
       <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={1} />
       <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={1} />
     </Stack>
