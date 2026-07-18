@@ -292,7 +292,6 @@ const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","My team
 const ACCESS_READINESS = ["I have admin access to all of them","My team controls logins but can grant access","We use them but access is scattered","Not sure"];
 const PROCESS_DOCS = ["Documented SOPs exist","Some are written down","It is mostly in my head and my team's heads","We are starting from scratch"];
 const OPS_VOLUME = ["Under 25","25 to 100","100 to 500","500+","Not sure"];
-const TIMELINE_LIVE = ["ASAP","This quarter","Next 6 months","Just exploring"];
 
 // Renders the dynamic "Industry Deep-Dive" step from an industryConfig branch,
 // mapping each field type onto the form's existing primitives.
@@ -411,10 +410,6 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
         const v = industryDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }
-    }
-    if (key === "stack") {
-      if (!s8.accessReadiness) return "Please tell us who controls access to your systems.";
-      if (!s8.processDocs) return "Please tell us how documented your processes are.";
     }
     return "";
   };
@@ -537,7 +532,6 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     { key: "scope", label: "Scope", node: (
     <Stack key="s8">
       <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
-      <RadioGroup label="When do you want this live?" options={TIMELINE_LIVE} value={s8.timeline} onChange={v => f8("timeline", v)} />
       <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
       <FF label="Anything else we should know?" hint="Extra context, priorities, or details that will help us build."><TArea value={s8.constraints} onChange={v => f8("constraints", v)} placeholder="Anything else that helps us understand your business and what you need." rows={4} /></FF>
