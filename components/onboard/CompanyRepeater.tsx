@@ -45,14 +45,6 @@ const ROLE_OPTIONS = [
   "Advisor",
 ];
 
-const OWNERSHIP_OPTIONS = [
-  "Sole owner",
-  "Majority owner",
-  "Equal partner",
-  "Minority owner",
-  "No equity (I operate it)",
-];
-
 const STRUCTURE_OPTIONS = [
   "Holding company / umbrella",
   "Independent businesses I own",
@@ -247,14 +239,6 @@ export default function CompanyRepeater({
                 />
               </Field>
             )}
-
-            <Field label="Your ownership">
-              <Select
-                value={company.ownership}
-                onChange={(v) => updateCompany(i, { ownership: v })}
-                options={OWNERSHIP_OPTIONS}
-              />
-            </Field>
           </div>
         </div>
       ))}
