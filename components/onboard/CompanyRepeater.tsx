@@ -1,7 +1,7 @@
 // components/onboard/CompanyRepeater.tsx
 // Apollo[Claw] onboarding - Step 2 multi-company capture.
 //
-// Design: light per-company rows (name, industry, role, ownership) plus ONE
+// Design: light per-company rows (name, industry, role) plus ONE
 // portfolio block that only appears when there is more than one company.
 // The PRIMARY company drives the Industry Deep-Dive step and all downstream
 // framing. Fully controlled by the parent wizard so the parent can read
@@ -25,7 +25,6 @@ export interface Company {
   industry: string;
   industryOther: string; // written-in industry when `industry` === "Other"
   role: string;
-  ownership: string;
 }
 
 export interface PortfolioMeta {
@@ -82,7 +81,6 @@ export const emptyCompany = (): Company => ({
   industry: "",
   industryOther: "",
   role: "",
-  ownership: "",
 });
 
 export const emptyPortfolio = (): PortfolioMeta => ({
@@ -171,7 +169,7 @@ export default function CompanyRepeater({
                 color: i === primaryIndex ? T.red : T.grey,
               }}
             >
-              {i === 0 ? "Primary business" : `Business ${i + 1}`}
+              {i === primaryIndex ? "Primary business" : `Business ${i + 1}`}
             </span>
             {companies.length > 1 && i !== 0 && (
               <button
