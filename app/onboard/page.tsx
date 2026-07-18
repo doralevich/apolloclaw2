@@ -404,6 +404,47 @@ function IndustryStep({ branch, values, onChange, otherLabel }: { branch: Indust
     </Stack>
   );
 }
+// Read a File into a base64 string (no data: prefix) for JSON upload to /api/intake.
+function readFileAsBase64(file: File): Promise<{ name: string; type: string; size: number; dataBase64: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, type: file.type || "application/octet-stream", size: file.size, dataBase64: String(reader.result).split(",")[1] || "" });
+    reader.onerror = () => reject(new Error("read failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Multi-file picker for client materials. Capped so the base64 payload stays under the
+// serverless body limit; larger files are directed to email.
+function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) => void }) {
+  const MAX = 4 * 1024 * 1024;
+  const [msg, setMsg] = useState("");
+  const add = (list: FileList | null) => {
+    if (!list) return;
+    const next = [...files, ...Array.from(list)];
+    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 4MB. Remove a file, or email larger ones to david@apolloclaw.ai."); return; }
+    setMsg(""); onFiles(next);
+  };
+  return (
+    <div>
+      <label style={{ display: "block", border: `1px dashed rgba(0,0,0,0.25)`, borderRadius: 8, padding: "16px", textAlign: "center", cursor: "pointer", background: SRF2, color: TXM, fontSize: 13, fontWeight: 700 }}>
+        + Add files
+        <input type="file" multiple onChange={e => { add(e.target.files); e.currentTarget.value = ""; }} style={{ display: "none" }} />
+      </label>
+      {files.length > 0 && (
+        <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+          {files.map((f, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 6, background: SRF2, border: `1px solid ${BDR}`, fontSize: 13 }}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name} <span style={{ color: TXD }}>({Math.round(f.size / 1024)} KB)</span></span>
+              <button type="button" onClick={() => onFiles(files.filter((_, idx) => idx !== i))} aria-label="Remove file" style={{ border: "none", background: "none", color: TXD, cursor: "pointer", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>x</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {msg && <p style={{ fontSize: 12, color: "#dc2626", marginTop: 6 }}>{msg}</p>}
+    </div>
+  );
+}
 function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
   const [step, setStep] = useState(0);
   const [s1, setS1] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[], contact: "", besttime: "", tz: "", title: "", linkedin: "" });
@@ -420,6 +461,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const [industryDetails, setIndustryDetails] = useState<Record<string, string | string[]>>({});
   const [agreeErr, setAgreeErr] = useState(false);
   const [vErr, setVErr] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const setIndustry = (k: string, v: string | string[]) => setIndustryDetails(p => ({ ...p, [k]: v }));
   const primaryCompany = companies[primaryIndex] || companies[0];
   const primaryName = primaryCompany?.name?.trim() || "your business";
@@ -464,11 +506,6 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
       if (!s8.accessReadiness) return "Please tell us who controls access to your systems.";
       if (!s8.processDocs) return "Please tell us how documented your processes are.";
     }
-    if (key === "scope") {
-      if (!s8.budget) return "Please choose an investment range.";
-      if (!s8.timeline) return "Please choose a timeline.";
-      if (!s8.decisionAuthority) return "Please tell us who signs off.";
-    }
     return "";
   };
   const next = () => {
@@ -479,11 +516,14 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const back = () => { setVErr(""); setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const submit = () => {
+  const submit = async () => {
     const err = validate(pageKeys[step]);
     if (err) { setVErr(err); return; }
     if (!s8.agree) { setAgreeErr(true); return; }
-    setAgreeErr(false); onDone(buildData(), "business");
+    setAgreeErr(false);
+    let uploadedFiles: unknown[] = [];
+    try { uploadedFiles = await Promise.all(files.map(readFileAsBase64)); } catch { uploadedFiles = []; }
+    onDone({ ...buildData(), uploadedFiles }, "business");
   };
   const allPages: { key: string; label: string; node: React.ReactNode }[] = [
     { key: "biz", label: "Your Business", node: (
@@ -542,8 +582,8 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     <Stack key="s5exec">
       <SHead stepNum={5} total={0} title={`Executive Profile for ${primaryName}`} subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
       <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
-      <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={1} />
-      <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={1} />
+      <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={2} split />
+      <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={2} split />
     </Stack>
     ) },
     { key: "life", label: "Life Context", node: (
@@ -586,18 +626,19 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
     ) },
     { key: "scope", label: "Scope", node: (
     <Stack key="s8">
-      <SHead stepNum={9} total={0} title="Scope & Next Steps" subtitle="A few final details so we can prepare for our conversation." badge="Business" />
-      <FF label="What investment range are you considering?" required><TSelect value={s8.budget} onChange={v => f8("budget", v)} options={BUDGET_RANGE} /></FF>
+      <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
       <RadioGroup label="When do you want this live?" options={TIMELINE_LIVE} value={s8.timeline} onChange={v => f8("timeline", v)} />
-      <RadioGroup label="Who signs off on moving forward?" options={DECISION_AUTHORITY} value={s8.decisionAuthority} onChange={v => f8("decisionAuthority", v)} />
-      <RadioGroup label="Type of engagement" options={ENGAGEMENTS} value={s8.engagement} onChange={v => f8("engagement", v)} />
       <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
+      <FF label="Anything else we should know?" hint="Extra context, priorities, or details that will help us build."><TArea value={s8.constraints} onChange={v => f8("constraints", v)} placeholder="Anything else that helps us understand your business and what you need." rows={4} /></FF>
+      <FF label="Upload company materials" hint="Optional, and the more the better. Anything that helps us learn your business: company materials, your resume so we know your background, example emails / memos / documents, SOPs, and templates.">
+        <FileUpload files={files} onFiles={setFiles} />
+      </FF>
       <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? "rgba(215,43,43,0.12)" : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? R : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? "0 0 0 4px rgba(215,43,43,0.12)" : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
         <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? R : "rgba(0,0,0,0.28)"}`, background: s8.agree ? R : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
         </span>
-        I've answered honestly and I'm ready for a conversation about how Apollo[Claw] can help my business.
+        I've answered honestly and I'm ready to get started building my agent.
       </button>
       {agreeErr && <p style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginTop: 6 }}>Please check this box before submitting.</p>}
     </Stack>

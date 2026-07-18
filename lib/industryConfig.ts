@@ -394,6 +394,116 @@ export const industryConfig: Record<string, IndustryBranch> = {
       },
     ],
   },
+
+  "Marketing / Ad Agency": {
+    stepTitle: "Your Agency",
+    stepSubtitle: "How your shop runs so the agent works your accounts, not a generic one.",
+    fields: [
+      { key: "agency_type", label: "Agency type", type: "dropdown", required: true, options: ["Full-service", "Digital / performance", "Branding / creative", "PR / communications", "Social media", "SEO / content", "Web / dev shop", "Media buying"] },
+      { key: "client_load", label: "Active clients", type: "dropdown", required: true, options: ["Under 10", "10 to 25", "25 to 60", "60+"] },
+      { key: "agency_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["New business and pitching", "Client reporting", "Content production", "Campaign management", "Scope creep and billing", "Team capacity", "Lead follow-up"] },
+      { key: "agency_tool", label: "Primary platform", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Airtable", "GoHighLevel", "AgencyAnalytics", "None", "Other"] },
+    ],
+  },
+
+  "SaaS / Software": {
+    stepTitle: "Your Product",
+    stepSubtitle: "Your motion and stage so the agent fits how you grow and retain.",
+    fields: [
+      { key: "saas_stage", label: "Stage", type: "dropdown", required: true, options: ["Pre-revenue / MVP", "Early (under $1M ARR)", "Growth ($1M to $10M ARR)", "Scale ($10M+ ARR)"] },
+      { key: "saas_motion", label: "Go-to-market motion", type: "dropdown", required: true, options: ["Product-led / self-serve", "Sales-led", "Hybrid"] },
+      { key: "saas_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Onboarding and activation", "Support tickets", "Churn and retention", "Sales follow-up", "Lead qualification", "Billing and dunning", "Feature request triage"] },
+      { key: "saas_tool", label: "Primary CRM / support tool", type: "dropdown", options: ["HubSpot", "Salesforce", "Intercom", "Zendesk", "Pipedrive", "Stripe Billing", "None", "Other"] },
+    ],
+  },
+
+  "Professional Services": {
+    stepTitle: "Your Practice",
+    stepSubtitle: "How you serve clients so the agent supports your delivery.",
+    fields: [
+      { key: "services_type", label: "Type of practice", type: "dropdown", required: true, options: ["Consulting", "Design / creative", "Engineering / architecture", "Coaching", "Recruiting / staffing", "Other services"] },
+      { key: "engagement_model", label: "Primary engagement model", type: "dropdown", required: true, options: ["Retainer", "Project-based", "Hourly", "Performance-based", "Mix"] },
+      { key: "services_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and scoping", "Client onboarding", "Project delivery", "Time tracking and billing", "Lead follow-up", "Scheduling"] },
+      { key: "services_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Notion", "Dubsado / HoneyBook", "None", "Other"] },
+    ],
+  },
+
+  "Hospitality / Food & Beverage": {
+    stepTitle: "Your Venue",
+    stepSubtitle: "How you serve guests so the agent handles the volume behind it.",
+    fields: [
+      { key: "hosp_type", label: "Type", type: "dropdown", required: true, options: ["Restaurant", "Bar / cafe", "Hotel / lodging", "Catering / events", "Franchise", "Multi-location group"] },
+      { key: "covers_volume", label: "Weekly covers / guests", type: "dropdown", required: true, options: ["Under 500", "500 to 2000", "2000 to 5000", "5000+"] },
+      { key: "hosp_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Reservations and no-shows", "Staffing and scheduling", "Reviews and reputation", "Ordering and inventory", "Guest messaging", "Loyalty and marketing"] },
+      { key: "hosp_tool", label: "Primary system", type: "dropdown", options: ["Toast", "Square", "Resy / OpenTable", "Clover", "7shifts", "None", "Other"] },
+    ],
+  },
+
+  "Education / Coaching": {
+    stepTitle: "Your Program",
+    stepSubtitle: "How you teach so the agent supports enrollment and students.",
+    fields: [
+      { key: "edu_type", label: "Format", type: "dropdown", required: true, options: ["1:1 coaching", "Group coaching", "Online courses", "Tutoring", "Membership / community", "Corporate training"] },
+      { key: "student_volume", label: "Active students / members", type: "dropdown", required: true, options: ["Under 25", "25 to 100", "100 to 500", "500+"] },
+      { key: "edu_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Enrollment and sales", "Student onboarding", "Content delivery", "Scheduling", "Support and questions", "Retention and renewals"] },
+      { key: "edu_tool", label: "Primary platform", type: "dropdown", options: ["Kajabi", "Teachable", "Thinkific", "Circle", "Skool", "Calendly", "None", "Other"] },
+    ],
+  },
+
+  "Manufacturing / Logistics": {
+    stepTitle: "Your Operation",
+    stepSubtitle: "How product moves so the agent supports orders and fulfillment.",
+    fields: [
+      { key: "mfg_type", label: "Type", type: "dropdown", required: true, options: ["Manufacturing", "Distribution / wholesale", "Logistics / 3PL", "Warehousing", "Import / export"] },
+      { key: "mfg_volume", label: "Monthly order volume", type: "dropdown", required: true, options: ["Under 100", "100 to 1000", "1000 to 5000", "5000+"] },
+      { key: "mfg_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Order processing", "Inventory management", "Quoting and RFQs", "Supplier coordination", "Shipping and tracking", "Customer service"] },
+      { key: "mfg_tool", label: "Primary system", type: "dropdown", options: ["NetSuite", "SAP", "QuickBooks", "Fishbowl", "ShipStation", "None", "Other"] },
+    ],
+  },
+
+  "Construction / Trades": {
+    stepTitle: "Your Business",
+    stepSubtitle: "How you win and run jobs so the agent keeps work moving.",
+    fields: [
+      { key: "trade_type", label: "Type", type: "dropdown", required: true, options: ["General contractor", "Specialty trade (HVAC / plumbing / electrical)", "Remodeling", "Roofing", "Landscaping", "Commercial construction"] },
+      { key: "job_volume", label: "Jobs per month", type: "dropdown", required: true, options: ["Under 10", "10 to 30", "30 to 100", "100+"] },
+      { key: "trade_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Lead follow-up and estimates", "Scheduling and dispatch", "Quoting and bids", "Invoicing and collections", "Client updates", "Crew coordination"] },
+      { key: "trade_tool", label: "Primary system", type: "dropdown", options: ["ServiceTitan", "Jobber", "Housecall Pro", "Procore", "Buildertrend", "QuickBooks", "None", "Other"] },
+    ],
+  },
+
+  "Non-profit": {
+    stepTitle: "Your Organization",
+    stepSubtitle: "How you operate so the agent supports donors and programs.",
+    fields: [
+      { key: "np_type", label: "Type", type: "dropdown", required: true, options: ["Charity / direct service", "Foundation / grantmaking", "Advocacy", "Faith-based", "Arts / culture", "Education"] },
+      { key: "np_size", label: "Annual budget", type: "dropdown", required: true, options: ["Under $250k", "$250k to $1M", "$1M to $5M", "$5M+"] },
+      { key: "np_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Donor outreach and follow-up", "Grant writing and reporting", "Volunteer coordination", "Event management", "Donor data and CRM", "Communications"] },
+      { key: "np_tool", label: "Primary system", type: "dropdown", options: ["Salesforce NPSP", "Bloomerang", "DonorPerfect", "Little Green Light", "Kindful", "None", "Other"] },
+    ],
+  },
+
+  "Consulting": {
+    stepTitle: "Your Practice",
+    stepSubtitle: "How you deliver so the agent supports clients and pipeline.",
+    fields: [
+      { key: "consult_type", label: "Focus", type: "dropdown", required: true, options: ["Management / strategy", "IT / technical", "Financial / advisory", "Marketing", "HR / operations", "Boutique / solo"] },
+      { key: "consult_load", label: "Active clients", type: "dropdown", required: true, options: ["1 to 3", "4 to 10", "10 to 25", "25+"] },
+      { key: "consult_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and pitching", "Client onboarding", "Deliverable production", "Scheduling", "Billing and time tracking", "Lead follow-up"] },
+      { key: "consult_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Notion", "Asana", "Dubsado", "None", "Other"] },
+    ],
+  },
+
+  "Media / Entertainment": {
+    stepTitle: "Your Media Business",
+    stepSubtitle: "How you produce and monetize so the agent supports the work.",
+    fields: [
+      { key: "media_type", label: "Type", type: "dropdown", required: true, options: ["Creator / influencer", "Production company", "Publishing / media outlet", "Podcast / audio", "Agency / talent", "Events / live"] },
+      { key: "audience_volume", label: "Audience size", type: "dropdown", required: true, options: ["Under 10k", "10k to 100k", "100k to 1M", "1M+"] },
+      { key: "media_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Content production", "Scheduling and publishing", "Audience and community", "Sponsor and brand deals", "Monetization", "Analytics and reporting"] },
+      { key: "media_tool", label: "Primary tool", type: "dropdown", options: ["Notion", "Airtable", "Later / Buffer", "Patreon", "ConvertKit", "None", "Other"] },
+    ],
+  },
 };
 
 // Generic fallback for any industry without a dedicated branch (or "Other").
