@@ -30,11 +30,6 @@ function ApolloWordmark({ size = 18, sublabel = "AI Consulting" }: { size?: numb
 // ════════════════════════════════════════════════════════════
 // OPTION LISTS
 // ════════════════════════════════════════════════════════════
-const HOW_HEARD = ["Google / Search","LinkedIn","Facebook / Instagram","YouTube","Podcast","Friend / Colleague referral","Client referral","Conference or event","Cold email / DM","Blog post / Article","Reddit","Twitter / X","Agency or partner","Other"];
-const CONTACT_PREF = ["Email","Phone call","Text / SMS","Telegram","WhatsApp","Video call (Zoom/Meet)"];
-const BEST_TIME    = ["Early morning (6-9am)","Morning (9am-12pm)","Early afternoon (12-3pm)","Late afternoon (3-6pm)","Evening (6-9pm)","Flexible / Anytime"];
-const TIMEZONES    = ["Eastern (ET)","Central (CT)","Mountain (MT)","Pacific (PT)","Alaska (AKT)","Hawaii (HST)","GMT / London","CET / Europe","IST / India","AEST / Australia","Other"];
-const INDUSTRIES   = ["E-commerce / Retail","Professional Services","Healthcare / Medical","Real Estate","SaaS / Software","Marketing / Ad Agency","Finance / Accounting / Legal","Hospitality / Food & Beverage","Education / Coaching","Manufacturing / Logistics","Construction / Trades","Non-profit","Consulting","Media / Entertainment","Other"];
 const BIZ_SIZES    = ["Just me (Solo)","2-5 people","6-10 people","11-25 people","26-50 people","51-100 people","100+ people"];
 const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k-$10k/mo","$10k-$25k/mo","$25k-$50k/mo","$50k-$100k/mo","$100k-$250k/mo","$250k-$500k/mo","$500k+/mo","Prefer not to say"];
 const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years"];
@@ -43,61 +38,20 @@ const STACK_CRM    = ["Salesforce","HubSpot","Pipedrive","Zoho CRM","Keap","Clos
 const STACK_COMMS  = ["Google Workspace","Office 365","Slack","Zoom","Google Meet","Telegram","Otter","Fathom","Fireflies","Other"];
 const STACK_PM     = ["Notion","Asana","ClickUp","Trello","Monday.com","Jira / Linear","No PM tool","Other"];
 const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBooks","NetSuite","Bill.com","Ramp / Brex","Stripe","Square","PayPal","None","Other"];
-const STACK_MKTG   = ["Mailchimp","Klaviyo","ConvertKit","ActiveCampaign","Drip","Constant Contact","Brevo","None","Other"];
-const STACK_AUTO   = ["Zapier","Make (Integromat)","n8n","Pipedream","Power Automate","None","Other"];
-const STACK_SUPPORT= ["Zendesk","Intercom","Freshdesk","Help Scout","Gorgias","Front","None","Other"];
-const WEB_PLATFORM = ["WordPress / Divi","WordPress / Elementor","Shopify","Wix","Squarespace","Webflow","Framer","Custom-built","No website","Other"];
-const IT_HOSTING   = ["Google Cloud (GCP)","Amazon Web Services (AWS)","Microsoft Azure","Shared hosting (GoDaddy, Bluehost, etc.)","VPS (DigitalOcean, Linode)","Dedicated server","On-premise / Self-hosted","All SaaS - no self-hosted infra","Not sure","Other"];
-const IT_OS        = ["Windows PCs","Mac (Apple / macOS)","Linux","Chromebooks","iOS (iPhone / iPad)","Android","Mix of Windows and Mac","Remote / Virtual Desktops (VDI)","Other"];
-const IT_SECURITY  = ["We have a dedicated IT team or MSP","We use a password manager","2FA is enabled everywhere","We have a VPN","We run regular backups","Basic antivirus only","No formal IT security","Not sure what we have"];
-const IT_DATA      = ["Customer contact data","Credit card / payment info","Health / medical records","Legal documents","Employee records","Financial records","Proprietary IP / trade secrets","Nothing particularly sensitive"];
 const IT_COMPLY    = ["HIPAA (healthcare)","PCI-DSS (payments)","GDPR (EU data)","CCPA (California)","SOC 2","None / Not applicable","Not sure","Multiple"];
 const BROKEN_AREAS = ["Sales / Lead Generation","Customer Support / Service","Operations / Admin","Marketing & Content","Invoicing & Finance","Scheduling & Calendar","Hiring & HR","Reporting & Analytics","Order Fulfillment / Shipping","Email & Inbox","Team Communication","Vendor / Supplier Management","Project Management","Customer Onboarding","Contracts & Proposals"];
 const HOURS_WASTED = ["Less than 5 hrs/wk","5-10 hrs/wk","10-20 hrs/wk","20-30 hrs/wk","30-40 hrs/wk","40+ hrs/wk (a full-time job)","Not sure - it's everywhere"];
-const PAIN_DURATION= ["Under 3 months","3-6 months","6-12 months","1-2 years","2+ years","Since the business launched"];
-const TRIED_BEFORE = ["Nothing - haven't addressed it yet","Hired employees to handle it","Tried software tools","Hired a consultant or agency","Built internal tools","Used basic AI (ChatGPT, etc.)","Multiple approaches - nothing worked","Currently patching it together"];
 const COST_IMPACT  = ["Minor inconvenience","Moderate - costing real money","Significant - blocking growth","Critical - threatening the business","Unknown - hard to quantify"];
 const MARITAL      = ["Single","In a relationship","Engaged","Married","Domestic partnership","Divorced / Separated","Widowed","Prefer not to say"];
-const KIDS_COUNT   = ["No children","1 child","2 children","3 children","4+ children","Children are grown / adults","Expecting / planning for children"];
-const CARETAKING   = ["No caregiving responsibilities","Caring for aging parent(s)","Caring for a family member with illness / disability","Young children at home","Shared custody arrangement","Multiple caregiving roles","Other"];
-const HOME_LIFE    = ["I work from home full-time","I have a separate office outside the home","I split time between home and office","I travel frequently / location-independent","My family is involved in the business","Other"];
 const LIFE_STAGE   = ["Building - early, grinding hard","Scaling - growing fast, feeling stretched","Optimizing - established, refining","Exiting - preparing to sell or step back","Pivoting - changing direction","Surviving - navigating a hard period"];
 const TIMELINE_3YR = ["Sell or exit the business","Build it to run without me","Double or triple revenue","Buy back my time","Expand into new markets","Launch new products / services","Build a team and step out of daily ops","Retire or semi-retire"];
 const DECISION_STYLE = ["Data-first - I need numbers before I commit","Gut-first - I move on instinct, validate later","Consensus - I loop in my team / advisors first","Vision-first - I decide based on my 3-year picture","Risk-averse - I need proof it works elsewhere first","Opportunity-driven - big upside = fast move","Other"];
-const STRESS_RESP  = ["Push harder and work longer hours","Get paralyzed and delay decisions","Delegate and step back immediately","Research obsessively before acting","Talk it through with a trusted advisor","Pivot quickly to something else","Get anxious but eventually work through it","Shut down and need time to reset"];
-const MOTIVATORS   = ["Freedom - time, location, financial independence","Legacy - building something that outlasts me","Recognition - being seen as a leader / expert","Security - stability for my family","Impact - real difference for my clients","Growth - constant learning and expanding","Wealth - building real equity","Simplicity - removing chaos from my life"];
-const BLOCKERS     = ["I don't fully trust tech to handle critical tasks","I've been burned by agencies or vendors before","My team resists change","I don't have time to manage a new system","Budget is tight right now","I don't know where to start","Data privacy / security concerns","Not sure it will actually work for my specific business"];
-const MONEY_MIND   = ["I invest aggressively when I see ROI potential","I'm cautious - every dollar needs justifying","Comfortable spending on things that save me time","I bootstrap everything and hate outside spend","In growth mode - willing to invest in infrastructure"];
-const AGENCY_HIST  = ["Never hired an agency or consultant before","Had great experiences - agencies have delivered","Mixed - some good, some bad","Mostly bad - agencies have let me down","Got burned badly - very hesitant now","Currently working with another agency"];
 const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive"];
-const CONTENT_COMF = ["I love writing - it comes naturally","I can write but it takes effort","I write when I have to, hate it","I dictate and have someone clean it up","I avoid writing at all costs - I prefer talking"];
 const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, no fluff","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Other"];
-const SOCIAL_ACTIVE= ["Very active - post daily or near-daily","Moderate - a few times per week","Inconsistent - when I remember","Minimal - profiles exist but rarely post","Non-existent - I don't do social media"];
-const PLATFORMS    = ["Email / Newsletter","LinkedIn","Instagram","Facebook","TikTok","Twitter / X","YouTube","Blog / SEO","Podcast","SMS / Text campaigns","None - internal use only"];
 const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","All of the above"];
-const PRIOR_AI     = ["No - first time exploring this","Yes - Zapier / Make / n8n","Yes - ChatGPT or similar chatbots","Yes - custom development work","Yes - hired another agency","Yes - multiple tools, nothing stuck"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
-const BUDGETS      = ["Under $2,500","$2,500-$5,000","$5,000-$10,000","$10,000-$25,000","$25,000-$50,000","$50,000+","Not sure - need a scoping call first"];
-const TIMELINES    = ["ASAP - this is urgent","Within 30 days","1-3 months","3-6 months","No hard deadline","Just exploring / planning stage"];
-const ENGAGEMENTS  = ["One-time build - deploy and hand off to my team","Build + ongoing support / optimization retainer","Full-service - you manage and run everything","Consulting only - guide my internal team","C-Level suite roll-out","Multi-departmental roll-out","Custom enterprise-level roll-out","Not sure - open to your recommendation"];
 const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
-const COL_ROLE     = ["Undergraduate student","Graduate / PhD student","Student athlete","Student organization leader","Academic advisor","Department administrator","Faculty / Professor","Dean / Associate Dean","IT staff","Enrollment / Admissions staff","Financial aid staff","Library staff","Registrar staff","Other administrator"];
-const COL_SCHOOL_TYPE = ["Community college","4-year public university","4-year private university","Liberal arts college","Technical / Vocational school","Online-only institution","Graduate / Professional school","K-12 school or district","Other"];
-const COL_SCHOOL_SIZE = ["Under 1,000 students","1,000-5,000 students","5,000-15,000 students","15,000-30,000 students","30,000-60,000 students","60,000+ students"];
-const COL_YEAR     = ["Freshman (1st year)","Sophomore (2nd year)","Junior (3rd year)","Senior (4th year)","5th year / Super senior","Graduate student - Master's","Graduate student - PhD / Doctoral","Not applicable"];
-const COL_MAJOR    = ["Business / Finance / Economics","Computer Science / IT","Engineering","Pre-med / Health Sciences","Law / Pre-law","Education","Arts / Humanities","Social Sciences","Communications / Media","Natural Sciences","Undecided","Other"];
-const COL_BOT_USE_STUD = ["Study help & tutoring","Essay drafting & writing assistance","Research assistance","Note-taking & summarization","Exam prep & flashcards","Citation & bibliography help","Time management & scheduling","Mental health & wellness support","Career advising & job prep","Campus navigation & resources","Financial aid questions","Course registration help","Other"];
-const COL_BOT_USE_ADMIN = ["Student advising & support","Enrollment & admissions","Course scheduling & registration","Financial aid processing","Faculty support","Campus communications","IT helpdesk","Library & research support","Events & campus life","Compliance & reporting","HR & staff onboarding","Alumni & donor engagement","Other"];
-const COL_LMS      = ["Canvas","Blackboard","Moodle","D2L / Brightspace","Google Classroom","Schoology","Sakai","No LMS / Not applicable","Other"];
-const COL_CURR_TOOLS = ["ChatGPT (personal use)","Grammarly","Google Bard / Gemini","Microsoft Copilot","Turnitin (AI detection)","No AI tools currently","Our institution has licensed AI tools","Other"];
-const COL_CONCERN_STUD = ["Academic integrity / plagiarism concerns","Privacy of my data","Accuracy of AI responses","Over-reliance on AI","Cost / accessibility","Professors banning AI use","None - I'm comfortable with AI","Other"];
-const COL_CONCERN_ADMIN = ["FERPA / student data privacy","Accreditation implications","Faculty acceptance / adoption","Budget and procurement","Integration with existing LMS/SIS","AI accuracy for student support","Academic integrity policies","IT security and compliance","None - we're ready to move forward","Other"];
-const COL_SIS      = ["Banner (Ellucian)","PeopleSoft / Oracle","Colleague (Ellucian)","Jenzabar","PowerSchool","Skyward","Not sure what system we use","Other"];
-const COL_BUDGET_ADMIN = ["Under $5,000","$5,000-$15,000","$15,000-$50,000","$50,000-$150,000","$150,000+","No budget allocated yet","Need to apply for a grant or funding"];
-const COL_TIMELINE_ADMIN = ["This semester","Next semester","This academic year","Next academic year","Planning stage only","Tied to grant / funding approval"];
-const COL_DECISION_ROLE = ["I am the sole decision-maker","I influence but need approval","I'm part of a committee","I'm researching for someone else","Faculty champion - need admin buy-in","IT must approve first"];
-const COL_PILOT    = ["Yes - I want a small pilot first","Yes - one department before campus-wide","No - we want full implementation","Not sure yet"];
 // ════════════════════════════════════════════════════════════
 // PRIMITIVES
 // ════════════════════════════════════════════════════════════
@@ -277,43 +231,9 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
   );
 }
 // ════════════════════════════════════════════════════════════
-// TRACK SELECTOR
-// ════════════════════════════════════════════════════════════
-const TRACKS = [
-  { id: "collegiate", title: "Collegiate", desc: "I'm a student, administrator, or staff member at an educational institution looking for AI solutions." },
-  { id: "personal", title: "Personal CEO", desc: "I want a personal AI assistant to manage my schedule, tasks, and daily life." },
-  { id: "business", title: "Business Owner / Executive", desc: "I run or lead a company and want AI to automate my operations, sales, or support." },
-  { id: "agency", title: "Agency / Reseller", desc: "I want to white-label or partner with Apollo[Claw] to offer AI solutions to my own clients." },
-];
-function TrackSelector({ gate, onSelect }: { gate: GateData; onSelect: (t: string) => void }) {
-  return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "60px 24px" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: R, marginBottom: 14 }}>Access Granted</div>
-          <h1 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, color: TX, letterSpacing: "-0.02em", lineHeight: 1.1, margin: "0 0 14px" }}>What Best <span style={{ color: R }}>Describes You?</span></h1>
-          <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto" }}>Select your path below. Your intake form will be tailored specifically to your situation.</p>
-          
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {TRACKS.map(t => (
-            <button key={t.id} type="button" onClick={() => onSelect(t.id)} style={{ display: "flex", alignItems: "center", gap: 20, padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", background: SRF, border: `1px solid ${BDR}`, textAlign: "left", width: "100%" }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 800, fontSize: 16, color: TX, margin: "0 0 4px" }}>{t.title}</p>
-                <p style={{ fontSize: 13, color: TXM, margin: 0, lineHeight: 1.5 }}>{t.desc}</p>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 10h6m-3-3l3 3-3 3" stroke={R} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-// ════════════════════════════════════════════════════════════
 // SHELL
 // ════════════════════════════════════════════════════════════
-function Shell({ steps, step, gate, children, onBack, onNext, onSubmit, isLast }: { steps: string[]; step: number; gate: GateData; children: React.ReactNode; onBack: () => void; onNext: () => void; onSubmit: () => void; isLast: boolean }) {
+function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; onNext: () => void; onSubmit: () => void; isLast: boolean }) {
   const pct = Math.round(((step + 1) / steps.length) * 100);
   const stepLabel = steps[step] ?? "";
   return (
@@ -350,20 +270,15 @@ function Shell({ steps, step, gate, children, onBack, onNext, onSubmit, isLast }
 // ════════════════════════════════════════════════════════════
 // SUCCESS
 // ════════════════════════════════════════════════════════════
-function Success({ track }: { track: string }) {
-  const msgs: Record<string, string> = {
-    business: "This is one of the most comprehensive applications we receive. That tells us you're serious - and we take that seriously.",
-    student: "Thanks for sharing your academic goals. We'll match you with the right tools to make your studies more efficient.",
-    admin: "We understand the weight of an institutional deployment. We'll review your submission and come prepared.",
-    agency: "White-label partner applications are reviewed within 48 hours. We'll reach out with next steps.",
-  };
+function Success() {
+  const message = "This is one of the most comprehensive applications we receive. That tells us you're serious - and we take that seriously.";
   return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
       <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 24px" }}>
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>
       <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>Application Submitted</h2>
-      <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 10px" }}>{msgs[track] || msgs.business}</p>
+      <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 10px" }}>{message}</p>
       
       <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
     </div>
@@ -372,15 +287,12 @@ function Success({ track }: { track: string }) {
 // ════════════════════════════════════════════════════════════
 // BUSINESS TRACK
 // ════════════════════════════════════════════════════════════
-const BIZ_STEPS = ["Your Business", "What You Do", "Tech Stack", "Operations", "Executive Profile", "Life Context", "Your Voice", "Goals & AI", "Scope"];
 const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","My team - capacity, skills, or hiring","My systems & processes - too much is manual","Demand - not enough qualified pipeline","Capital - funding constrains the next move","Not sure - that's part of why I'm here","Other"];
 // Gap fields (from the onboarding review spec, Part 4).
 const ACCESS_READINESS = ["I have admin access to all of them","My team controls logins but can grant access","We use them but access is scattered","Not sure"];
 const PROCESS_DOCS = ["Documented SOPs exist","Some are written down","It is mostly in my head and my team's heads","We are starting from scratch"];
 const OPS_VOLUME = ["Under 25","25 to 100","100 to 500","500+","Not sure"];
-const BUDGET_RANGE = ["Under $10k","$10k to $25k","$25k to $50k","$50k+","Need guidance on this"];
 const TIMELINE_LIVE = ["ASAP","This quarter","Next 6 months","Just exploring"];
-const DECISION_AUTHORITY = ["Just me","Me plus one partner or exec","A committee or board","Someone else owns the decision"];
 
 // Renders the dynamic "Industry Deep-Dive" step from an industryConfig branch,
 // mapping each field type onto the form's existing primitives.
@@ -447,7 +359,6 @@ function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) =>
 }
 function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
   const [step, setStep] = useState(0);
-  const [s1, setS1] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[], contact: "", besttime: "", tz: "", title: "", linkedin: "" });
   const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
   const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", fixed: "", opsVolume: "" });
   const [s4, setS4] = useState({ marital: "", linkedin: "", kids: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
@@ -471,7 +382,6 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   // the primary company has an industry. Defined up front so navigation/validation never
   // reference allPages before it is built.
   const pageKeys = ["biz", "whatyoudo", ...(branch ? ["industry"] : []), "stack", "ops", "exec", "life", "voice", "goals", "scope"];
-  const f1 = (k: string, v: unknown) => setS1(p => ({ ...p, [k]: v }));
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
@@ -479,7 +389,7 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, referralSource: gate.referralSource, referralName: gate.referralName, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, source: s1.heard, contactMethod: s1.contact, bestTime: s1.besttime, linkedin: s4.linkedin || gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: primaryCompany?.role || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, fixedLooksLike: s3.fixed, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorityWorkflow: s7.priority, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, accessReadiness: s8.accessReadiness, processDocs: s8.processDocs, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, referralSource: gate.referralSource, referralName: gate.referralName, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, source: [] as string[], contactMethod: "", bestTime: "", linkedin: s4.linkedin || gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: primaryCompany?.role || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, fixedLooksLike: s3.fixed, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorityWorkflow: s7.priority, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, accessReadiness: s8.accessReadiness, processDocs: s8.processDocs, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -646,101 +556,20 @@ function BizTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<stri
   ];
   const stepLabels = allPages.map(p => p.label);
   const cur = allPages[step] || allPages[allPages.length - 1];
-  return <Shell steps={stepLabels} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
-}
-// ════════════════════════════════════════════════════════════
-// COLLEGIATE TRACK
-// ════════════════════════════════════════════════════════════
-function ColTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
-  const [s0, setS0] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[] });
-  const f0 = (k: string, v: unknown) => setS0(p => ({ ...p, [k]: v }));
-  const [role, setRole] = useState("");
-  const [step, setStep] = useState(0);
-  const [stud, setStud] = useState({ year: "", major: "", school: "", schoolType: "", schoolSize: "", uses: [] as string[], currentTools: [] as string[], concerns: [] as string[], lms: "", gpa: "", clubs: "", aiExperience: "", goalShort: "", goalLong: "", budget: "", timeline: "" });
-  const [adm, setAdm] = useState({ adminRole: "", school: "", schoolType: "", schoolSize: "", dept: "", uses: [] as string[], lms: [] as string[], sis: "", currentTools: [] as string[], concerns: [] as string[], decisionRole: "", stakeholders: [] as string[], budget: "", timeline: "", pilot: "", compliance: [] as string[], dataTypes: [] as string[], integrations: "", successMetric: "" });
-  const ss = (k: string, v: unknown) => setStud(p => ({ ...p, [k]: v }));
-  const sa = (k: string, v: unknown) => setAdm(p => ({ ...p, [k]: v }));
-  const ADMIN_STAKEHOLDERS = ["President / Provost","VP of Academic Affairs","VP of Student Affairs","Chief Information Officer (CIO)","IT Security / CISO","Department Chair / Dean","Faculty Senate","Student Government","Financial Aid Office","Legal / Compliance","Board of Trustees","No other stakeholders"];
-  if (!role) return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "60px 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: R, marginBottom: 14 }}>Collegiate Track</div>
-        <h1 style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 900, color: TX, letterSpacing: "-0.02em", margin: "0 0 12px" }}>Are You a <span style={{ color: R }}>Student</span> or <span style={{ color: R }}>Administrator?</span></h1>
-        <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, marginBottom: 40 }}>Your intake form will be tailored to your role.</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {[{ id: "student", title: "Student", desc: "I'm enrolled and want an AI study assistant or academic support bot." }, { id: "admin", title: "Administrator / Staff / Faculty", desc: "I work at the institution and want to deploy AI for students or operations." }].map(t => (
-            <button key={t.id} type="button" onClick={() => setRole(t.id)} style={{ display: "flex", alignItems: "center", gap: 20, padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontFamily: "inherit", background: SRF, border: `1px solid ${BDR}`, textAlign: "left", width: "100%" }}>
-              <div style={{ flex: 1 }}><p style={{ fontWeight: 800, fontSize: 16, color: TX, margin: "0 0 4px" }}>{t.title}</p><p style={{ fontSize: 13, color: TXM, margin: 0 }}>{t.desc}</p></div>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 10h6m-3-3l3 3-3 3" stroke={R} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-  const isStud = role === "student";
-  const STUD_STEPS = ["Your Role", "Academic Profile", "Goals", "Budget"];
-  const ADMIN_STEPS = ["Your Role", "Institution", "AI Deployment", "IT & Budget"];
-  const curSteps = isStud ? STUD_STEPS : ADMIN_STEPS;
-  const studPages = [
-    <Stack key="st1"><SHead stepNum={1} total={4} title="Your Academic Role" badge="Student" /><FF label="School / University Name"><TInput value={stud.school} onChange={v => ss("school", v)} placeholder="e.g. Tulane University" /></FF><Row2><FF label="Institution Type"><TSelect value={stud.schoolType} onChange={v => ss("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="School Size"><TSelect value={stud.schoolSize} onChange={v => ss("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><Row2><FF label="Academic Year"><TSelect value={stud.year} onChange={v => ss("year", v)} options={COL_YEAR} /></FF><FF label="Major / Field of Study"><TSelect value={stud.major} onChange={v => ss("major", v)} options={COL_MAJOR} /></FF></Row2><FF label="GPA Range (Optional)"><TSelect value={stud.gpa} onChange={v => ss("gpa", v)} options={["Under 2.0","2.0-2.5","2.5-3.0","3.0-3.5","3.5-4.0","4.0 (Perfect)","Not applicable","Prefer not to say"]} /></FF><FF label="Clubs, Sports, or Activities"><TInput value={stud.clubs} onChange={v => ss("clubs", v)} placeholder="e.g. Debate club, student newspaper, varsity soccer…" /></FF></Stack>,
-    <Stack key="st2"><SHead stepNum={2} total={4} title="Academic Profile & AI Experience" badge="Student" /><FF label="Your School's LMS"><TSelect value={stud.lms} onChange={v => ss("lms", v)} options={COL_LMS} /></FF><CheckGroup label="AI Tools You Currently Use" options={COL_CURR_TOOLS} value={stud.currentTools} onChange={v => ss("currentTools", v)} cols={2} /><RadioGroup label="Your Prior Experience With AI Tools" options={["I've never used AI tools","I've tried them once or twice","I use them occasionally","I use AI tools regularly","I'm very experienced - daily power user"]} value={stud.aiExperience} onChange={v => ss("aiExperience", v)} /><CheckGroup label="What Do You Want an AI Bot to Help You With?" options={COL_BOT_USE_STUD} value={stud.uses} onChange={v => ss("uses", v)} cols={2} /><CheckGroup label="Concerns or Hesitations About Using AI" options={COL_CONCERN_STUD} value={stud.concerns} onChange={v => ss("concerns", v)} cols={2} /></Stack>,
-    <Stack key="st3"><SHead stepNum={3} total={4} title="Your Academic Goals" badge="Student" /><FF label="What's Your Biggest Academic Challenge Right Now?"><TArea value={stud.goalShort} onChange={v => ss("goalShort", v)} placeholder="Keeping up with coursework? Study skills? Writing?" rows={3} /></FF><FF label="What's Your Longer-Term Academic or Career Goal?"><TArea value={stud.goalLong} onChange={v => ss("goalLong", v)} rows={2} /></FF></Stack>,
-    <Stack key="st4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Student" /><FF label="Monthly Budget for AI Tools"><TSelect value={stud.budget} onChange={v => ss("budget", v)} options={["Free only - I cannot spend anything","Under $10/mo","$10-$20/mo","$20-$50/mo","$50+/mo","My school would pay for it","Not sure yet"]} /></FF><RadioGroup label="When Do You Want to Get Started?" options={["This week - ASAP","This semester","Next semester","Just researching for now"]} value={stud.timeline} onChange={v => ss("timeline", v)} /></Stack>,
-  ];
-  const admPages = [
-    <Stack key="ad1"><SHead stepNum={1} total={4} title="Your Institutional Role" badge="Administrator" /><FF label="Your Role at the Institution"><TSelect value={adm.adminRole} onChange={v => sa("adminRole", v)} options={COL_ROLE} /></FF><FF label="School / Institution Name"><TInput value={adm.school} onChange={v => sa("school", v)} placeholder="e.g. University of Texas at Austin" /></FF><Row2><FF label="Institution Type"><TSelect value={adm.schoolType} onChange={v => sa("schoolType", v)} options={COL_SCHOOL_TYPE} /></FF><FF label="Institution Size"><TSelect value={adm.schoolSize} onChange={v => sa("schoolSize", v)} options={COL_SCHOOL_SIZE} /></FF></Row2><FF label="Your Department or Division"><TInput value={adm.dept} onChange={v => sa("dept", v)} placeholder="e.g. Office of Student Success, IT, Admissions…" /></FF><RadioGroup label="Your Role in This Decision" options={COL_DECISION_ROLE} value={adm.decisionRole} onChange={v => sa("decisionRole", v)} /><CheckGroup label="Other Stakeholders Involved" options={ADMIN_STAKEHOLDERS} value={adm.stakeholders} onChange={v => sa("stakeholders", v)} cols={2} /></Stack>,
-    <Stack key="ad2"><SHead stepNum={2} total={4} title="Institution Profile & Current Tech" badge="Administrator" /><CheckGroup label="Learning Management Systems in Use" options={COL_LMS} value={adm.lms} onChange={v => sa("lms", v)} cols={2} /><FF label="Student Information System (SIS)"><TSelect value={adm.sis} onChange={v => sa("sis", v)} options={COL_SIS} /></FF><CheckGroup label="AI Tools Currently in Use or Evaluated" options={COL_CURR_TOOLS} value={adm.currentTools} onChange={v => sa("currentTools", v)} cols={2} /><CheckGroup label="What Do You Want AI to Handle?" options={COL_BOT_USE_ADMIN} value={adm.uses} onChange={v => sa("uses", v)} cols={2} /><CheckGroup label="Key Concerns or Barriers" options={COL_CONCERN_ADMIN} value={adm.concerns} onChange={v => sa("concerns", v)} cols={2} /></Stack>,
-    <Stack key="ad3"><SHead stepNum={3} total={4} title="AI Deployment & Compliance" badge="Administrator" /><CheckGroup label="Compliance Requirements" options={["FERPA (student data privacy)","COPPA (under-13 users)","HIPAA (health/counseling data)","ADA / Section 508 (accessibility)","State privacy laws","Regional accreditation standards","None / Not sure"]} value={adm.compliance} onChange={v => sa("compliance", v)} cols={2} /><CheckGroup label="Types of Student / Institutional Data Involved" options={["Student academic records","Student contact information","Financial aid data","Health / counseling records","Admissions data","Alumni / donor data","Faculty / staff records","Nothing sensitive"]} value={adm.dataTypes} onChange={v => sa("dataTypes", v)} cols={2} /><FF label="Key Systems That Must Be Integrated"><TArea value={adm.integrations} onChange={v => sa("integrations", v)} placeholder="e.g. Must integrate with Canvas LMS, Banner SIS, and Microsoft Azure SSO…" rows={3} /></FF><RadioGroup label="Pilot or Full Deployment?" options={COL_PILOT} value={adm.pilot} onChange={v => sa("pilot", v)} /><FF label="How Will You Measure Success?"><TArea value={adm.successMetric} onChange={v => sa("successMetric", v)} rows={2} /></FF></Stack>,
-    <Stack key="ad4"><SHead stepNum={4} total={4} title="Budget & Timeline" badge="Administrator" /><FF label="Projected Budget"><TSelect value={adm.budget} onChange={v => sa("budget", v)} options={COL_BUDGET_ADMIN} /></FF><FF label="Desired Go-Live Timeline"><TSelect value={adm.timeline} onChange={v => sa("timeline", v)} options={COL_TIMELINE_ADMIN} /></FF></Stack>,
-  ];
-  const curPages = isStud ? studPages : admPages;
-  const submitData = isStud
-    ? { firstName: s0.first, lastName: s0.last, email: s0.email, phone: s0.phone, school: stud.school, schoolType: stud.schoolType, year: stud.year, major: stud.major, uses: stud.uses, currentTools: stud.currentTools, goalShort: stud.goalShort, goalLong: stud.goalLong, budget: stud.budget, timeline: stud.timeline }
-    : { firstName: s0.first, lastName: s0.last, email: s0.email, phone: s0.phone, adminRole: adm.adminRole, school: adm.school, schoolType: adm.schoolType, uses: adm.uses, compliance: adm.compliance, budget: adm.budget, timeline: adm.timeline };
-  const submitTrack = isStud ? "student" : "admin";
-  const next = () => { setStep(s => Math.min(s + 1, 3)); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const back = () => { if (step === 0) setRole(""); else { setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); } };
-  const submit = () => onDone(submitData, submitTrack);
-  return <Shell steps={curSteps} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === 3}>{curPages[step]}</Shell>;
-}
-// ════════════════════════════════════════════════════════════
-// AGENCY TRACK
-// ════════════════════════════════════════════════════════════
-const AGY_STEPS = ["Your Agency", "Your Clients", "Partnership Goals"];
-function AgencyTrack({ gate, onDone }: { gate: GateData; onDone: (data: Record<string, unknown>, track: string) => void }) {
-  const [s0, setS0] = useState({ first: "", last: "", email: "", phone: "", heard: [] as string[] });
-  const f0 = (k: string, v: unknown) => setS0(p => ({ ...p, [k]: v }));
-  const [step, setStep] = useState(0);
-  const [d, setD] = useState({ agencyName: "", url: "", size: "", model: "", clientTypes: [] as string[], clientCount: "", services: [] as string[], whyPartner: "", revenue: "", timeline: "", questions: "" });
-  const sd = (k: string, v: unknown) => setD(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: s0.first, lastName: s0.last, email: s0.email, phone: s0.phone, agencyName: d.agencyName, website: d.url, size: d.size, model: d.model, clientTypes: d.clientTypes, clientCount: d.clientCount, services: d.services, whyPartner: d.whyPartner, revenue: d.revenue, timeline: d.timeline, questions: d.questions });
-  const next = () => { setStep(s => Math.min(s + 1, 2)); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const back = () => { setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const submit = () => onDone(buildData(), "agency");
-  const pages = [
-    <Stack key="ag1"><SHead stepNum={1} total={3} title="Your Agency" badge="Agency / Reseller" /><FF label="Agency Name"><TInput value={d.agencyName} onChange={v => sd("agencyName", v)} placeholder="Your Agency LLC" /></FF><FF label="Website"><TInput type="url" value={d.url} onChange={v => sd("url", v)} placeholder="https://youragency.com" /></FF><Row2><FF label="Agency Size"><TSelect value={d.size} onChange={v => sd("size", v)} options={BIZ_SIZES} /></FF><FF label="Agency Model"><TSelect value={d.model} onChange={v => sd("model", v)} options={["Full-service digital agency","Web design / dev shop","Marketing agency","SEO / PPC specialist","Consulting / advisory firm","IT managed services (MSP)","Other"]} /></FF></Row2><CheckGroup label="Services You Currently Offer" options={["Web design & development","SEO & content marketing","Paid advertising (PPC)","Social media management","Email marketing","CRM & automation","AI / chatbot implementation","Business consulting","IT managed services","Other"]} value={d.services} onChange={v => sd("services", v)} cols={2} /></Stack>,
-    <Stack key="ag2"><SHead stepNum={2} total={3} title="Your Client Base" badge="Agency / Reseller" /><CheckGroup label="Types of Clients You Serve" options={["Small businesses (under $1M revenue)","Mid-market ($1M-$10M revenue)","Enterprise ($10M+ revenue)","E-commerce brands","Healthcare / medical practices","Law firms","Real estate companies","Restaurants / hospitality","Non-profits","Educational institutions","Other"]} value={d.clientTypes} onChange={v => sd("clientTypes", v)} cols={2} /><FF label="Approximate Number of Active Clients"><TSelect value={d.clientCount} onChange={v => sd("clientCount", v)} options={["1-5 clients","6-15 clients","16-30 clients","31-60 clients","60-100 clients","100+ clients"]} /></FF></Stack>,
-    <Stack key="ag3"><SHead stepNum={3} total={3} title="Partnership Goals" badge="Agency / Reseller" /><FF label="Why Do You Want to Partner With Apollo[Claw]?"><TArea value={d.whyPartner} onChange={v => sd("whyPartner", v)} placeholder="What gap are you trying to fill? What are clients asking for that you can't deliver today?" rows={3} /></FF><FF label="Revenue Goal From This Partnership"><TSelect value={d.revenue} onChange={v => sd("revenue", v)} options={["Under $1k/mo additional revenue","$1k-$5k/mo","$5k-$15k/mo","$15k-$50k/mo","$50k+/mo","Not focused on revenue - it's a client retention play"]} /></FF><FF label="Desired Start Timeline"><TSelect value={d.timeline} onChange={v => sd("timeline", v)} options={["ASAP","Within 30 days","1-3 months","3-6 months","Just exploring"]} /></FF><FF label="Questions or Anything Else We Should Know"><TArea value={d.questions} onChange={v => sd("questions", v)} rows={3} /></FF></Stack>,
-  ];
-  return <Shell steps={AGY_STEPS} step={step} gate={gate} onBack={back} onNext={next} onSubmit={submit} isLast={step === 2}>{pages[step]}</Shell>;
+  return <Shell steps={stepLabels} step={step} onBack={back} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
 }
 // ════════════════════════════════════════════════════════════
 // ROOT
 // ════════════════════════════════════════════════════════════
 export default function OnboardPage() {
-  const [phase, setPhase] = useState<"gate" | "track" | "form" | "submitting" | "done">("gate");
+  const [phase, setPhase] = useState<"gate" | "form" | "submitting" | "done">("gate");
   const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", heard: [], tz: "", title: "", linkedin: "", company: "", referralSource: "", referralName: "" });
-  const [track, setTrack] = useState("");
-  const [doneTrack, setDoneTrack] = useState("");
-  const handleGate = (info: GateData) => { setGate(info); setTrack("business"); setPhase("form"); };
-  const handleTrack = (t: string) => { setTrack(t); setPhase("form"); };
+  const handleGate = (info: GateData) => { setGate(info); setPhase("form"); };
   const handleDone = async (data: Record<string, unknown>, trackType: string) => {
     setPhase("submitting");
     try {
       const res = await fetch("/api/intake", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, trackType }) });
       if (!res.ok) throw new Error("Submission failed");
-      setDoneTrack(trackType);
       setPhase("done");
     } catch (err) {
       console.error("Submission error:", err);
@@ -748,9 +577,7 @@ export default function OnboardPage() {
       alert("Something went wrong submitting your application. Please try again.");
     }
   };
-  // Gate removed - form starts at track selection directly
   if (phase === "gate") return <Gatekeeper onPass={handleGate} />;
-  if (phase === "track") return <TrackSelector gate={gate!} onSelect={handleTrack} />;
   if (phase === "submitting") return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
       <div style={{ width: 48, height: 48, border: `3px solid ${SRF2}`, borderTopColor: R, borderRadius: "50%", animation: "oc-spin 1s linear infinite", marginBottom: 24 }} />
@@ -759,11 +586,7 @@ export default function OnboardPage() {
       <style>{`@keyframes oc-spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
-  if (phase === "done") return <Success track={doneTrack} />;
-  if (phase === "form") {
-    if (track === "business" || track === "personal") return <BizTrack gate={gate} onDone={handleDone} />;
-    if (track === "collegiate") return <ColTrack gate={gate} onDone={handleDone} />;
-    if (track === "agency") return <AgencyTrack gate={gate} onDone={handleDone} />;
-  }
+  if (phase === "done") return <Success />;
+  if (phase === "form") return <BizTrack gate={gate} onDone={handleDone} />;
   return null;
 }

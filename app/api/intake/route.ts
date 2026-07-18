@@ -59,7 +59,7 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
         rows: [
           ...companiesArr.map((c, i) => ({
             label: i === pi ? `Business ${i + 1} (Primary)` : `Business ${i + 1}`,
-            value: [c.name, c.industry === "Other" ? c.industryOther : c.industry, c.role, c.ownership].filter(Boolean).join(" | "),
+            value: [c.name, c.industry === "Other" ? c.industryOther : c.industry, c.role].filter(Boolean).join(" | "),
           })),
           { label: "Portfolio Structure", value: pf.structure },
           { label: "Shared Operations", value: pf.sharedOps },
