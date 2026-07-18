@@ -4,9 +4,19 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "AI Services for Executive Leaders | Apollo Claw",
+  title: "AI Consulting Services | Apollo Claw - Business, Enterprise & University",
   description:
-    "From AI audits and roadmaps to full agent deployment, Apollo Claw's services are built for executives who need results, not experiments. We move fast and we build it right.",
+    "Apollo Claw delivers AI consulting services for small businesses, enterprise companies, and universities. AI strategy, agent implementation, and ongoing management.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/services",
+  },
+  openGraph: {
+    title: "AI Consulting Services | Apollo Claw - Business, Enterprise & University",
+    description:
+      "Apollo Claw delivers AI consulting services for small businesses, enterprise companies, and universities. AI strategy, agent implementation, and ongoing management.",
+    url: "https://apolloclaw.ai/services",
+    type: "website",
+  },
 };
 
 const bots = [

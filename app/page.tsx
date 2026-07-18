@@ -13,9 +13,9 @@ import { POSTS_QUERY } from "@/lib/sanity-queries";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Apollo Claw | Enterprise AI Strategy & Implementation for Executives",
+  title: "Apollo Claw | AI Consulting Firm for Business, Enterprise & Universities",
   description:
-    "Apollo Claw partners with CEOs, CFOs, COOs, and Managing Partners to design and deploy organization-wide AI strategies. From roadmap to execution — we build what your business actually needs.",
+    "Apollo Claw partners with small businesses, enterprises, and universities to design and deploy AI that works. Strategy, agents, and full implementation, built for every scale.",
 };
 
 async function getLatestPosts() {

@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI for Insurance Agents | Automate Renewals, Quotes & Follow-Up | Apollo[Claw]",
-  description: "The Insurance Agent automates renewal outreach, quote follow-up, and client communication so your producers focus on selling — not chasing paperwork.",
+  title: "AI for Insurance Agencies | Apollo Claw - Quotes, Renewals & Claims Automation",
+  description: "Apollo Claw builds AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team focuses on closing, not chasing.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/use-cases/insurance",
+  },
   openGraph: {
-    title: "AI for Insurance Agents | Automate Renewals, Quotes & Follow-Up",
-    description: "The Insurance Agent handles renewal outreach, quote follow-up, and client communication so your producers focus on selling.",
+    title: "AI for Insurance Agencies | Apollo Claw - Quotes, Renewals & Claims Automation",
+    description: "Apollo Claw builds AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team focuses on closing, not chasing.",
     url: "https://apolloclaw.ai/use-cases/insurance",
     type: "website",
   },
