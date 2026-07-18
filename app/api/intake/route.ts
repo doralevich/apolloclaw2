@@ -88,7 +88,7 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
         { label: "Years in Business", value: d.businessAge },
         { label: "Business Model", value: d.businessModel },
         { label: "Description", value: d.businessDescription },
-        { label: "Differentiation", value: d.differentiation },
+        { label: "Differentiation", value: d.differentiator },
         { label: "Web Platform", value: d.webPlatform },
         { label: "CRM Tools", value: d.crmTools },
         { label: "CRM (Other)", value: d.crmToolsOther },
@@ -132,6 +132,8 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
     sections.push({
       title: "Psychology & Mindset",
       rows: [
+        { label: "Biggest Goal / Priority (12mo)", value: d.strategicBet },
+        { label: "Growth Bottleneck", value: d.growthBottleneck },
         { label: "Decision Style", value: d.decisionStyle },
         { label: "Stress Response", value: d.stressResponse },
         { label: "Motivators", value: d.motivators },
@@ -165,6 +167,8 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
         { label: "#1 Workflow to Automate", value: d.priorityWorkflow },
         { label: "Prior AI Experience", value: d.priorAI },
         { label: "Past AI Attempts", value: d.pastExperience },
+        { label: "Team's View of Prior AI", value: d.aiThoughts },
+        { label: "Prior AI Implementation", value: d.aiStartup },
         { label: "Team Sentiment", value: d.teamSentiment },
       ],
     });
@@ -500,28 +504,6 @@ export async function POST(req: NextRequest) {
       `[intake][config] supabaseUrl=${SUPA_URL} serviceRoleKey=${SUPA_KEY ? `present(len ${SUPA_KEY.length})` : "MISSING"}`
     );
 
-    // 0. Save raw form data to CRM immediately — before any other processing
-    // If PDF generation, emails, or storage fail, the submission is still captured
-    void (async () => {
-      try {
-        const earlyClientId = await findOrCreateCrmClient(fullName, email, phone, company, trackType);
-        if (earlyClientId) {
-          const rawParts: string[] = [
-            "Intake received — " + track,
-            "Name: " + fullName + " | Email: " + email + " | Phone: " + (phone || "—"),
-            company ? "Company: " + company : "",
-            data.industry ? "Industry: " + data.industry : "",
-            data.budget ? "Budget: " + data.budget : "",
-            data.timeline ? "Timeline: " + data.timeline : "",
-            data.mainPain ? "Pain: " + String(data.mainPain).slice(0, 500) : "",
-          ].filter(Boolean);
-          await logCrmNote(earlyClientId, rawParts.join("\n"));
-        }
-      } catch (e) {
-        console.error("[intake] early CRM save failed:", e);
-      }
-    })();
-
     // 1. Telegram text summary
     const lines = [
       `<b>🎯 New Apollo[Claw] Intake — ${track}</b>`,
@@ -623,28 +605,35 @@ export async function POST(req: NextRequest) {
       docUrl = await uploadIntakePdf(pdfBuffer, filename);
     }
 
+    // Store client-uploaded materials in Supabase Storage regardless of CRM status,
+    // so uploads are never lost when the CRM write fails. Links are attached to the
+    // CRM card below only when we have a clientId.
+    const uploads = Array.isArray(data.uploadedFiles) ? (data.uploadedFiles as Array<Record<string, unknown>>) : [];
+    const uploadedDocs: { name: string; url: string }[] = [];
+    for (const up of uploads) {
+      const b64 = typeof up.dataBase64 === "string" ? up.dataBase64 : "";
+      const origName = typeof up.name === "string" && up.name ? up.name : "file";
+      if (!b64) continue;
+      try {
+        const buf = Buffer.from(b64, "base64");
+        const safe = `${Date.now()}-${origName.replace(/[^a-z0-9._-]/gi, "-")}`;
+        const url = await uploadClientFile(buf, safe, typeof up.type === "string" ? up.type : "application/octet-stream");
+        if (url) uploadedDocs.push({ name: origName, url });
+      } catch (e) {
+        console.error("[intake] failed to store client upload:", origName, e);
+      }
+    }
+
     // 6. CRM — find or create client, log note
     const clientId = await findOrCreateCrmClient(fullName, email, phone, company, trackType);
     let crmStatus: "ok" | "write_failed" | "no_service_key";
     if (clientId) {
-      // Attach intake PDF to the Documents section of the CRM card
+      // Attach intake PDF + any client uploads to the Documents section of the CRM card
       if (docUrl) {
         await attachDocumentToEntity(clientId, "Intake Form", `Apollo[Claw] Intake — ${fullName}`, docUrl);
       }
-      // Attach any client-uploaded materials (company docs, resume, SOPs, etc.)
-      const uploads = Array.isArray(data.uploadedFiles) ? (data.uploadedFiles as Array<Record<string, unknown>>) : [];
-      for (const up of uploads) {
-        const b64 = typeof up.dataBase64 === "string" ? up.dataBase64 : "";
-        const origName = typeof up.name === "string" && up.name ? up.name : "file";
-        if (!b64) continue;
-        try {
-          const buf = Buffer.from(b64, "base64");
-          const safe = `${Date.now()}-${origName.replace(/[^a-z0-9._-]/gi, "-")}`;
-          const url = await uploadClientFile(buf, safe, typeof up.type === "string" ? up.type : "application/octet-stream");
-          if (url) await attachDocumentToEntity(clientId, "Client Upload", origName, url);
-        } catch (e) {
-          console.error("[intake] failed to store client upload:", origName, e);
-        }
+      for (const ud of uploadedDocs) {
+        await attachDocumentToEntity(clientId, "Client Upload", ud.name, ud.url);
       }
       const noteLines = [
         `Apollo[Claw] intake form submitted — ${track}`,

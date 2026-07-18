@@ -171,7 +171,7 @@ export default function CompanyRepeater({
                 color: i === primaryIndex ? T.red : T.grey,
               }}
             >
-              {i === 0 ? "Primary business" : `Business ${i + 1}`}
+              {i === primaryIndex ? "Primary business" : `Business ${i + 1}`}
             </span>
             {companies.length > 1 && i !== 0 && (
               <button

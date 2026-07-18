@@ -417,12 +417,12 @@ function readFileAsBase64(file: File): Promise<{ name: string; type: string; siz
 // Multi-file picker for client materials. Capped so the base64 payload stays under the
 // serverless body limit; larger files are directed to email.
 function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) => void }) {
-  const MAX = 3 * 1024 * 1024;
+  const MAX = 2.5 * 1024 * 1024;
   const [msg, setMsg] = useState("");
   const add = (list: FileList | null) => {
     if (!list) return;
     const next = [...files, ...Array.from(list)];
-    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 3MB. Remove a file, or email larger ones to david@apolloclaw.ai."); return; }
+    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 2.5MB. Remove a file, or email larger ones to david@apolloclaw.ai."); return; }
     setMsg(""); onFiles(next);
   };
   return (
