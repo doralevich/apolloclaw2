@@ -186,6 +186,13 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
         { label: "Constraints", value: d.constraints },
       ],
     });
+    const ups = Array.isArray(d.uploadedFiles) ? (d.uploadedFiles as Array<Record<string, unknown>>) : [];
+    if (ups.length) {
+      sections.push({
+        title: "Uploaded Materials",
+        rows: [{ label: "Files", value: ups.map((u) => String(u.name || "file")).join(", ") }],
+      });
+    }
   }
 
   if (track === "student") {
@@ -432,6 +439,22 @@ async function uploadIntakePdf(pdfBuffer: Buffer, filename: string): Promise<str
   }
 }
 
+// ─── Upload an arbitrary client-provided file to Supabase Storage ─────────────
+async function uploadClientFile(buffer: Buffer, filename: string, contentType: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${SUPA_URL}/storage/v1/object/intake-docs/${filename}`, {
+      method: "POST",
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": contentType || "application/octet-stream", "x-upsert": "true" },
+      body: new Uint8Array(buffer),
+    });
+    if (!res.ok) { console.error("[intake] client file upload failed:", await res.text()); return null; }
+    return `${SUPA_URL}/storage/v1/object/public/intake-docs/${filename}`;
+  } catch (err) {
+    console.error("[intake] client file upload error:", err);
+    return null;
+  }
+}
+
 // ─── Store document link on CRM entity card ───────────────────────────────────
 async function attachDocumentToEntity(entityId: string, label: string, title: string, url: string): Promise<void> {
   try {
@@ -597,6 +620,21 @@ export async function POST(req: NextRequest) {
       // Attach intake PDF to the Documents section of the CRM card
       if (docUrl) {
         await attachDocumentToEntity(clientId, "Intake Form", `Apollo[Claw] Intake — ${fullName}`, docUrl);
+      }
+      // Attach any client-uploaded materials (company docs, resume, SOPs, etc.)
+      const uploads = Array.isArray(data.uploadedFiles) ? (data.uploadedFiles as Array<Record<string, unknown>>) : [];
+      for (const up of uploads) {
+        const b64 = typeof up.dataBase64 === "string" ? up.dataBase64 : "";
+        const origName = typeof up.name === "string" && up.name ? up.name : "file";
+        if (!b64) continue;
+        try {
+          const buf = Buffer.from(b64, "base64");
+          const safe = `${Date.now()}-${origName.replace(/[^a-z0-9._-]/gi, "-")}`;
+          const url = await uploadClientFile(buf, safe, typeof up.type === "string" ? up.type : "application/octet-stream");
+          if (url) await attachDocumentToEntity(clientId, "Client Upload", origName, url);
+        } catch (e) {
+          console.error("[intake] failed to store client upload:", origName, e);
+        }
       }
       const noteLines = [
         `Apollo[Claw] intake form submitted — ${track}`,
