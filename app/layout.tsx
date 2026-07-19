@@ -178,7 +178,7 @@ const jsonLd = [
         },
       ],
     },
-  },,
+  },
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",

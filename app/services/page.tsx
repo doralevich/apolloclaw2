@@ -67,9 +67,37 @@ const bots = [
   },
 ];
 
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "AI Consulting and Implementation",
+  provider: {
+    "@type": "Organization",
+    name: "Apollo Claw",
+    url: "https://apolloclaw.ai",
+  },
+  areaServed: "United States",
+  description:
+    "Custom AI agent design, deployment, and ongoing management for small businesses, mid-market companies, and enterprise organizations.",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "AI Agent Services",
+    itemListElement: [
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Personal Bot (IRIS)" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Executive Bot (HERMES)" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Department Bot (ACROPOLIS)" } },
+      { "@type": "Offer", itemOffered: { "@type": "Service", name: "Collegiate Bot (ATHENA)" } },
+    ],
+  },
+};
+
 export default function ServicesPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
       <PageHero
         label="Our AI Tiers"
         title="Built For Every"

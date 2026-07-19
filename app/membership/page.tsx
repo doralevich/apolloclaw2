@@ -4,9 +4,17 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "Skills Drop Membership",
+  title: { absolute: "SkillsDrop AI Membership | Ongoing AI Optimization & Support | Apollo Claw" },
   description:
-    "Apollo[Claw] Skills Drop membership — ongoing AI support, updates, and optimization for your business.",
+    "Monthly AI updates, priority support, and quarterly performance reviews. SkillsDrop keeps your Apollo Claw agent improving as your business grows.",
+  alternates: { canonical: "https://apolloclaw.ai/membership" },
+  openGraph: {
+    title: "SkillsDrop AI Membership | Ongoing AI Optimization & Support | Apollo Claw",
+    description:
+      "Monthly AI updates, priority support, and quarterly performance reviews for your Apollo Claw agent.",
+    url: "https://apolloclaw.ai/membership",
+    type: "website",
+  },
 };
 
 export default function MembershipPage() {

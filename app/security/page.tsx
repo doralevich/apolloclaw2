@@ -3,9 +3,17 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "Security & Privacy",
+  title: { absolute: "AI Data Security & Privacy | Apollo Claw" },
   description:
-    "Apollo[Claw] security practices. How we protect your data, where it lives, and what we won't do with it.",
+    "Your business data stays in your environment. Apollo Claw's AI implementation approach: no vendor lock-in, no data leaving your control. See how we protect your operation.",
+  alternates: { canonical: "https://apolloclaw.ai/security" },
+  openGraph: {
+    title: "AI Data Security & Privacy | Apollo Claw",
+    description:
+      "Your business data stays in your environment. No vendor lock-in, no data leaving your control.",
+    url: "https://apolloclaw.ai/security",
+    type: "website",
+  },
 };
 
 export default function SecurityPage() {

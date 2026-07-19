@@ -191,6 +191,41 @@ export default async function HomePage() {
 
 
 
+      {/* WHAT IS AN AI IMPLEMENTATION PARTNER — SEO keyword copy block */}
+      <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-3xl text-center">
+          <ScrollReveal>
+            <span
+              className="inline-block font-mono uppercase mb-4"
+              style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+            >
+              [ The Difference ]
+            </span>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
+            >
+              What Is an AI <span style={{ color: "#D72B2B" }}>Implementation Partner?</span>
+            </h2>
+            <p
+              className="font-body"
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.75, color: "#555555", margin: "24px auto 0", maxWidth: 720 }}
+            >
+              Most businesses don&apos;t need a strategy deck. They need a working system. An AI implementation partner does what traditional consultants won&apos;t: we build the actual AI infrastructure inside your operation, connect it to the tools you already use, and stay on to make sure it keeps working. Apollo Claw is that partner, for small businesses, growing mid-market teams, and enterprise organizations ready to move from AI curiosity to AI operations.
+            </p>
+            <div style={{ marginTop: 28 }}>
+              <Link
+                href="/ai-implementation"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{ background: "#D72B2B", color: "#ffffff", fontSize: 12, letterSpacing: "0.1em", padding: "12px 26px", borderRadius: 4, textDecoration: "none", boxShadow: "0 6px 18px rgba(215,43,43,0.28)" }}
+              >
+                See How Implementation Works →
+              </Link>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* YOUR AI ASSISTANT — Section 3 (cream bg, 2-col, John video) */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-7xl">
@@ -809,6 +844,42 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* LOCAL / NATIONWIDE — SEO local + reach copy block */}
+      <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-3xl text-center">
+          <ScrollReveal>
+            <span
+              className="inline-block font-mono uppercase mb-4"
+              style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+            >
+              [ Where We Work ]
+            </span>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
+            >
+              Serving Businesses Across Long Island, NYC, and{" "}
+              <span style={{ color: "#D72B2B" }}>Nationwide</span>
+            </h2>
+            <p
+              className="font-body"
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.75, color: "#555555", margin: "24px auto 0", maxWidth: 720 }}
+            >
+              Apollo Claw is based in Roslyn, NY. We work with clients in person across Long Island and the NYC metro area, and remotely with businesses nationwide. Whether you&apos;re a 5-person professional services firm or a 200-person enterprise team, the implementation process is the same: discovery, build, deploy, optimize.
+            </p>
+            <div style={{ marginTop: 28 }}>
+              <Link
+                href="/ai-consulting-new-york"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{ background: "transparent", color: "#0B1729", border: "1px solid rgba(11,23,41,0.25)", fontSize: 12, letterSpacing: "0.1em", padding: "12px 26px", borderRadius: 4, textDecoration: "none", fontFamily: "'IBM Plex Mono', monospace" }}
+              >
+                AI Consulting in New York →
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
