@@ -4,9 +4,7 @@ import { CheckCircle, Mail, Calendar, Search, Code, FileText, Plug, Briefcase, H
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import HeroAssistantInput from "@/components/HeroAssistantInput";
-import LogoTicker from "@/components/LogoTicker";
 import DayWithJohnEmbed from "@/components/DayWithJohnEmbed";
-import IntegrationGlobe from "@/components/IntegrationGlobe";
 import { sanityClient } from "@/lib/sanity";
 import { POSTS_QUERY } from "@/lib/sanity-queries";
 
@@ -190,6 +188,41 @@ export default async function HomePage() {
       </section>
 
 
+
+      {/* WHAT IS AN AI IMPLEMENTATION PARTNER — SEO keyword copy block */}
+      <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-3xl text-center">
+          <ScrollReveal>
+            <span
+              className="inline-block font-mono uppercase mb-4"
+              style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+            >
+              [ The Difference ]
+            </span>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
+            >
+              What Is an AI <span style={{ color: "#D72B2B" }}>Implementation Partner?</span>
+            </h2>
+            <p
+              className="font-body"
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.75, color: "#555555", margin: "24px auto 0", maxWidth: 720 }}
+            >
+              Most businesses don&apos;t need a strategy deck. They need a working system. An AI implementation partner does what traditional consultants won&apos;t: we build the actual AI infrastructure inside your operation, connect it to the tools you already use, and stay on to make sure it keeps working. Apollo Claw is that partner, for small businesses, growing mid-market teams, and enterprise organizations ready to move from AI curiosity to AI operations.
+            </p>
+            <div style={{ marginTop: 28 }}>
+              <Link
+                href="/ai-implementation"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{ background: "#D72B2B", color: "#ffffff", fontSize: 12, letterSpacing: "0.1em", padding: "12px 26px", borderRadius: 4, textDecoration: "none", boxShadow: "0 6px 18px rgba(215,43,43,0.28)" }}
+              >
+                See How Implementation Works →
+              </Link>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
 
       {/* YOUR AI ASSISTANT — Section 3 (cream bg, 2-col, John video) */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
@@ -431,13 +464,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* GLOBE — Works with the tools you already use */}
-      <IntegrationGlobe
-        kicker="Integrations"
-        title={<>Works with the tools<br />you already use</>}
-        subtitle="Connect to 250+ apps, from Gmail and Slack to Salesforce and Stripe, right out of the box."
-      />
 
       {/* AI AGENTS IN ACTION — Section 6 (cream, centered header + 2-col cases) */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
@@ -812,6 +838,42 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* LOCAL / NATIONWIDE — SEO local + reach copy block */}
+      <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-3xl text-center">
+          <ScrollReveal>
+            <span
+              className="inline-block font-mono uppercase mb-4"
+              style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+            >
+              [ Where We Work ]
+            </span>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
+            >
+              Serving Businesses Across Long Island, NYC, and{" "}
+              <span style={{ color: "#D72B2B" }}>Nationwide</span>
+            </h2>
+            <p
+              className="font-body"
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.75, color: "#555555", margin: "24px auto 0", maxWidth: 720 }}
+            >
+              Apollo Claw is based in Roslyn, NY. We work with clients in person across Long Island and the NYC metro area, and remotely with businesses nationwide. Whether you&apos;re a 5-person professional services firm or a 200-person enterprise team, the implementation process is the same: discovery, build, deploy, optimize.
+            </p>
+            <div style={{ marginTop: 28 }}>
+              <Link
+                href="/ai-consulting-new-york"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{ background: "transparent", color: "#0B1729", border: "1px solid rgba(11,23,41,0.25)", fontSize: 12, letterSpacing: "0.1em", padding: "12px 26px", borderRadius: 4, textDecoration: "none", fontFamily: "'IBM Plex Mono', monospace" }}
+              >
+                AI Consulting in New York →
+              </Link>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* FINAL CTA — dark navy banner */}
       <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
         <div
@@ -877,66 +939,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* OUR AI AGENTS — white section, scrolling logo marquee */}
-      <section style={{ background: "#FFFFFF", color: "#1A1A1A" }} className="relative overflow-hidden">
-        <div className="py-16 md:py-20">
-          <style>{`
-            #apollo-agents-marquee {
-              overflow: hidden;
-              position: relative;
-              -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-              mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-            }
-            #apollo-agents-marquee .marquee-track {
-              display: flex;
-              align-items: center;
-              gap: 72px;
-              width: max-content;
-              padding-right: 72px;
-              animation: apollo-agents-scroll 80s linear infinite;
-            }
-            #apollo-agents-marquee:hover .marquee-track {
-              animation-play-state: paused;
-            }
-            #apollo-agents-marquee img {
-              width: 360px;
-              height: auto;
-              flex-shrink: 0;
-            }
-            @keyframes apollo-agents-scroll {
-              from { transform: translateX(0); }
-              to { transform: translateX(-50%); }
-            }
-            @media (prefers-reduced-motion: reduce) {
-              #apollo-agents-marquee .marquee-track { animation: none; flex-wrap: wrap; justify-content: center; width: 100%; }
-            }
-          `}</style>
-
-          <div id="apollo-agents-marquee" aria-label="Apollo Claw AI agent lineup">
-            <div className="marquee-track">
-              {[...Array(2)].map((_, copy) =>
-                [
-                  { src: "/agents/the-ceo-agent.png", alt: "The CEO [Agent]" },
-                  { src: "/agents/the-cfo-agent.png", alt: "The CFO [Agent]" },
-                  { src: "/agents/the-insurance-agent.png", alt: "The Insurance [Agent]" },
-                  { src: "/agents/the-legal-agent.png", alt: "The Law [Agent]" },
-                  { src: "/agents/the-medical-agent.png", alt: "The Medical [Agent]" },
-                  { src: "/agents/the-real-estate-agent.png", alt: "The Real Estate [Agent]" },
-                ].map((logo) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={`${copy}-${logo.src}`}
-                    src={logo.src}
-                    alt={copy === 0 ? logo.alt : ""}
-                    aria-hidden={copy === 1}
-                    loading="lazy"
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

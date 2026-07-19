@@ -152,6 +152,58 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Solutions dropdown */}
+            <div className="relative group">
+              <button
+                className="relative pb-1 flex items-center gap-1"
+                style={navItemStyle(false)}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = NAVY}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = NAVY_MUTED}
+              >
+                Solutions
+                <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid rgba(11,23,41,0.1)",
+                    boxShadow: "0 20px 60px rgba(11,23,41,0.12), 0 0 0 1px rgba(11,23,41,0.04)",
+                    minWidth: 220,
+                  }}
+                >
+                  <div className="p-2 flex flex-col gap-0.5">
+                    {[
+                      { label: "AI Implementation", to: "/ai-implementation" },
+                      { label: "For Small Business", to: "/ai-consulting-small-business" },
+                      { label: "Enterprise",         to: "/ai-consulting-enterprise" },
+                      { label: "New York",           to: "/ai-consulting-new-york" },
+                    ].map((item) => (
+                      <Link
+                        key={item.to}
+                        href={item.to}
+                        className="block rounded-lg"
+                        style={{
+                          padding: "9px 14px",
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          fontFamily: "Inter, sans-serif",
+                          color: pathname === item.to ? RED : NAVY,
+                          textDecoration: "none",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {navLink("Case Studies", "/case-studies")}
             {navLink("Blog", "/blog")}
 
@@ -285,6 +337,19 @@ export default function Navbar() {
                   })}
                 </div>
               )}
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <span className="font-display text-2xl" style={{ color: NAVY }}>Solutions</span>
+              {[
+                { label: "AI Implementation", to: "/ai-implementation" },
+                { label: "For Small Business", to: "/ai-consulting-small-business" },
+                { label: "Enterprise",         to: "/ai-consulting-enterprise" },
+                { label: "New York",           to: "/ai-consulting-new-york" },
+              ].map((item) => (
+                <Link key={item.to} href={item.to} className="font-body text-base" style={{ color: NAVY_MUTED }}>
+                  {item.label}
+                </Link>
+              ))}
             </div>
             <Link href="/case-studies" className="font-display text-2xl" style={{ color: NAVY }}>
               Case Studies
