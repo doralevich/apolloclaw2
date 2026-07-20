@@ -255,6 +255,41 @@ function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput[] {
   return sections;
 }
 
+// ─── Render intake sections as inline email HTML ──────────────────────────────
+// So the notification email carries every answer in its body, even if the PDF
+// attachment fails to generate. Mirrors the PDF's empty-row/empty-section drop.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+function normalizeForHtml(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) return value.filter((v) => v != null && String(v).trim()).map((v) => String(v)).join(", ");
+  return String(value).trim();
+}
+function sectionsToHtml(sections: PdfSectionInput[]): string {
+  return sections
+    .map((s) => {
+      const rows = s.rows
+        .map((r) => ({ label: r.label, value: normalizeForHtml(r.value) }))
+        .filter((r) => r.value);
+      if (!rows.length) return "";
+      const rowsHtml = rows
+        .map(
+          (r) =>
+            `<tr><td style="padding:5px 10px 5px 0;color:#6b7280;width:38%;vertical-align:top;font-size:13px;">${escapeHtml(r.label)}</td><td style="padding:5px 0;font-size:13px;color:#1a1a1a;white-space:pre-wrap;">${escapeHtml(r.value)}</td></tr>`
+        )
+        .join("");
+      return `<div style="margin:18px 0 4px;"><p style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E8342A;margin:0 0 4px;border-bottom:1px solid #f0f0f0;padding-bottom:4px;">${escapeHtml(
+        s.title
+      )}</p><table style="width:100%;border-collapse:collapse;">${rowsHtml}</table></div>`;
+    })
+    .join("");
+}
+
 // ─── Generate the intake PDF (serverless-safe, @react-pdf/renderer) ────────────
 async function generateIntakePdf(data: Record<string, unknown>): Promise<Buffer | null> {
   try {
@@ -518,7 +553,7 @@ export async function POST(req: NextRequest) {
     if (data.timeline) lines.push(`<b>Timeline:</b> ${data.timeline}`);
     if (data.mainPain) lines.push(`\n<b>Pain:</b> ${String(data.mainPain).slice(0, 300)}`);
     if (data.goalShort) lines.push(`\n<b>Goal:</b> ${String(data.goalShort).slice(0, 200)}`);
-    lines.push(`\n<i>Full intake PDF attached to email.</i>`);
+    lines.push(`\n<i>Full details in the email to david@apolloclaw.ai.</i>`);
     await sendTelegram(lines.join("\n"));
 
     // 2. Generate PDF
@@ -579,8 +614,9 @@ export async function POST(req: NextRequest) {
           ${data.budget ? `<tr><td style="padding:6px 0;color:#6b7280;">Budget</td><td style="padding:6px 0;">${data.budget}</td></tr>` : ""}
           ${data.timeline ? `<tr><td style="padding:6px 0;color:#6b7280;">Timeline</td><td style="padding:6px 0;">${data.timeline}</td></tr>` : ""}
         </table>
-        ${data.mainPain ? `<div style="padding:12px 16px;background:#f9f7f3;border-left:3px solid #E8342A;border-radius:3px;font-size:13px;color:#4b5563;margin-bottom:16px;">${String(data.mainPain).slice(0, 500)}</div>` : ""}
-        <p style="font-size:13px;color:#6b7280;">Full intake form attached as PDF.</p>
+        ${data.mainPain ? `<div style="padding:12px 16px;background:#f9f7f3;border-left:3px solid #E8342A;border-radius:3px;font-size:13px;color:#4b5563;margin-bottom:16px;">${escapeHtml(String(data.mainPain).slice(0, 500))}</div>` : ""}
+        ${sectionsToHtml(buildIntakeSections({ ...data, trackType }))}
+        <p style="font-size:13px;color:#6b7280;margin-top:20px;">${pdfBuffer ? "Full intake form is also attached as a PDF." : "Note: the PDF attachment could not be generated this time. Every answer is included above."}</p>
       </div>`;
 
     await sendEmail({
@@ -701,7 +737,7 @@ export async function POST(req: NextRequest) {
     // `crm` lets the browser (and you, in the network tab) see whether the CRM write
     // landed — "ok", "write_failed" (bad/rotated key or wrong project), or
     // "no_service_key" (env var missing) — without waiting on a Supabase query.
-    return NextResponse.json({ ok: true, crm: crmStatus });
+    return NextResponse.json({ ok: true, crm: crmStatus, pdf: pdfBuffer ? "ok" : "failed" });
   } catch (err) {
     console.error("Intake API error:", err);
     return NextResponse.json({ ok: false, error: "Submission failed" }, { status: 500 });
