@@ -11,6 +11,77 @@ const execFileAsync = promisify(execFile);
 const MANDRILL_KEY = process.env.MANDRILL_API_KEY || "";
 const TO_EMAIL = "david@apolloclaw.ai";
 
+// Apollo Claw dashboard Supabase (tbbzlloiigtepdwoquvy) — write setup credentials to agent_setup
+const AC_SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://tbbzlloiigtepdwoquvy.supabase.co";
+const AC_SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+async function upsertAgentSetup(email: string, agentType: string, answers: Record<string, unknown>): Promise<void> {
+  if (!AC_SUPA_KEY) {
+    console.warn("[upsertAgentSetup] SUPABASE_SERVICE_ROLE_KEY not set — skipping");
+    return;
+  }
+  try {
+    // Find workspace by owner email via auth.users lookup
+    const usersRes = await fetch(`${AC_SUPA_URL}/auth/v1/admin/users?page=1&per_page=100`, {
+      headers: {
+        apikey: AC_SUPA_KEY,
+        Authorization: `Bearer ${AC_SUPA_KEY}`,
+      },
+    });
+    const usersData = usersRes.ok ? await usersRes.json() as { users: Array<{ id: string; email: string }> } : { users: [] };
+    const user = usersData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+      // Client hasn't created their dashboard account yet — store in pending_setups table if exists,
+      // otherwise log and continue (non-fatal)
+      console.warn(`[upsertAgentSetup] No dashboard account for ${email} — skipping agent_setup write`);
+      return;
+    }
+
+    // Find workspace for this user
+    const wsRes = await fetch(
+      `${AC_SUPA_URL}/rest/v1/memberships?user_id=eq.${user.id}&limit=1`,
+      {
+        headers: {
+          apikey: AC_SUPA_KEY,
+          Authorization: `Bearer ${AC_SUPA_KEY}`,
+        },
+      }
+    );
+    const memberships = wsRes.ok ? await wsRes.json() as Array<{ workspace_id: string }> : [];
+    if (!memberships.length) {
+      console.warn(`[upsertAgentSetup] No workspace found for ${email}`);
+      return;
+    }
+    const workspaceId = memberships[0].workspace_id;
+
+    // Upsert agent_setup
+    const upsertRes = await fetch(`${AC_SUPA_URL}/rest/v1/agent_setup`, {
+      method: "POST",
+      headers: {
+        apikey: AC_SUPA_KEY,
+        Authorization: `Bearer ${AC_SUPA_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify({
+        workspace_id: workspaceId,
+        agent_type: agentType,
+        answers,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+    if (!upsertRes.ok) {
+      const txt = await upsertRes.text();
+      console.error(`[upsertAgentSetup] Failed (${upsertRes.status}): ${txt}`);
+    } else {
+      console.log(`[upsertAgentSetup] Written for workspace ${workspaceId}`);
+    }
+  } catch (err) {
+    console.error("[upsertAgentSetup] Error:", err);
+  }
+}
+
 async function generateSetupPdf(data: Record<string, unknown>): Promise<Buffer | null> {
   try {
     const scriptPath = path.join(process.cwd(), "lib", "intake-pdf-gen.cjs");
@@ -84,7 +155,7 @@ export async function POST(req: NextRequest) {
       [fields.first_name, fields.last_name].filter(Boolean).join(" ").trim() ||
       "Unknown";
 
-    // ── STEP 1: silent CRM upsert, no notifications ─────────────────────────
+    // ── STEP 1: silent CRM upsert ONLY — no email, no Telegram, no PDF ────────
     if (source === "apollo_setup_1") {
       try {
         await upsertPipelineDeal(email, {
@@ -208,6 +279,31 @@ export async function POST(req: NextRequest) {
           `<b>Timezone:</b> ${fields.timezone || ""}\n` +
           `<i>Full credentials in inbox.</i>`
       );
+
+      // Write credentials to tbbz agent_setup (if client has a dashboard account)
+      try {
+        await upsertAgentSetup(email, "personal", {
+          first_name: fields.first_name || "",
+          last_name: fields.last_name || "",
+          email,
+          assistant_name: fields.assistant_name || "",
+          timezone: fields.timezone || "",
+          computer_name: fields.computer_name || "",
+          meeting_recorder: fields.meeting_recorder || "",
+          anthropic_api_key: fields.anthropic_api_key || "",
+          telegram_bot_token: fields.telegram_bot_token || "",
+          telegram_bot_username: fields.telegram_bot_username || "",
+          fireflies_api_key: fields.fireflies_api_key || "",
+          tavily_api_key: fields.tavily_api_key || "",
+          calendly_url: fields.calendly_url || "",
+          it_contact_name: fields.it_contact_name || "",
+          it_contact_email: fields.it_contact_email || "",
+          it_notes: fields.it_notes || "",
+          submitted_at: new Date().toISOString(),
+        });
+      } catch (setupErr) {
+        console.error("[submit-setup] agent_setup write failed (non-fatal):", setupErr);
+      }
 
       // Tag contact as setup-complete in Mailchimp — triggers Ready to Build email
       try {
