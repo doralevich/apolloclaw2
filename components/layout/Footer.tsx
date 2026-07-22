@@ -14,11 +14,11 @@ const navLinks = [
   { label: "How It Works", to: "/how-it-works" },
   { label: "Insights", to: "/blog" },
   { label: "Case Studies", to: "/case-studies" },
-  { label: "AI 101", to: "/ai-101" },
-  { label: "Cost Estimator", to: "/cost-estimator" },
 ];
 
-const supportLinks = [
+const resourceLinks = [
+  { label: "AI 101", to: "/ai-101" },
+  { label: "Cost Estimator", to: "/cost-estimator" },
   { label: "FAQ", to: "/faq" },
   { label: "Security", to: "/security" },
   { label: "Membership", to: "/membership" },
@@ -283,10 +283,10 @@ export default function Footer() {
                 className="font-mono uppercase mb-4"
                 style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
               >
-                Support
+                Resources
               </h4>
               <div className="flex flex-col gap-2">
-                {supportLinks.map((link) =>
+                {resourceLinks.map((link) =>
                   link.external ? (
                     <a
                       key={link.label}
