@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Data Security & Privacy | Apollo Claw" },
@@ -15,9 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
-// Design: cream / near-black / red only, no dark sections. This intentionally
-// does not use the sitewide <PageHero> (which renders a navy hero) since this
-// page's brief explicitly calls for no dark backgrounds anywhere.
+// Design: sitewide navy <PageHero>, then cream / near-black / red body sections
+// for everything below it, matching the rest of the marketing site.
 
 const CREAM = "#F2F0EB";
 const WHITE = "#FFFFFF";
@@ -139,26 +139,12 @@ const COMPLIANCE = [
 export default function SecurityPage() {
   return (
     <>
-      {/* HERO — cream, no dark background */}
-      <section style={{ background: CREAM, color: INK }}>
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-3xl text-center">
-          <ScrollReveal>
-            <Kicker>[ Security &amp; Privacy ]</Kicker>
-            <h1
-              className="font-display leading-[1.08] tracking-tight"
-              style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 800, color: INK, margin: 0 }}
-            >
-              Your Data <span style={{ color: RED }}>Stays Yours</span>
-            </h1>
-            <p
-              className="font-body"
-              style={{ fontSize: "clamp(15px, 1.15vw, 17px)", lineHeight: 1.7, color: MUTED, maxWidth: 620, margin: "22px auto 0" }}
-            >
-              Enterprise-grade protection, in plain language. Here is exactly how we protect your business.
-            </p>
-          </ScrollReveal>
-        </div>
-      </section>
+      <PageHero
+        label="Security & Privacy"
+        title="Your Data"
+        titleAccent="Stays Yours"
+        description="Enterprise-grade protection, in plain language. Here is exactly how we protect your business."
+      />
 
       {/* CORE PRINCIPLES — 5 cards, white bg */}
       <section style={{ background: WHITE }}>
