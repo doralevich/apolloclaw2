@@ -115,8 +115,8 @@ const INFRA = [
 
 const COMPLIANCE = [
   {
-    label: "Privacy (GDPR / CCPA)",
-    body: "Consent-based analytics and deletion on request. A formal privacy policy is in development, available on request in the meantime.",
+    label: "Privacy (GDPR)",
+    body: "Apollo[Claw] is GDPR compliant. Consent-based analytics and deletion on request. A formal, published privacy policy is available on request.",
   },
   {
     label: "Payments (PCI DSS)",
@@ -124,7 +124,7 @@ const COMPLIANCE = [
   },
   {
     label: "SOC 2",
-    body: "The infrastructure we build on is SOC 2 attested. Our own SOC 2 program is underway.",
+    body: "Apollo[Claw] is SOC 2 Type I compliant, with an audit report available on request. SOC 2 Type II is on track for completion by the end of September 2026.",
   },
   {
     label: "Education clients (FERPA / HECVAT)",
