@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 const NAVY = "#0B1729";
 const RED = "#D72B2B";
@@ -225,26 +226,7 @@ export default function Footer() {
         <div className="container mx-auto px-5 md:px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div>
-              <svg
-                viewBox="0 0 480 80"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ height: "40px", width: "auto" }}
-                aria-label="Apollo[Claw]"
-              >
-                <text
-                  y="62"
-                  fontFamily="'IBM Plex Mono', 'Courier New', monospace"
-                  fontSize="48"
-                  fontWeight="700"
-                  letterSpacing="-1.5"
-                  fill="#FFFFFF"
-                >
-                  Apollo
-                  <tspan fill={RED}>[</tspan>
-                  Claw
-                  <tspan fill={RED}>]</tspan>
-                </text>
-              </svg>
+              <ApolloClawLogo ink="#FFFFFF" height={64} />
               <p
                 className="font-body mt-4 text-sm leading-relaxed"
                 style={{ color: WHITE_MUTED }}

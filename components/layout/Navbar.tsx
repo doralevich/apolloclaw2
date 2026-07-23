@@ -2,38 +2,23 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, Shield } from "lucide-react";
+import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, Shield, GraduationCap, UserSearch } from "lucide-react";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 const agentLinks = [
-  { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,  to: "/use-cases/ceo" },
-  { label: "The CFO Agent",         desc: "Cash forecasts, board prep, monthly close.",      icon: TrendingUp, to: "/use-cases/cfo" },
-  { label: "The Medical Agent",     desc: "Patient triage, intake summaries, faster charting.", icon: Heart,   to: "/use-cases/health" },
-  { label: "The Insurance Agent",   desc: "Quotes, renewals, and follow-ups on autopilot.", icon: Shield,     to: "/use-cases/insurance" },
-  { label: "The Law Agent",         desc: "Intake forms, research, document summaries.",     icon: Scale,      to: "/use-cases/legal" },
-  { label: "The Real Estate Agent", desc: "Listings written, leads sorted, deals closed.",  icon: Home,       to: "/use-cases/real-estate" },
+  { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,     to: "/use-cases/ceo" },
+  { label: "The CFO Agent",         desc: "Cash forecasts, board prep, monthly close.",      icon: TrendingUp,    to: "/use-cases/cfo" },
+  { label: "The Legal Agent",       desc: "Intake forms, research, document summaries.",     icon: Scale,         to: "/use-cases/legal" },
+  { label: "The Medical Agent",     desc: "Patient triage, intake summaries, faster charting.", icon: Heart,      to: "/use-cases/health" },
+  { label: "The College Agent",     desc: "Admissions, financial aid, and registrar support.", icon: GraduationCap, to: "/use-cases/college" },
+  { label: "The Recruiting Agent",  desc: "Screening, scheduling, and candidate follow-up.", icon: UserSearch,    to: "/use-cases/recruiting" },
+  { label: "The Real Estate Agent", desc: "Listings written, leads sorted, deals closed.",  icon: Home,          to: "/use-cases/real-estate" },
+  { label: "The Insurance Agent",   desc: "Quotes, renewals, and follow-ups on autopilot.", icon: Shield,        to: "/use-cases/insurance" },
 ];
 
 const NAVY = "#0B1729";
 const RED = "#D72B2B";
 const NAVY_MUTED = "rgba(11,23,41,0.75)";
-
-const ApolloclawLogo = () => (
-  <svg viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg" style={{ height: "44px", width: "auto" }} aria-label="Apollo[Claw]">
-    <text
-      y="62"
-      fontFamily="'IBM Plex Mono', 'Courier New', monospace"
-      fontSize="48"
-      fontWeight="700"
-      letterSpacing="-1.5"
-      fill={NAVY}
-    >
-      Apollo
-      <tspan fill={RED}>[</tspan>
-      Claw
-      <tspan fill={RED}>]</tspan>
-    </text>
-  </svg>
-);
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -88,14 +73,14 @@ export default function Navbar() {
         <div className="container mx-auto flex items-center justify-between h-[72px] px-5 md:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center" style={{ flexShrink: 0 }}>
-            <ApolloclawLogo />
+            <ApolloClawLogo ink="#000000" height={72} />
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-7 flex-1 justify-center">
             {navLink("About", "/about")}
 
-            {/* Services dropdown */}
+            {/* Industries dropdown */}
             <div className="relative group">
               <button
                 className="relative pb-1 flex items-center gap-1"
@@ -103,7 +88,7 @@ export default function Navbar() {
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = NAVY}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = isUseCaseActive ? NAVY : NAVY_MUTED}
               >
-                Services
+                Industries
                 <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
                 {isUseCaseActive && (
                   <span
@@ -152,7 +137,9 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Solutions dropdown */}
+            {/* Solutions dropdown. New York dropped per the latest list; the
+                /ai-consulting-new-york page still exists and is linked from
+                the homepage. */}
             <div className="relative group">
               <button
                 className="relative pb-1 flex items-center gap-1"
@@ -175,10 +162,11 @@ export default function Navbar() {
                 >
                   <div className="p-2 flex flex-col gap-0.5">
                     {[
-                      { label: "AI Implementation", to: "/ai-implementation" },
-                      { label: "For Small Business", to: "/ai-consulting-small-business" },
-                      { label: "Enterprise",         to: "/ai-consulting-enterprise" },
-                      { label: "New York",           to: "/ai-consulting-new-york" },
+                      { label: "AI Consultation & Implementation", to: "/ai-implementation" },
+                      { label: "Enterprise",              to: "/ai-consulting-enterprise" },
+                      { label: "Medium-Sized Businesses", to: "/ai-consulting-mid-market" },
+                      { label: "Small Businesses",        to: "/ai-consulting-small-business" },
+                      { label: "Education",               to: "/ai-consulting-education" },
                     ].map((item) => (
                       <Link
                         key={item.to}
@@ -261,7 +249,7 @@ export default function Navbar() {
                 className="font-display text-2xl flex items-center gap-2"
                 style={{ color: NAVY }}
               >
-                Services
+                Industries
                 <ChevronDown
                   size={20}
                   className={`transition-transform duration-300 ${useCasesOpen ? "rotate-180" : ""}`}
@@ -289,10 +277,11 @@ export default function Navbar() {
             <div className="flex flex-col items-center gap-2">
               <span className="font-display text-2xl" style={{ color: NAVY }}>Solutions</span>
               {[
-                { label: "AI Implementation", to: "/ai-implementation" },
-                { label: "For Small Business", to: "/ai-consulting-small-business" },
-                { label: "Enterprise",         to: "/ai-consulting-enterprise" },
-                { label: "New York",           to: "/ai-consulting-new-york" },
+                { label: "AI Consultation & Implementation", to: "/ai-implementation" },
+                { label: "Enterprise",              to: "/ai-consulting-enterprise" },
+                { label: "Medium-Sized Businesses", to: "/ai-consulting-mid-market" },
+                { label: "Small Businesses",        to: "/ai-consulting-small-business" },
+                { label: "Education",               to: "/ai-consulting-education" },
               ].map((item) => (
                 <Link key={item.to} href={item.to} className="font-body text-base" style={{ color: NAVY_MUTED }}>
                   {item.label}
