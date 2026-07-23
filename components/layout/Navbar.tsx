@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, Shield } from "lucide-react";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 const agentLinks = [
   { label: "The CEO Agent",         desc: "Faster decisions, fewer status calls.",           icon: Briefcase,  to: "/use-cases/ceo" },
@@ -16,24 +17,6 @@ const agentLinks = [
 const NAVY = "#0B1729";
 const RED = "#D72B2B";
 const NAVY_MUTED = "rgba(11,23,41,0.75)";
-
-const ApolloclawLogo = () => (
-  <svg viewBox="0 0 480 80" xmlns="http://www.w3.org/2000/svg" style={{ height: "44px", width: "auto" }} aria-label="Apollo[Claw]">
-    <text
-      y="62"
-      fontFamily="'IBM Plex Mono', 'Courier New', monospace"
-      fontSize="48"
-      fontWeight="700"
-      letterSpacing="-1.5"
-      fill={NAVY}
-    >
-      Apollo
-      <tspan fill={RED}>[</tspan>
-      Claw
-      <tspan fill={RED}>]</tspan>
-    </text>
-  </svg>
-);
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -88,7 +71,7 @@ export default function Navbar() {
         <div className="container mx-auto flex items-center justify-between h-[72px] px-5 md:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center" style={{ flexShrink: 0 }}>
-            <ApolloclawLogo />
+            <ApolloClawLogo ink="#000000" height={36} />
           </Link>
 
           {/* Desktop nav */}
