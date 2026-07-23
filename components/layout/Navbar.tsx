@@ -157,13 +157,13 @@ export default function Navbar() {
                     background: "#ffffff",
                     border: "1px solid rgba(11,23,41,0.1)",
                     boxShadow: "0 20px 60px rgba(11,23,41,0.12), 0 0 0 1px rgba(11,23,41,0.04)",
-                    minWidth: 220,
+                    minWidth: 280,
                   }}
                 >
                   <div className="p-2 flex flex-col gap-0.5">
                     {[
                       { label: "AI Consultation & Implementation", to: "/ai-implementation" },
-                      { label: "Enterprise",              to: "/ai-consulting-enterprise" },
+                      { label: "Enterprise Solutions",     to: "/ai-consulting-enterprise" },
                       { label: "Medium-Sized Businesses", to: "/ai-consulting-mid-market" },
                       { label: "Small Businesses",        to: "/ai-consulting-small-business" },
                       { label: "Education",               to: "/ai-consulting-education" },
@@ -180,6 +180,7 @@ export default function Navbar() {
                           color: pathname === item.to ? RED : NAVY,
                           textDecoration: "none",
                           transition: "background 0.15s",
+                          whiteSpace: "nowrap",
                         }}
                         onMouseEnter={e => (e.currentTarget.style.background = "rgba(11,23,41,0.04)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
