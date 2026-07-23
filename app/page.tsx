@@ -540,7 +540,7 @@ export default async function HomePage() {
                   maxWidth: 620,
                 }}
               >
-                Across every deployment, the result is the same: executives get time back, 10–20 hours per week were spent recovering from administrative work and returned to judgment, strategy, and revenue. That&apos;s the Apollo[Claw] promise — and it&apos;s delivering.
+                Across every deployment, the result is the same: executives get time back, 10–20 hours per week were spent recovering from administrative work and returned to judgment, strategy, and revenue. That&apos;s the Apollo[Claw] promise; it&apos;s delivering.
               </p>
               <div style={{ marginTop: 32 }}>
                 <a
@@ -568,12 +568,22 @@ export default async function HomePage() {
             {[
               {
                 title: "AI Chief of Staff Deployment",
-                body: "A senior executive at a PE-backed operating company was managing an overwhelming volume of daily communications, internal coordination, and strategic follow-up with no dedicated support structure. Following Apollo[Claw]'s proprietary intake and 30-day onboarding, a tailored AI Chief of Staff was deployed. Within the first month, the executive recovered an estimated 12-to-15-hours per week previously consumed by administrative tasks — redirecting that time entirely toward revenue-generating activity and strategic decision-making.",
+                body: "A senior executive at a PE-backed operating company was managing an overwhelming volume of daily communications, internal coordination, and strategic follow-up with no dedicated support structure. Following Apollo[Claw]'s proprietary intake and 30-day onboarding, a tailored AI Chief of Staff was deployed. Within the first month, the executive recovered an estimated 12-to-15-hours per week previously consumed by administrative tasks; that time was redirected entirely toward revenue-generating activity and strategic decision-making.",
                 accent: "#D72B2B",
               },
               {
                 title: "HIPAA-Aware Clinical AI Assistant",
-                body: "A concierge medical practice partner sought an AI solution that could operate within a healthcare context without compromising patient privacy or regulatory standing. Apollo[Claw] deployed a HIPAA-aware clinical agent configured for clinical workflow support — scheduling assistance, patient communication routing, and operational task automation — all clear of patient-facing surfaces. The practice owner reported immediate relief from administrative burden and expanded capacity to focus on patient care and practice growth.",
+                body: "A concierge medical practice partner sought an AI solution that could operate within a healthcare context without compromising patient privacy or regulatory standing. Apollo[Claw] deployed a HIPAA-aware clinical agent configured for clinical workflow support; scheduling assistance, patient communication routing, and operational task automation, all clear of patient-facing surfaces. The practice owner reported immediate relief from administrative burden and expanded capacity to focus on patient care and practice growth.",
+                accent: "#0B1729",
+              },
+              {
+                title: "Board-Ready Financial Forecasting",
+                body: "A multi-location professional services firm was closing its books by hand every month, with the CFO spending entire weekends reconciling spreadsheets before each board meeting. Apollo[Claw] deployed a dedicated CFO agent trained on the firm's chart of accounts and historical financials; it now produces weekly cash-flow forecasts, flags anomalies before they reach the P&L, and drafts the board deck days ahead of each meeting. The month-end close now takes two days instead of two weeks.",
+                accent: "#D72B2B",
+              },
+              {
+                title: "Recruiting Pipeline Acceleration",
+                body: "A boutique staffing agency was losing strong candidates to slower-moving competitors while recruiters manually screened resumes and chased down interview times across overlapping calendars. Apollo[Claw] deployed a Recruiting agent that screens every incoming resume against each role's requirements, coordinates interviews directly with candidates and hiring managers, and follows up automatically at every stage of the pipeline. Time-to-interview dropped by more than half in the first month; recruiters now spend their time interviewing qualified candidates instead of sorting through applications.",
                 accent: "#0B1729",
               },
             ].map((c, i) => (
