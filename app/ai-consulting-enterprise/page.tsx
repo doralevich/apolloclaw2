@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
 
 export const metadata: Metadata = {
-  title: { absolute: "Enterprise AI Consulting & Implementation | Apollo Claw" },
+  title: { absolute: "Enterprise AI Solutions & Implementation | Apollo Claw" },
   description:
-    "Apollo Claw partners with enterprise leadership teams to design and deploy AI across the entire organization, department by department, from strategy to execution.",
+    "Apollo Claw's enterprise AI solutions help leadership teams design and deploy AI across the entire organization, department by department, from strategy to execution.",
   alternates: { canonical: "https://apolloclaw.ai/ai-consulting-enterprise" },
   openGraph: {
-    title: "Enterprise AI Consulting & Implementation | Apollo Claw",
+    title: "Enterprise AI Solutions & Implementation | Apollo Claw",
     description:
       "We partner with enterprise leadership teams to move AI from proof-of-concept to production, department by department.",
     url: "https://apolloclaw.ai/ai-consulting-enterprise",
