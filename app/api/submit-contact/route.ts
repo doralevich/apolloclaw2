@@ -12,9 +12,35 @@ function supaHeaders() {
   return { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
 }
 
+// Best-effort per-IP rate limit. Resets on cold start and isn't shared across
+// serverless instances, but it still blunts a single bot hammering the endpoint
+// from one warm lambda.
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const submissionsByIp = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (submissionsByIp.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  submissionsByIp.set(ip, recent);
+  return recent.length > RATE_LIMIT;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
+
+    // Bot defenses: a filled-in honeypot, or a submission that came back
+    // faster than a human could plausibly fill the form (< 2s), or an IP that's
+    // rate-limited — all fake a normal success so bots don't learn to adapt,
+    // but skip every downstream write (CRM, task, Telegram).
+    const tooFast = typeof data.loadedAt === "number" && Date.now() - data.loadedAt < 2000;
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+    if (data.website || tooFast || isRateLimited(ip)) {
+      return NextResponse.json({ ok: true });
+    }
+
     const name = [data.firstName, data.lastName].filter(Boolean).join(" ") || data.name || "Unknown";
 
     const notesLines = [

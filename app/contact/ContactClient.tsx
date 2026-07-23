@@ -30,6 +30,11 @@ export default function ContactClient() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Bot defenses: "website" is a honeypot field real users never see or fill in
+  // (bots that auto-fill every field will); loadedAt lets the server reject
+  // submissions that come back implausibly fast for a human to have typed.
+  const [honeypot, setHoneypot] = useState("");
+  const [loadedAt] = useState(() => Date.now());
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -55,7 +60,7 @@ export default function ContactClient() {
       const res = await fetch("/api/submit-contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website: honeypot, loadedAt }),
       });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       setSubmitted(true);
@@ -85,6 +90,19 @@ export default function ContactClient() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  {/* Honeypot: invisible to real users, irresistible to bots that auto-fill every field. */}
+                  <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+                    <label htmlFor="website">Website</label>
+                    <input
+                      id="website"
+                      name="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                    />
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1.5 block">
