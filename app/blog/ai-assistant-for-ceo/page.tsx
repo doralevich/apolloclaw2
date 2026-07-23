@@ -34,7 +34,6 @@ const useCaseLinks = [
 const serviceLinks = [
   { label: "What We Do", href: "/what-we-do" },
   { label: "How It Works", href: "/how-it-works" },
-  { label: "Pricing", href: "/pricing" },
   { label: "Get Started", href: "/get-started" },
 ];
 
