@@ -18,22 +18,22 @@ export const metadata: Metadata = {
 const data: SeoLandingData = {
   hero: {
     label: "Department-Level AI, Organization-Wide Results",
-    title: "Enterprise AI",
-    titleAccent: "Consulting",
+    title: "Enterprise",
+    titleAccent: "Solutions",
     description:
-      "Most enterprise AI projects stall as pilots. Apollo Claw partners with leadership teams to move AI from proof-of-concept to production, department by department.",
+      "Apollo Claw partners with leadership teams to move AI from proof-of-concept to production, department by department.",
     cta: { label: "Schedule an Enterprise Consultation", href: "/contact" },
   },
   sections: [
     {
       type: "columns",
-      kicker: "The Enterprise Problem",
-      heading: "Why Enterprise AI",
-      headingAccent: "Stalls",
+      kicker: "The Apollo Claw Difference",
+      heading: "Enterprise AI, Done",
+      headingAccent: "Right",
       items: [
-        { title: "Pilots That Never Scale", desc: "A promising proof-of-concept dies in committee and never reaches the teams who would benefit." },
-        { title: "Junior Consultant Delivery", desc: "Big firms sell you senior partners and staff the work with rotating juniors who learn on your budget." },
-        { title: "No Operational Continuity", desc: "The engagement ends, the deck ships, and nobody owns whether the AI actually keeps running." },
+        { title: "Built to Scale From Day One", desc: "We architect every deployment for organization-wide rollout from the start, not a demo built to impress a committee." },
+        { title: "Senior Team, Start to Finish", desc: "The senior team that scopes your engagement is the same team that builds and ships it. No rotating juniors learning on your budget." },
+        { title: "Ongoing Ownership", desc: "We stay accountable for uptime and outcomes long after the deck ships, monitoring and tuning the program as it runs." },
       ],
     },
     {
@@ -42,7 +42,7 @@ const data: SeoLandingData = {
       heading: "Give Every Team Its Own",
       headingAccent: "AI",
       paragraphs: [
-        "Our Department Bot approach, ACROPOLIS, gives each team an AI agent trained on their specific workflows, not a single generic assistant bolted onto the org.",
+        "Our Department Bot approach gives each team an AI agent trained on their specific workflows, not a single generic assistant bolted onto the org.",
         "We start where the return is clearest, prove it in production, and expand across departments from there. Leadership gets a program that compounds, not a pilot that stalls.",
       ],
     },
@@ -66,7 +66,21 @@ const data: SeoLandingData = {
       headingAccent: "Default",
       paragraphs: [
         "Your business data stays in your environment. No vendor lock-in, no data leaving your control. Our approach to AI data security is built for organizations with real compliance obligations.",
-        "See how we protect your operation on our security page.",
+      ],
+    },
+    {
+      type: "bullets",
+      kicker: "What We Offer",
+      heading: "Security",
+      headingAccent: "Options",
+      intro: "See the full breakdown, including infrastructure and access controls, on our security page.",
+      bullets: [
+        "SOC 2 Type I compliant, with SOC 2 Type II on track for completion by end of September 2026",
+        "GDPR compliant, with consent-based analytics and deletion on request",
+        "Payment data handled by Stripe under PCI DSS, never touching our systems",
+        "Encrypted in transit (TLS 1.3 with HSTS) and at rest (AES-256), with credentials and API keys stored in encrypted vaults",
+        "Least-privilege access controls, with multi-factor authentication enforced on every administrative and infrastructure account",
+        "Written security policies, an incident-response plan, and a vendor security packet available to your IT and procurement teams",
       ],
     },
     {

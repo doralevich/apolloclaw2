@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 
 const uc = {
   label: "Higher Education",
+  logo: { name: "College", accent: "#16A34A" },
   title: "AI for",
   subtitle: "Colleges & Universities",
   description: "Apollo[Claw] helps college and university offices manage the volume of student and family inquiries without adding headcount.",

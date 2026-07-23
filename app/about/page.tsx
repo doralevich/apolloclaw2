@@ -83,6 +83,7 @@ export default function AboutPage() {
               fontWeight: 800,
               color: "#ffffff",
               margin: 0,
+              textWrap: "balance",
             }}
           >
             Built by Someone Who&apos;s{" "}
@@ -94,7 +95,7 @@ export default function AboutPage() {
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 600,
+              maxWidth: 760,
               margin: "28px auto 0",
             }}
           >
