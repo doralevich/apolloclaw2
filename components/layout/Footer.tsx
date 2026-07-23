@@ -226,7 +226,7 @@ export default function Footer() {
         <div className="container mx-auto px-5 md:px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div>
-              <ApolloClawLogo ink="#FFFFFF" height={32} />
+              <ApolloClawLogo ink="#FFFFFF" height={64} />
               <p
                 className="font-body mt-4 text-sm leading-relaxed"
                 style={{ color: WHITE_MUTED }}
