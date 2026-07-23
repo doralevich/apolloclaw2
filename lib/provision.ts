@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
 import { DEFAULT_AGENT } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
-import { AGENT_MODULES, CORE_QUESTIONS, PERSONAL_QUESTIONS } from "@/config/onboarding";
+import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
@@ -61,26 +61,18 @@ export async function injectAgentFile(
 }
 
 // Render questionnaire answers as the USER.md the agent reads. Labels come from the
-// questionnaire config so the file reads like notes, not a form dump.
+// shared onboarding section builder (the same one behind the free /onboard lead form and
+// its PDF/email) so the file reads like notes, not a form dump.
 export function buildUserMd(typeLabel: string, answers: Record<string, unknown>): string {
-  const labelById = new Map<string, string>();
-  for (const q of CORE_QUESTIONS) labelById.set(q.id, q.label);
-  for (const q of PERSONAL_QUESTIONS) labelById.set(q.id, q.label);
-  for (const m of Object.values(AGENT_MODULES)) for (const q of m.questions) labelById.set(q.id, q.label);
-
-  const lines: string[] = [
+  const sections = buildIntakeSections({ ...answers, trackType: "business" });
+  return [
     `# About the business you work for`,
     ``,
     `Notes from your owner's ${typeLabel} setup questionnaire. Treat this as ground truth`,
     `about who you work for — and update it as you learn more.`,
     ``,
-  ];
-  for (const [id, value] of Object.entries(answers)) {
-    const rendered = Array.isArray(value) ? value.join(", ") : String(value ?? "").trim();
-    if (!rendered) continue;
-    lines.push(`## ${labelById.get(id) ?? id}`, ``, rendered, ``);
-  }
-  return lines.join("\n");
+    sectionsToMarkdown(sections),
+  ].join("\n");
 }
 
 // Post-create injection for a paid agent: persona (fallback template only — dedicated

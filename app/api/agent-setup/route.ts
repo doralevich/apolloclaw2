@@ -1,46 +1,56 @@
 import { after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
-import { setupSectionsFor } from "@/config/onboarding";
 import { requireMember, requireUser } from "@/lib/auth";
 import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { buildIntakeSections, escapeHtml, sectionsToHtml } from "@/lib/onboardingSections";
 import { renderSectionsPdf } from "@/lib/pdf";
 import { buildUserMd, injectAgentFile } from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegram } from "@/lib/telegram";
 
-// A section of the emailed submission: labeled answers grouped by questionnaire step.
-type SetupSection = { title: string; rows: { label: string; value: string | string[] }[] };
-
-function esc(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 // POST /api/agent-setup { workspace_id?, agent_type, answers }
 //
-// Stores the post-purchase questionnaire (/onboard/[agent]) and pushes it into the
+// Stores the post-purchase questionnaire (the SAME questionnaire as the free /onboard
+// lead form — see components/onboard/OnboardingForm.tsx) and pushes it into the
 // provisioned instance as USER.md. Ordering with the Stripe webhook is race-free by
 // construction: whichever side finishes second finds the other's work — the webhook's
 // provision path injects stored answers, and this route injects into an existing agent.
 
-const MAX_ANSWERS_BYTES = 20_000;
+const MAX_ANSWERS_BYTES = 200_000;
 
-// Answers arrive as { questionId: string | string[] } from our own form, but the route
-// trusts nothing: keep only string/string[] values, trimmed and bounded.
-function sanitizeAnswers(raw: unknown): Record<string, string | string[]> {
+// Deep-sanitize the rich onboarding payload: strip anything that isn't a plain
+// string/number/boolean/array/object, cap string lengths and nesting depth, and never
+// persist raw uploaded-file bytes (kept only in memory for the notification email below).
+function sanitizeValue(v: unknown, depth = 0): unknown {
+  if (depth > 6) return undefined;
+  if (v === null || v === undefined) return undefined;
+  if (typeof v === "string") {
+    const s = v.trim().slice(0, 4000);
+    return s || undefined;
+  }
+  if (typeof v === "number" || typeof v === "boolean") return v;
+  if (Array.isArray(v)) {
+    const arr = v.map((x) => sanitizeValue(x, depth + 1)).filter((x) => x !== undefined);
+    return arr.length ? arr : undefined;
+  }
+  if (typeof v === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+      if (k === "dataBase64") continue; // raw file bytes never persisted to the DB
+      const clean = sanitizeValue(val, depth + 1);
+      if (clean !== undefined) out[k.slice(0, 64)] = clean;
+    }
+    return Object.keys(out).length ? out : undefined;
+  }
+  return undefined;
+}
+
+function sanitizeAnswers(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new ApiError(400, "invalid_request", "answers must be an object");
   }
-  const clean: Record<string, string | string[]> = {};
-  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof value === "string") {
-      const v = value.trim().slice(0, 2000);
-      if (v) clean[key.slice(0, 64)] = v;
-    } else if (Array.isArray(value)) {
-      const v = value.filter((x): x is string => typeof x === "string").map((x) => x.trim().slice(0, 200)).filter(Boolean);
-      if (v.length) clean[key.slice(0, 64)] = v;
-    }
-  }
+  const clean = (sanitizeValue(raw) as Record<string, unknown>) ?? {};
   if (Object.keys(clean).length === 0) {
     throw new ApiError(400, "invalid_request", "answers is empty");
   }
@@ -52,7 +62,7 @@ function sanitizeAnswers(raw: unknown): Record<string, string | string[]> {
 
 export const POST = route(async (request: Request) => {
   const { supabase, user } = await requireUser();
-  const body = await readJson<{ workspace_id?: string; agent_type?: string; answers?: unknown }>(request);
+  const body = await readJson<{ workspace_id?: string; agent_type?: string; answers?: Record<string, unknown> }>(request);
 
   if (!body.agent_type) throw new ApiError(400, "invalid_request", "agent_type is required");
   const type = getAgentType(body.agent_type);
@@ -75,6 +85,9 @@ export const POST = route(async (request: Request) => {
   if (!workspaceId) throw new ApiError(400, "invalid_request", "No workspace found for this account");
   await requireMember(supabase, workspaceId, user.id);
 
+  // Raw uploaded files (with base64) live only in memory long enough to attach to the
+  // internal notification email below; sanitizeAnswers strips them before the DB write.
+  const rawUploads = Array.isArray(body.answers?.uploadedFiles) ? (body.answers!.uploadedFiles as Array<Record<string, unknown>>) : [];
   const answers = sanitizeAnswers(body.answers);
 
   const { error } = await db.from("agent_setup").upsert(
@@ -118,18 +131,8 @@ export const POST = route(async (request: Request) => {
   // Team heads-up: Telegram (same channel as the intake flows) + an email with a PDF of
   // the full submission. Runs after the response so PDF rendering / email never blocks the
   // buyer's "building your agent" screen.
-  const businessName = typeof answers.business_name === "string" ? answers.business_name : "";
-  const sections: SetupSection[] = setupSectionsFor(type.id, type.label)
-    .map((s) => ({
-      title: s.title,
-      rows: s.questions
-        .map((q) => ({ label: q.label, value: answers[q.id] }))
-        .filter((r): r is { label: string; value: string | string[] } => {
-          const v = r.value;
-          return v != null && (Array.isArray(v) ? v.length > 0 : v.trim().length > 0);
-        }),
-    }))
-    .filter((s) => s.rows.length > 0);
+  const businessName = typeof answers.companyName === "string" ? answers.companyName : "";
+  const sections = buildIntakeSections({ ...answers, uploadedFiles: rawUploads, trackType: "business" });
   const buyer = user.email ?? user.id;
 
   after(async () => {
@@ -154,30 +157,14 @@ export const POST = route(async (request: Request) => {
       console.error("[agent-setup] PDF generation failed:", err);
     }
 
-    const inlineHtml = sections
-      .map(
-        (s) =>
-          `<h3 style="font-family:sans-serif;color:#E8342A;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin:14px 0 4px">${esc(s.title)}</h3>` +
-          `<table style="font-family:sans-serif;font-size:13px;border-collapse:collapse">` +
-          s.rows
-            .map(
-              (r) =>
-                `<tr><td style="padding:3px 12px 3px 0;color:#6b7280;vertical-align:top">${esc(r.label)}</td>` +
-                `<td>${esc(Array.isArray(r.value) ? r.value.join(", ") : r.value)}</td></tr>`
-            )
-            .join("") +
-          `</table>`
-      )
-      .join("");
-
     await sendMandrillEmail({
       to: NOTIFY_EMAIL,
       subject: `${type.label} setup — ${businessName || buyer}`,
       html:
-        `<h2 style="font-family:sans-serif;color:#0B1729">${esc(type.label)} setup completed</h2>` +
-        `<p style="font-family:sans-serif;font-size:13px;color:#6b7280">By ${esc(buyer)}. ` +
+        `<h2 style="font-family:sans-serif;color:#0B1729">${escapeHtml(type.label)} setup completed</h2>` +
+        `<p style="font-family:sans-serif;font-size:13px;color:#6b7280">By ${escapeHtml(buyer)}. ` +
         `${pdf ? "Full profile attached as a PDF." : "PDF unavailable — full details below."}</p>` +
-        inlineHtml,
+        sectionsToHtml(sections),
       attachments: pdf ? [{ filename: `${type.id}-setup.pdf`, content: pdf }] : undefined,
     });
   });
