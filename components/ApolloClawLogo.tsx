@@ -4,6 +4,14 @@
 // letterforms) can be swapped per background - black on light surfaces, white on
 // the navy footer/hero - while the bracket red (#E12E30, the source file's own
 // red) always stays fixed.
+//
+// The source file's original viewBox (0 0 3640.54 855.61) is the raw Illustrator
+// export canvas, which carries a huge amount of blank padding on every side: the
+// actual ink only spans roughly x:[775,2866] y:[296,560]. Left as-is, that padding
+// scales along with any `height` prop, so the glyph itself renders far smaller
+// than the box implies, and the visible mark sits inset rather than flush against
+// its container edge. Cropped tight (plus a small margin) below so `height` maps
+// directly onto the visible glyph.
 
 interface ApolloClawLogoProps {
   ink?: string;
@@ -14,7 +22,7 @@ interface ApolloClawLogoProps {
 export default function ApolloClawLogo({ ink = "#000000", height = 40, className }: ApolloClawLogoProps) {
   return (
     <svg
-      viewBox="0 0 3640.54 855.61"
+      viewBox="755 276 2131 304"
       xmlns="http://www.w3.org/2000/svg"
       style={{ height, width: "auto" }}
       className={className}
