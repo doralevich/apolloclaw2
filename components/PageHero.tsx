@@ -64,6 +64,7 @@ export default function PageHero({ label, title, titleAccent, accentFirst, descr
             fontWeight: 800,
             color: "#ffffff",
             margin: 0,
+            textWrap: "balance",
           }}
         >
           {accentFirst ? (
@@ -85,7 +86,7 @@ export default function PageHero({ label, title, titleAccent, accentFirst, descr
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 820,
+              maxWidth: 940,
               margin: "24px auto 0",
             }}
           >

@@ -1,4 +1,5 @@
 import ScrollReveal from "@/components/ScrollReveal";
+import AgentWordmark from "@/components/AgentWordmark";
 import { CheckCircle } from "lucide-react";
 
 interface UseCase {
@@ -9,6 +10,8 @@ interface UseCase {
   challenges: string[];
   solutions: { title: string; desc: string }[];
   results: string[];
+  /** Optional sub-brand wordmark shown above the hero heading, e.g. { name: "College", accent: "#2E8B57" }. */
+  logo?: { name: string; accent: string };
 }
 
 export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
@@ -61,6 +64,11 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
           >
             {uc.label}
           </span>
+          {uc.logo && (
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+              <AgentWordmark name={uc.logo.name} accent={uc.logo.accent} ink="#ffffff" size={30} />
+            </div>
+          )}
           <h1
             className="font-display leading-[1.05] tracking-tight"
             style={{
@@ -68,6 +76,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
               fontWeight: 800,
               color: "#ffffff",
               margin: 0,
+              textWrap: "balance",
             }}
           >
             {uc.title}{" "}
@@ -79,7 +88,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 620,
+              maxWidth: 760,
               margin: "24px auto 0",
             }}
           >

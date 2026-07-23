@@ -82,6 +82,7 @@ export default async function HomePage() {
                   fontWeight: 800,
                   color: "#ffffff",
                   margin: 0,
+                  textWrap: "balance",
                 }}
               >
                 Your Business Runs on Decisions. Make Every One Smarter with{" "}
@@ -93,7 +94,7 @@ export default async function HomePage() {
                   fontSize: "clamp(15px, 1.15vw, 17px)",
                   lineHeight: 1.65,
                   color: "rgba(255,255,255,0.72)",
-                  maxWidth: 560,
+                  maxWidth: 680,
                   margin: "28px 0 0 0",
                 }}
               >

@@ -70,7 +70,7 @@ export default function Navbar() {
         className="fixed top-0 left-0 right-0 z-50"
         style={{ background: "#ffffff", borderBottom: "1px solid rgba(11,23,41,0.08)", boxShadow: "0 1px 4px rgba(11,23,41,0.06)" }}
       >
-        <div className="container mx-auto flex items-center justify-between h-[80px] px-5 md:px-8">
+        <div className="container mx-auto flex items-center justify-between h-[90px] px-5 md:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center" style={{ flexShrink: 0 }}>
             <ApolloClawLogo ink="#000000" height={44} />

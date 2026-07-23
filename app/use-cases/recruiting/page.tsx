@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 
 const uc = {
   label: "Recruiting & Staffing",
+  logo: { name: "Recruiting", accent: "#D72B2B" },
   title: "AI for",
   subtitle: "Recruiting",
   description: "Apollo[Claw] helps recruiters and talent teams move candidates through the pipeline faster without adding headcount.",

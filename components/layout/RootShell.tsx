@@ -33,7 +33,7 @@ export default function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className="pt-[80px]">{children}</main>
+      <main className="pt-[90px]">{children}</main>
       <Footer />
       <ChatWidget />
     </>
