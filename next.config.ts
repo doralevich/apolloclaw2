@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
         destination: "/use-cases/health",
         permanent: true,
       },
+      {
+        source: "/pricing",
+        destination: "/cost-estimator",
+        permanent: true,
+      },
     ];
   },
 };
