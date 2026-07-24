@@ -95,7 +95,7 @@ export default function AboutPage() {
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 760,
+              maxWidth: 940,
               margin: "28px auto 0",
             }}
           >
@@ -146,7 +146,7 @@ export default function AboutPage() {
               className="font-body"
               style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555", maxWidth: 580, margin: "0 auto 32px" }}
             >
-              Every business is different. The best way to know where AI fits in yours is a direct conversation — no pitch, no pressure. Just an honest look at your operation and what&apos;s possible right now.
+              Every business is different. The best way to know where AI fits in yours is a direct conversation: no pitch, no pressure. Just an honest look at your operation and what&apos;s possible right now.
             </p>
             <a
               href="https://calendly.com/therealdaveo/apolloai"

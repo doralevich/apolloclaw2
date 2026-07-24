@@ -22,7 +22,7 @@ const uc = {
   solutions: [
     { title: "Client Communication", desc: "Automated market event updates, portfolio summary preparation, and post-meeting follow-ups so every client feels attended to." },
     { title: "Onboarding Automation", desc: "AI guides new clients through document collection, compliance forms, and account setup so advisors spend time advising, not processing." },
-    { title: "Meeting Prep", desc: "Pre-meeting briefing documents prepared automatically from your CRM and portfolio data — ready the morning of every client call." },
+    { title: "Meeting Prep", desc: "Pre-meeting briefing documents prepared automatically from your CRM and portfolio data, ready the morning of every client call." },
   ],
   results: [
     "More advisory capacity without hiring more staff",

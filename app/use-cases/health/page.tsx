@@ -17,7 +17,7 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/use-cases/health#service",
-      name: "The Medical Agent — AI for Healthcare Practices",
+      name: "The Medical Agent: AI for Healthcare Practices",
       description: "HIPAA-compliant AI assistant for medical practices that automates scheduling, patient follow-up, intake, and documentation prep.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/use-cases/health",
@@ -30,7 +30,7 @@ const jsonLd = {
       mainEntity: [
         { "@type": "Question", name: "What EHR and practice management systems does the Medical Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to athenahealth, Epic, DrChrono, Kareo, Jane App, and most major EHR and practice management platforms." } },
         { "@type": "Question", name: "Is this HIPAA compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We execute a Business Associate Agreement with every healthcare client. All data handling follows HIPAA requirements throughout." } },
-        { "@type": "Question", name: "Will it replace my front desk staff?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the high-volume repetitive work — reminders, intake collection, follow-up sequences — so your staff can focus on patients in the room." } },
+        { "@type": "Question", name: "Will it replace my front desk staff?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the high-volume repetitive work, reminders, intake collection, follow-up sequences, so your staff can focus on patients in the room." } },
         { "@type": "Question", name: "How does the scheduling integration work?", acceptedAnswer: { "@type": "Answer", text: "We connect to your existing scheduling system. The agent reads availability and books, confirms, and reschedules appointments automatically." } },
         { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most practices are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
       ],
@@ -41,7 +41,7 @@ const jsonLd = {
 const features = [
   { title: "Scheduling Automation", desc: "AI handles appointment bookings, confirmations, reminders, and cancellations so your front desk focuses on patients in the room." },
   { title: "Patient Follow-Up", desc: "Post-visit follow-up messages, lab result notifications, and care plan reminders sent automatically at the right time." },
-  { title: "Intake & Documentation Prep", desc: "Structured intake summaries and pre-visit documentation so providers walk in already briefed — not typing to catch up." },
+  { title: "Intake & Documentation Prep", desc: "Structured intake summaries and pre-visit documentation so providers walk in already briefed, not typing to catch up." },
   { title: "Insurance & Prior Auth", desc: "Eligibility checks initiated, prior authorization requests tracked, and status updates sent without your team chasing payers." },
   { title: "No-Show Recovery", desc: "Automated re-engagement sequences reach patients who miss appointments and get them rescheduled before the slot is gone." },
   { title: "Recall & Preventive Outreach", desc: "Annual exams, preventive screenings, and chronic care follow-ups scheduled proactively based on your patient recall criteria." },
@@ -80,7 +80,7 @@ const testimonials = [
   },
   {
     industry: "Dental",
-    quote: "Recall outreach used to be a manual project we ran twice a year. The agent runs it continuously — every patient due for a cleaning gets a sequence automatically. Our hygiene schedule is 95% full for the first time in years.",
+    quote: "Recall outreach used to be a manual project we ran twice a year. The agent runs it continuously; every patient due for a cleaning gets a sequence automatically. Our hygiene schedule is 95% full for the first time in years.",
     role: "Practice Owner",
     detail: "Multi-location dental practice, New York",
   },
@@ -115,7 +115,7 @@ const faqs = [
   },
   {
     q: "Will it replace my front desk staff?",
-    a: "No. It removes the high-volume repetitive work — reminders, intake collection, follow-up sequences — so your staff can focus on the patients in front of them.",
+    a: "No. It removes the high-volume repetitive work, reminders, intake collection, follow-up sequences, so your staff can focus on the patients in front of them.",
   },
   {
     q: "How does the scheduling integration work?",
@@ -172,7 +172,7 @@ export default function HealthcarePage() {
             Your staff is spending hours every day on reminders, intake collection, follow-up calls, and scheduling coordination. Every minute on admin is a minute away from the patient in front of them.
           </p>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
-            The Medical Agent handles the operational layer — scheduling, reminders, follow-up, intake, recall — so your team spends time on care, not coordination.
+            The Medical Agent handles the operational layer, scheduling, reminders, follow-up, intake, recall, so your team spends time on care, not coordination.
           </p>
         </div>
       </section>

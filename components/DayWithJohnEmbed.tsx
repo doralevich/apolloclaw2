@@ -8,7 +8,7 @@ export default function DayWithJohnEmbed() {
     return (
       <iframe
         src="/day-with-john.html"
-        title="Apollo[Claw] Demo Conversation — A day with John"
+        title="Apollo[Claw] Demo Conversation: A Day with John"
         style={{
           position: "absolute",
           inset: 0,
@@ -26,7 +26,7 @@ export default function DayWithJohnEmbed() {
     <button
       type="button"
       onClick={() => setPlaying(true)}
-      aria-label="Play the Apollo[Claw] demo conversation — A day with John"
+      aria-label="Play the Apollo[Claw] demo conversation: A Day with John"
       style={{
         position: "absolute",
         inset: 0,

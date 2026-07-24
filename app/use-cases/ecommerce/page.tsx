@@ -20,7 +20,7 @@ const uc = {
     "Product review outreach sent inconsistently",
   ],
   solutions: [
-    { title: "Support Automation", desc: "AI handles tier-1 support questions automatically — order status, return policies, shipping updates — escalating only what requires a human." },
+    { title: "Support Automation", desc: "AI handles tier-1 support questions automatically, order status, return policies, shipping updates, escalating only what requires a human." },
     { title: "Abandoned Cart Recovery", desc: "Automated, personalized follow-up sequences triggered the moment a cart is abandoned. Timing and tone calibrated for conversion." },
     { title: "Inventory & Ops", desc: "Low stock alerts, supplier notification drafts, and inventory reconciliation reports delivered to your inbox on your schedule." },
   ],

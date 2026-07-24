@@ -48,7 +48,7 @@ export default function HowItWorksPage() {
         label="The Process"
         title="How It"
         titleAccent="Works"
-        description="From first conversation to fully operational AI agent — four steps, no technical expertise required on your end."
+        description="From first conversation to fully operational AI agent: four steps, no technical expertise required on your end."
       />
 
       <section className="bg-surface-alt py-24">

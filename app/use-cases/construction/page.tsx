@@ -22,7 +22,7 @@ const uc = {
   solutions: [
     { title: "Estimate Workflow", desc: "AI pre-qualifies estimate requests, gathers project details from prospects, and prepares the briefing so you show up ready." },
     { title: "Scheduling Automation", desc: "Coordinate crews, subs, and inspections without a dedicated coordinator. AI manages the calendar and sends confirmations." },
-    { title: "Client Communication", desc: "Automated project status updates keep clients informed between site visits — fewer calls, fewer surprises." },
+    { title: "Client Communication", desc: "Automated project status updates keep clients informed between site visits, fewer calls, fewer surprises." },
   ],
   results: [
     "Faster response time on new estimate requests",

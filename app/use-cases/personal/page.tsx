@@ -10,7 +10,7 @@ const uc = {
   label: "Personal Productivity",
   title: "AI for",
   subtitle: "Your Personal Assistant",
-  description: "The Personal Agent runs the daily administrative layer of your professional life — inbox, calendar, research, notes, and follow-up — so your attention stays on the work only you can do.",
+  description: "The Personal Agent runs the daily administrative layer of your professional life: inbox, calendar, research, notes, and follow-up, so your attention stays on the work only you can do.",
   challenges: [
     "Inbox volume that never gets under control",
     "Calendar management eating into productive time",

@@ -256,7 +256,7 @@ function ModelSelect({
         <optgroup key={provider} label={provider}>
           {MODELS.filter((m) => m.provider === provider).map((m) => (
             <option key={m.id} value={m.id}>
-              {m.name} — {fmtPrice(m.in)} / {fmtPrice(m.out)}
+              {m.name}: {fmtPrice(m.in)} / {fmtPrice(m.out)}
             </option>
           ))}
         </optgroup>
@@ -474,7 +474,7 @@ export default function CostEstimatorClient() {
                 </span>
                 <span className="block font-body text-xs text-muted-foreground mt-0.5">
                   ~63% off input tokens. Assumes ~70% cache-hit rate on stable
-                  system prompts — typical for production agents.
+                  system prompts, typical for production agents.
                 </span>
               </span>
             </button>
@@ -543,7 +543,7 @@ export default function CostEstimatorClient() {
           <UsageField
             id="u-conv"
             label="Daily Conversations"
-            description="Back-and-forth chats your agent handles each day — customer questions, internal pings, anything that looks like a thread."
+            description="Back-and-forth chats your agent handles each day: customer questions, internal pings, anything that looks like a thread."
             value={usage.conversation}
             onChange={(n) => setUsage((u) => ({ ...u, conversation: n }))}
             icon={MessageSquare}
@@ -552,7 +552,7 @@ export default function CostEstimatorClient() {
           <UsageField
             id="u-research"
             label="Research Tasks"
-            description="Heavier jobs where the agent gathers, reads, and summarizes information — competitor scans, market briefs, prospect digs."
+            description="Heavier jobs where the agent gathers, reads, and summarizes information: competitor scans, market briefs, prospect digs."
             value={usage.research}
             onChange={(n) => setUsage((u) => ({ ...u, research: n }))}
             icon={Search}
@@ -579,7 +579,7 @@ export default function CostEstimatorClient() {
           <UsageField
             id="u-cron"
             label="Cron Jobs"
-            description="Scheduled background runs — daily reports, nightly syncs, weekly cleanups. Predictable and easy to budget for."
+            description="Scheduled background runs: daily reports, nightly syncs, weekly cleanups. Predictable and easy to budget for."
             value={usage.cron}
             onChange={(n) => setUsage((u) => ({ ...u, cron: n }))}
             icon={Clock}
@@ -670,7 +670,7 @@ export default function CostEstimatorClient() {
                   Why this works
                 </h3>
                 <p className="font-body text-sm text-muted-foreground">
-                  Heartbeats are tiny, frequent pings — a nano-class model handles
+                  Heartbeats are tiny, frequent pings; a nano-class model handles
                   them for pennies. Sub-agents do bursty delegated work where a
                   Flash-tier model gives you 90% of the quality at a fraction of
                   the cost. Keep your premium model on the Main Agent where
@@ -793,7 +793,7 @@ export default function CostEstimatorClient() {
                     </table>
                   </div>
                   <p className="font-mono text-[10px] uppercase tracking-wider text-muted-subtle mt-4">
-                    Industry averages — your real numbers from API logs will be
+                    Industry averages: your real numbers from API logs will be
                     more accurate.
                   </p>
                 </div>
@@ -825,7 +825,7 @@ export default function CostEstimatorClient() {
             },
             {
               term: "MTok",
-              def: "Short for one million tokens. Pricing is shown per MTok — e.g., “$3 / MTok” means $3 per million input tokens.",
+              def: "Short for one million tokens. Pricing is shown per MTok: e.g., “$3 / MTok” means $3 per million input tokens.",
             },
             {
               term: "Prompt Caching",
@@ -837,7 +837,7 @@ export default function CostEstimatorClient() {
             },
             {
               term: "Main Agent",
-              def: "The primary model your assistant uses for user-facing work — conversations, research, coding. Quality matters most here.",
+              def: "The primary model your assistant uses for user-facing work: conversations, research, coding. Quality matters most here.",
             },
             {
               term: "Sub-Agent",
@@ -849,7 +849,7 @@ export default function CostEstimatorClient() {
             },
             {
               term: "Cron Job",
-              def: "A task that runs automatically on a schedule — hourly, daily, weekly. Named after the Unix cron utility.",
+              def: "A task that runs automatically on a schedule: hourly, daily, weekly. Named after the Unix cron utility.",
             },
             {
               term: "Batch API",

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "AI 101 — What Business Owners Need to Know",
+  title: "AI 101: What Business Owners Need to Know",
   description:
     "A plain-English guide to AI for business owners. What AI agents are, what they can do, and how to get started without the hype.",
 };
@@ -12,23 +12,23 @@ export const metadata: Metadata = {
 const topics = [
   {
     q: "What is AI, really?",
-    a: "AI is software that learns from patterns in data and can generate responses, make decisions, and take actions — unlike traditional software which only does exactly what it's programmed to do. The breakthrough of 2022-2024 is that AI now works in plain English: you describe what you want, and it does it.",
+    a: "AI is software that learns from patterns in data and can generate responses, make decisions, and take actions, unlike traditional software which only does exactly what it's programmed to do. The breakthrough of 2022-2024 is that AI now works in plain English: you describe what you want, and it does it.",
   },
   {
     q: "What&apos;s the difference between ChatGPT and an AI agent?",
-    a: "ChatGPT is a conversation tool. You ask questions, it answers. An AI agent is connected to your actual systems and can take actions — send emails, update your CRM, schedule meetings, pull data. The difference is like a calculator versus a bookkeeper.",
+    a: "ChatGPT is a conversation tool. You ask questions, it answers. An AI agent is connected to your actual systems and can take actions: send emails, update your CRM, schedule meetings, pull data. The difference is like a calculator versus a bookkeeper.",
   },
   {
     q: "What can AI actually do for my business today?",
-    a: "Email triage and responses. Calendar management. CRM updates. Research and summarization. Lead follow-up. Document prep. Status reporting. Anything that currently requires you to read something, decide something routine, and type something back — AI can handle it.",
+    a: "Email triage and responses. Calendar management. CRM updates. Research and summarization. Lead follow-up. Document prep. Status reporting. Anything that currently requires you to read something, decide something routine, and type something back: AI can handle it.",
   },
   {
     q: "What can&apos;t AI do?",
-    a: "AI cannot replace human judgment on complex decisions, relationship-building, creative strategy, or anything that requires deep domain expertise combined with novel situations. The goal is not to replace you — it&apos;s to handle the 40% of your day that doesn&apos;t require you.",
+    a: "AI cannot replace human judgment on complex decisions, relationship-building, creative strategy, or anything that requires deep domain expertise combined with novel situations. The goal is not to replace you; it&apos;s to handle the 40% of your day that doesn&apos;t require you.",
   },
   {
     q: "Is it safe to give AI access to my business systems?",
-    a: "When implemented correctly, yes. Apollo[Claw] builds on your infrastructure with least-privilege access — your agent only has access to what it needs. We document every integration and require your explicit approval for each connection.",
+    a: "When implemented correctly, yes. Apollo[Claw] builds on your infrastructure with least-privilege access; your agent only has access to what it needs. We document every integration and require your explicit approval for each connection.",
   },
   {
     q: "How long does it take to see results?",
