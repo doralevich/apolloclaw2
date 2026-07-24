@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle, Mail, Calendar, Search, Code, FileText, Plug, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users } from "lucide-react";
+import { CheckCircle, Mail, Calendar, Search, Code, FileText, Plug, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users, GraduationCap, UserSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import HeroAssistantInput from "@/components/HeroAssistantInput";
@@ -386,12 +386,14 @@ export default async function HomePage() {
 
           <div id="apollo-agents-grid">
             {[
-              { icon: Briefcase, category: "Executive",    title: "The CEO Agent",          desc: "Faster decisions, fewer status calls.",                              href: "/use-cases/ceo" },
-              { icon: TrendingUp, category: "Finance",     title: "The CFO Agent",          desc: "Cash forecasts, board prep, monthly close, drafted before you ask.", href: "/use-cases/cfo" },
-              { icon: Heart,      category: "Healthcare",  title: "The Medical Agent",      desc: "Patient triage, intake summaries, faster charting.",                 href: "/use-cases/health" },
-              { icon: Shield,     category: "Insurance",   title: "The Insurance Agent",    desc: "Quote requests, policy renewals, claims status, answered before clients ask.", href: "/use-cases/insurance" },
-              { icon: Scale,      category: "Legal",       title: "The Law Agent",          desc: "Intake forms, case research, document summaries, answer-ready in minutes.", href: "/use-cases/legal" },
-              { icon: Home,       category: "Real Estate", title: "The Real Estate Agent",  desc: "New leads sorted, listings written, follow-ups closed automatically.", href: "/use-cases/real-estate" },
+              { icon: Briefcase,     category: "Executive",    title: "The CEO Agent",          desc: "Faster decisions, fewer status calls.",                              href: "/use-cases/ceo" },
+              { icon: TrendingUp,    category: "Finance",      title: "The CFO Agent",          desc: "Cash forecasts, board prep, monthly close, drafted before you ask.", href: "/use-cases/cfo" },
+              { icon: Scale,        category: "Legal",        title: "The Legal Agent",        desc: "Intake forms, case research, document summaries, answer-ready in minutes.", href: "/use-cases/legal" },
+              { icon: Heart,        category: "Healthcare",   title: "The Medical Agent",      desc: "Patient triage, intake summaries, faster charting.",                 href: "/use-cases/health" },
+              { icon: GraduationCap, category: "Education",   title: "The College Agent",      desc: "Deadlines, coursework, and applications, guided from high school through college.", href: "/use-cases/college" },
+              { icon: UserSearch,   category: "Recruiting",   title: "The Recruiting Agent",   desc: "Screening, scheduling, and candidate follow-up.",                    href: "/use-cases/recruiting" },
+              { icon: Home,         category: "Real Estate",  title: "The Real Estate Agent",  desc: "New leads sorted, listings written, follow-ups closed automatically.", href: "/use-cases/real-estate" },
+              { icon: Shield,       category: "Insurance",    title: "The Insurance Agent",    desc: "Quote requests, policy renewals, claims status, answered before clients ask.", href: "/use-cases/insurance" },
             ].map((agent, i) => {
               const Icon = agent.icon;
               return (
@@ -839,7 +841,7 @@ export default async function HomePage() {
                 margin: 0,
               }}
             >
-              Let&apos;s find out what <span style={{ color: "#D72B2B" }}>AI</span> can actually do for your business.
+              Let&apos;s find out what <span style={{ color: "#D72B2B" }}>AI</span> can do for your business.
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={150}>

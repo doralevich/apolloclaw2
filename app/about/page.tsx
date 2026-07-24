@@ -365,7 +365,7 @@ export default function AboutPage() {
               style={{ fontSize: "clamp(28px, 4vw, 50px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
             >
               Ready to find out what AI can{" "}
-              <span style={{ color: "#D72B2B" }}>actually do</span> for your business?
+              <span style={{ color: "#D72B2B" }}>do</span> for your business?
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={150}>
