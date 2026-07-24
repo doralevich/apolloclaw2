@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
+import PageViewTracker from "@/components/GoogleAnalytics";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -227,7 +228,18 @@ export default function RootLayout({
         className={`${inter.variable} font-body`}
         style={{ fontFamily: "var(--font-body), Inter, sans-serif", "--font-display": "var(--font-body)", "--font-mono": "'IBM Plex Mono', monospace" } as React.CSSProperties}
       >
-        <GoogleAnalytics />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4ZR38XGEME"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'G-4ZR38XGEME', { send_page_view: false });
+        `}</Script>
+        <PageViewTracker />
         <RootShell>{children}</RootShell>
         <Toaster richColors />
       </body>

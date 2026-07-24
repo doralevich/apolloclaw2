@@ -1,12 +1,9 @@
 'use client';
 
-import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 
-const GA_ID = 'G-4ZR38XGEME';
-
-function PageViewTracker() {
+function PageViewTrackerInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -26,25 +23,13 @@ function PageViewTracker() {
   return null;
 }
 
-export default function GoogleAnalytics() {
+// GA Script tags live in the server layout (layout.tsx) so they are never
+// blocked by a client-side Suspense bailout. This component only handles
+// soft-navigation page_view events after the initial page load.
+export default function PageViewTracker() {
   return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">{`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        window.gtag = gtag;
-        gtag('js', new Date());
-        gtag('config', '${GA_ID}', {
-          send_page_view: false
-        });
-      `}</Script>
-      <Suspense fallback={null}>
-        <PageViewTracker />
-      </Suspense>
-    </>
+    <Suspense fallback={null}>
+      <PageViewTrackerInner />
+    </Suspense>
   );
 }
