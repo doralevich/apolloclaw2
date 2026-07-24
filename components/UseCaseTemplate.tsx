@@ -88,7 +88,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 760,
+              maxWidth: 940,
               margin: "24px auto 0",
             }}
           >

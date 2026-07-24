@@ -98,7 +98,7 @@ export default async function HomePage() {
                   margin: "28px 0 0 0",
                 }}
               >
-                Apollo Claw partners with executives and leadership teams to design, deploy, and manage AI across the entire organization — from strategy to execution.
+                Apollo Claw partners with executives and leadership teams to design, deploy, and manage AI across the entire organization, from strategy to execution.
               </p>
               <div className="mt-9">
                 <a
@@ -180,7 +180,7 @@ export default async function HomePage() {
                   color: "rgba(255,255,255,0.85)",
                 }}
               >
-                Hi! How can I help you today? Tell me what you&apos;re looking to set up — I&apos;ll push you in the right direction.
+                Hi! How can I help you today? Tell me what you&apos;re looking to set up; I&apos;ll push you in the right direction.
               </div>
               <HeroAssistantInput />
             </div>
@@ -264,7 +264,7 @@ export default async function HomePage() {
                     maxWidth: 520,
                   }}
                 >
-                  Apollo[Claw] builds AI agents that work inside your existing business — not alongside it. The agent connects to the tools you already use and handles the repetitive, time-consuming work that keeps you buried in your inbox.
+                  Apollo[Claw] builds AI agents that work inside your existing business, not alongside it. The agent connects to the tools you already use and handles the repetitive, time-consuming work that keeps you buried in your inbox.
                 </p>
                 <p
                   className="font-body"
@@ -387,10 +387,10 @@ export default async function HomePage() {
           <div id="apollo-agents-grid">
             {[
               { icon: Briefcase, category: "Executive",    title: "The CEO Agent",          desc: "Faster decisions, fewer status calls.",                              href: "/use-cases/ceo" },
-              { icon: TrendingUp, category: "Finance",     title: "The CFO Agent",          desc: "Cash forecasts, board prep, monthly close — drafted before you ask.", href: "/use-cases/cfo" },
+              { icon: TrendingUp, category: "Finance",     title: "The CFO Agent",          desc: "Cash forecasts, board prep, monthly close, drafted before you ask.", href: "/use-cases/cfo" },
               { icon: Heart,      category: "Healthcare",  title: "The Medical Agent",      desc: "Patient triage, intake summaries, faster charting.",                 href: "/use-cases/health" },
-              { icon: Shield,     category: "Insurance",   title: "The Insurance Agent",    desc: "Quote requests, policy renewals, claims status — answered before clients ask.", href: "/use-cases/insurance" },
-              { icon: Scale,      category: "Legal",       title: "The Law Agent",          desc: "Intake forms, case research, document summaries — answer-ready in minutes.", href: "/use-cases/legal" },
+              { icon: Shield,     category: "Insurance",   title: "The Insurance Agent",    desc: "Quote requests, policy renewals, claims status, answered before clients ask.", href: "/use-cases/insurance" },
+              { icon: Scale,      category: "Legal",       title: "The Law Agent",          desc: "Intake forms, case research, document summaries, answer-ready in minutes.", href: "/use-cases/legal" },
               { icon: Home,       category: "Real Estate", title: "The Real Estate Agent",  desc: "New leads sorted, listings written, follow-ups closed automatically.", href: "/use-cases/real-estate" },
             ].map((agent, i) => {
               const Icon = agent.icon;
@@ -494,7 +494,7 @@ export default async function HomePage() {
 
           {/* CENTERED header block */}
           <ScrollReveal>
-            <div style={{ textAlign: "center", marginBottom: 56, maxWidth: 760, marginLeft: "auto", marginRight: "auto" }}>
+            <div style={{ textAlign: "center", marginBottom: 56, maxWidth: 960, marginLeft: "auto", marginRight: "auto" }}>
               <span
                 className="inline-block font-mono uppercase mb-5"
                 style={{

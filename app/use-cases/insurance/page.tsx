@@ -20,7 +20,7 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/use-cases/insurance#service",
-      name: "The Insurance Agent — AI for Insurance Agencies",
+      name: "The Insurance Agent: AI for Insurance Agencies",
       description: "AI assistant for insurance agencies that automates renewal outreach, quote follow-up, and client communication.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/use-cases/insurance",
@@ -44,10 +44,10 @@ const jsonLd = {
 const features = [
   { title: "Quote Follow-Up", desc: "AI follows up with prospects after quotes are sent, answers common questions, and keeps your pipeline moving without chasing every lead manually." },
   { title: "Renewal Automation", desc: "Automated renewal outreach sequences start 90 days out, ensure every client is contacted on time, and escalate non-responders to your team." },
-  { title: "Claims Communication", desc: "Automated status update outreach to clients in open claims — reducing inbound calls and keeping clients informed throughout the process." },
+  { title: "Claims Communication", desc: "Automated status update outreach to clients in open claims, reducing inbound calls and keeping clients informed throughout the process." },
   { title: "New Business Qualification", desc: "Prospects qualified, applications started, and follow-up sequenced automatically so your producers spend time with buyers, not chasers." },
   { title: "Certificate Management", desc: "Certificate of insurance requests logged, processed, and delivered without backing up your service team." },
-  { title: "Cross-Sell Outreach", desc: "Identifies policy gaps in existing accounts and initiates cross-sell conversations at the right time — automatically." },
+  { title: "Cross-Sell Outreach", desc: "Identifies policy gaps in existing accounts and initiates cross-sell conversations at the right time, automatically." },
 ];
 
 const process = [
@@ -83,7 +83,7 @@ const testimonials = [
   },
   {
     industry: "Health & Benefits",
-    quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar — reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
+    quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar: reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
     role: "Benefits Agency Principal",
     detail: "Group health and benefits, 200 employer groups",
   },
@@ -175,7 +175,7 @@ export default function InsurancePage() {
             Renewals slip through because outreach starts too late. Quotes go cold because follow-up falls off after two attempts. Claims clients call constantly because nobody updated them.
           </p>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
-            The Insurance Agent handles all of it automatically — renewal sequences, quote follow-up, claims updates, certificate requests — so your producers stay in front of buyers instead of behind on admin.
+            The Insurance Agent handles all of it automatically: renewal sequences, quote follow-up, claims updates, certificate requests, so your producers stay in front of buyers instead of behind on admin.
           </p>
         </div>
       </section>

@@ -20,9 +20,9 @@ const uc = {
     "Billing and engagement letter tracking",
   ],
   solutions: [
-    { title: "Document Collection", desc: "AI sends automated document request sequences, follows up on missing items, and confirms receipt — without your team chasing every client." },
+    { title: "Document Collection", desc: "AI sends automated document request sequences, follows up on missing items, and confirms receipt, without your team chasing every client." },
     { title: "Deadline Automation", desc: "Automatic deadline alerts for filing deadlines, extension requests, and client deliverables. No more manual calendar management." },
-    { title: "Client Communication", desc: "AI drafts status updates, answers common questions, and keeps clients informed — so your team handles only what requires professional judgment." },
+    { title: "Client Communication", desc: "AI drafts status updates, answers common questions, and keeps clients informed, so your team handles only what requires professional judgment." },
   ],
   results: [
     "Faster document turnaround from clients",

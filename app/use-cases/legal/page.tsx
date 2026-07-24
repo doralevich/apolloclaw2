@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines | Apollo[Claw]",
-  description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable hours — not admin.",
+  description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable hours, not admin.",
   openGraph: {
     title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines",
     description: "The Law Agent handles intake, deadline tracking, document summaries, and billing so your attorneys focus on billable work.",
@@ -17,7 +17,7 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/use-cases/legal#service",
-      name: "The Law Agent — AI for Law Firms",
+      name: "The Law Agent: AI for Law Firms",
       description: "AI assistant for law firms that automates client intake, deadline tracking, document summaries, and billing follow-up.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/use-cases/legal",
@@ -31,7 +31,7 @@ const jsonLd = {
         { "@type": "Question", name: "What case management systems does the Law Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Clio, MyCase, PracticePanther, Filevine, and most major legal practice management platforms." } },
         { "@type": "Question", name: "How does client intake work?", acceptedAnswer: { "@type": "Answer", text: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects the relevant facts, and schedules consultations with the right attorney." } },
         { "@type": "Question", name: "Is client data secure and ethically compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is configured to meet your firm's ethical obligations and bar requirements." } },
-        { "@type": "Question", name: "Will it replace my paralegals?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the first-touch admin work — intake, scheduling, status updates, document routing — so your paralegals focus on substantive case support." } },
+        { "@type": "Question", name: "Will it replace my paralegals?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive case support." } },
         { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
       ],
     },
@@ -39,7 +39,7 @@ const jsonLd = {
 };
 
 const features = [
-  { title: "Client Intake Automation", desc: "AI pre-screens inquiries, collects intake information, and routes qualified leads to the right attorney — before you touch it." },
+  { title: "Client Intake Automation", desc: "AI pre-screens inquiries, collects intake information, and routes qualified leads to the right attorney, before you touch it." },
   { title: "Deadline & Matter Tracking", desc: "Court dates, filing deadlines, and statute of limitations tracked automatically. Alerts go out before anything becomes urgent." },
   { title: "Research & Summary", desc: "Background on new matters, relevant case law, and document summaries delivered to your inbox. Research in minutes, not hours." },
   { title: "Document Organization", desc: "Incoming documents categorized, named, and filed automatically. Your team finds what they need without hunting through inboxes." },
@@ -92,7 +92,7 @@ const testimonials = [
   },
   {
     industry: "Corporate",
-    quote: "We do M&A work and due diligence requires reviewing hundreds of documents. The agent pre-processes everything — categorizes it, flags the key issues, and gives my associates a starting point instead of a blank page. Deal timelines got shorter.",
+    quote: "We do M&A work and due diligence requires reviewing hundreds of documents. The agent pre-processes everything: categorizes it, flags the key issues, and gives my associates a starting point instead of a blank page. Deal timelines got shorter.",
     role: "Corporate Partner",
     detail: "Mid-market M&A practice, New York",
   },
@@ -119,7 +119,7 @@ const faqs = [
   },
   {
     q: "Will it replace my paralegals?",
-    a: "No. It removes the first-touch admin work — intake, scheduling, status updates, document routing — so your paralegals focus on substantive legal support instead of coordination.",
+    a: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive legal support instead of coordination.",
   },
   {
     q: "How long does it take to get up and running?",
@@ -172,7 +172,7 @@ export default function LegalPage() {
             Client intake takes too long. Deadlines pile up across dozens of matters. Clients call for status updates nobody has time to give. Billing gaps eat into revenue that was already earned.
           </p>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
-            The Law Agent handles the administrative layer — intake, communication, deadline tracking, document routing — so your team spends time on legal work, not operational overhead.
+            The Law Agent handles the administrative layer: intake, communication, deadline tracking, document routing, so your team spends time on legal work, not operational overhead.
           </p>
         </div>
       </section>

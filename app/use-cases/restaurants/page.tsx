@@ -10,7 +10,7 @@ const uc = {
   label: "Restaurants & Food Service",
   title: "AI for",
   subtitle: "Restaurants",
-  description: "Apollo[Claw] helps restaurant operators automate the back-office work that never ends — so you can focus on the food and the floor.",
+  description: "Apollo[Claw] helps restaurant operators automate the back-office work that never ends, so you can focus on the food and the floor.",
   challenges: [
     "Reservation management and no-show follow-up",
     "Staff scheduling communicated via text chains",
@@ -20,7 +20,7 @@ const uc = {
     "Payroll and tip tracking labor-intensive",
   ],
   solutions: [
-    { title: "Reservation Automation", desc: "AI handles reservation confirmations, reminders, and waitlist management — no more last-minute no-shows without warning." },
+    { title: "Reservation Automation", desc: "AI handles reservation confirmations, reminders, and waitlist management, no more last-minute no-shows without warning." },
     { title: "Staff Coordination", desc: "Automated schedule distribution, shift swap facilitation, and daily briefings sent to your team through their preferred channels." },
     { title: "Customer Follow-Up", desc: "Post-visit thank-you messages, review requests, and loyalty touchpoints sent automatically after each service." },
   ],

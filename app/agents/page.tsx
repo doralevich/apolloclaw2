@@ -17,7 +17,7 @@ import { AGENT_TYPES } from "@/config/agent-types";
 export const metadata: Metadata = {
   title: "ApolloClaw Agents | Hire an AI Agent for Your Business",
   description:
-    "Seven specialized AI agents — CEO, CFO, Legal, Medical, Insurance, Real Estate, and Sales — built for your business, hosted and managed by ApolloClaw. $4,500 build + $189/mo hosting.",
+    "Seven specialized AI agents, CEO, CFO, Legal, Medical, Insurance, Real Estate, and Sales, built for your business, hosted and managed by ApolloClaw. $4,500 build + $189/mo hosting.",
 };
 
 const NAVY = "#0B1729";
@@ -145,7 +145,7 @@ export default function AgentsPage() {
             Hire an AI agent that works your business like a pro.
           </h1>
           <p className="font-body mt-7 max-w-2xl text-lg" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Seven specialized agents, each built around a role — trained on how that job is
+            Seven specialized agents, each built around a role, trained on how that job is
             actually done, connected to your tools, hosted and managed by ApolloClaw.
           </p>
           <p className="mt-6 font-mono text-sm" style={{ color: "#ff9c9c" }}>
@@ -221,7 +221,7 @@ export default function AgentsPage() {
 
         <p className="mx-auto mt-12 max-w-2xl text-center text-xs" style={{ color: "#6b7686" }}>
           Every ApolloClaw agent is a support and drafting tool, not a licensed professional.
-          For legal, financial, medical, or other binding decisions, bring in a qualified human —
+          For legal, financial, medical, or other binding decisions, bring in a qualified human;
           your agent will tell you the same thing.
         </p>
       </section>

@@ -10,7 +10,7 @@ const uc = {
   label: "Brokerage",
   title: "AI for",
   subtitle: "Brokers",
-  description: "The Brokers Agent keeps your client relationships, deal pipelines, and compliance workflows moving without the manual chase — so you spend your time advising, not administering.",
+  description: "The Brokers Agent keeps your client relationships, deal pipelines, and compliance workflows moving without the manual chase, so you spend your time advising, not administering.",
   challenges: [
     "Client requests and inquiries going unanswered for too long",
     "Deal pipeline updates requiring constant manual follow-up",

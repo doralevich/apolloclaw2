@@ -87,7 +87,7 @@ function Card({ children }: { children: React.ReactNode }) {
 function SectionHeader({ number, label }: { number: string; label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, paddingBottom: 12, borderBottom: `1px solid ${BDR}` }}>
-      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R }}>{number} — {label}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R }}>{number}: {label}</span>
     </div>
   );
 }
@@ -127,33 +127,33 @@ export default function SetupPage() {
   const copyItEmail = (platform: "google"|"ms365") => {
     const name = s1.first_name ? `${s1.first_name} ${s1.last_name}`.trim() : "[Client Name]";
     const company = "[Your Company Name]";
-    const googleEmail = `Subject: AI Assistant Integration Request — Google Workspace Access Needed
+    const googleEmail = `Subject: AI Assistant Integration Request for Google Workspace Access
 
 Hi [IT Contact Name],
 
 I am setting up an AI Chief of Staff through Apollo[Claw] (apolloclaw.ai) that will integrate with my Google Workspace account. Before the technical team completes installation, please confirm the following is in place.
 
-GOOGLE API SCOPES REQUIRED (my account only — OAuth 2.0)
+GOOGLE API SCOPES REQUIRED (my account only, OAuth 2.0)
 Email & Communication:
-- gmail.readonly — read incoming emails
-- gmail.send — send emails on my behalf
-- gmail.modify — label, archive, and organize messages
+- gmail.readonly: read incoming emails
+- gmail.send: send emails on my behalf
+- gmail.modify: label, archive, and organize messages
 
 Calendar & Scheduling:
-- calendar.events — read/create/update/delete calendar events
-- calendar.readonly — read calendar details for meeting briefs
+- calendar.events: read/create/update/delete calendar events
+- calendar.readonly: read calendar details for meeting briefs
 
 Drive & Documents:
-- drive.file — read/write files created by the assistant
-- docs — read/write Google Docs (proposals, SOWs, summaries)
-- spreadsheets — read/write Google Sheets (reports, trackers)
+- drive.file: read/write files created by the assistant
+- docs: read/write Google Docs (proposals, SOWs, summaries)
+- spreadsheets: read/write Google Sheets (reports, trackers)
 
 Contacts & People:
-- contacts.readonly — read contacts for relationship intelligence
-- people.readonly — read profile data for meeting prep
+- contacts.readonly: read contacts for relationship intelligence
+- people.readonly: read profile data for meeting prep
 
 Tasks:
-- tasks — read/write Google Tasks (task management and follow-ups)
+- tasks: read/write Google Tasks (task management and follow-ups)
 
 ADMIN CONSOLE ACTION REQUIRED (if your org restricts third-party OAuth apps)
 If your Google Workspace admin has restricted OAuth app access, you will need to whitelist the Apollo[Claw] integration. Please go to:
@@ -161,12 +161,12 @@ Admin Console > Security > API Controls > App Access Control
 and allow access for the Apollo[Claw] application, or set the trust level to "Trusted" for the OAuth client ID provided during setup.
 
 OUTBOUND NETWORK REQUIREMENTS (port 443 / HTTPS only)
-- api.anthropic.com — AI model (Claude)
-- api.telegram.org — delivery channel
-- api.tavily.com — web research
-- fathom.video — meeting intelligence
-- oauth2.googleapis.com / accounts.google.com — Google OAuth
-- www.googleapis.com — Google API calls
+- api.anthropic.com: AI model (Claude)
+- api.telegram.org: delivery channel
+- api.tavily.com: web research
+- fathom.video: meeting intelligence
+- oauth2.googleapis.com / accounts.google.com: Google OAuth
+- www.googleapis.com: Google API calls
 
 WHAT IT DOES NOT DO
 - Does not store OAuth tokens or credentials on any external server
@@ -178,7 +178,7 @@ WHAT IT DOES NOT DO
 INSTALLATION SCOPE
 - One dedicated Mac Mini assigned to ${name}
 - No software installed on any other machine
-- No VPN or inbound access required — outbound HTTPS only
+- No VPN or inbound access required, outbound HTTPS only
 
 Please advise if any of the above requires a formal app approval request or if there are additional steps needed for your environment. David Oralevich at Apollo[Claw] can speak directly with your team if helpful.
 
@@ -187,30 +187,30 @@ david@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
 Thank you,
 ${name}`;
 
-    const ms365Email = `Subject: AI Assistant Integration Request — Microsoft 365 Access Needed
+    const ms365Email = `Subject: AI Assistant Integration Request for Microsoft 365 Access
 
 Hi [IT Contact Name],
 
 I am setting up an AI Chief of Staff through Apollo[Claw] (apolloclaw.ai) that will integrate with my Microsoft 365 account. Before the technical team completes installation, please confirm the following is in place.
 
-MICROSOFT GRAPH API PERMISSIONS REQUIRED (my account only — delegated permissions)
+MICROSOFT GRAPH API PERMISSIONS REQUIRED (my account only, delegated permissions)
 Email & Communication:
-- Mail.ReadWrite — read, organize, and label incoming emails
-- Mail.Send — send emails on my behalf
+- Mail.ReadWrite: read, organize, and label incoming emails
+- Mail.Send: send emails on my behalf
 
 Calendar & Scheduling:
-- Calendars.ReadWrite — read/create/update/delete calendar events
+- Calendars.ReadWrite: read/create/update/delete calendar events
 
 Contacts & People:
-- Contacts.Read — read contacts for relationship intelligence
-- User.Read — basic profile (required for all Graph API connections)
+- Contacts.Read: read contacts for relationship intelligence
+- User.Read: basic profile (required for all Graph API connections)
 
 Files & Documents:
-- Files.ReadWrite — read/write OneDrive files (proposals, SOWs, summaries)
-- Sites.ReadWrite.All — read/write SharePoint document libraries (if company uses SharePoint for file storage)
+- Files.ReadWrite: read/write OneDrive files (proposals, SOWs, summaries)
+- Sites.ReadWrite.All: read/write SharePoint document libraries (if company uses SharePoint for file storage)
 
 Tasks:
-- Tasks.ReadWrite — read/write Microsoft To-Do / Planner tasks
+- Tasks.ReadWrite: read/write Microsoft To-Do / Planner tasks
 
 AZURE AD / ENTRA ID ACTION REQUIRED (if your org restricts app consent)
 If your organization has disabled user consent for OAuth applications or requires admin pre-approval, an IT administrator will need to grant tenant-wide admin consent for the Apollo[Claw] Microsoft Graph application.
@@ -221,15 +221,15 @@ Steps:
 3. Grant admin consent for the delegated permissions listed above
 4. If Conditional Access policies restrict external OAuth apps, add an exception for this application
 
-All permissions are delegated (user-level only) — no application-level or admin permissions are requested.
+All permissions are delegated (user-level only); no application-level or admin permissions are requested.
 
 OUTBOUND NETWORK REQUIREMENTS (port 443 / HTTPS only)
-- api.anthropic.com — AI model (Claude)
-- api.telegram.org — delivery channel
-- api.tavily.com — web research
-- fathom.video — meeting intelligence
-- login.microsoftonline.com — Microsoft OAuth
-- graph.microsoft.com — Microsoft Graph API calls
+- api.anthropic.com: AI model (Claude)
+- api.telegram.org: delivery channel
+- api.tavily.com: web research
+- fathom.video: meeting intelligence
+- login.microsoftonline.com: Microsoft OAuth
+- graph.microsoft.com: Microsoft Graph API calls
 
 WHAT IT DOES NOT DO
 - Does not store OAuth tokens or credentials on any external server
@@ -241,7 +241,7 @@ WHAT IT DOES NOT DO
 INSTALLATION SCOPE
 - One dedicated Mac Mini assigned to ${name}
 - No software installed on any other machine
-- No VPN or inbound access required — outbound HTTPS only
+- No VPN or inbound access required, outbound HTTPS only
 
 Apollo[Claw] can provide additional technical documentation, an app manifest, or join a call with your IT team if needed.
 
@@ -363,7 +363,7 @@ ${name}`;
             <Card>
               <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 12 }}>Step 1 of 2</p>
               <h2 style={{ fontSize: 22, fontWeight: 700, color: TX, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Let&apos;s get your AI ready to deploy.</h2>
-              <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: 0 }}>This first step covers the basics — who you are, what you want to call your AI, and your machine details. Credentials come next, and we&apos;ll walk you through each one.</p>
+              <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: 0 }}>This first step covers the basics: who you are, what you want to call your AI, and your machine details. Credentials come next, and we&apos;ll walk you through each one.</p>
             </Card>
             <Card>
               <SectionHeader number="01" label="Your Info" />
@@ -386,19 +386,19 @@ ${name}`;
                   <TSelect value={s1.timezone} onChange={v => updateS1("timezone", v)}>
                     <option value="">Select your timezone...</option>
                     <optgroup label="United States">
-                      <option value="America/New_York">Eastern Time (ET) — UTC-5/4</option>
-                      <option value="America/Chicago">Central Time (CT) — UTC-6/5</option>
-                      <option value="America/Denver">Mountain Time (MT) — UTC-7/6</option>
-                      <option value="America/Los_Angeles">Pacific Time (PT) — UTC-8/7</option>
-                      <option value="America/Anchorage">Alaska Time (AKT) — UTC-9/8</option>
-                      <option value="Pacific/Honolulu">Hawaii Time (HST) — UTC-10</option>
+                      <option value="America/New_York">Eastern Time (ET): UTC-5/4</option>
+                      <option value="America/Chicago">Central Time (CT): UTC-6/5</option>
+                      <option value="America/Denver">Mountain Time (MT): UTC-7/6</option>
+                      <option value="America/Los_Angeles">Pacific Time (PT): UTC-8/7</option>
+                      <option value="America/Anchorage">Alaska Time (AKT): UTC-9/8</option>
+                      <option value="Pacific/Honolulu">Hawaii Time (HST): UTC-10</option>
                     </optgroup>
                     <optgroup label="International">
-                      <option value="Europe/London">London (GMT/BST) — UTC+0/1</option>
-                      <option value="Europe/Paris">Central Europe (CET) — UTC+1/2</option>
-                      <option value="Asia/Jerusalem">Israel (IST) — UTC+2/3</option>
-                      <option value="Asia/Kolkata">India (IST) — UTC+5:30</option>
-                      <option value="Australia/Sydney">Australia Eastern (AEST) — UTC+10/11</option>
+                      <option value="Europe/London">London (GMT/BST): UTC+0/1</option>
+                      <option value="Europe/Paris">Central Europe (CET): UTC+1/2</option>
+                      <option value="Asia/Jerusalem">Israel (IST): UTC+2/3</option>
+                      <option value="Asia/Kolkata">India (IST): UTC+5:30</option>
+                      <option value="Australia/Sydney">Australia Eastern (AEST): UTC+10/11</option>
                     </optgroup>
                   </TSelect>
                 </FF>
@@ -419,7 +419,7 @@ ${name}`;
               </button>
               {isEnterprise && (
                 <Stack gap={16}>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 4 }}>IT Contact — Who Mike Reaches Out To</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 4 }}>IT Contact: Who Mike Reaches Out To</p>
                   <p style={{ fontSize: 12, color: TXM, marginBottom: 12, lineHeight: 1.6 }}>Once you submit, Mike will contact this person directly to coordinate the setup. This is your IT manager, MSP, or the person who handles system access at your company.</p>
                   <Row2>
                     <FF label="IT Contact Name">
@@ -438,10 +438,10 @@ ${name}`;
                     <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                       <ul style={{ paddingLeft: 18, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                       {[
-                        "OAuth app authorization — allowed, requires admin approval, or blocked",
+                        "OAuth app authorization: allowed, requires admin approval, or blocked",
                         "Outbound HTTPS (port 443) permitted to: api.anthropic.com, api.telegram.org, api.tavily.com, fathom.video",
-                        "Google Admin Console or Azure AD consent policy — approval process if required",
-                        "Managed device policy — any restrictions on installing software on the Mac Mini",
+                        "Google Admin Console or Azure AD consent policy: approval process if required",
+                        "Managed device policy: any restrictions on installing software on the Mac Mini",
                         "Procurement or vendor approval requirements (contracts, insurance, DPA)",
                         "Preferred timeline and IT availability for the pre-setup call"
                       ].map((item, i) => (
@@ -452,15 +452,15 @@ ${name}`;
                   </div>
                   <div style={{ borderTop: `1px solid ${BDR}`, paddingTop: 16 }}>
                     <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 8 }}>Pre-Written IT Department Email</p>
-                    <p style={{ fontSize: 12, color: TXM, marginBottom: 12, lineHeight: 1.6 }}>Copy and send this to your IT team. It covers exactly what Apollo[Claw] needs — API access, outbound endpoints, and what we do not touch. Choose your platform:</p>
+                    <p style={{ fontSize: 12, color: TXM, marginBottom: 12, lineHeight: 1.6 }}>Copy and send this to your IT team. It covers exactly what Apollo[Claw] needs: API access, outbound endpoints, and what we do not touch. Choose your platform:</p>
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                       <button type="button" onClick={() => copyItEmail("google")} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 6, border: `1px solid ${itEmailCopied === "google" ? "#16a34a" : BDR}`, background: itEmailCopied === "google" ? "rgba(22,163,74,0.1)" : SRF2, color: itEmailCopied === "google" ? "#16a34a" : TXM, fontFamily: "inherit", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.15s" }}>
                         <span style={{ fontSize: 16 }}>{itEmailCopied === "google" ? "✓" : "📋"}</span>
-                        {itEmailCopied === "google" ? "Copied!" : "Copy — Google Workspace"}
+                        {itEmailCopied === "google" ? "Copied!" : "Copy: Google Workspace"}
                       </button>
                       <button type="button" onClick={() => copyItEmail("ms365")} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 6, border: `1px solid ${itEmailCopied === "ms365" ? "#16a34a" : BDR}`, background: itEmailCopied === "ms365" ? "rgba(22,163,74,0.1)" : SRF2, color: itEmailCopied === "ms365" ? "#16a34a" : TXM, fontFamily: "inherit", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.15s" }}>
                         <span style={{ fontSize: 16 }}>{itEmailCopied === "ms365" ? "✓" : "📋"}</span>
-                        {itEmailCopied === "ms365" ? "Copied!" : "Copy — Microsoft 365"}
+                        {itEmailCopied === "ms365" ? "Copied!" : "Copy: Microsoft 365"}
                       </button>
                     </div>
                     <p style={{ fontSize: 11, color: TXD, marginTop: 8, lineHeight: 1.5 }}>The email includes required API scopes, outbound endpoint list, and what the assistant does not access. Edit [brackets] before sending.</p>
@@ -491,8 +491,8 @@ ${name}`;
               <Disclosure title="How to get your Anthropic API key">
                 <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
                 <Step>Click your name in the top right → <strong>API Keys</strong>.</Step>
-                <Step>Click <strong>Create Key</strong>, give it a name (e.g. <Code>My AI Assistant</Code>), and copy the key immediately — it won&apos;t be shown again.</Step>
-                <Step>The key starts with <Code>sk-ant-api03-...</Code> — paste it below.</Step>
+                <Step>Click <strong>Create Key</strong>, give it a name (e.g. <Code>My AI Assistant</Code>), and copy the key immediately; it won&apos;t be shown again.</Step>
+                <Step>The key starts with <Code>sk-ant-api03-...</Code>; paste it below.</Step>
                 <Step>You&apos;ll need to add a payment method and purchase credits. We recommend starting with $20–$50.</Step>
               </Disclosure>
               <FF label="Anthropic API Key" hint="Starts with sk-ant-..." required>
@@ -502,11 +502,11 @@ ${name}`;
             <Card>
               <SectionHeader number="02" label="Telegram Bot" />
               <Disclosure title="How to create your Telegram bot">
-                <Step>Open Telegram and search for <strong>@BotFather</strong> — the official blue-check bot.</Step>
+                <Step>Open Telegram and search for <strong>@BotFather</strong>, the official blue-check bot.</Step>
                 <Step>Start a chat and send the command <Code>/newbot</Code>.</Step>
-                <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>) — this is what users see.</Step>
-                <Step>Then it asks for a <strong>username</strong> — must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
-                <Step>BotFather gives you a <strong>Token</strong> — a long string like <Code>123456789:ABCdef...</Code> — copy it.</Step>
+                <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>); this is what users see.</Step>
+                <Step>Then it asks for a <strong>username</strong>: must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
+                <Step>BotFather gives you a <strong>Token</strong>, a long string like <Code>123456789:ABCdef...</Code>; copy it.</Step>
                 <Step>Paste both the Token and the Username (@) into the fields below.</Step>
               </Disclosure>
               <Stack gap={16}>
@@ -550,8 +550,8 @@ ${name}`;
               </Stack>
             </Card>
             <Card>
-              <SectionHeader number="2C" label="Tavily — Web Search & Research" />
-              <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Powers real-time research, competitive intelligence, and market monitoring. Get your free API key at <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>tavily.com</a> — takes 2 minutes.</p>
+              <SectionHeader number="2C" label="Tavily: Web Search & Research" />
+              <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Powers real-time research, competitive intelligence, and market monitoring. Get your free API key at <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>tavily.com</a>: takes 2 minutes.</p>
               <Stack gap={16}>
                 <FF label="Tavily API Key" hint="Format: tvly-...">
                   <TInput value={s2.tavily_api_key} onChange={v => updateS2("tavily_api_key", v)} placeholder="tvly-..." />
@@ -559,7 +559,7 @@ ${name}`;
               </Stack>
             </Card>
             <Card>
-              <SectionHeader number="2D" label="Calendly — Scheduling" />
+              <SectionHeader number="2D" label="Calendly: Scheduling" />
               <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Required for automated scheduling and calendar management. Leave blank if you don&apos;t use Calendly.</p>
               <Stack gap={16}>
                 <FF label="Calendly Link" hint="Your personal or team scheduling URL">
@@ -589,7 +589,7 @@ ${name}`;
             <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "14px 36px", borderRadius: 6, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
           </div>
         )}
-        <p style={{ fontSize: 12, color: TXD, textAlign: "center", marginTop: 32 }}>Apollo[Claw] — apolloclaw.ai — Your Business. Your Data. Your AI.</p>
+        <p style={{ fontSize: 12, color: TXD, textAlign: "center", marginTop: 32 }}>Apollo[Claw], apolloclaw.ai, Your Business. Your Data. Your AI.</p>
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: TXD }}>© {new Date().getFullYear()} Apollo[Claw]</span>

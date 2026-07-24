@@ -101,7 +101,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTyp
         </div>
         {phase === "slow" && (
           <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
-            Your agent is still being built in the background — it will appear in your dashboard
+            Your agent is still being built in the background; it will appear in your dashboard
             automatically once it&apos;s ready.
           </div>
         )}

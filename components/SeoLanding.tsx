@@ -192,13 +192,13 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
           <section key={i} style={{ background, color: INK }} className="relative overflow-hidden">
             <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-7xl">
               <ScrollReveal>
-                <div style={{ maxWidth: 760 }}>
+                <div style={{ maxWidth: 960 }}>
                   {section.kicker && <Kicker>[ {section.kicker} ]</Kicker>}
                   <Heading text={section.heading} accent={section.headingAccent} />
                   {"intro" in section && section.intro && (
                     <p
                       className="font-body"
-                      style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: MUTED, marginTop: 22, maxWidth: 640 }}
+                      style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: MUTED, marginTop: 22, maxWidth: 820 }}
                     >
                       {section.intro}
                     </p>
@@ -207,7 +207,7 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
               </ScrollReveal>
 
               {section.type === "prose" && (
-                <div style={{ marginTop: 24, maxWidth: 760 }}>
+                <div style={{ marginTop: 24, maxWidth: 960 }}>
                   {section.paragraphs.map((p, j) => (
                     <ScrollReveal key={j} delay={j * 80}>
                       <p

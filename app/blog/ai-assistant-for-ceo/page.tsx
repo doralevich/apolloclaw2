@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "What an AI Assistant for CEOs Actually Does (and Doesn't Do)",
   description:
-    "Learn how a CEO agent AI handles briefings, research, and follow-up — and where the CEO still makes the calls. CEO productivity AI, explained plainly.",
+    "Learn how a CEO agent AI handles briefings, research, and follow-up, and where the CEO still makes the calls. CEO productivity AI, explained plainly.",
   alternates: {
     canonical: "https://apolloclaw.ai/blog/ai-assistant-for-ceo",
   },
   openGraph: {
     title: "What an AI Assistant for CEOs Actually Does (and Doesn't Do)",
     description:
-      "Learn how a CEO agent AI handles briefings, research, and follow-up — and where the CEO still makes the calls. CEO productivity AI, explained plainly.",
+      "Learn how a CEO agent AI handles briefings, research, and follow-up, and where the CEO still makes the calls. CEO productivity AI, explained plainly.",
     url: "https://apolloclaw.ai/blog/ai-assistant-for-ceo",
     type: "article",
   },
@@ -106,13 +106,13 @@ export default function AiAssistantForCeoPost() {
             {/* Intro */}
             <p className="font-body text-base leading-relaxed mb-6" style={{ color: "rgba(11,23,41,0.75)" }}>
               Every week, more CEOs ask us the same question: &ldquo;If I deploy an{" "}
-              <strong>AI assistant for CEO</strong> workflows, what does it actually handle — and what do
+              <strong>AI assistant for CEO</strong> workflows, what does it actually handle, and what do
               I still own?&rdquo; It&apos;s the right question. And the honest answer is more nuanced than most
               vendors will tell you.
             </p>
             <p className="font-body text-base leading-relaxed mb-8" style={{ color: "rgba(11,23,41,0.75)" }}>
               This post is the unvarnished version. No hype. Just a clear line between what a{" "}
-              <strong>CEO agent AI</strong> genuinely does well and where human judgment — your judgment —
+              <strong>CEO agent AI</strong> genuinely does well and where human judgment, your judgment,
               is still the irreplaceable ingredient.
             </p>
 
@@ -137,7 +137,7 @@ export default function AiAssistantForCeoPost() {
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
               Before your first meeting, the AI has already read your calendar, triaged your inbox by
               priority, checked in on your open pipeline, and assembled a plain-language summary of
-              what needs your attention today — and what can wait. You walk in already oriented.
+              what needs your attention today, and what can wait. You walk in already oriented.
             </p>
 
             <h3
@@ -147,7 +147,7 @@ export default function AiAssistantForCeoPost() {
               Meeting Preparation and Follow-Through
             </h3>
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
-              An <strong>AI assistant for CEO</strong> doesn&apos;t just pull the agenda — it prepares the
+              An <strong>AI assistant for CEO</strong> doesn&apos;t just pull the agenda; it prepares the
               talking points, researches who you&apos;re meeting, flags relevant context from past
               interactions, and sets up post-meeting follow-ups before the call is over. Commitments made
               in Monday&apos;s all-hands are tracked through Friday without anyone reminding you.
@@ -160,7 +160,7 @@ export default function AiAssistantForCeoPost() {
               Executive Communication Drafting
             </h3>
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
-              The AI drafts — you decide. Investor updates, team-wide communications, client responses,
+              The AI drafts; you decide. Investor updates, team-wide communications, client responses,
               board summaries: all written in your voice, from your actual data, ready for your review.
               You read, adjust the tone, hit send. The blank page never stalls you again.
             </p>
@@ -186,7 +186,7 @@ export default function AiAssistantForCeoPost() {
             </h3>
             <p className="font-body text-base leading-relaxed mb-8" style={{ color: "rgba(11,23,41,0.75)" }}>
               Stalled deals get flagged. Deals that haven&apos;t been touched in 30 days get surfaced. The AI
-              monitors the CRM so you don&apos;t have to live in it — and your team knows that nothing falls
+              monitors the CRM so you don&apos;t have to live in it, and your team knows that nothing falls
               through without you seeing it first.
             </p>
 
@@ -195,12 +195,12 @@ export default function AiAssistantForCeoPost() {
               className="font-display font-bold mt-10 mb-4"
               style={{ fontSize: "clamp(20px, 2.2vw, 28px)", color: NAVY }}
             >
-              What the CEO Still Owns — No Exception
+              What the CEO Still Owns: No Exception
             </h2>
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
               Here&apos;s where the honest conversation starts. AI is genuinely powerful, and the gains in{" "}
               <strong>CEO productivity AI</strong> tools are real. But the decisions that define a company
-              aren&apos;t mechanical — and no well-built AI system pretends otherwise.
+              aren&apos;t mechanical, and no well-built AI system pretends otherwise.
             </p>
 
             <h3
@@ -211,8 +211,8 @@ export default function AiAssistantForCeoPost() {
             </h3>
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
               The AI can surface the data, synthesize the options, and flag the tradeoffs. But deciding
-              where the company goes next — which market to enter, which bet to make with the next round
-              of capital, which partnership to walk away from — that&apos;s yours. The AI makes you better
+              where the company goes next, which market to enter, which bet to make with the next round
+              of capital, which partnership to walk away from, that&apos;s yours. The AI makes you better
               informed. It doesn&apos;t make the call.
             </p>
 
@@ -224,7 +224,7 @@ export default function AiAssistantForCeoPost() {
             </h3>
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
               Who to promote. Who to let go. Which executive is right for the next phase of growth. AI
-              can give you data on performance, tenure, and team dynamics — but the judgment call on a
+              can give you data on performance, tenure, and team dynamics, but the judgment call on a
               person&apos;s trajectory belongs to you. Trust and judgment built over years of human context
               don&apos;t get delegated.
             </p>
@@ -238,7 +238,7 @@ export default function AiAssistantForCeoPost() {
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
               Your company&apos;s culture is downstream of what you tolerate and what you celebrate. An AI
               assistant for CEO work can draft the all-hands note, but it can&apos;t walk the floor, read the
-              room, or decide when the organization needs to hear from you directly — and when it doesn&apos;t.
+              room, or decide when the organization needs to hear from you directly, and when it doesn&apos;t.
             </p>
 
             <h3
@@ -250,8 +250,8 @@ export default function AiAssistantForCeoPost() {
             <p className="font-body text-base leading-relaxed mb-8" style={{ color: "rgba(11,23,41,0.75)" }}>
               Closing the enterprise deal. Repairing the board relationship after a bad quarter. Handling
               the acquisition conversation. The AI prepares you for those moments. But showing up in the
-              room — reading the person across from you, deciding how much to reveal, knowing when to
-              push — that&apos;s irreducibly human.
+              room, reading the person across from you, deciding how much to reveal, knowing when to
+              push, that&apos;s irreducibly human.
             </p>
 
             {/* Section 3 */}
@@ -268,14 +268,14 @@ export default function AiAssistantForCeoPost() {
               your job.
             </p>
             <p className="font-body text-base leading-relaxed mb-4" style={{ color: "rgba(11,23,41,0.75)" }}>
-              When a <strong>CEO agent AI</strong> absorbs the operational overhead — the briefings, the
-              drafts, the follow-ups, the monitoring — what comes back is the cognitive space to think at
+              When a <strong>CEO agent AI</strong> absorbs the operational overhead, the briefings, the
+              drafts, the follow-ups, the monitoring, what comes back is the cognitive space to think at
               the level your company needs from you. The organizations winning right now aren&apos;t just using
               AI to move faster. They&apos;re using it to free up the person at the top to actually lead.
             </p>
             <p className="font-body text-base leading-relaxed mb-8" style={{ color: "rgba(11,23,41,0.75)" }}>
               That&apos;s what a well-deployed <strong>AI assistant for CEO</strong> work delivers. Not a
-              replacement for your judgment — a force multiplier for it.
+              replacement for your judgment, a force multiplier for it.
             </p>
 
             {/* CTA Card */}
@@ -291,7 +291,7 @@ export default function AiAssistantForCeoPost() {
               </h3>
               <p className="font-body mb-6" style={{ color: "rgba(11,23,41,0.6)" }}>
                 Book a 30-minute consultation. We&apos;ll show you exactly how the CEO Agent would be
-                configured for your organization — your systems, your workflows, your priorities.
+                configured for your organization: your systems, your workflows, your priorities.
               </p>
               <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer">
                 <Button variant="cta" size="lg">Schedule Today</Button>

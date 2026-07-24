@@ -107,7 +107,7 @@ const ROLE_OPTIONS = ["Founder / Owner", "Executive (CEO / COO / CMO / CIO)", "D
 const INDUSTRY_OPTIONS = ["Construction / Trades", "Real Estate", "Legal", "Accounting / Finance", "Health & Wellness", "E-commerce / Retail", "Professional Services", "SaaS / Software", "Marketing / Ad Agency", "Other"];
 const TEAM_SIZE_OPTIONS = ["Just me", "2–10", "11–50", "51–200", "200+"];
 const TIME_OPTIONS = ["Email and messaging", "Meetings and scheduling", "Reporting / pulling numbers", "Client / customer follow-up", "Internal coordination (assigning work, checking status)", "Admin (invoices, contracts, forms, docs)"];
-const AI_HELP_OPTIONS = ["A digital executive assistant (email, calendar, prep)", "A sales / CRM assistant (leads, follow-ups, pipeline)", "An operations assistant (reporting, status, workflows)", "A support assistant (repetitive customer questions)", "Not sure yet — I want to see what's possible"];
+const AI_HELP_OPTIONS = ["A digital executive assistant (email, calendar, prep)", "A sales / CRM assistant (leads, follow-ups, pipeline)", "An operations assistant (reporting, status, workflows)", "A support assistant (repetitive customer questions)", "Not sure yet; I want to see what's possible"];
 export default function PreCall() {
   const [form, setForm] = useState({ name: "", email: "", company: "", role: "", roleOther: "", industry: "", industryOther: "", teamSize: "", timeGoesTo: [] as string[], timeOther: "", aiHelp: "", cloneJob: "", anythingElse: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -183,7 +183,7 @@ export default function PreCall() {
               {/* Basic Info */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R }}>1 — Basic Info</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R }}>1: Basic Info</span>
                 </div>
                 <Stack>
                   <Row2>
@@ -198,27 +198,27 @@ export default function PreCall() {
               <Divider />
               {/* Role */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>2 — Your Role</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>2: Your Role</p>
                 <RadioGroup label="What best describes your role?" options={ROLE_OPTIONS} value={form.role} onChange={v => set("role", v)} />
                 {form.role === "Other" && <div style={{ marginTop: 8 }}><TInput value={form.roleOther} onChange={v => set("roleOther", v)} placeholder="Describe your role…" /></div>}
               </div>
               <Divider />
               {/* Industry */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>3 — Your Industry</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>3: Your Industry</p>
                 <RadioGroup label="Which best fits your business?" options={INDUSTRY_OPTIONS} value={form.industry} onChange={v => set("industry", v)} />
                 {form.industry === "Other" && <div style={{ marginTop: 8 }}><TInput value={form.industryOther} onChange={v => set("industryOther", v)} placeholder="Describe your industry…" /></div>}
               </div>
               <Divider />
               {/* Team size */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>4 — Team Size</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>4: Team Size</p>
                 <RadioGroup label="Roughly how many people are on your team?" options={TEAM_SIZE_OPTIONS} value={form.teamSize} onChange={v => set("teamSize", v)} />
               </div>
               <Divider />
               {/* Time */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>5 — Where Your Time Actually Goes</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>5: Where Your Time Actually Goes</p>
                 <CheckGroup label="Where does most of your time go today?" hint="Pick up to 3" options={TIME_OPTIONS} value={form.timeGoesTo} onChange={v => set("timeGoesTo", v)} max={3} />
                 <div style={{ marginTop: 12 }}>
                   <TInput value={form.timeOther} onChange={v => set("timeOther", v)} placeholder="Other (optional)" />
@@ -227,13 +227,13 @@ export default function PreCall() {
               <Divider />
               {/* AI help */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>6 — What You&apos;re Hoping AI Can Help With</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>6: What You&apos;re Hoping AI Can Help With</p>
                 <RadioGroup label="Which sounds closest to what you want from AI right now?" options={AI_HELP_OPTIONS} value={form.aiHelp} onChange={v => set("aiHelp", v)} />
               </div>
               <Divider />
               {/* Clone */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>7 — If You Could Clone One Part of Your Job…</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>7: If You Could Clone One Part of Your Job…</p>
                 <FF label="What would you hand to an AI assistant?">
                   <TArea value={form.cloneJob} onChange={v => set("cloneJob", v)} placeholder="Tell us what you'd clone…" rows={4} />
                 </FF>
@@ -241,7 +241,7 @@ export default function PreCall() {
               <Divider />
               {/* Anything else */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>8 — Anything We Should Know Before We Talk?</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: R, marginBottom: 16 }}>8: Anything We Should Know Before We Talk?</p>
                 <FF label="Constraints, goals, or context you want us to keep in mind">
                   <TArea value={form.anythingElse} onChange={v => set("anythingElse", v)} placeholder="Timeline, budget, concerns, dreams…" rows={4} />
                 </FF>

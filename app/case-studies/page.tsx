@@ -38,7 +38,7 @@ const cases = [
   {
     agent: "The CFO Agent",
     industry: "Healthcare",
-    result: "Revenue cycle reporting — every morning.",
+    result: "Revenue cycle reporting, every morning.",
     quote: "Revenue cycle reporting was always a week behind. The CFO Agent runs it nightly. I walk in every morning knowing exactly where we are on collections, denials, and AR aging. No surprises.",
     role: "CFO, Multi-Site Medical Group",
     detail: "8 locations, Northeast",
@@ -77,7 +77,7 @@ const cases = [
     agent: "The Insurance Agent",
     industry: "Health & Benefits",
     result: "Twice the volume. No additional staff.",
-    quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar — reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
+    quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar: reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
     role: "Benefits Agency Principal",
     detail: "Group health and benefits, 200 employer groups",
     href: "/use-cases/insurance",

@@ -27,13 +27,13 @@ const data: SeoLandingData = {
   sections: [
     {
       type: "columns",
-      kicker: "The Problem",
-      heading: "Why Small Businesses Stay",
-      headingAccent: "Stuck",
+      kicker: "The Apollo Claw Difference",
+      heading: "Built to Get Small Businesses",
+      headingAccent: "Moving",
       items: [
-        { title: "Too Much Manual Work", desc: "Email, scheduling, follow-ups, and data entry eat the hours you should spend growing the business." },
-        { title: "No Internal AI Expertise", desc: "You know AI could help, but nobody on the team has time to figure out what to build or how." },
-        { title: "Off-the-Shelf Tools Hit a Ceiling", desc: "Generic apps do one thing. They do not connect your workflow end to end or adapt to how you actually work." },
+        { title: "Hours Back Every Week", desc: "Email, scheduling, follow-ups, and data entry get handled automatically, freeing you to focus on growing the business." },
+        { title: "We Bring the Expertise", desc: "You do not need anyone on staff who knows AI. We scope, build, and run it for you." },
+        { title: "One System, End to End", desc: "Your agent connects your whole workflow and adapts to how you actually work, not a generic app that only does one thing." },
       ],
     },
     {

@@ -3,7 +3,7 @@ import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "AI Assistant for CEOs | Automate Executive Workflows | Apollo[Claw]",
-  description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck — let your bot run the details.",
+  description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck; let your bot run the details.",
   openGraph: {
     title: "AI Assistant for CEOs | Automate Executive Workflows",
     description: "The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.",
@@ -18,7 +18,7 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/use-cases/ceo#service",
-      name: "The CEO Bot — AI Executive Assistant",
+      name: "The CEO Bot: AI Executive Assistant",
       description: "AI executive assistant for CEOs that handles briefings, communications, research, and follow-up automatically.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/use-cases/ceo",
@@ -29,7 +29,7 @@ const jsonLd = {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/use-cases/ceo#faq",
       mainEntity: [
-        { "@type": "Question", name: "What exactly is an AI bot?", acceptedAnswer: { "@type": "Answer", text: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up — without being asked." } },
+        { "@type": "Question", name: "What exactly is an AI bot?", acceptedAnswer: { "@type": "Answer", text: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up, without being asked." } },
         { "@type": "Question", name: "How is this different from using ChatGPT or a generic AI tool?", acceptedAnswer: { "@type": "Answer", text: "ChatGPT is a conversation tool. The CEO Bot is connected to your systems and configured for your workflows. It knows your voice, your priorities, your team. The difference is a calculator versus a chief of staff." } },
         { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
         { "@type": "Question", name: "Is my data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We build on your infrastructure wherever possible. All connections use least-privilege access and your data does not pass through servers we do not control." } },
@@ -93,7 +93,7 @@ const testimonials = [
   },
   {
     industry: "Real Estate",
-    quote: "I used to spend Sunday nights prepping for Monday. Now my brief is waiting for me at 7am — who closed, what's pending, which agents need attention. I walk into the week already knowing what matters. My team thinks I got sharper. I just got better information.",
+    quote: "I used to spend Sunday nights prepping for Monday. Now my brief is waiting for me at 7am, who closed, what's pending, which agents need attention. I walk into the week already knowing what matters. My team thinks I got sharper. I just got better information.",
     role: "Principal Broker & CEO",
     detail: "Boutique residential brokerage, 30 agents, Northeast",
   },
@@ -117,7 +117,7 @@ const testimonials = [
   },
   {
     industry: "Construction",
-    quote: "Running a construction company means you're putting out fires all day. The CEO Bot started giving me a morning brief every day — what's on the schedule, what's at risk, what needs a call. I stopped reacting and started running the business.",
+    quote: "Running a construction company means you're putting out fires all day. The CEO Bot started giving me a morning brief every day, what's on the schedule, what's at risk, what needs a call. I stopped reacting and started running the business.",
     role: "President & CEO",
     detail: "General contractor, $25M revenue, Long Island",
   },
@@ -126,7 +126,7 @@ const testimonials = [
 const faqs = [
   {
     q: "What exactly is an AI bot?",
-    a: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up — without being asked.",
+    a: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up, without being asked.",
   },
   {
     q: "How is this different from using ChatGPT or a generic AI tool?",
@@ -398,7 +398,7 @@ export default function CeoPage() {
               >
                 &ldquo;Every revolution has an early chapter. The executives who read it first write the rest of the story.&rdquo;
                 <footer className="font-mono text-xs mt-2 not-italic" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  David Oralevich, Founder &amp; Chief Visionary Officer — Apollo Claw
+                  David Oralevich, Founder &amp; Chief Visionary Officer, Apollo Claw
                 </footer>
               </blockquote>
             </div>

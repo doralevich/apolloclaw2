@@ -17,7 +17,7 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/use-cases/real-estate#service",
-      name: "The Real Estate Agent — AI for Real Estate Professionals",
+      name: "The Real Estate Agent: AI for Real Estate Professionals",
       description: "AI assistant for real estate agents that automates lead follow-up, listing management, showing coordination, and CRM updates.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/use-cases/real-estate",
@@ -39,7 +39,7 @@ const jsonLd = {
 };
 
 const features = [
-  { title: "Lead Follow-Up", desc: "AI follows up with new leads within minutes, qualifies their timeline and needs, and schedules showings — before they call someone else." },
+  { title: "Lead Follow-Up", desc: "AI follows up with new leads within minutes, qualifies their timeline and needs, and schedules showings, before they call someone else." },
   { title: "Listing Management", desc: "Listing descriptions written, status changes communicated, and syndication updates handled automatically across every platform." },
   { title: "Showing Coordination", desc: "Schedules confirmed, reminders sent, and feedback collected after every showing without you touching your calendar." },
   { title: "Transaction Coordination", desc: "Deadline tracking, document requests, and status updates keep transactions moving without constant manual oversight." },
@@ -92,7 +92,7 @@ const testimonials = [
   },
   {
     industry: "Property Management",
-    quote: "Tenant inquiries, maintenance requests, lease renewals — the agent handles the first response on all of it. My team only steps in when a decision is needed. Our response times are down to under five minutes.",
+    quote: "Tenant inquiries, maintenance requests, lease renewals, the agent handles the first response on all of it. My team only steps in when a decision is needed. Our response times are down to under five minutes.",
     role: "Owner, Property Management Company",
     detail: "350-unit portfolio, New York",
   },
@@ -115,7 +115,7 @@ const faqs = [
   },
   {
     q: "Will it sound like me or like a robot?",
-    a: "We train the agent on your communication style during onboarding. Most clients tell us their prospects cannot tell the difference — and some prefer it because it is always prompt and professional.",
+    a: "We train the agent on your communication style during onboarding. Most clients tell us their prospects cannot tell the difference, and some prefer it because it is always prompt and professional.",
   },
   {
     q: "How long does it take to get up and running?",
@@ -127,7 +127,7 @@ const faqs = [
   },
   {
     q: "Do I need a technical team to run this?",
-    a: "No. We handle all technical setup. You interact with your agent through the same tools you already use — email, text, or your CRM.",
+    a: "No. We handle all technical setup. You interact with your agent through the same tools you already use: email, text, or your CRM.",
   },
 ];
 
@@ -172,7 +172,7 @@ export default function RealEstatePage() {
             Leads go cold because follow-up is slow. Deals stall because coordination takes too long. CRM updates fall behind because there are never enough hours in the day.
           </p>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
-            The Real Estate Agent handles the repetitive work — follow-up, scheduling, status updates, CRM maintenance — so you can stay focused on what actually closes deals.
+            The Real Estate Agent handles the repetitive work, follow-up, scheduling, status updates, CRM maintenance, so you can stay focused on what actually closes deals.
           </p>
         </div>
       </section>

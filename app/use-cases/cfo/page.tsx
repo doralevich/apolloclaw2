@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "The CFO Agent: AI Financial Agent for Small Business",
-  description: "The CFO Agent is your AI financial advisor for small business — automating financial reporting, cash forecasts, and board prep so your team drives strategy.",
+  description: "The CFO Agent is your AI financial advisor for small business: automating financial reporting, cash forecasts, and board prep so your team drives strategy.",
   alternates: {
     canonical: "https://thecfoagent.ai",
   },
   openGraph: {
     title: "The CFO Agent: AI Financial Agent for Small Business",
-    description: "The CFO Agent is your AI financial advisor for small business — automated financial reporting AI that handles your close cycle so you focus on decisions.",
+    description: "The CFO Agent is your AI financial advisor for small business: automated financial reporting AI that handles your close cycle so you focus on decisions.",
     url: "https://apolloclaw.ai/use-cases/cfo",
     type: "website",
   },
@@ -20,7 +20,7 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/use-cases/cfo#service",
-      name: "The CFO Agent — AI Financial Intelligence",
+      name: "The CFO Agent: AI Financial Intelligence",
       description: "AI assistant for CFOs that automates financial reporting, cash forecasting, board prep, and month-end close.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/use-cases/cfo",
@@ -33,7 +33,7 @@ const jsonLd = {
       mainEntity: [
         { "@type": "Question", name: "What financial systems does the CFO Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to QuickBooks, NetSuite, Sage, Xero, and most major ERP platforms. We also work with Excel and Google Sheets-based reporting environments." } },
         { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
-        { "@type": "Question", name: "Will it replace my finance team?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the production work — report generation, data pulls, reconciliation tracking — so your team can focus on analysis and decisions." } },
+        { "@type": "Question", name: "Will it replace my finance team?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the production work, report generation, data pulls, reconciliation tracking, so your team can focus on analysis and decisions." } },
         { "@type": "Question", name: "Is our financial data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We connect using read-only API credentials wherever possible and use least-privilege access throughout. Your data does not pass through servers we do not control." } },
         { "@type": "Question", name: "Can it handle multi-entity reporting?", acceptedAnswer: { "@type": "Answer", text: "Yes. Multi-entity consolidation is one of the most common use cases. We configure the agent to handle subsidiaries, intercompany eliminations, and consolidated reporting." } },
       ],
@@ -118,7 +118,7 @@ const faqs = [
   },
   {
     q: "Will it replace my finance team?",
-    a: "No. It removes the production work — report generation, data pulls, reconciliation tracking — so your team can focus on analysis, interpretation, and strategic advice.",
+    a: "No. It removes the production work, report generation, data pulls, reconciliation tracking, so your team can focus on analysis, interpretation, and strategic advice.",
   },
   {
     q: "Is our financial data secure?",
@@ -154,7 +154,7 @@ export default function CfoPage() {
             Close Faster.<br />Report Smarter.
           </h1>
           <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 820, margin: "24px auto 0" }}>
-            The CFO Agent handles the recurring, time-intensive financial operations that consume your team — so your finance function spends less time producing reports and more time driving decisions.
+            The CFO Agent handles the recurring, time-intensive financial operations that consume your team; so your finance function spends less time producing reports and more time driving decisions.
           </p>
           <div style={{ marginTop: 36 }}>
             <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
@@ -175,7 +175,7 @@ export default function CfoPage() {
             Your finance team is spending too much time producing information and not enough time acting on it. Monthly close drags. Board prep is a scramble. Cash visibility lags by days.
           </p>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
-            The CFO Agent handles the production work — reports, forecasts, reconciliations, deck assembly — automatically and on schedule. Your team shows up to review, not to build.
+            The CFO Agent handles the production work, reports, forecasts, reconciliations, deck assembly, automatically and on schedule. Your team shows up to review, not to build.
           </p>
         </div>
       </section>
@@ -189,13 +189,13 @@ export default function CfoPage() {
           </h2>
           <div className="flex flex-col gap-4 font-body text-base leading-relaxed" style={{ color: "rgba(11,23,41,0.7)" }}>
             <p>
-              An <strong>AI CFO agent</strong> is a purpose-built AI system that takes over the recurring financial operations a CFO and finance team spend the most time on — monthly close support, variance reporting, cash flow forecasting, board pack assembly, and audit preparation. Unlike a generic AI chatbot, an AI CFO agent is connected to your actual systems: your ERP, your accounting platform, your reporting workflows. It runs on schedule, without being asked.
+              An <strong>AI CFO agent</strong> is a purpose-built AI system that takes over the recurring financial operations a CFO and finance team spend the most time on, monthly close support, variance reporting, cash flow forecasting, board pack assembly, and audit preparation. Unlike a generic AI chatbot, an AI CFO agent is connected to your actual systems: your ERP, your accounting platform, your reporting workflows. It runs on schedule, without being asked.
             </p>
             <p>
-              Think of it as an <strong>AI financial advisor for small business</strong> that never sleeps. It monitors actuals against budget, flags the variances that matter, drafts the narratives your leadership needs to make decisions, and prepares the materials before the meeting — not the night before. Small and mid-size businesses in particular gain the most: the analytical horsepower of a full finance team at a fraction of the cost.
+              Think of it as an <strong>AI financial advisor for small business</strong> that never sleeps. It monitors actuals against budget, flags the variances that matter, drafts the narratives your leadership needs to make decisions, and prepares the materials before the meeting, not the night before. Small and mid-size businesses in particular gain the most: the analytical horsepower of a full finance team at a fraction of the cost.
             </p>
             <p>
-              The CFO Agent from Apollo Claw is our <strong>automated financial reporting AI</strong> — onboarded on your specific close cycle, trained on your reporting style, and configured for the systems you already use. It doesn&apos;t replace your finance team. It removes the production work so your team can focus on the analysis and decisions that actually move the business.
+              The CFO Agent from Apollo Claw is our <strong>automated financial reporting AI</strong>, onboarded on your specific close cycle, trained on your reporting style, and configured for the systems you already use. It doesn&apos;t replace your finance team. It removes the production work so your team can focus on the analysis and decisions that actually move the business.
             </p>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function CfoPage() {
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What CFOs Say After 30 Days</h2>
-            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Finance leaders across industries are getting their time back — and their close cycles back on track.</p>
+            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Finance leaders across industries are getting their time back, and their close cycles back on track.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {testimonials.map((t, i) => (

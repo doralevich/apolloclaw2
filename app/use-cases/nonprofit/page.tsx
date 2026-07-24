@@ -22,7 +22,7 @@ const uc = {
   solutions: [
     { title: "Donor Engagement", desc: "Automated donor thank-you sequences, anniversary touches, and campaign follow-up so every donor feels seen without a full-time development officer." },
     { title: "Grant Research", desc: "AI researches matching grants, summarizes eligibility requirements, and tracks deadlines so your team applies to more opportunities." },
-    { title: "Volunteer Coordination", desc: "Scheduling, reminders, and shift confirmations handled automatically — your volunteers show up because they were reminded, not forgotten." },
+    { title: "Volunteer Coordination", desc: "Scheduling, reminders, and shift confirmations handled automatically; your volunteers show up because they were reminded, not forgotten." },
   ],
   results: [
     "Stronger donor retention with consistent outreach",
