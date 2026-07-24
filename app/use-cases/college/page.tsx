@@ -2,43 +2,43 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "AI for Colleges & Universities | Apollo Claw",
-  description: "Apollo Claw builds AI agents for college and university offices. Admissions, financial aid, and registrar support that reduces routine inquiry volume without adding staff.",
+  title: "AI for College Students | Apollo Claw",
+  description: "Apollo Claw's College Agent guides students from sophomore year of high school through college graduation: deadlines, coursework, applications, financial aid, and everything in between.",
   alternates: {
     canonical: "https://apolloclaw.ai/use-cases/college",
   },
   openGraph: {
-    title: "AI for Colleges & Universities | Apollo Claw",
-    description: "Admissions, financial aid, and registrar support that reduces routine inquiry volume without adding staff.",
+    title: "AI for College Students | Apollo Claw",
+    description: "One agent that guides students through every year of school, from sophomore year of high school through college graduation.",
     url: "https://apolloclaw.ai/use-cases/college",
     type: "website",
   },
 };
 
 const uc = {
-  label: "Higher Education",
+  label: "High School Through College",
   logo: { name: "College", accent: "#16A34A" },
   title: "AI for",
-  subtitle: "Colleges & Universities",
-  description: "Apollo[Claw] helps college and university offices manage the volume of student and family inquiries without adding headcount.",
+  subtitle: "College Students",
+  description: "Apollo[Claw] gives students one agent that guides them through every year of school, from sophomore year of high school through college graduation.",
   challenges: [
-    "Admissions inquiries piling up during peak application season",
-    "Financial aid questions repeated hundreds of times each semester",
-    "Registrar requests for transcripts and enrollment verification",
-    "Prospective student follow-up falling through the cracks",
-    "Faculty and staff drowning in routine administrative requests",
-    "Orientation and onboarding communication scattered across departments",
+    "Assignments, deadlines, and exams piling up across every class",
+    "College applications, essays, and financial aid forms all due at once senior year",
+    "Losing track of which classes and credits are actually needed to graduate",
+    "Professor and advisor emails going unanswered until it's too late",
+    "Choosing majors, courses, and extracurriculars with no clear long-term plan",
+    "Internship and career prep falling by the wayside during the school year",
   ],
   solutions: [
-    { title: "Admissions Support", desc: "AI answers routine applicant questions, tracks application status, and follows up with prospective students so nobody falls out of the funnel." },
-    { title: "Financial Aid & Registrar Assistance", desc: "Handles common financial aid and registrar questions, transcript requests, and enrollment verification, freeing staff for complex cases." },
-    { title: "Student & Family Communication", desc: "Consistent, timely responses to students and families across admissions, aid, and registrar questions, day or night." },
+    { title: "Deadline & Coursework Tracking", desc: "AI keeps every assignment, exam, and deadline organized across every class, from freshman year to senior year." },
+    { title: "Applications & Financial Aid", desc: "From college applications and essays to financial aid forms, the agent helps students stay ahead of every deadline and requirement." },
+    { title: "Guidance Through Every Year", desc: "One agent that carries context from sophomore year of high school through college graduation, helping students plan courses, credits, and next steps." },
   ],
   results: [
-    "Faster response time for prospective students and families",
-    "Less repetitive work for admissions, aid, and registrar staff",
-    "Fewer students lost to slow follow-up",
-    "Staff time redirected to complex, high-touch cases",
+    "Fewer missed deadlines and forgotten assignments",
+    "Smoother transitions from high school to college and year to year",
+    "Less stress around applications, financial aid, and course planning",
+    "More time for the things that actually matter to a student's future",
   ],
 };
 

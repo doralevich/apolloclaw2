@@ -10,7 +10,7 @@ const agentLinks = [
   { label: "The CFO Agent",         desc: "Cash forecasts, board prep, monthly close.",      icon: TrendingUp,    to: "/use-cases/cfo" },
   { label: "The Legal Agent",       desc: "Intake forms, research, document summaries.",     icon: Scale,         to: "/use-cases/legal" },
   { label: "The Medical Agent",     desc: "Patient triage, intake summaries, faster charting.", icon: Heart,      to: "/use-cases/health" },
-  { label: "The College Agent",     desc: "Admissions, financial aid, and registrar support.", icon: GraduationCap, to: "/use-cases/college" },
+  { label: "The College Agent",     desc: "Deadlines, coursework, and applications, guided from high school through college.", icon: GraduationCap, to: "/use-cases/college" },
   { label: "The Recruiting Agent",  desc: "Screening, scheduling, and candidate follow-up.", icon: UserSearch,    to: "/use-cases/recruiting" },
   { label: "The Real Estate Agent", desc: "Listings written, leads sorted, deals closed.",  icon: Home,          to: "/use-cases/real-estate" },
   { label: "The Insurance Agent",   desc: "Quotes, renewals, and follow-ups on autopilot.", icon: Shield,        to: "/use-cases/insurance" },

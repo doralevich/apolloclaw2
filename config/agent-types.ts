@@ -43,7 +43,7 @@ export const AGENT_TYPES: AgentType[] = [
     id: "college",
     label: "The College Agent",
     description:
-      "An AI agent for a student's whole college life — classes, deadlines, studying, professor emails, internships.",
+      "An AI agent that guides a student from sophomore year of high school through college graduation — classes, deadlines, applications, financial aid, and internships.",
     template: "college-agent",
     resources: { cpu: 2, memory: 4, disk: 12 },
     monthlyCapUsd: 5,
