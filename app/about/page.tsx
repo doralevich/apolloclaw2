@@ -3,16 +3,16 @@ import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
-  title: "About Apollo Claw | AI Consulting Firm Founded by Operators",
+  title: "About Apollo Claw | Custom AI Agents Built by an Operator",
   description:
-    "Apollo Claw was built by an operator, not a vendor. We serve businesses from SMBs to enterprise organizations and universities, staying through strategy, deployment, and beyond.",
+    "Apollo[Claw] builds custom AI agents for your business: connected to your tools, running 24/7, without a salary. Founded by an operator, not a vendor. Schedule a free discovery session.",
   alternates: {
     canonical: "https://apolloclaw.ai/about",
   },
   openGraph: {
-    title: "About Apollo Claw | AI Consulting Firm Founded by Operators",
+    title: "About Apollo Claw | Custom AI Agents Built by an Operator",
     description:
-      "Apollo Claw was built by an operator, not a vendor. We serve businesses from SMBs to enterprise organizations and universities, staying through strategy, deployment, and beyond.",
+      "Apollo[Claw] builds custom AI agents for your business: connected to your tools, running 24/7, without a salary. Founded by an operator, not a vendor. Schedule a free discovery session.",
     url: "https://apolloclaw.ai/about",
   },
 };
