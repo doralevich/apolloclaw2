@@ -17,7 +17,7 @@ import { AGENT_TYPES } from "@/config/agent-types";
 export const metadata: Metadata = {
   title: "ApolloClaw Agents | Hire an AI Agent for Your Business",
   description:
-    "Seven specialized AI agents, CEO, CFO, Legal, Medical, Insurance, Real Estate, and Sales, built for your business, hosted and managed by ApolloClaw. $4,500 build + $189/mo hosting.",
+    "Seven specialized AI agents, CEO, CFO, Legal, Medical, Insurance, Real Estate, and Sales, built for your business, hosted and managed by ApolloClaw.",
 };
 
 const NAVY = "#0B1729";
@@ -148,9 +148,6 @@ export default function AgentsPage() {
             Seven specialized agents, each built around a role, trained on how that job is
             actually done, connected to your tools, hosted and managed by ApolloClaw.
           </p>
-          <p className="mt-6 font-mono text-sm" style={{ color: "#ff9c9c" }}>
-            $4,500 one-time build&nbsp;&nbsp;+&nbsp;&nbsp;$189/mo hosting
-          </p>
         </div>
       </section>
 
@@ -187,15 +184,6 @@ export default function AgentsPage() {
                   ))}
                 </ul>
                 <div className="mt-6 border-t pt-4" style={{ borderColor: "rgba(11,23,41,0.08)" }}>
-                  <p className="text-sm font-semibold" style={{ color: NAVY }}>
-                    {t.externalUrl ? (
-                      t.priceLabel
-                    ) : (
-                      <>
-                        $4,500 build <span className="font-normal" style={{ color: "#6b7686" }}>+ $189/mo hosting</span>
-                      </>
-                    )}
-                  </p>
                   {t.externalUrl ? (
                     <a
                       href={t.externalUrl}

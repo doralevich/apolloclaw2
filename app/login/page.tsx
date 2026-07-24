@@ -130,6 +130,29 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
         </div>
 
+        {!sent && mode !== "reset" && (
+          <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+            <button
+              type="button"
+              onClick={() => switchMode("signin")}
+              className={`rounded-md py-2 text-sm font-medium transition-colors ${
+                mode === "signin" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode("signup")}
+              className={`rounded-md py-2 text-sm font-medium transition-colors ${
+                mode === "signup" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+        )}
+
         {sent ? (
           <div className="space-y-4">
             <div className="rounded-lg border bg-card p-6 text-center text-sm">
@@ -193,23 +216,13 @@ export default function LoginPage() {
               {loading ? copy.busy : copy.cta}
             </Button>
 
-            <div className="text-center text-sm text-muted-foreground">
-              {mode === "signin" && (
-                <button type="button" onClick={() => switchMode("signup")} className="hover:text-foreground">
-                  Don&apos;t have an account? <span className="font-medium text-foreground">Create one</span>
-                </button>
-              )}
-              {mode === "signup" && (
-                <button type="button" onClick={() => switchMode("signin")} className="hover:text-foreground">
-                  Already have an account? <span className="font-medium text-foreground">Sign in</span>
-                </button>
-              )}
-              {mode === "reset" && (
+            {mode === "reset" && (
+              <div className="text-center text-sm text-muted-foreground">
                 <button type="button" onClick={() => switchMode("signin")} className="hover:text-foreground">
                   Back to sign in
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </form>
         )}
       </div>
