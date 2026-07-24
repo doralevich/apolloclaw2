@@ -36,6 +36,7 @@ export const AGENT_PLANS: CatalogPlan[] = [
   { catalogKey: "insurance_plan", name: "The Insurance Agent", amountCents: 450000, agentTypeId: "insurance" },
   { catalogKey: "realestate_plan", name: "The Real Estate Agent", amountCents: 450000, agentTypeId: "realestate" },
   { catalogKey: "sales_plan", name: "The Sales Agent", amountCents: 450000, agentTypeId: "sales" },
+  { catalogKey: "recruiting_plan", name: "The Recruiting Agent", amountCents: 450000, agentTypeId: "recruiting" },
 ];
 
 /** Shared recurring hosting price — every agent purchase subscribes to this. */

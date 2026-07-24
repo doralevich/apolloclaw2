@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle, Mail, Calendar, Search, Code, FileText, Plug, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users, GraduationCap, UserSearch } from "lucide-react";
+import { CheckCircle, Mail, Calendar, Search, Code, FileText, Plug, Briefcase, Heart, TrendingUp, Home, Scale, Wrench, User, Target, Wallet, Shield, Calculator, Users, GraduationCap, UserSearch, Handshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import HeroAssistantInput from "@/components/HeroAssistantInput";
@@ -394,6 +394,7 @@ export default async function HomePage() {
               { icon: UserSearch,   category: "Recruiting",   title: "The Recruiting Agent",   desc: "Screening, scheduling, and candidate follow-up.",                    href: "/use-cases/recruiting" },
               { icon: Home,         category: "Real Estate",  title: "The Real Estate Agent",  desc: "New leads sorted, listings written, follow-ups closed automatically.", href: "/use-cases/real-estate" },
               { icon: Shield,       category: "Insurance",    title: "The Insurance Agent",    desc: "Quote requests, policy renewals, claims status, answered before clients ask.", href: "/use-cases/insurance" },
+              { icon: Handshake,    category: "Sales",        title: "The Sales Agent",        desc: "Outreach, follow-up, and pipeline hygiene on autopilot.", href: "/use-cases/sales" },
             ].map((agent, i) => {
               const Icon = agent.icon;
               return (

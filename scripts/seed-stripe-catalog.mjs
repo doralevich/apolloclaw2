@@ -31,6 +31,7 @@ const CATALOG = [
   { catalogKey: "insurance_plan", name: "The Insurance Agent", amountCents: 450000 },
   { catalogKey: "realestate_plan", name: "The Real Estate Agent", amountCents: 450000 },
   { catalogKey: "sales_plan", name: "The Sales Agent", amountCents: 450000 },
+  { catalogKey: "recruiting_plan", name: "The Recruiting Agent", amountCents: 450000 },
   { catalogKey: "apollo_hosting", name: "ApolloClaw Agent Hosting", amountCents: 18900, interval: "month" },
 ];
 

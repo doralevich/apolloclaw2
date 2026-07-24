@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Stethoscope,
   TrendingUp,
+  UserSearch,
   type LucideIcon,
 } from "lucide-react";
 import { AGENT_TYPES } from "@/config/agent-types";
@@ -17,7 +18,7 @@ import { AGENT_TYPES } from "@/config/agent-types";
 export const metadata: Metadata = {
   title: "ApolloClaw Agents | Hire an AI Agent for Your Business",
   description:
-    "Seven specialized AI agents, CEO, CFO, Legal, Medical, Insurance, Real Estate, and Sales, built for your business, hosted and managed by ApolloClaw.",
+    "Eight specialized AI agents, CEO, CFO, Legal, Medical, Insurance, Real Estate, Sales, and Recruiting, built for your business, hosted and managed by ApolloClaw.",
 };
 
 const NAVY = "#0B1729";
@@ -110,6 +111,16 @@ const SHOWCASE: Record<
       "Internships and career prep",
     ],
   },
+  recruiting: {
+    icon: UserSearch,
+    tagline: "Your AI recruiting coordinator",
+    bullets: [
+      "Screens resumes against role requirements",
+      "Coordinates interview scheduling end to end",
+      "Keeps every candidate warm with consistent follow-up",
+      "Drafts client and hiring-manager status updates",
+    ],
+  },
 };
 
 export default function AgentsPage() {
@@ -145,7 +156,7 @@ export default function AgentsPage() {
             Hire an AI agent that works your business like a pro.
           </h1>
           <p className="font-body mt-7 max-w-2xl text-lg" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Seven specialized agents, each built around a role, trained on how that job is
+            Eight specialized agents, each built around a role, trained on how that job is
             actually done, connected to your tools, hosted and managed by ApolloClaw.
           </p>
         </div>
