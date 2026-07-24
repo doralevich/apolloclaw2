@@ -234,55 +234,6 @@ section::before {
   }
 }
 
-/* Apollo range slider — used in /cost-estimator */
-.apollo-range {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  border-radius: 9999px;
-  outline: none;
-  cursor: pointer;
-  transition: background 150ms ease;
-}
-.apollo-range:focus-visible {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
-}
-.apollo-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 9999px;
-  background: var(--color-primary);
-  border: 2px solid var(--color-card);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  cursor: grab;
-  transition: transform 150ms ease;
-}
-.apollo-range::-webkit-slider-thumb:active {
-  cursor: grabbing;
-  transform: scale(1.1);
-}
-.apollo-range::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 9999px;
-  background: var(--color-primary);
-  border: 2px solid var(--color-card);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  cursor: grab;
-  transition: transform 150ms ease;
-}
-.apollo-range::-moz-range-thumb:active {
-  cursor: grabbing;
-  transform: scale(1.1);
-}
-.apollo-range::-moz-range-track {
-  background: transparent;
-  height: 6px;
-  border-radius: 9999px;
-}
-
 /* Hand cursor on interactive controls (native buttons aren't pointer by default). */
 @layer base {
   button:not(:disabled),
