@@ -17,18 +17,18 @@ export const metadata: Metadata = {
   },
 };
 
-const values = [
+const processSteps = [
   {
-    title: "Plain English Always",
-    desc: "If we can't explain it without jargon, we haven't understood it well enough. Every conversation starts with listening, not pitching.",
+    title: "1. Understand the Business",
+    desc: "Every engagement begins with understanding how your organization operates. We learn your workflows, systems, priorities, and the operational challenges that limit efficiency. The right AI solution starts with a clear understanding of the business.",
   },
   {
-    title: "Your Data Stays Yours",
-    desc: "We build on your infrastructure. Your business data never leaves your environment: not to a vendor, not to a cloud you don't control.",
+    title: "2. Build the Right Solution",
+    desc: "No two organizations work the same way. Every AI agent is designed around your processes, your technology, and your goals, integrating with the way your business already operates rather than forcing you to adapt to a generic platform.",
   },
   {
-    title: "Execution Over Advice",
-    desc: "Anyone can hand you a strategy deck. We stay until it's running. The measure of success is what changed in your business, not what we recommended.",
+    title: "3. Deliver Measurable Results",
+    desc: "Technology only creates value when it's adopted and producing results. We stay involved through deployment and refinement, ensuring your AI becomes part of your daily operations and delivers measurable improvements over time.",
   },
 ];
 
@@ -89,7 +89,7 @@ export default function AboutPage() {
             Built by Someone Who&apos;s{" "}
             <span style={{ color: "#D72B2B" }}>Been in the Room</span>
           </h1>
-          <p
+          <div
             className="font-body"
             style={{
               fontSize: "clamp(15px, 1.15vw, 18px)",
@@ -99,10 +99,18 @@ export default function AboutPage() {
               margin: "28px auto 0",
             }}
           >
-            Apollo[Claw] isn&apos;t a software company that stumbled into AI consulting.
-            It was built by an operator who watched every major technology wave arrive.
-            And learned, every time, that the advantage goes to whoever moves first.
-          </p>
+            <p style={{ marginBottom: 18 }}>
+              Most businesses are using AI like a search engine. Apollo[Claw] builds something
+              different: custom AI agents tailored to your operation, connected to your existing
+              tools, and handling the work that&apos;s costing you time and money. Running 24/7,
+              without a salary.
+            </p>
+            <p style={{ marginBottom: 18 }}>
+              Most clients recover 10–20 hours a week within the first month; that translates into
+              strategy, revenue, and growth.
+            </p>
+            <p>Built by an operator. Designed for real results.</p>
+          </div>
           <div style={{ marginTop: 36 }}>
             <a
               href="https://calendly.com/therealdaveo/apolloai"
@@ -120,7 +128,7 @@ export default function AboutPage() {
                 boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
               }}
             >
-              Schedule a Free Call
+              Schedule a Free Call →
             </a>
           </div>
         </div>
@@ -140,14 +148,29 @@ export default function AboutPage() {
               className="font-display leading-[1.05] tracking-tight"
               style={{ fontSize: "clamp(32px, 4.4vw, 56px)", fontWeight: 800, color: "#1A1A1A", margin: "0 0 22px" }}
             >
-              Let&apos;s Find Out What <span style={{ color: "#D72B2B" }}>AI Can Do</span> For You
+              Let&apos;s Find Out What an <span style={{ color: "#D72B2B" }}>AI Agent Can Do</span> for Your Business
             </h2>
-            <p
+            <div
               className="font-body"
-              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555", maxWidth: 580, margin: "0 auto 32px" }}
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555", maxWidth: 640, margin: "0 auto 32px" }}
             >
-              Every business is different. The best way to know where AI fits in yours is a direct conversation: no pitch, no pressure. Just an honest look at your operation and what&apos;s possible right now.
-            </p>
+              <p style={{ marginBottom: 18 }}>
+                Every organization operates differently. That&apos;s why every AI implementation begins
+                with understanding the business itself.
+              </p>
+              <p style={{ marginBottom: 18 }}>
+                We take the time to learn how your organization works: your workflows, systems,
+                decision-making, and the operational friction that slows your team down.
+              </p>
+              <p style={{ marginBottom: 18 }}>
+                From those insights, we design and deploy an AI agent built specifically for your
+                business, your people, and the way you work.
+              </p>
+              <p>
+                No generic software. No one-size-fits-all implementation. Just AI designed to solve
+                the problems that matter most.
+              </p>
+            </div>
             <a
               href="https://calendly.com/therealdaveo/apolloai"
               target="_blank"
@@ -252,19 +275,19 @@ export default function AboutPage() {
                   style={{ fontSize: "clamp(15px, 1.05vw, 16.5px)", lineHeight: 1.75, color: "#555555" }}
                 >
                   <p style={{ marginBottom: 18 }}>
-                    David Oralevich has spent his career at the intersection of business and technology, not as a spectator, but as a builder. He rode the first wave of the commercial Internet in the late 1990s, managing divisions and sourcing technology while most businesses were still learning to spell &quot;e-commerce.&quot;
+                    David Oralevich has spent his career at the intersection of business and
+                    technology. He launched his first digital agency in the late 1990s at the dawn
+                    of e-commerce.
                   </p>
                   <p style={{ marginBottom: 18 }}>
-                    In 2007 he founded Designs By Dave O., a digital agency that has spent nearly two decades helping businesses compete, grow, and adapt online. He knows what it costs to build something from nothing, and what it takes to keep it running.
-                  </p>
-                  <p style={{ marginBottom: 18 }}>
-                    Then came AI. Two years before the mainstream moment, David was already in the room, working directly alongside senior engineers at leading Israeli AI startups, watching the innovation happen before it hit the headlines. By the time ChatGPT became a household name, he had already built and deployed real systems.
-                  </p>
-                  <p style={{ marginBottom: 18 }}>
-                    What he saw next changed the trajectory entirely: the personal AI agent. Not a chatbot. Not a productivity tool. A system that operates inside your business, learns your operation, and works autonomously on your behalf, 24 hours a day, without a salary.
+                    Before ChatGPT became a household name, David worked directly alongside senior
+                    engineers at leading AI startups. By the time the world caught on, he had
+                    already built and deployed real systems.
                   </p>
                   <p>
-                    That&apos;s why he co-founded Apollo[Claw]. Not to sell software subscriptions. To sit across from business owners and executives, understand exactly what is eating their time and costing them money, and build the AI infrastructure that solves it. For real. Right now.
+                    Apollo[Claw] is the result. Not a software subscription. Not a chatbot. A
+                    custom-built AI infrastructure designed for your business and the way it
+                    actually runs.
                   </p>
                 </div>
               </div>
@@ -291,7 +314,7 @@ export default function AboutPage() {
                 className="inline-block font-mono uppercase mb-4"
                 style={{ fontSize: 11, letterSpacing: "0.16em", color: "rgba(255,255,255,0.5)" }}
               >
-                [ What We Believe ]
+                [ Our Process ]
               </span>
               <h2
                 className="font-display leading-[1.05] tracking-tight"
@@ -303,31 +326,31 @@ export default function AboutPage() {
           </ScrollReveal>
 
           <style>{`
-            #about-values-grid {
+            #about-process-grid {
               display: grid;
               gap: 20px;
               grid-template-columns: 1fr;
             }
             @media (min-width: 768px) {
-              #about-values-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+              #about-process-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
             }
-            .about-value-card {
+            .about-process-card {
               background: rgba(255,255,255,0.03);
               border: 1px solid rgba(255,255,255,0.08);
               border-radius: 12px;
               padding: 28px 26px;
               transition: border-color 0.18s, background 0.18s;
             }
-            .about-value-card:hover {
+            .about-process-card:hover {
               border-color: rgba(215,43,43,0.4);
               background: rgba(255,255,255,0.05);
             }
           `}</style>
 
-          <div id="about-values-grid">
-            {values.map((v, i) => (
-              <ScrollReveal key={v.title} delay={i * 100}>
-                <div className="about-value-card">
+          <div id="about-process-grid">
+            {processSteps.map((s, i) => (
+              <ScrollReveal key={s.title} delay={i * 100}>
+                <div className="about-process-card">
                   <div
                     style={{
                       width: 32,
@@ -341,13 +364,13 @@ export default function AboutPage() {
                     className="font-display"
                     style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", margin: "0 0 10px", letterSpacing: "-0.01em" }}
                   >
-                    {v.title}
+                    {s.title}
                   </h3>
                   <p
                     className="font-body"
                     style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.65)", margin: 0 }}
                   >
-                    {v.desc}
+                    {s.desc}
                   </p>
                 </div>
               </ScrollReveal>
@@ -364,7 +387,7 @@ export default function AboutPage() {
               className="font-display leading-[1.1] tracking-tight"
               style={{ fontSize: "clamp(28px, 4vw, 50px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
             >
-              Ready to find out what AI can{" "}
+              Ready to find out what AI can actually{" "}
               <span style={{ color: "#D72B2B" }}>do</span> for your business?
             </h2>
           </ScrollReveal>
@@ -375,11 +398,13 @@ export default function AboutPage() {
                 fontSize: "clamp(15px, 1.1vw, 17px)",
                 lineHeight: 1.65,
                 color: "#555555",
-                maxWidth: 500,
+                maxWidth: 560,
                 margin: "22px auto 0",
               }}
             >
-              A free 30-minute conversation. No pitch deck. No jargon. Just an honest look at where AI fits in your business right now.
+              A 30-minute discovery session to understand your business, identify opportunities,
+              and determine where AI can create the greatest operational impact. No sales
+              presentation. No technical jargon. Just a practical conversation.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={300}>
@@ -400,7 +425,7 @@ export default function AboutPage() {
                   boxShadow: "0 8px 24px rgba(215,43,43,0.28)",
                 }}
               >
-                Schedule Today
+                Schedule a Discovery Session
               </a>
             </div>
           </ScrollReveal>
