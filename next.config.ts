@@ -27,7 +27,12 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/pricing",
-        destination: "/cost-estimator",
+        destination: "/agents",
+        permanent: true,
+      },
+      {
+        source: "/cost-estimator",
+        destination: "/agents",
         permanent: true,
       },
     ];

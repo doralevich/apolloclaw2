@@ -19,7 +19,6 @@ const navLinks = [
 
 const resourceLinks = [
   { label: "AI 101", to: "/ai-101" },
-  { label: "Cost Estimator", to: "/cost-estimator" },
   { label: "FAQ", to: "/faq" },
   { label: "Security", to: "/security" },
   { label: "Membership", to: "/membership" },
