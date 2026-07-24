@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -126,8 +127,8 @@ export default function LoginPage() {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
         <div className="w-full max-w-sm space-y-6">
-          <div className="space-y-1 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">{branding.appName}</h1>
+          <div className="space-y-3 text-center">
+            <ApolloClawLogo className="mx-auto" height={36} />
             <p className="text-sm text-muted-foreground">
               {resetSent ? "We'll email you a link to set a new password." : "Reset your password."}
             </p>
@@ -185,8 +186,8 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
       <div className="w-full max-w-3xl space-y-8">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">{branding.appName}</h1>
+        <div className="space-y-3 text-center">
+          <ApolloClawLogo className="mx-auto" height={36} />
           <p className="text-sm text-muted-foreground">Log in or create an account to continue.</p>
         </div>
 
