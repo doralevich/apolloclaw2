@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, Shield, GraduationCap, UserSearch } from "lucide-react";
+import { Menu, X, ChevronDown, Briefcase, Heart, TrendingUp, Home, Scale, Shield, GraduationCap, UserSearch, Handshake } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 const agentLinks = [
@@ -14,6 +14,7 @@ const agentLinks = [
   { label: "The Recruiting Agent",  desc: "Screening, scheduling, and candidate follow-up.", icon: UserSearch,    to: "/use-cases/recruiting" },
   { label: "The Real Estate Agent", desc: "Listings written, leads sorted, deals closed.",  icon: Home,          to: "/use-cases/real-estate" },
   { label: "The Insurance Agent",   desc: "Quotes, renewals, and follow-ups on autopilot.", icon: Shield,        to: "/use-cases/insurance" },
+  { label: "The Sales Agent",       desc: "Outreach, follow-up, and pipeline hygiene on autopilot.", icon: Handshake, to: "/use-cases/sales" },
 ];
 
 const NAVY = "#0B1729";

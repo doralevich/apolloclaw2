@@ -122,6 +122,16 @@ export const AGENT_TYPES: AgentType[] = [
     icon: "TrendingUp",
     planKey: "sales_plan",
   },
+  {
+    id: "recruiting",
+    label: "Recruiting Agent",
+    description: "Resume screening, interview scheduling, candidate follow-up, and ATS hygiene.",
+    template: "recruiting-agent",
+    ...PAID_AGENT,
+    available: true,
+    icon: "UserSearch",
+    planKey: "recruiting_plan",
+  },
 ];
 
 export function getAgentType(id: string): AgentType | undefined {
