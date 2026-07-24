@@ -21,18 +21,18 @@ const data: SeoLandingData = {
     title: "AI Implementation",
     titleAccent: "Services",
     description:
-      "There is a difference between an AI consultant who hands you a roadmap and an AI implementation partner who builds the system. Apollo Claw does the second thing. We design, build, and deploy custom AI agents inside your existing business, then stay on to keep them working.",
+      "There is a difference between an AI consultant who hands you a roadmap and an AI implementation partner who builds the system. Apollo Claw is the partner who builds. We design, build, and deploy custom AI agents inside your existing business, then stay on as a white-glove partner to keep them performing as you grow.",
     cta: { label: "Book a Free Discovery Call", href: "/contact" },
   },
   sections: [
     {
       type: "prose",
       kicker: "What Implementation Means",
-      heading: "Advice Is Cheap. A",
-      headingAccent: "Working System Is Not.",
+      heading: "Strategy Is the Start. We Build the",
+      headingAccent: "System That Runs It.",
       paragraphs: [
-        "Most AI consulting stops at the recommendation: a strategy deck, a vendor shortlist, a workshop, and an invoice. You are left to build it yourself.",
-        "AI implementation is the opposite. As your implementation partner, we build the actual AI infrastructure inside your operation, connect it to the tools you already use, train your team on it, and stay on to make sure it keeps performing as your business changes.",
+        "Most AI consulting ends at the recommendation: a strategy deck, a vendor shortlist, and an invoice, leaving you to build it yourself.",
+        "Implementation is different. As your partner, we build the actual AI infrastructure inside your operation, connect it to the tools you already use, train your team on it, and stay on to make sure it keeps performing as your business changes.",
         "We build, and we stay. That is the difference.",
       ],
     },
@@ -82,9 +82,9 @@ const data: SeoLandingData = {
       heading: "Why Teams Pick Us Over the",
       headingAccent: "Big Firms",
       items: [
-        { title: "Boutique Speed", desc: "No layers, no handoffs. We move from discovery to a working system in weeks, not quarters." },
+        { title: "White-Glove, Boutique Speed", desc: "No layers, no handoffs. We move from discovery to a working system in weeks, not quarters." },
         { title: "Senior-Level Engagement", desc: "You work directly with the people building your system, not a rotating junior team." },
-        { title: "You Get the Builder", desc: "The person who scopes your project is the person who ships it and stands behind it." },
+        { title: "Direct Access to the Builder", desc: "The person who scopes your project is the same person who ships it and stands behind it." },
       ],
     },
     {
