@@ -36,6 +36,9 @@ export interface AgentRow {
   template: string | null;
   // Storefront agent-type id (config/agent-types.ts); null on rows that predate it.
   agent_type: string | null;
+  // Public image URL (Supabase Storage upload or an inline data: URI preset), set during
+  // onboarding personalization. Null until the customer picks one.
+  avatar_url: string | null;
   cpu: number | null;
   memory: number | null;
   disk: number | null;

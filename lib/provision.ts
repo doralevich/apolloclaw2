@@ -87,12 +87,25 @@ async function injectAfterProvision(agentId: string, type: AgentType, workspaceI
   const db = createAdminClient();
   const { data: setup } = await db
     .from("agent_setup")
-    .select("answers")
+    .select("answers, agent_name, avatar_url")
     .eq("workspace_id", workspaceId)
     .eq("agent_type", type.id)
     .maybeSingle();
-  if (!setup?.answers) return;
+  if (!setup) return;
 
+  // Onboarding can finish before the agent even exists (fast questionnaire, slow webhook);
+  // in that case provisionTypedAgent's own agent_setup lookup already set the name/avatar
+  // at creation time. This only has work to do for the OTHER race — the agent existed but
+  // its row was created (name defaulted, no avatar) before this row picked up a name/avatar
+  // — so only touch what's actually still missing.
+  const personalization: Record<string, string> = {};
+  if (setup.agent_name) personalization.name = setup.agent_name as string;
+  if (setup.avatar_url) personalization.avatar_url = setup.avatar_url as string;
+  if (Object.keys(personalization).length > 0) {
+    await db.from("agents").update(personalization).eq("agent37_id", agentId);
+  }
+
+  if (!setup.answers) return;
   const ok = await injectAgentFile(agentId, "USER.md", buildUserMd(type.label, setup.answers as Record<string, unknown>));
   if (ok) {
     await db
@@ -101,6 +114,23 @@ async function injectAfterProvision(agentId: string, type: AgentType, workspaceI
       .eq("workspace_id", workspaceId)
       .eq("agent_type", type.id);
   }
+}
+
+// Looked up before creation so a customer who finishes onboarding before the Stripe
+// webhook provisions their agent still gets their chosen name/avatar on the FIRST insert,
+// not a later update.
+async function lookupPendingPersonalization(
+  db: ReturnType<typeof createAdminClient>,
+  workspaceId: string,
+  typeId: string
+): Promise<{ name?: string; avatarUrl?: string }> {
+  const { data } = await db
+    .from("agent_setup")
+    .select("agent_name, avatar_url")
+    .eq("workspace_id", workspaceId)
+    .eq("agent_type", typeId)
+    .maybeSingle();
+  return { name: data?.agent_name ?? undefined, avatarUrl: data?.avatar_url ?? undefined };
 }
 
 // Resolve which Agent37 template to actually provision. A listTemplates hiccup is
@@ -158,11 +188,15 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
 
   const { template, fellBack } = await resolveProvisionTemplate(type, allowTemplateFallback);
 
+  // The customer's chosen name/avatar (Personalize step, components/onboard/OnboardingForm.tsx)
+  // may already be sitting in agent_setup if they finished onboarding before this ran.
+  const pending = await lookupPendingPersonalization(db, workspaceId, type.id);
+
   const agent = await agent37.createAgent({
     template,
     resources: { cpu: type.resources.cpu, memory: type.resources.memory, disk: type.resources.disk },
     user: userId,
-    name: input.name?.trim() || type.label,
+    name: input.name?.trim() || pending.name?.trim() || type.label,
     metadata: { app_workspace: workspaceId, agent_type: type.id },
     budget: { monthly_cap_micros: usdToMicros(type.monthlyCapUsd) },
   });
@@ -171,6 +205,7 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     agent37_id: agent.id,
     workspace_id: workspaceId,
     name: agent.name || null,
+    avatar_url: pending.avatarUrl || null,
     status: agent.status,
     template: agent.template,
     agent_type: type.id,

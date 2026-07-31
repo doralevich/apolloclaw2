@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Pencil, X } from "lucide-react";
+import { Bot, Check, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useAsyncAction } from "@/lib/useAsyncAction";
@@ -57,7 +57,22 @@ export function AgentNameCell({
   }
 
   return (
-    <div className="group/name max-w-[18rem]">
+    <div className="group/name flex max-w-[18rem] items-center gap-2.5">
+      {agent.avatar_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={agent.avatar_url}
+          alt=""
+          width={28}
+          height={28}
+          className="h-7 w-7 shrink-0 rounded-full object-cover"
+        />
+      ) : (
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary">
+          <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
       {editing ? (
         <div className="flex items-center gap-1">
           <Input
@@ -120,6 +135,7 @@ export function AgentNameCell({
       )}
       <div className="truncate font-mono text-xs text-muted-foreground" title={agent.agent37_id}>
         {agent.agent37_id}
+      </div>
       </div>
     </div>
   );
