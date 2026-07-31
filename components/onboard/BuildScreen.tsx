@@ -68,7 +68,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTyp
         if (mine) {
           if (mine.live_status === "running") {
             setPhase("ready");
-            setTimeout(() => { if (!cancelled) window.location.assign("/dashboard"); }, 1800);
+            setTimeout(() => { if (!cancelled) window.location.assign("/dashboard/start-here"); }, 1800);
             return;
           }
           setPhase("starting");
@@ -105,7 +105,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTyp
             automatically once it&apos;s ready.
           </div>
         )}
-        <a href="/dashboard" style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" ? R : "transparent", color: phase === "slow" ? "#fff" : TXM, border: phase === "slow" ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
+        <a href="/dashboard/start-here" style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" ? R : "transparent", color: phase === "slow" ? "#fff" : TXM, border: phase === "slow" ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
           Go to My Dashboard →
         </a>
       </div>

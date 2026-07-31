@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Bot, Check, ChevronsUpDown } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { isTransitional } from "@/lib/format";
 import type { MergedAgent } from "@/lib/types";
@@ -25,6 +25,18 @@ function agentLabel(agent: MergedAgent): string {
   return agent.name || agent.agent37_id;
 }
 
+function AgentAvatar({ agent }: { agent: MergedAgent | null }) {
+  if (agent?.avatar_url) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={agent.avatar_url} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover" />;
+  }
+  return (
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary">
+      <Bot className="h-3 w-3 text-muted-foreground" />
+    </span>
+  );
+}
+
 // Compact active-agent picker for the sidebar, directly below the WorkspaceSwitcher. Hidden
 // entirely when the workspace has no agents (nothing to scope Chat/Integrations/Credits to).
 export function AgentSwitcher() {
@@ -37,6 +49,7 @@ export function AgentSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="w-full justify-between font-normal" disabled={loading}>
           <span className="flex min-w-0 items-center gap-2">
+            <AgentAvatar agent={active} />
             <span
               className={cn("h-2 w-2 shrink-0 rounded-full", statusDotClass(active?.live_status))}
               aria-hidden
@@ -50,6 +63,7 @@ export function AgentSwitcher() {
         <DropdownMenuLabel>Agents</DropdownMenuLabel>
         {agents.map((a) => (
           <DropdownMenuItem key={a.agent37_id} onClick={() => setActiveId(a.agent37_id)}>
+            <AgentAvatar agent={a} />
             <span
               className={cn("h-2 w-2 shrink-0 rounded-full", statusDotClass(a.live_status))}
               aria-hidden
