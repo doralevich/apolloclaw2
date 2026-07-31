@@ -7,9 +7,10 @@ import { buildIntakeSections, escapeHtml, sectionsToHtml } from "@/lib/onboardin
 import { renderSectionsPdf } from "@/lib/pdf";
 import { buildUserMd, injectAgentFile } from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { uploadAgentAvatar } from "@/lib/supabase/avatar-storage";
 import { sendTelegram } from "@/lib/telegram";
 
-// POST /api/agent-setup { workspace_id?, agent_type, answers }
+// POST /api/agent-setup { workspace_id?, agent_type, answers, agent_name?, avatar_upload?, avatar_preset? }
 //
 // Stores the post-purchase questionnaire (the SAME questionnaire as the free /onboard
 // lead form — see components/onboard/OnboardingForm.tsx) and pushes it into the
@@ -60,9 +61,21 @@ function sanitizeAnswers(raw: unknown): Record<string, unknown> {
   return clean;
 }
 
+interface AvatarUpload { name: string; type: string; size: number; dataBase64: string }
+
 export const POST = route(async (request: Request) => {
   const { supabase, user } = await requireUser();
-  const body = await readJson<{ workspace_id?: string; agent_type?: string; answers?: Record<string, unknown> }>(request);
+  const body = await readJson<{
+    workspace_id?: string;
+    agent_type?: string;
+    answers?: Record<string, unknown>;
+    // Personalize step (components/onboard/OnboardingForm.tsx): a chosen agent name, and
+    // an avatar as EITHER an uploaded file (same base64 shape as the company-materials
+    // upload) OR a preset — already a full `data:image/svg+xml` URI, nothing to upload.
+    agent_name?: string;
+    avatar_upload?: AvatarUpload;
+    avatar_preset?: string;
+  }>(request);
 
   if (!body.agent_type) throw new ApiError(400, "invalid_request", "agent_type is required");
   const type = getAgentType(body.agent_type);
@@ -90,11 +103,25 @@ export const POST = route(async (request: Request) => {
   const rawUploads = Array.isArray(body.answers?.uploadedFiles) ? (body.answers!.uploadedFiles as Array<Record<string, unknown>>) : [];
   const answers = sanitizeAnswers(body.answers);
 
+  const agentName = body.agent_name?.trim().slice(0, 80) || undefined;
+  // A preset is already a small inline data: URI generated client-side (see AVATAR_PRESETS
+  // in OnboardingForm.tsx) — cap its length so nothing but a real preset/upload URL lands
+  // in this column.
+  const presetUrl =
+    body.avatar_preset && body.avatar_preset.startsWith("data:image/") && body.avatar_preset.length <= 20_000
+      ? body.avatar_preset
+      : undefined;
+  const avatarUrl = body.avatar_upload
+    ? (await uploadAgentAvatar(workspaceId, type.id, body.avatar_upload)) ?? undefined
+    : presetUrl;
+
   const { error } = await db.from("agent_setup").upsert(
     {
       workspace_id: workspaceId,
       agent_type: type.id,
       answers,
+      agent_name: agentName ?? null,
+      avatar_url: avatarUrl ?? null,
       submitted_by: user.id,
       injected_at: null,
       updated_at: new Date().toISOString(),
@@ -114,6 +141,14 @@ export const POST = route(async (request: Request) => {
     .maybeSingle();
 
   const agentId = agentRow?.agent37_id as string | undefined;
+  // The agent's own name/avatar columns are ours to write directly and instantly —
+  // unlike USER.md (which needs a retrying exec against the booting instance below).
+  if (agentId && (agentName || avatarUrl)) {
+    await db
+      .from("agents")
+      .update({ ...(agentName && { name: agentName }), ...(avatarUrl && { avatar_url: avatarUrl }) })
+      .eq("agent37_id", agentId);
+  }
   if (agentId) {
     const ws = workspaceId;
     after(async () => {

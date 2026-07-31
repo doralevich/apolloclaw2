@@ -239,6 +239,88 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
   );
 }
 // ════════════════════════════════════════════════════════════
+// PERSONALIZE (customer mode only — name + avatar for the agent itself, not the buyer)
+// ════════════════════════════════════════════════════════════
+const AGENT_NAME_SUGGESTIONS = ["Atlas", "Nova", "Sage", "Ember", "Juno", "Orion", "Vale", "Piper", "Rex", "Iris", "Max", "Lex"];
+const AVATAR_COLORS = ["#D72B2B", "#0B1729", "#2563EB", "#059669", "#7C3AED", "#EA580C"];
+
+// A small inline SVG "initials in a colored circle" avatar — no image asset dependency,
+// works for any name typed on the fly. Stored directly in agents.avatar_url; renders in an
+// <img src> exactly like an uploaded file's Supabase Storage URL would.
+function initialsAvatarDataUri(label: string, color: string): string {
+  const initials = (label.trim().match(/\b\w/g)?.slice(0, 2).join("") || label.trim().slice(0, 2) || "A").toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><circle cx="60" cy="60" r="60" fill="${color}"/><text x="60" y="62" text-anchor="middle" dominant-baseline="middle" font-family="Inter,Arial,sans-serif" font-size="46" font-weight="700" fill="#fff">${initials}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+export interface PersonalizeData { agentName: string; avatarFile: File | null; avatarPresetColor: string | null }
+
+function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: PersonalizeData) => void }) {
+  const [name, setName] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [presetColor, setPresetColor] = useState<string | null>(null);
+
+  const pickPreset = (color: string) => { setPresetColor(color); setAvatarFile(null); setAvatarPreview(null); };
+  const handleUpload = (file: File | null) => {
+    if (!file) return;
+    setAvatarFile(file);
+    setPresetColor(null);
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+  const surprise = () => {
+    const pool = AGENT_NAME_SUGGESTIONS.filter((n) => n !== name);
+    setName(pool[Math.floor(Math.random() * pool.length)]);
+  };
+
+  const previewUrl = avatarPreview || initialsAvatarDataUri(name.trim() || agentLabel, presetColor || AVATAR_COLORS[0]);
+  const chipStyle: React.CSSProperties = { background: SRF2, border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 12.5, padding: "6px 14px", borderRadius: 20, cursor: "pointer" };
+
+  return (
+    <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <div style={{ width: "100%", maxWidth: 560, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", textAlign: "center" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={previewUrl} alt="Agent avatar preview" width={84} height={84} style={{ borderRadius: "50%", margin: "0 auto 20px", display: "block" }} />
+        <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 8px" }}>Make it yours</h2>
+        <p style={{ fontSize: 14, color: TXM, margin: "0 0 28px" }}>Give your {agentLabel} a name and a face. Totally optional — skip either and we&apos;ll use a default.</p>
+
+        <div style={{ textAlign: "left", marginBottom: 24 }}>
+          <FF label="What would you like to call your agent?">
+            <TInput value={name} onChange={setName} placeholder={agentLabel} />
+          </FF>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+            {AGENT_NAME_SUGGESTIONS.slice(0, 3).map((n) => (
+              <button key={n} type="button" onClick={() => setName(n)} style={chipStyle}>{n}</button>
+            ))}
+            <button type="button" onClick={surprise} style={chipStyle}>Surprise me</button>
+          </div>
+        </div>
+
+        <div style={{ textAlign: "left" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXM, marginBottom: 10 }}>Avatar</p>
+          <label style={{ display: "inline-block", border: `1px dashed rgba(0,0,0,0.25)`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", background: SRF2, color: TXM, fontSize: 13, fontWeight: 700 }}>
+            Upload an image
+            <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { handleUpload(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
+          </label>
+          <p style={{ fontSize: 11, color: TXD, margin: "10px 0 8px" }}>Or pick a color</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            {AVATAR_COLORS.map((c) => {
+              const on = presetColor === c && !avatarFile;
+              return <button key={c} type="button" onClick={() => pickPreset(c)} aria-label={`Pick ${c}`} style={{ width: 32, height: 32, borderRadius: "50%", background: c, border: on ? `2px solid ${TX}` : "2px solid transparent", boxShadow: on ? `0 0 0 2px ${SRF}, 0 0 0 3px ${TX}` : "none", cursor: "pointer" }} />;
+            })}
+          </div>
+        </div>
+
+        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor })} style={{ width: "100%", marginTop: 28, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
+          Continue →
+        </button>
+      </div>
+    </div>
+  );
+}
+// ════════════════════════════════════════════════════════════
 // SHELL
 // ════════════════════════════════════════════════════════════
 function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast, submitLabel }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string }) {
@@ -608,19 +690,37 @@ export interface OnboardingFormProps {
 
 export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, justPaid }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
-  const [phase, setPhase] = useState<"splash" | "gate" | "form" | "submitting" | "done" | "building">(
+  const [phase, setPhase] = useState<"splash" | "gate" | "personalize" | "form" | "submitting" | "done" | "building">(
     isCustomer && justPaid ? "splash" : "gate"
   );
   const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", linkedin: "", company: "" });
+  const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: "", avatarFile: null, avatarPresetColor: null });
   const [buildingWorkspaceId, setBuildingWorkspaceId] = useState<string | undefined>(workspaceId);
-  const handleGate = (info: GateData) => { setGate(info); setPhase("form"); };
+  // Naming/avatar is a paid-customer thing (matches The College Agent: personalization
+  // happens post-payment, never on the free lead form).
+  const handleGate = (info: GateData) => { setGate(info); setPhase(isCustomer ? "personalize" : "form"); };
+  const handlePersonalize = (d: PersonalizeData) => { setPersonalize(d); setPhase("form"); };
   const handleDone = async (data: Record<string, unknown>, trackType: string) => {
     setPhase("submitting");
     try {
       if (isCustomer) {
+        let avatar_upload: Awaited<ReturnType<typeof readFileAsBase64>> | undefined;
+        let avatar_preset: string | undefined;
+        if (personalize.avatarFile) {
+          try { avatar_upload = await readFileAsBase64(personalize.avatarFile); } catch { avatar_upload = undefined; }
+        } else if (personalize.avatarPresetColor) {
+          avatar_preset = initialsAvatarDataUri(personalize.agentName || agentLabel || "Agent", personalize.avatarPresetColor);
+        }
         const res = await apiFetch<{ workspace_id?: string }>("/api/agent-setup", {
           method: "POST",
-          body: JSON.stringify({ workspace_id: workspaceId, agent_type: agentTypeId, answers: data }),
+          body: JSON.stringify({
+            workspace_id: workspaceId,
+            agent_type: agentTypeId,
+            answers: data,
+            agent_name: personalize.agentName || undefined,
+            avatar_upload,
+            avatar_preset,
+          }),
         });
         setBuildingWorkspaceId(workspaceId || res.workspace_id);
         setPhase("building");
@@ -637,6 +737,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   };
   if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase("gate")} />;
   if (phase === "gate") return <Gatekeeper onPass={handleGate} />;
+  if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
   if (phase === "submitting") return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
       <div style={{ width: 48, height: 48, border: `3px solid ${SRF2}`, borderTopColor: R, borderRadius: "50%", animation: "oc-spin 1s linear infinite", marginBottom: 24 }} />

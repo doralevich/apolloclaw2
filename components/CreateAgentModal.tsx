@@ -33,8 +33,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { Agent } from "@/lib/types";
 
 // Registry icons are stored as lucide icon NAMES (plain strings, so the config stays
@@ -50,13 +48,14 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   TrendingUp,
 };
 
-// Self-serve "Create Agent" dialog: one card per registry type and an optional name.
-// Free types (College Agent) POST /api/agents { workspace_id, type, name } directly; PAID
-// types (planKey set) POST /api/build/checkout and redirect to Stripe — the webhook
-// provisions after payment. The server enforces the real gates (membership, entitlement,
-// payment, one-per-type cap) — the UI just mirrors them: types the workspace already has
-// render disabled with an "Already created" hint, and coming-soon types are never
-// selectable.
+// Self-serve "Create Agent" dialog: one card per registry type. Free types (College
+// Agent) POST /api/agents { workspace_id, type } directly; PAID types (planKey set) POST
+// /api/build/checkout and redirect to Stripe — the webhook provisions after payment.
+// Naming/avatar personalization happens post-payment, in the onboarding questionnaire's
+// Personalize step (components/onboard/OnboardingForm.tsx) — not here. The server
+// enforces the real gates (membership, entitlement, payment, one-per-type cap) — the UI
+// just mirrors them: types the workspace already has render disabled with an "Already
+// created" hint, and coming-soon types are never selectable.
 export function CreateAgentModal({
   onCreated,
   triggerVariant,
@@ -72,7 +71,6 @@ export function CreateAgentModal({
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const [name, setName] = useState("");
 
   // Types this workspace already runs — drives the "Already created" state. Matched by
   // agent_type when the row has one, with template as the legacy fallback (paid agents can
@@ -93,7 +91,6 @@ export function CreateAgentModal({
     setOpen(next);
     if (next) {
       // Fresh form on every open, preselecting the first type that can actually be created.
-      setName("");
       setSelected(AGENT_TYPES.find((t) => t.available && !alreadyHas(t))?.id ?? null);
     }
   }
@@ -111,11 +108,7 @@ export function CreateAgentModal({
       if (selectedType.planKey) {
         const { url } = await apiFetch<{ url: string }>("/api/build/checkout", {
           method: "POST",
-          body: JSON.stringify({
-            workspace_id: current.id,
-            type: selectedType.id,
-            name: name.trim() || undefined,
-          }),
+          body: JSON.stringify({ workspace_id: current.id, type: selectedType.id }),
         });
         window.location.assign(url);
         return;
@@ -123,11 +116,7 @@ export function CreateAgentModal({
 
       const created = await apiFetch<Agent>("/api/agents", {
         method: "POST",
-        body: JSON.stringify({
-          workspace_id: current.id,
-          type: selectedType.id,
-          name: name.trim() || undefined,
-        }),
+        body: JSON.stringify({ workspace_id: current.id, type: selectedType.id }),
       });
       toast.success(`${created.name || selectedType.label} is provisioning`);
       setOpen(false);
@@ -199,18 +188,6 @@ export function CreateAgentModal({
               </button>
             );
           })}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="create-agent-name">Name (optional)</Label>
-          <Input
-            id="create-agent-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={selectedType?.label ?? "Agent name"}
-            maxLength={80}
-            disabled={!selectedType}
-          />
         </div>
 
         <DialogFooter>
