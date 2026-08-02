@@ -106,11 +106,49 @@ function Button({
   );
 }
 
+function ReadinessMark({ item }: { item: { label: string; done: boolean | "partial"; note: string } }) {
+  const color = item.done === true ? "#1E8E3E" : item.done === "partial" ? "#B8860B" : LABEL;
+  const mark = item.done === true ? "✓" : item.done === "partial" ? "◑" : "○";
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+      <span style={{ color, fontWeight: 800, fontSize: 15, lineHeight: 1.6, flexShrink: 0, width: 16 }}>
+        {mark}
+      </span>
+      <span>
+        <strong style={{ color: INK, fontSize: 14.5 }}>{item.label}</strong>
+        <br />
+        <span style={{ fontSize: 13, color: MUTED }}>{item.note}</span>
+      </span>
+    </div>
+  );
+}
+
 const INFRA = [
   { name: "Vercel", role: "Application hosting and delivery" },
   { name: "Supabase", role: "Database, authentication, and storage" },
   { name: "Stripe", role: "Payment processing. Card data never touches our systems." },
   { name: "Anthropic (Claude)", role: "The AI model layer, enterprise-grade and privacy-respecting" },
+];
+
+// Vendor-readiness checklist, the same shape IT and procurement teams see in our vendor
+// security packet, just surfaced directly on the page instead of gated behind a request.
+const READINESS: { label: string; done: boolean | "partial"; note: string }[] = [
+  { label: "Written security policies", done: true, note: "InfoSec, access control, incident response, data retention" },
+  { label: "Incident response plan", done: true, note: "Documented, with a breach-notification commitment" },
+  { label: "Data export & deletion", done: true, note: "Self-service export, full deletion on request" },
+  { label: "Encryption in transit and at rest", done: true, note: "TLS 1.3, AES-256, keys held outside the data they protect" },
+  { label: "Per-user data isolation", done: true, note: "Row-level security, verified on every table" },
+  { label: "Application hardening", done: true, note: "Security headers, content-security policy, rate limiting" },
+  { label: "Payment security", done: true, note: "Stripe, PCI DSS SAQ-A scope, card data never touches our systems" },
+  { label: "MFA on every admin account", done: true, note: "Plus an enforced second factor before privileged actions" },
+  { label: "Dependency & secret scanning", done: true, note: "Automated, on every code change" },
+  { label: "Audit logging", done: true, note: "Sensitive administrative and data-access actions" },
+  { label: "Cookie & consent banner", done: true, note: "Consent-gated analytics, GDPR / CCPA" },
+  { label: "Published privacy policy", done: true, note: "Available on request" },
+  { label: "HECVAT responses (education)", done: true, note: "Pre-filled and ready to submit" },
+  { label: "FERPA data-processing agreement", done: true, note: "Available for education clients" },
+  { label: "SOC 2", done: "partial", note: "Type I complete, Type II on track for September 2026" },
+  { label: "Third-party penetration test", done: false, note: "On our roadmap, ask for current status" },
 ];
 
 const COMPLIANCE = [
@@ -174,8 +212,10 @@ export default function SecurityPage() {
               <Card title="Access Controls">
                 Apollo[Claw] operates on a least-privilege model. Your agent only has access to the specific
                 tools and data it needs to perform its defined tasks, and access is reviewed when scope
-                changes. Every administrative and infrastructure account requires multi-factor authentication,
-                with a second factor enforced before privileged actions.
+                changes. Row-level security isolates every account&apos;s data from every other account&apos;s at the
+                database layer. Every administrative and infrastructure account requires multi-factor
+                authentication, with an enforced authenticator-app second factor before any privileged
+                admin action.
               </Card>
             </ScrollReveal>
             <ScrollReveal delay={200}>
@@ -196,10 +236,11 @@ export default function SecurityPage() {
             <Card title="Governance & Operational Security">
               Security is not just architecture, it is discipline. Apollo[Claw] operates under written
               policies covering information security, access control, incident response, and data retention.
-              We maintain an incident-response plan with a breach-notification commitment, log sensitive
-              administrative actions, and continuously scan our code for vulnerabilities and exposed secrets.
-              Where we host or manage components, backups run with point-in-time recovery and are encrypted
-              at rest.
+              Every public-facing endpoint is rate-limited, and every response carries standard security
+              headers and a content-security policy. We maintain an incident-response plan with a
+              breach-notification commitment, log sensitive administrative actions, and continuously scan our
+              code for vulnerabilities and exposed secrets. Where we host or manage components, backups run
+              with point-in-time recovery and are encrypted at rest.
             </Card>
           </ScrollReveal>
         </div>
@@ -281,9 +322,37 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* FOR IT & PROCUREMENT — white */}
+      {/* FOR IT & PROCUREMENT — white, checklist + contact */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
+          <ScrollReveal>
+            <Kicker>[ Vendor Readiness ]</Kicker>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
+            >
+              What Institutional Buyers Check For
+            </h2>
+            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
+              The same checklist your IT and procurement team will run through. Where something is still
+              in progress, we say so, plainly.
+            </p>
+          </ScrollReveal>
+          <div
+            style={{
+              display: "grid",
+              gap: 18,
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+              marginBottom: 48,
+            }}
+          >
+            {READINESS.map((item, i) => (
+              <ScrollReveal key={item.label} delay={i * 30}>
+                <ReadinessMark item={item} />
+              </ScrollReveal>
+            ))}
+          </div>
+
           <ScrollReveal>
             <Card title="For IT & Procurement">
               <p style={{ margin: "0 0 20px" }}>

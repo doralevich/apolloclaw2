@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 const cases = [
   // CEO
   {
-    agent: "The CEO Agent",
     industry: "Insurance",
     result: "Renewal retention up. Zero micromanaging.",
     quote: "We were losing renewals not because of price but because nobody followed up in time. The CEO Agent now flags every policy 90 days out, drafts the outreach, and makes sure my producers actually send it. Retention is up and I stopped micromanaging the process.",
@@ -17,7 +16,6 @@ const cases = [
     href: "/use-cases/ceo",
   },
   {
-    agent: "The CEO Agent",
     industry: "Executive",
     result: "Cleared the bottleneck. Things move now.",
     quote: "I have a great team but I was still the bottleneck on everything. Decisions sat with me, follow-ups sat with me, research sat with me. The CEO Agent cleared the queue. Things move now without me touching them, and I only get involved when I actually need to.",
@@ -27,7 +25,6 @@ const cases = [
   },
   // CFO
   {
-    agent: "The CFO Agent",
     industry: "Finance",
     result: "Close cycle cut from 11 days to 6.",
     quote: "Our month-end close used to take eleven days. We're at six now. The CFO Agent pulls the data, flags the variances, and drafts the narrative. My team reviews instead of produces. That's the difference.",
@@ -36,7 +33,6 @@ const cases = [
     href: "/use-cases/cfo",
   },
   {
-    agent: "The CFO Agent",
     industry: "Healthcare",
     result: "Revenue cycle reporting, every morning.",
     quote: "Revenue cycle reporting was always a week behind. The CFO Agent runs it nightly. I walk in every morning knowing exactly where we are on collections, denials, and AR aging. No surprises.",
@@ -46,7 +42,6 @@ const cases = [
   },
   // Medical
   {
-    agent: "The Medical Agent",
     industry: "Primary Care",
     result: "No-shows dropped from 18% to under 6%.",
     quote: "We were losing 18% of our appointments to no-shows. The Medical Agent sends a reminder 72 hours out, 24 hours out, and the morning of. No-shows dropped to under 6%. That's revenue we were leaving on the table every single day.",
@@ -55,7 +50,6 @@ const cases = [
     href: "/use-cases/health",
   },
   {
-    agent: "The Medical Agent",
     industry: "Urgent Care",
     result: "Online reviews from 3.6 to 4.4 stars in 60 days.",
     quote: "We see 120 patients a day and our follow-up was nonexistent. The agent sends a post-visit summary and satisfaction check to every patient within 2 hours of discharge. Our online reviews went from 3.6 to 4.4 stars in 60 days.",
@@ -65,16 +59,6 @@ const cases = [
   },
   // Insurance
   {
-    agent: "The Insurance Agent",
-    industry: "Agency",
-    result: "Revenue up 22% year over year.",
-    quote: "I have 8 producers and nobody was consistent on follow-up. The agent runs a follow-up sequence on every quote, every prospect, every renewal. My whole agency is consistent now. Revenue is up 22% year over year.",
-    role: "Agency Owner",
-    detail: "Multi-line independent agency, 8 producers",
-    href: "/use-cases/insurance",
-  },
-  {
-    agent: "The Insurance Agent",
     industry: "Health & Benefits",
     result: "Twice the volume. No additional staff.",
     quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar: reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
@@ -84,7 +68,6 @@ const cases = [
   },
   // Real Estate
   {
-    agent: "The Real Estate Agent",
     industry: "Residential",
     result: "Lead conversion from 12% to over 20%.",
     quote: "I was losing leads because I couldn't follow up fast enough. The Real Estate Agent follows up within two minutes of an inquiry, qualifies the buyer, and schedules the showing. I went from converting 12% of leads to over 20% in the first month.",
@@ -93,7 +76,6 @@ const cases = [
     href: "/use-cases/real-estate",
   },
   {
-    agent: "The Real Estate Agent",
     industry: "Brokerage",
     result: "30 agents. One consistent follow-up standard.",
     quote: "Managing 30 agents meant 30 different ways of handling leads. Now everyone's follow-up is consistent, fast, and professional. The agent runs it all. My job became managing outcomes instead of managing process.",
@@ -103,7 +85,6 @@ const cases = [
   },
   // Legal
   {
-    agent: "The Law Agent",
     industry: "Personal Injury",
     result: "Retained cases up 40%.",
     quote: "We get 200 intake inquiries a month. Before, half of them fell through because we couldn't follow up fast enough. The agent screens every inquiry within minutes, collects the basic facts, and schedules a consultation with the right attorney. Our retained cases went up 40%.",
@@ -112,7 +93,6 @@ const cases = [
     href: "/use-cases/legal",
   },
   {
-    agent: "The Law Agent",
     industry: "Litigation",
     result: "10 billable hours recovered per week.",
     quote: "Partners bill by the hour. Every minute I spent on admin was money we weren't capturing. The Law Agent handles my inbox triage, meeting prep, and follow-ups. I got back about ten hours a week. That's ten hours of billable work I was leaving on the table.",
@@ -123,18 +103,8 @@ const cases = [
 ];
 
 const NAVY = "#0B1729";
-const CREAM = "#F2F1ED";
 const CREAM2 = "#FAFAF7";
 const RED = "#D72B2B";
-
-const agentColor: Record<string, string> = {
-  "The CEO Agent": "#D72B2B",
-  "The CFO Agent": "#D72B2B",
-  "The Medical Agent": "#D72B2B",
-  "The Insurance Agent": "#D72B2B",
-  "The Real Estate Agent": "#D72B2B",
-  "The Law Agent": "#D72B2B",
-};
 
 export default function CaseStudiesPage() {
   return (
@@ -164,8 +134,7 @@ export default function CaseStudiesPage() {
                 className="rounded-xl p-8 flex flex-col"
                 style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.08)", boxShadow: "0 2px 12px rgba(11,23,41,0.04)" }}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-mono text-xs uppercase tracking-widest font-bold" style={{ color: RED }}>{c.agent}</span>
+                <div className="mb-4">
                   <span className="font-mono text-xs uppercase tracking-widest" style={{ color: "rgba(11,23,41,0.4)" }}>{c.industry}</span>
                 </div>
                 <p className="font-display text-base font-bold mb-4" style={{ color: NAVY }}>{c.result}</p>

@@ -20,15 +20,15 @@ import {
 } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current flat order per David's direct call: About · Solutions · Case Studies ·
-// Security · Contact. Solutions is the only dropdown left, a single mega-menu with two columns
-// side by side, "By Industry" (the old standalone Industries dropdown) and "By Department" (the
-// old "Built For" function-based grid), merged into one trigger so the nav isn't stuck
-// presenting only vertical-specific destinations. Resources (Blog, AI 101, FAQ) and the old
-// Company dropdown were dropped from the nav entirely, those pages stay live, just not linked
-// from here. Most Solutions destinations are built in later phases (2-5) and will 404 until
-// then, the nav itself is a Phase 1 deliverable per the work order, applied sitewide immediately
-// since it's shared chrome.
+// Site IA, current top-level order per David's direct call: Solutions · Case Studies · Company ·
+// Contact. Solutions is a mega-menu with two columns side by side, "By Industry" (the old
+// standalone Industries dropdown) and "By Department" (the old "Built For" function-based grid),
+// merged into one trigger so the nav isn't stuck presenting only vertical-specific destinations.
+// Company is a small dropdown (About, Security), briefly flattened into standalone top-level
+// links and then put back per David's call. Resources (Blog, AI 101, FAQ) stays dropped from the
+// nav entirely, those pages stay live, just not linked from here. Most Solutions destinations are
+// built in later phases (2-5) and will 404 until then, the nav itself is a Phase 1 deliverable per
+// the work order, applied sitewide immediately since it's shared chrome.
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
@@ -85,6 +85,11 @@ const SOLUTIONS: { label: string; description: string; to: string; Icon: LucideI
   { label: "Medical", Icon: Heart, to: "/ai-agents/medical", description: "Manage intake, scheduling, and follow-ups, HIPAA-aware from the ground up." },
   { label: "Real Estate", Icon: Home, to: "/ai-agents/real-estate", description: "Qualify leads, schedule showings, and draft listings, follow up on offers." },
   { label: "Insurance", Icon: ShieldCheck, to: "/ai-agents/insurance", description: "Handle intake, quote requests, and claims follow-up, policy renewals." },
+];
+
+const COMPANY = [
+  { label: "About", to: "/about" },
+  { label: "Security", to: "/security" },
 ];
 
 // TODO(GET_STARTED_URL): pointed at the live self-serve storefront (/agents -> checkout ->
@@ -249,12 +254,11 @@ export default function Navbar() {
     setOpenSection(null);
   }, [pathname]);
 
-  // Flat top-level order per David's direct call: About, Solutions, Case Studies, Security,
-  // Contact. About and Security used to live in a "Company" dropdown, Resources (Blog, AI 101,
-  // FAQ) used to have its own dropdown too, both dropped from the nav entirely (those pages
-  // stay live, just no longer linked from here), leaving Solutions as the only dropdown.
+  // Top-level order per David's direct call: Solutions, Case Studies, Company (About, Security),
+  // Contact. About and Security are back under a "Company" dropdown instead of standalone links.
+  // Resources (Blog, AI 101, FAQ) stays dropped from the nav, those pages stay live, just not
+  // linked from here.
   const navEntries: NavEntry[] = [
-    { kind: "link", label: "About", to: "/about", active: (p) => p.startsWith("/about") },
     {
       kind: "group",
       label: "Solutions",
@@ -267,7 +271,16 @@ export default function Navbar() {
       to: "/case-studies",
       active: (p) => p.startsWith("/case-studies"),
     },
-    { kind: "link", label: "Security", to: "/security", active: (p) => p.startsWith("/security") },
+    {
+      kind: "group",
+      label: "Company",
+      active: (p) => ["/about", "/security"].some((p2) => p.startsWith(p2)),
+      render: () => (
+        <div className="overflow-hidden rounded-xl" style={panelStyle(180)}>
+          <div className="flex flex-col gap-0.5 p-2">{COMPANY.map((item) => simpleLink(item, pathname))}</div>
+        </div>
+      ),
+    },
     {
       kind: "link",
       label: "Contact",
@@ -420,6 +433,20 @@ export default function Navbar() {
                         })}
                       </div>
                     </div>
+                  </div>
+                )}
+                {openSection === entry.label && entry.label !== "Solutions" && (
+                  <div className="flex flex-col gap-1 pb-4 pl-2">
+                    {COMPANY.map((item) => (
+                      <Link
+                        key={item.to}
+                        href={item.to}
+                        className="flex items-center gap-2.5 py-2 text-base"
+                        style={{ color: PAPER_MUTED }}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
                   </div>
                 )}
               </div>
