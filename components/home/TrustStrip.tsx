@@ -5,7 +5,7 @@ import { BracketLabel, BodyLarge, H2, Section, SoftLink } from "@/components/hom
 export function TrustStrip() {
   return (
     <Section>
-      <div className="mx-auto max-w-3xl text-center">
+      <div className="mx-auto max-w-4xl text-center">
         <BracketLabel>Security First</BracketLabel>
         <H2>Security is how we built the whole thing, from the ground up.</H2>
         <div className="mt-6">

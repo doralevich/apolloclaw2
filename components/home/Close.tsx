@@ -7,7 +7,7 @@ const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 export function Close() {
   return (
     <Section bg={NAVY_ELEVATED}>
-      <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+      <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
         <BracketLabel>Get Started</BracketLabel>
         <H2>Put an AI employee to work this week.</H2>
         <div className="mt-6">
