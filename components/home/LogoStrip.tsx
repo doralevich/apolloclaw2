@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 // Scrolling logo strip, extracted from components/IntegrationGlobe.tsx's marquee (dropped the
-// cobe globe + floating icon cards per David's call, kept just the scrolling row). Sits right
-// above the Footer's "Weekly Claw" newsletter box, same cream background for continuity.
+// cobe globe + floating icon cards per David's call, kept just the scrolling row). Rendered
+// sitewide from RootShell.tsx (right above the Footer's "Weekly Claw" newsletter box), full
+// viewport width rather than boxed to a max-width, per David's direct request.
 // Logos load from https://logos.composio.dev/api/<slug>, the same CDN the live
 // /dashboard/integrations page already loads images from in production.
 
@@ -64,9 +65,9 @@ export function LogoStrip() {
         .ls-item span { font-size: 13px; font-weight: 500; color: ${INK}; }
         @keyframes ls-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       `}</style>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 24px" }}>
+      <div style={{ padding: "36px 0" }}>
         <p
-          className="mb-5 text-center"
+          className="mb-5 px-6 text-center"
           style={{ fontSize: 13, color: "rgba(11,23,41,0.55)", fontWeight: 600 }}
         >
           Works with the tools you already use
