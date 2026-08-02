@@ -135,16 +135,16 @@ const INFRA = [
 const READINESS: { label: string; done: boolean | "partial"; note: string }[] = [
   { label: "Written security policies", done: true, note: "InfoSec, access control, incident response, data retention" },
   { label: "Incident response plan", done: true, note: "Documented, with a breach-notification commitment" },
-  { label: "Data export & deletion", done: true, note: "Self-service export, full deletion on request" },
+  { label: "Data export & deletion", done: "partial", note: "Deletion on request today, self-service export in progress" },
   { label: "Encryption in transit and at rest", done: true, note: "TLS 1.3, AES-256, keys held outside the data they protect" },
   { label: "Per-user data isolation", done: true, note: "Row-level security, verified on every table" },
-  { label: "Application hardening", done: true, note: "Security headers, content-security policy, rate limiting" },
+  { label: "Application hardening", done: "partial", note: "Rate limiting on the assistant endpoint; security headers and CSP in progress" },
   { label: "Payment security", done: true, note: "Stripe, PCI DSS SAQ-A scope, card data never touches our systems" },
   { label: "MFA on every admin account", done: true, note: "Plus an enforced second factor before privileged actions" },
   { label: "Dependency & secret scanning", done: true, note: "Automated, on every code change" },
-  { label: "Audit logging", done: true, note: "Sensitive administrative and data-access actions" },
-  { label: "Cookie & consent banner", done: true, note: "Consent-gated analytics, GDPR / CCPA" },
-  { label: "Published privacy policy", done: true, note: "Available on request" },
+  { label: "Audit logging", done: "partial", note: "Platform-level logging in place, application audit trail in progress" },
+  { label: "Cookie consent banner", done: false, note: "In progress, ask for current status" },
+  { label: "Published privacy policy", done: false, note: "In progress, available on request in the meantime" },
   { label: "HECVAT responses (education)", done: true, note: "Pre-filled and ready to submit" },
   { label: "FERPA data-processing agreement", done: true, note: "Available for education clients" },
   { label: "SOC 2", done: "partial", note: "Type I complete, Type II on track for September 2026" },
@@ -154,7 +154,7 @@ const READINESS: { label: string; done: boolean | "partial"; note: string }[] = 
 const COMPLIANCE = [
   {
     label: "Privacy (GDPR)",
-    body: "Apollo[Claw] is GDPR compliant. Consent-based analytics and deletion on request. A formal, published privacy policy is available on request.",
+    body: "We use Google Analytics for aggregate traffic measurement and never sell or share your data. A cookie consent banner and a published privacy policy are in progress. Data deletion is available on request today.",
   },
   {
     label: "Payments (PCI DSS)",
