@@ -36,17 +36,10 @@ export async function generateMetadata({
 }
 
 const ptComponents = {
+  // No imagery in blog posts, per David's call. Sanity image blocks in the post body render
+  // as nothing rather than a broken/missing type-handler warning.
   types: {
-    image: ({ value }: any) => {
-      const url = value?.asset?.url;
-      if (!url) return null;
-      return (
-        <figure className="my-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt={value.alt || ""} className="w-full rounded-xl" />
-        </figure>
-      );
-    },
+    image: () => null,
   },
   block: {
     h2: ({ children }: any) => (
@@ -116,21 +109,21 @@ export default async function BlogPostPage({
   } catch {}
 
   const useCaseLinks = [
-    { label: "Healthcare", href: "/use-cases/healthcare" },
-    { label: "Legal", href: "/use-cases/legal" },
-    { label: "Real Estate", href: "/use-cases/real-estate" },
-    { label: "Accounting", href: "/use-cases/accounting" },
-    { label: "Restaurants", href: "/use-cases/restaurants" },
-    { label: "E-Commerce", href: "/use-cases/ecommerce" },
-    { label: "Construction", href: "/use-cases/construction" },
-    { label: "Finance", href: "/use-cases/finance" },
+    { label: "Healthcare", href: "/industries/medical-practices" },
+    { label: "Legal", href: "/industries/law-firms" },
+    { label: "Real Estate", href: "/industries/real-estate" },
+    { label: "Accounting", href: "/industries/accounting-firms" },
+    { label: "Restaurants", href: "/industries/restaurants" },
+    { label: "E-Commerce", href: "/industries/ecommerce" },
+    { label: "Construction", href: "/industries/construction" },
+    { label: "Finance", href: "/industries/financial-services" },
   ];
 
   const serviceLinks = [
-    { label: "The Collegiate", href: "/collegiate" },
-    { label: "The Personal Assistant", href: "/personal" },
-    { label: "The Executive", href: "/executive" },
-    { label: "The Department", href: "/departments" },
+    { label: "The College Agent", href: "/ai-agents/college" },
+    { label: "The Personal Agent", href: "/ai-agents/personal" },
+    { label: "The CEO Agent", href: "/ai-agents/ceo" },
+    { label: "The CFO Agent", href: "/ai-agents/cfo" },
   ];
 
   return (
@@ -166,17 +159,6 @@ export default async function BlogPostPage({
                 </span>
               )}
             </div>
-
-            {post.featuredImage?.asset?.url && (
-              <div className="mb-10 rounded-2xl overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={post.featuredImage.asset.url}
-                  alt={post.featuredImage.alt || post.title}
-                  className="w-full object-cover"
-                />
-              </div>
-            )}
 
             <article className="prose-content">
               {post.body ? (

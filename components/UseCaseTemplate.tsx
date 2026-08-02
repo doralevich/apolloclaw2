@@ -1,8 +1,8 @@
 import ScrollReveal from "@/components/ScrollReveal";
-import AgentWordmark from "@/components/AgentWordmark";
 import { CheckCircle } from "lucide-react";
 
 interface UseCase {
+  /** No longer rendered. Hero banners carry no category tag per David's call. */
   label: string;
   title: string;
   subtitle: string;
@@ -10,10 +10,11 @@ interface UseCase {
   challenges: string[];
   solutions: { title: string; desc: string }[];
   results: string[];
-  /** Optional sub-brand wordmark shown above the hero heading, e.g. { name: "College", accent: "#2E8B57" }. */
+  /** No longer rendered. Hero banners carry no sub-brand wordmark per David's call. */
   logo?: { name: string; accent: string };
 }
 
+// Hero is headline + description only: no category pill, no sub-brand wordmark.
 export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
   return (
     <>
@@ -50,25 +51,6 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
           }}
         />
         <div className="container mx-auto px-5 md:px-8 py-24 md:py-32 text-center max-w-5xl relative z-10">
-          <span
-            className="inline-block font-mono uppercase mb-6"
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.16em",
-              color: "rgba(255,255,255,0.5)",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              padding: "6px 14px",
-              borderRadius: 999,
-            }}
-          >
-            {uc.label}
-          </span>
-          {uc.logo && (
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-              <AgentWordmark name={uc.logo.name} accent={uc.logo.accent} ink="#ffffff" size={30} />
-            </div>
-          )}
           <h1
             className="font-display leading-[1.05] tracking-tight"
             style={{

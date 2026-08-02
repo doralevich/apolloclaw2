@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: { absolute: "SkillsDrop AI Membership | Ongoing AI Optimization & Support | Apollo Claw" },
+  title: { absolute: "SkillsDrop AI Membership | Apollo[Claw]" },
   description:
     "Monthly AI updates, priority support, and quarterly performance reviews. SkillsDrop keeps your Apollo Claw agent improving as your business grows.",
   alternates: { canonical: "https://apolloclaw.ai/membership" },

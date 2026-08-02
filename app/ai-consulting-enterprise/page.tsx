@@ -4,7 +4,7 @@ import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
 export const metadata: Metadata = {
   title: { absolute: "Enterprise AI Solutions & Implementation | Apollo Claw" },
   description:
-    "Apollo Claw's enterprise AI solutions help leadership teams design and deploy AI across the entire organization, department by department, from strategy to execution.",
+    "Apollo Claw helps leadership teams design and deploy AI across the organization, department by department, from strategy through execution.",
   alternates: { canonical: "https://apolloclaw.ai/ai-consulting-enterprise" },
   openGraph: {
     title: "Enterprise AI Solutions & Implementation | Apollo Claw",

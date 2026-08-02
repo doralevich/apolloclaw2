@@ -4,7 +4,7 @@ import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
 export const metadata: Metadata = {
   title: { absolute: "AI Consulting New York | Long Island & NYC Metro | Apollo Claw" },
   description:
-    "Apollo Claw is a New York AI consulting firm serving Long Island, NYC, and the greater metro area. Custom AI implementation for local businesses, in-person or remote.",
+    "Apollo Claw is a New York AI consulting firm serving Long Island, NYC, and the metro area. Custom AI implementation, in person or remote.",
   alternates: { canonical: "https://apolloclaw.ai/ai-consulting-new-york" },
   openGraph: {
     title: "AI Consulting New York | Long Island & NYC Metro | Apollo Claw",

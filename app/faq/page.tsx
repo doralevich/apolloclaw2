@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "FAQ | AI Consulting Questions Answered",
+  title: { absolute: "FAQ | AI Consulting Questions Answered | Apollo[Claw]" },
   description:
-    "Get straight answers about Apollo Claw AI consulting: what AI agents do, how they connect to your tools, setup timelines, data security, and how we're different from ChatGPT. No jargon, no pitch.",
+    "Straight answers about Apollo Claw AI consulting: what agents do, how they connect to your tools, setup timelines, and data security. No jargon, no pitch.",
   alternates: {
     canonical: "https://apolloclaw.ai/faq",
   },

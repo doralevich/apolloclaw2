@@ -16,7 +16,7 @@ import {
 import { AGENT_TYPES } from "@/config/agent-types";
 
 export const metadata: Metadata = {
-  title: "ApolloClaw Agents | Hire an AI Agent for Your Business",
+  title: { absolute: "ApolloClaw Agents | Hire an AI Agent for Your Business" },
   description:
     "Eight specialized AI agents, CEO, CFO, Legal, Medical, Insurance, Real Estate, Sales, and Recruiting, built for your business, hosted and managed by ApolloClaw.",
 };

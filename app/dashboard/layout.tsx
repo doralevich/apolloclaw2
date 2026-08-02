@@ -35,7 +35,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq("email", email)
     .maybeSingle();
   if (entitlement?.status !== "active") {
-    return <PendingApproval email={user.email ?? ""} />;
+    // Pass the status through so a lapsed subscriber sees "paused", not "no access".
+    return <PendingApproval email={user.email ?? ""} status={entitlement?.status} />;
   }
 
   // Every entitled user gets a default workspace on first visit, so they never

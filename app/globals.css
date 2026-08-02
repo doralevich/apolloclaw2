@@ -38,6 +38,24 @@
 
   --color-accent-blue: hsl(217 91% 50%);
 
+  /* Brand rebuild tokens (site rebuild, Phase 1: nav + homepage only), additive, deliberately
+     separate names from the tokens above so untouched pages (which use --color-background,
+     --color-primary, etc. via shared ui/* components) don't get reskinned mid-migration. Once
+     the rebuild reaches the rest of the site, these become the real --color-background/-primary.
+     Direction pivoted mid-Phase-1 (David's call, after seeing the light-cream build live) from
+     light/cream to dark navy, reusing the site's existing navy #0B1729 rather than the brief's
+     original light palette. Red #E12E30 (true logo value) stays the accent either way. */
+  --color-cream: #F2F0EB;
+  --color-ink: #1A1A1A;
+  --color-brand-red: #E12E30;
+  --color-navy: #0B1729;
+  --color-navy-deep: #070F1C;
+  --color-navy-elevated: #101F38;
+  --color-paper: #F5F6F8;
+  --color-paper-muted: rgba(245,246,248,0.65);
+  --color-paper-soft: rgba(245,246,248,0.45);
+  --color-hairline-dark: rgba(245,246,248,0.1);
+
   /* Radius */
   --radius: 16px;
   --radius-lg: 16px;
@@ -48,11 +66,17 @@
   --font-display: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
+  /* Brand rebuild headline font (Bricolage Grotesque, via next/font in app/layout.tsx). Plain
+     literal fallback here (matching the --font-body/--font-mono pattern above); the real
+     optimized font value is injected as this same custom property on <body>, which the
+     cascade prefers over this :root-level fallback. */
+  --font-heading: 'Bricolage Grotesque', sans-serif;
 
   /* Custom animations */
   --animate-fade-up: fade-up 0.6s ease-out 0.1s forwards;
   --animate-fade-up-delay-1: fade-up 0.6s ease-out 0.3s forwards;
   --animate-fade-up-delay-2: fade-up 0.6s ease-out 0.5s forwards;
+  --animate-marquee: marquee 28s linear infinite;
 }
 
 /* Keyframes */
@@ -69,6 +93,15 @@
 @keyframes accordion-up {
   from { height: var(--radix-accordion-content-height); opacity: 1; }
   to { height: 0; opacity: 0; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
 }
 
 /* Base */

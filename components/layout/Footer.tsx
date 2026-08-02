@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 const NAVY = "#0B1729";
@@ -11,10 +10,36 @@ const WHITE_SUBTLE = "rgba(255,255,255,0.45)";
 
 const navLinks = [
   { label: "About", to: "/about" },
-  { label: "Services", to: "/services" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Insights", to: "/blog" },
   { label: "Case Studies", to: "/case-studies" },
+];
+
+// Moved here from the top nav (Navbar.tsx), David's call that a 10-item mega-menu isn't
+// needed up top for a site this size. Roles only: the verticals moved to industryLinks above
+// once the footer gained an Industries column, so the two lists no longer repeat each other.
+const agentLinks = [
+  { label: "AI Receptionist", to: "/ai-agents/receptionist" },
+  { label: "CEO Agent", to: "/ai-agents/ceo" },
+  { label: "CFO Agent", to: "/ai-agents/cfo" },
+  { label: "Sales Agent", to: "/ai-agents/sales" },
+  { label: "Marketing Agent", to: "/ai-agents/marketing" },
+  { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
+  { label: "Human Resources Agent", to: "/ai-agents/hr" },
+  { label: "Personal Agent", to: "/ai-agents/personal" },
+  { label: "All Agents", to: "/ai-agents" },
+];
+
+const industryLinks = [
+  { label: "Law Firms", to: "/industries/law-firms" },
+  { label: "Medical Practices", to: "/industries/medical-practices" },
+  { label: "Real Estate", to: "/industries/real-estate" },
+  { label: "Insurance", to: "/industries/insurance" },
+  { label: "Accounting Firms", to: "/industries/accounting-firms" },
+  { label: "Financial Services", to: "/industries/financial-services" },
+  { label: "Professional Services", to: "/industries/professional-services" },
+  { label: "Private Equity", to: "/industries/private-equity" },
+  { label: "All Industries", to: "/industries" },
 ];
 
 const resourceLinks = [
@@ -29,213 +54,69 @@ const resourceLinks = [
     external: true,
   },
 ];
-
-function NewsletterSignup() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setStatus("loading");
-    setErrorMsg("");
-
-    try {
-      const res = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setStatus("success");
-        setEmail("");
-      } else {
-        setStatus("error");
-        setErrorMsg(data.error || "Something went wrong. Try again.");
-      }
-    } catch {
-      setStatus("error");
-      setErrorMsg("Network error. Please try again.");
-    }
-  };
-
-  return (
-    <div
-      style={{
-        backgroundColor: "#F7F6F2",
-        padding: "72px 32px",
-      }}
-    >
-      <div style={{ maxWidth: "640px", margin: "0 auto", textAlign: "center" }}>
-        <p
-          style={{
-            fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-            fontSize: "13px",
-            letterSpacing: "0.08em",
-            color: "#1A1A1A",
-            marginBottom: "14px",
-            fontWeight: 600,
-          }}
-        >
-          <span style={{ color: RED, fontWeight: 700 }}>[</span> Weekly Intelligence{" "}
-          <span style={{ color: RED, fontWeight: 700 }}>]</span>
-        </p>
-        <h3
-          style={{
-            fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-            fontSize: "clamp(22px, 3.4vw, 30px)",
-            fontWeight: 700,
-            color: "#1A1A1A",
-            marginBottom: "12px",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          The Weekly Claw
-        </h3>
-        <p
-          style={{
-            fontFamily: "var(--font-body, Inter, sans-serif)",
-            fontSize: "15px",
-            color: "#555555",
-            marginBottom: "30px",
-            lineHeight: "1.6",
-          }}
-        >
-          What happened in AI last week and what to watch this week. Every Monday.
-        </p>
-
-        {status === "success" ? (
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              backgroundColor: "rgba(215,43,43,0.08)",
-              border: `1px solid ${RED}`,
-              borderRadius: "999px",
-              padding: "12px 28px",
-              color: RED,
-              fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-              fontSize: "14px",
-              fontWeight: 600,
-            }}
-          >
-            <span>✓</span> You&apos;re in!
-          </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: "12px",
-              maxWidth: "520px",
-              margin: "0 auto",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              disabled={status === "loading"}
-              style={{
-                flex: "1 1 240px",
-                padding: "14px 22px",
-                borderRadius: "999px",
-                border: "1px solid rgba(0,0,0,0.12)",
-                backgroundColor: "#FFFFFF",
-                color: "#1A1A1A",
-                fontFamily: "var(--font-body, Inter, sans-serif)",
-                fontSize: "14px",
-                outline: "none",
-                minWidth: "220px",
-                transition: "border-color 0.15s, box-shadow 0.15s",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = RED;
-                e.target.style.boxShadow = "0 0 0 3px rgba(215,43,43,0.1)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "rgba(0,0,0,0.12)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-            <button
-              type="submit"
-              disabled={status === "loading" || !email}
-              style={{
-                flex: "0 0 auto",
-                padding: "14px 28px",
-                borderRadius: "999px",
-                border: "none",
-                backgroundColor: RED,
-                color: "#FFFFFF",
-                fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-                fontSize: "12px",
-                fontWeight: 700,
-                cursor: status === "loading" ? "not-allowed" : "pointer",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                opacity: status === "loading" ? 0.7 : 1,
-                transition: "all 0.2s",
-                whiteSpace: "nowrap",
-                boxShadow: "0 6px 18px rgba(215,43,43,0.28)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              {status === "loading" ? "..." : (
-                <>
-                  Subscribe <span aria-hidden>→</span>
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {status === "error" && (
-          <p
-            style={{
-              marginTop: "12px",
-              color: RED,
-              fontSize: "13px",
-              fontFamily: "var(--font-body, Inter, sans-serif)",
-            }}
-          >
-            {errorMsg}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function Footer() {
   return (
     <footer>
-      <NewsletterSignup />
-      <div style={{ background: NAVY, color: "#FFFFFF" }}>
-        <div className="container mx-auto px-5 md:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div style={{ background: NAVY, color: "#FFFFFF" }} className="relative overflow-hidden">
+        {/* The wordmark is a watermark now rather than a footer column, which frees that column
+            up for the Industries links (David's call). aria-hidden: it is pure decoration and
+            the brand is already announced by the nav. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute select-none"
+          style={{
+            left: "50%",
+            bottom: "-4%",
+            transform: "translateX(-50%)",
+            opacity: 0.04,
+            width: "min(1500px, 130%)",
+          }}
+        >
+          <ApolloClawLogo ink="#FFFFFF" height={260} />
+        </div>
+
+        <div className="container relative z-10 mx-auto px-5 md:px-8 py-16">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
             <div>
-              <ApolloClawLogo ink="#FFFFFF" height={40} />
-              <p
-                className="font-body mt-4 text-sm leading-relaxed"
-                style={{ color: WHITE_MUTED }}
+              <h4
+                className="font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
               >
-                Your Business.
-                <br />
-                Your Data.
-                <br />
-                <span style={{ color: RED }}>Your AI.</span>
-              </p>
+                Industries
+              </h4>
+              <div className="flex flex-col gap-2">
+                {industryLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    href={link.to}
+                    className="font-body text-[14px] transition-colors hover:text-white"
+                    style={{ color: WHITE_MUTED }}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4
+                className="font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
+              >
+                AI Agents
+              </h4>
+              <div className="flex flex-col gap-2">
+                {agentLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    href={link.to}
+                    className="font-body text-[14px] transition-colors hover:text-white"
+                    style={{ color: WHITE_MUTED }}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             <div>

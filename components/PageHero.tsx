@@ -1,4 +1,9 @@
 interface PageHeroProps {
+  /**
+   * No longer rendered. Hero banners carry no category tag per David's call, so this is kept
+   * only so the many callers that still pass it do not need editing. Safe to delete once those
+   * call sites are cleaned up.
+   */
   label?: string;
   title: string;
   titleAccent?: string;
@@ -7,7 +12,7 @@ interface PageHeroProps {
   cta?: { label: string; href: string };
 }
 
-export default function PageHero({ label, title, titleAccent, accentFirst, description, cta }: PageHeroProps) {
+export default function PageHero({ title, titleAccent, accentFirst, description, cta }: PageHeroProps) {
   return (
     <section
       style={{ background: "#0B1729", color: "#ffffff" }}
@@ -41,22 +46,6 @@ export default function PageHero({ label, title, titleAccent, accentFirst, descr
         }}
       />
       <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-5xl relative z-10">
-        {label && (
-          <span
-            className="inline-block font-mono uppercase mb-6"
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.16em",
-              color: "rgba(255,255,255,0.5)",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              padding: "6px 14px",
-              borderRadius: 999,
-            }}
-          >
-            {label}
-          </span>
-        )}
         <h1
           className="font-display leading-[1.05] tracking-tight"
           style={{

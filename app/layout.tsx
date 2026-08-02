@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Bricolage_Grotesque, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import RootShell from "@/components/layout/RootShell";
@@ -9,6 +9,16 @@ import PageViewTracker from "@/components/GoogleAnalytics";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
+  display: "swap",
+});
+
+// New brand headline font (site rebuild, Phase 1: nav + homepage only). Loaded sitewide via
+// next/font so it's available immediately, but only APPLIED in the new Navbar/homepage for
+// now via the `font-heading` utility below, every other page keeps rendering `font-display`
+// as Inter until the rebuild reaches them, so this doesn't reskin untouched pages.
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-heading",
   display: "swap",
 });
 
@@ -225,7 +235,7 @@ export default function RootLayout({
         ))}
       </head>
       <body
-        className={`${inter.variable} font-body`}
+        className={`${inter.variable} ${bricolage.variable} font-body`}
         style={{ fontFamily: "var(--font-body), Inter, sans-serif", "--font-display": "var(--font-body)", "--font-mono": "'IBM Plex Mono', monospace" } as React.CSSProperties}
       >
         <Script
