@@ -10,10 +10,10 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 // the nav itself is a Phase 1 deliverable per the work order, applied sitewide immediately
 // since it's shared chrome.
 //
-// Layout pivoted mid-Phase-1 (David's call, stackhaus.ai reference): a slim utility bar above
-// the main nav carries the account/contact actions (email, Log in, Get Started), so the main
-// nav itself is just category links, no buttons. Schedule a Consultation dropped from the
-// persistent nav entirely (still prominent in the hero and close section).
+// Layout pivoted mid-Phase-1 (David's call, stackhaus.ai reference): tried a slim utility bar
+// above the main nav for account/contact actions, then merged back into a single nav row per
+// David's direct follow-up request. Schedule a Consultation is a persistent nav CTA (goes to
+// Calendly, same link used everywhere else on the site).
 
 const NAVY = "#0B1729";
 const NAVY_DEEP = "#070F1C";
@@ -82,6 +82,7 @@ const COMPANY = [
 // onboarding, confirmed working end to end today). Flagging for David to confirm this is the
 // intended "Get Started" destination, or provide a different one.
 const GET_STARTED_URL = "/agents";
+const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
 interface NavGroup {
   label: string;
@@ -204,39 +205,19 @@ export default function Navbar() {
   return (
     <>
       <div className="fixed left-0 right-0 top-0 z-50">
-        {/* Utility bar: email + account actions, kept slim and separate from the category nav. */}
-        <div className="hidden h-9 items-center justify-between px-5 md:flex md:px-8" style={{ background: NAVY_DEEP }}>
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-[12px]" style={{ color: PAPER_MUTED }}>
-            {CONTACT_EMAIL}
-          </a>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
-              Log in
-            </Link>
-            <Link
-              href={GET_STARTED_URL}
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
-              style={{ background: RED, color: "#ffffff", padding: "5px 14px" }}
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-
-        {/* Main nav: category links only, no buttons. */}
         <nav style={{ background: NAVY, borderBottom: `1px solid ${HAIRLINE}` }}>
-          <div className="container mx-auto flex h-[72px] items-center justify-between px-5 md:px-8">
+          <div className="container mx-auto flex h-[72px] items-center gap-4 px-5 md:px-8">
             <Link href="/" className="flex shrink-0 items-center">
               <ApolloClawLogo ink={PAPER} height={36} />
             </Link>
 
-            <div className="hidden flex-1 items-center justify-center gap-7 md:flex">
+            <div className="hidden flex-1 items-center justify-center gap-5 md:flex">
               {groups.map((group) => (
                 <DesktopDropdown key={group.label} group={group} pathname={pathname} />
               ))}
               <Link
                 href="/pricing"
-                className="relative pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
+                className="relative whitespace-nowrap pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
                 style={{ color: pathname === "/pricing" ? PAPER : PAPER_MUTED }}
               >
                 Pricing
@@ -246,7 +227,34 @@ export default function Navbar() {
               </Link>
             </div>
 
-            <div className="hidden w-[92px] shrink-0 md:block" aria-hidden />
+            <div className="hidden shrink-0 items-center gap-2.5 md:flex">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="hidden whitespace-nowrap text-[12px] xl:inline"
+                style={{ color: PAPER_MUTED }}
+              >
+                {CONTACT_EMAIL}
+              </a>
+              <Link href="/login" className="whitespace-nowrap text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
+                Log in
+              </Link>
+              <a
+                href={CONSULT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden whitespace-nowrap rounded-[6px] border text-[11px] font-bold tracking-[0.03em] transition-colors hover:bg-white/[0.06] xl:inline-flex xl:items-center xl:justify-center"
+                style={{ borderColor: HAIRLINE, color: PAPER, padding: "6px 12px" }}
+              >
+                Schedule a Consultation
+              </a>
+              <Link
+                href={GET_STARTED_URL}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
+                style={{ background: RED, color: "#ffffff", padding: "6px 14px" }}
+              >
+                Get Started
+              </Link>
+            </div>
 
             <button
               className="p-2 md:hidden"
@@ -305,6 +313,15 @@ export default function Navbar() {
             <div className="mt-2 flex flex-col gap-3">
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-center text-sm" style={{ color: PAPER_MUTED }}>
                 {CONTACT_EMAIL}
+              </a>
+              <a
+                href={CONSULT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-[8px] border text-[13px] font-bold tracking-[0.04em]"
+                style={{ borderColor: HAIRLINE, color: PAPER, padding: "14px 20px" }}
+              >
+                Schedule a Consultation
               </a>
               <Link
                 href={GET_STARTED_URL}
