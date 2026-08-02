@@ -23,7 +23,10 @@ export function Hero() {
               AI Strategy &amp; Implementation
             </span>
             <h1
-              className="font-heading text-[clamp(2.5rem,5.5vw,4.25rem)] font-extrabold leading-[1.05] tracking-tight"
+              // Scaled down from clamp(2.5rem, 5.5vw, 4.25rem): the current headline is far
+              // longer than the one this size was set for, so at 68px it wrapped to four lines
+              // and overwhelmed the section. Leading opened up slightly to suit the smaller size.
+              className="font-heading text-[clamp(1.875rem,3.4vw,3rem)] font-extrabold leading-[1.12] tracking-tight"
               style={{ color: PAPER, textWrap: "balance" }}
             >
               Your Business Runs on Decisions. Make Every One Smarter with AI

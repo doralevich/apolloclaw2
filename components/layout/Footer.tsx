@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 const NAVY = "#0B1729";
@@ -55,189 +54,6 @@ const resourceLinks = [
     external: true,
   },
 ];
-
-function NewsletterSignup() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setStatus("loading");
-    setErrorMsg("");
-
-    try {
-      const res = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setStatus("success");
-        setEmail("");
-      } else {
-        setStatus("error");
-        setErrorMsg(data.error || "Something went wrong. Try again.");
-      }
-    } catch {
-      setStatus("error");
-      setErrorMsg("Network error. Please try again.");
-    }
-  };
-
-  return (
-    <div style={{ padding: "0 0 48px" }}>
-      <div style={{ maxWidth: "640px", margin: "0 auto", textAlign: "center" }}>
-        <p
-          style={{
-            fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-            fontSize: "13px",
-            letterSpacing: "0.08em",
-            color: "#FFFFFF",
-            marginBottom: "14px",
-            fontWeight: 600,
-          }}
-        >
-          <span style={{ color: RED, fontWeight: 700 }}>[</span> Weekly Intelligence{" "}
-          <span style={{ color: RED, fontWeight: 700 }}>]</span>
-        </p>
-        <h3
-          style={{
-            fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-            fontSize: "clamp(22px, 3.4vw, 30px)",
-            fontWeight: 700,
-            color: "#FFFFFF",
-            marginBottom: "12px",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          The Weekly Claw
-        </h3>
-        <p
-          style={{
-            fontFamily: "var(--font-body, Inter, sans-serif)",
-            fontSize: "15px",
-            color: WHITE_MUTED,
-            marginBottom: "30px",
-            lineHeight: "1.6",
-          }}
-        >
-          What happened in AI last week and what to watch this week. Every Monday.
-        </p>
-
-        {status === "success" ? (
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              backgroundColor: "rgba(215,43,43,0.08)",
-              border: `1px solid ${RED}`,
-              borderRadius: "999px",
-              padding: "12px 28px",
-              color: RED,
-              fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-              fontSize: "14px",
-              fontWeight: 600,
-            }}
-          >
-            <span>✓</span> You&apos;re in!
-          </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: "12px",
-              maxWidth: "520px",
-              margin: "0 auto",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              disabled={status === "loading"}
-              style={{
-                flex: "1 1 240px",
-                padding: "14px 22px",
-                borderRadius: "999px",
-                border: "1px solid rgba(255,255,255,0.18)",
-                backgroundColor: "rgba(255,255,255,0.06)",
-                color: "#FFFFFF",
-                fontFamily: "var(--font-body, Inter, sans-serif)",
-                fontSize: "14px",
-                outline: "none",
-                minWidth: "220px",
-                transition: "border-color 0.15s, box-shadow 0.15s",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = RED;
-                e.target.style.boxShadow = "0 0 0 3px rgba(215,43,43,0.1)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "rgba(255,255,255,0.18)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-            <button
-              type="submit"
-              disabled={status === "loading" || !email}
-              style={{
-                flex: "0 0 auto",
-                padding: "14px 28px",
-                borderRadius: "999px",
-                border: "none",
-                backgroundColor: RED,
-                color: "#FFFFFF",
-                fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
-                fontSize: "12px",
-                fontWeight: 700,
-                cursor: status === "loading" ? "not-allowed" : "pointer",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                opacity: status === "loading" ? 0.7 : 1,
-                transition: "all 0.2s",
-                whiteSpace: "nowrap",
-                boxShadow: "0 6px 18px rgba(215,43,43,0.28)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              {status === "loading" ? "..." : (
-                <>
-                  Subscribe <span aria-hidden>→</span>
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {status === "error" && (
-          <p
-            style={{
-              marginTop: "12px",
-              color: RED,
-              fontSize: "13px",
-              fontFamily: "var(--font-body, Inter, sans-serif)",
-            }}
-          >
-            {errorMsg}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function Footer() {
   return (
     <footer>
@@ -260,12 +76,7 @@ export default function Footer() {
         </div>
 
         <div className="container relative z-10 mx-auto px-5 md:px-8 py-16">
-          <NewsletterSignup />
-
-          <div
-            className="grid grid-cols-1 gap-10 pt-12 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}
-          >
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
             <div>
               <h4
                 className="font-mono uppercase mb-4"

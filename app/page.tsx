@@ -29,11 +29,11 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <WhatWeDo />
-      <Proof />
-      {/* "What Is an AI Implementation Partner?" sits directly under the client results per
-          David's call, so the proof leads into the positioning statement. */}
+      {/* Order per David's call: positioning first ("What Is an AI Implementation Partner?"),
+          then the client results, then the product explainer with the John demo. */}
       <TrustStrip />
+      <Proof />
+      <WhatWeDo />
       <ThreeWaysIn />
       <TwoFoldModel />
       {/* Homepage only, per David's call. Was sitewide via RootShell. */}
