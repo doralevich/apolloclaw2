@@ -36,17 +36,10 @@ export async function generateMetadata({
 }
 
 const ptComponents = {
+  // No imagery in blog posts, per David's call. Sanity image blocks in the post body render
+  // as nothing rather than a broken/missing type-handler warning.
   types: {
-    image: ({ value }: any) => {
-      const url = value?.asset?.url;
-      if (!url) return null;
-      return (
-        <figure className="my-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt={value.alt || ""} className="w-full rounded-xl" />
-        </figure>
-      );
-    },
+    image: () => null,
   },
   block: {
     h2: ({ children }: any) => (
@@ -166,17 +159,6 @@ export default async function BlogPostPage({
                 </span>
               )}
             </div>
-
-            {post.featuredImage?.asset?.url && (
-              <div className="mb-10 rounded-2xl overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={post.featuredImage.asset.url}
-                  alt={post.featuredImage.alt || post.title}
-                  className="w-full object-cover"
-                />
-              </div>
-            )}
 
             <article className="prose-content">
               {post.body ? (
