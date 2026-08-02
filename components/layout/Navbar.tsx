@@ -20,12 +20,13 @@ import {
 } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// New site IA (rebuild Phase 1): Industries · Solutions · Resources · Company. Pricing dropped
-// from the nav per David's call. Solutions is a "Built For" function-based mega-menu (David's
-// reference: Composio's toolkits dropdown), not the old by-company-size list, it's the broad,
-// industry-agnostic entry point Industries alone doesn't cover. Most of these destinations are
-// built in later phases (2-5) and will 404 until then, the nav itself is a Phase 1 deliverable
-// per the work order, applied sitewide immediately since it's shared chrome.
+// Site IA (rebuild Phase 1, later merged per David's call): Solutions · Resources · Company.
+// Solutions is a single mega-menu with two columns side by side, "By Industry" (the old
+// standalone Industries dropdown) and "By Department" (the old "Built For" function-based
+// grid), merged into one trigger so the nav isn't stuck presenting only vertical-specific
+// destinations. Most of these destinations are built in later phases (2-5) and will 404 until
+// then, the nav itself is a Phase 1 deliverable per the work order, applied sitewide immediately
+// since it's shared chrome.
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
@@ -86,14 +87,13 @@ const SOLUTIONS: { label: string; description: string; to: string; Icon: LucideI
 
 const RESOURCES = [
   { label: "Blog", to: "/blog" },
-  { label: "Case Studies", to: "/case-studies" },
   { label: "AI 101", to: "/ai-101" },
   { label: "FAQ", to: "/faq" },
 ];
 
 const COMPANY = [
   { label: "About", to: "/about" },
-  { label: "Contact", to: "/contact" },
+  { label: "Security", to: "/security" },
 ];
 
 // TODO(GET_STARTED_URL): pointed at the live self-serve storefront (/agents -> checkout ->
@@ -103,10 +103,23 @@ const GET_STARTED_URL = "/agents";
 const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
 interface NavGroup {
+  kind: "group";
   label: string;
   active: (pathname: string) => boolean;
   render: () => React.ReactNode;
 }
+
+// Plain top-level links (Case Studies, Contact), no dropdown, just an active-state underline
+// like the group triggers, per David's call to promote them out of the Resources/Company
+// dropdowns and into the top nav directly.
+interface NavLink {
+  kind: "link";
+  label: string;
+  to: string;
+  active: (pathname: string) => boolean;
+}
+
+type NavEntry = NavGroup | NavLink;
 
 function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: string }) {
   const active = group.active(pathname);
@@ -126,6 +139,22 @@ function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: strin
         {group.render()}
       </div>
     </div>
+  );
+}
+
+function DesktopNavLink({ item, pathname }: { item: NavLink; pathname: string }) {
+  const active = item.active(pathname);
+  return (
+    <Link
+      href={item.to}
+      className="relative whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors"
+      style={{ color: NAV_INK }}
+    >
+      {item.label}
+      {active && (
+        <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
+      )}
+    </Link>
   );
 }
 
@@ -154,49 +183,66 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
   );
 }
 
-// "Built For" mega-menu, icon tile + bold title + truncated description, per David's reference
-// (a competitor's nicer-looking dropdown), spacious rather than dense-with-dividers. Naming is
-// still open, David isn't sure "Built For" is right, kept as-is until he settles on something,
-// but the persona-based content (real agent types) stays, not the competitor's skills taxonomy.
-// (A red "Browse all agents" CTA card was tried here and reverted, David didn't like it.)
+// Merged "By Industry / By Department" mega-menu, matching the reference image's actual
+// structure (two columns in one flyout), not just its icon-tile style, per David's direct
+// call after asking "didn't we say we'd change that so we weren't so stuck with those areas?".
+// Left column: existing Industries list, plain text, SEO-important vertical keywords, kept
+// dense since there are 11 of them. Right column: existing persona-based "Built For" list,
+// icon + title + description, unchanged content, just reflowed into 2 sub-columns to fit.
 function solutionsPanel(pathname: string) {
   return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(660)}>
-      <div
-        className="font-mono mb-4 text-[11px] font-bold uppercase tracking-[0.16em]"
-        style={{ color: PAPER_MUTED }}
-      >
-        Built For
-      </div>
-      <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-        {SOLUTIONS.map((item) => {
-          const Icon = item.Icon;
-          const active = pathname === item.to;
-          return (
-            <Link
-              key={item.to}
-              href={item.to}
-              className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: "rgba(245,246,248,0.07)" }}
-              >
-                <Icon size={18} style={{ color: active ? RED : PAPER }} />
-              </div>
-              <div className="min-w-0">
-                <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
-                  {item.label}
-                </div>
-                <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
-                  {item.description}
-                </p>
-              </div>
-            </Link>
-          );
-        })}
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(820)}>
+      <div className="flex gap-6">
+        <div className="w-[200px] shrink-0" style={{ borderRight: `1px solid ${HAIRLINE}`, paddingRight: 20 }}>
+          <div
+            className="font-mono mb-3 text-[11px] font-bold uppercase tracking-[0.16em]"
+            style={{ color: PAPER_MUTED }}
+          >
+            By Industry
+          </div>
+          <div className="flex flex-col gap-0.5">
+            {INDUSTRIES.map((item) => simpleLink(item, pathname))}
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <div
+            className="font-mono mb-3 text-[11px] font-bold uppercase tracking-[0.16em]"
+            style={{ color: PAPER_MUTED }}
+          >
+            By Department
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            {SOLUTIONS.map((item) => {
+              const Icon = item.Icon;
+              const active = pathname === item.to;
+              return (
+                <Link
+                  key={item.to}
+                  href={item.to}
+                  className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    style={{ background: "rgba(245,246,248,0.07)" }}
+                  >
+                    <Icon size={18} style={{ color: active ? RED : PAPER }} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
+                      {item.label}
+                    </div>
+                    <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
+                      {item.description}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -212,27 +258,20 @@ export default function Navbar() {
     setOpenSection(null);
   }, [pathname]);
 
-  const groups: NavGroup[] = [
+  // Case Studies and Contact promoted out of their dropdowns to top-level links per David's
+  // call. Security moved into Company as a dropdown item (alongside About) since it's no longer
+  // the sole reason to click into Company now that Contact has its own top-level spot.
+  const navEntries: NavEntry[] = [
     {
-      label: "Industries",
-      active: (p) => p.startsWith("/industries"),
-      render: () => (
-        <div className="overflow-hidden rounded-xl" style={panelStyle(520)}>
-          <div className="grid grid-cols-2 gap-0.5 p-2">
-            {INDUSTRIES.map((item) => simpleLink(item, pathname))}
-          </div>
-        </div>
-      ),
-    },
-    {
+      kind: "group",
       label: "Solutions",
-      active: (p) => p.startsWith("/ai-agents"),
+      active: (p) => p.startsWith("/ai-agents") || p.startsWith("/industries") || p === "/ai-consulting-education",
       render: () => solutionsPanel(pathname),
     },
     {
+      kind: "group",
       label: "Resources",
-      active: (p) =>
-        ["/blog", "/case-studies", "/ai-101", "/faq"].some((p2) => p.startsWith(p2)),
+      active: (p) => ["/blog", "/ai-101", "/faq"].some((p2) => p.startsWith(p2)),
       render: () => (
         <div className="overflow-hidden rounded-xl" style={panelStyle(220)}>
           <div className="flex flex-col gap-0.5 p-2">{RESOURCES.map((item) => simpleLink(item, pathname))}</div>
@@ -240,13 +279,26 @@ export default function Navbar() {
       ),
     },
     {
+      kind: "link",
+      label: "Case Studies",
+      to: "/case-studies",
+      active: (p) => p.startsWith("/case-studies"),
+    },
+    {
+      kind: "group",
       label: "Company",
-      active: (p) => ["/about", "/contact"].some((p2) => p.startsWith(p2)),
+      active: (p) => ["/about", "/security"].some((p2) => p.startsWith(p2)),
       render: () => (
         <div className="overflow-hidden rounded-xl" style={panelStyle(180)}>
           <div className="flex flex-col gap-0.5 p-2">{COMPANY.map((item) => simpleLink(item, pathname))}</div>
         </div>
       ),
+    },
+    {
+      kind: "link",
+      label: "Contact",
+      to: "/contact",
+      active: (p) => p.startsWith("/contact"),
     },
   ];
 
@@ -291,9 +343,13 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden flex-1 items-center justify-center gap-5 md:flex">
-              {groups.map((group) => (
-                <DesktopDropdown key={group.label} group={group} pathname={pathname} />
-              ))}
+              {navEntries.map((entry) =>
+                entry.kind === "group" ? (
+                  <DesktopDropdown key={entry.label} group={entry} pathname={pathname} />
+                ) : (
+                  <DesktopNavLink key={entry.label} item={entry} pathname={pathname} />
+                )
+              )}
             </div>
 
             <a
@@ -321,44 +377,94 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-[88px] md:hidden" style={{ background: NAVY }}>
           <div className="flex flex-col gap-1 px-6 py-8">
-            {groups.map((group) => (
-              <div key={group.label} className="border-b" style={{ borderColor: HAIRLINE }}>
+            {navEntries.map((entry) =>
+              entry.kind === "link" ? (
+                <Link
+                  key={entry.label}
+                  href={entry.to}
+                  className="font-heading border-b py-4 text-xl font-semibold"
+                  style={{ color: PAPER, borderColor: HAIRLINE }}
+                >
+                  {entry.label}
+                </Link>
+              ) : (
+              <div key={entry.label} className="border-b" style={{ borderColor: HAIRLINE }}>
                 <button
-                  onClick={() => setOpenSection((s) => (s === group.label ? null : group.label))}
+                  onClick={() => setOpenSection((s) => (s === entry.label ? null : entry.label))}
                   className="font-heading flex w-full items-center justify-between py-4 text-xl font-semibold"
                   style={{ color: PAPER }}
                 >
-                  {group.label}
+                  {entry.label}
                   <ChevronDown
                     size={18}
-                    className={`transition-transform duration-200 ${openSection === group.label ? "rotate-180" : ""}`}
+                    className={`transition-transform duration-200 ${openSection === entry.label ? "rotate-180" : ""}`}
                   />
                 </button>
-                {openSection === group.label && (
+                {openSection === entry.label && entry.label === "Solutions" && (
+                  <div className="flex flex-col gap-4 pb-4 pl-2">
+                    <div>
+                      <div
+                        className="font-mono mb-1 text-[11px] font-bold uppercase tracking-[0.16em]"
+                        style={{ color: PAPER_MUTED }}
+                      >
+                        By Industry
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {INDUSTRIES.map((item) => (
+                          <Link
+                            key={item.to}
+                            href={item.to}
+                            className="flex items-center gap-2.5 py-2 text-base"
+                            style={{ color: PAPER_MUTED }}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        className="font-mono mb-1 text-[11px] font-bold uppercase tracking-[0.16em]"
+                        style={{ color: PAPER_MUTED }}
+                      >
+                        By Department
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {SOLUTIONS.map((item) => {
+                          const Icon = item.Icon;
+                          return (
+                            <Link
+                              key={item.to}
+                              href={item.to}
+                              className="flex items-center gap-2.5 py-2 text-base"
+                              style={{ color: PAPER_MUTED }}
+                            >
+                              <Icon size={16} />
+                              {item.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {openSection === entry.label && entry.label !== "Solutions" && (
                   <div className="flex flex-col gap-1 pb-4 pl-2">
-                    {(
-                      (group.label === "Industries" ? INDUSTRIES
-                        : group.label === "Solutions" ? SOLUTIONS
-                        : group.label === "Resources" ? RESOURCES
-                        : COMPANY) as { label: string; to: string; Icon?: LucideIcon }[]
-                    ).map((item) => {
-                      const Icon = item.Icon ?? null;
-                      return (
-                        <Link
-                          key={item.to}
-                          href={item.to}
-                          className="flex items-center gap-2.5 py-2 text-base"
-                          style={{ color: PAPER_MUTED }}
-                        >
-                          {Icon && <Icon size={16} />}
-                          {item.label}
-                        </Link>
-                      );
-                    })}
+                    {(entry.label === "Resources" ? RESOURCES : COMPANY).map((item) => (
+                      <Link
+                        key={item.to}
+                        href={item.to}
+                        className="flex items-center gap-2.5 py-2 text-base"
+                        style={{ color: PAPER_MUTED }}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
                   </div>
                 )}
               </div>
-            ))}
+              )
+            )}
             <Link href="/login" className="py-4 text-lg font-semibold" style={{ color: PAPER }}>
               Log in
             </Link>
