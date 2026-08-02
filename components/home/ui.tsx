@@ -26,17 +26,23 @@ export const PAPER_SOFT = "rgba(245,246,248,0.45)";
 export const RED = "#E12E30";
 export const HAIRLINE = "rgba(245,246,248,0.1)";
 
+// Tan/cream contrast section (David's call: 2nd homepage section, "How It Works", against the
+// otherwise all-dark page). Same token used in components/home/LogoStrip.tsx.
+export const TAN = "#F2F0EB";
+export const TAN_INK = "#0B1729";
+export const TAN_INK_MUTED = "rgba(11,23,41,0.65)";
+
 // Kept for anything still referencing the v1 light tokens by name.
 export const INK = PAPER;
 export const INK_MUTED = PAPER_MUTED;
 export const INK_SOFT = PAPER_SOFT;
 export const CREAM = NAVY;
 
-export function BracketLabel({ children }: { children: React.ReactNode }) {
+export function BracketLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
     <span
       className="font-heading mb-5 inline-flex items-center gap-1 text-[12px] font-bold uppercase tracking-[0.14em]"
-      style={{ color: PAPER }}
+      style={{ color: light ? TAN_INK : PAPER }}
     >
       <span style={{ color: RED }}>[</span>
       {children}
@@ -61,20 +67,20 @@ export function Section({
   );
 }
 
-export function H2({ children }: { children: React.ReactNode }) {
+export function H2({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
     <h2
       className="font-heading text-[clamp(1.875rem,3.2vw,2.75rem)] font-bold leading-[1.1] tracking-tight"
-      style={{ color: PAPER }}
+      style={{ color: light ? TAN_INK : PAPER }}
     >
       {children}
     </h2>
   );
 }
 
-export function BodyLarge({ children }: { children: React.ReactNode }) {
+export function BodyLarge({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
-    <p className="font-body text-[1.125rem] leading-[1.65]" style={{ color: PAPER_MUTED }}>
+    <p className="font-body text-[1.125rem] leading-[1.65]" style={{ color: light ? TAN_INK_MUTED : PAPER_MUTED }}>
       {children}
     </p>
   );
@@ -132,12 +138,20 @@ export function SecondaryButton({
   );
 }
 
-export function SoftLink({ href, children }: { href: string; children: React.ReactNode }) {
+export function SoftLink({
+  href,
+  children,
+  light = false,
+}: {
+  href: string;
+  children: React.ReactNode;
+  light?: boolean;
+}) {
   return (
     <Link
       href={href}
       className="font-heading inline-flex items-center gap-1.5 text-[14px] font-bold transition-opacity hover:opacity-70"
-      style={{ color: PAPER }}
+      style={{ color: light ? TAN_INK : PAPER }}
     >
       {children}
     </Link>

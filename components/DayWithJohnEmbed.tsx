@@ -7,7 +7,7 @@ export default function DayWithJohnEmbed() {
   if (playing) {
     return (
       <iframe
-        src="/day-with-john.html"
+        src="/demo.html#1"
         title="Apollo[Claw] Demo Conversation: A Day with John"
         style={{
           position: "absolute",

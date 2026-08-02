@@ -257,13 +257,19 @@ export default function Navbar() {
             Uses the same .container as the main nav below so email/Log in/Get Started line up
             exactly with the logo and right edge underneath, instead of the ad-hoc px-5/px-8
             this used to carry on its own. */}
-        <div className="hidden h-9 md:flex" style={{ background: NAVY_DEEP }}>
+        <div className="hidden py-[5px] md:flex" style={{ background: NAVY_DEEP }}>
           <div className="container mx-auto flex w-full items-center justify-between">
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-[12px]" style={{ color: PAPER_MUTED }}>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[12px]"
+              style={{ color: "#ffffff" }}
+            >
               {CONTACT_EMAIL}
             </a>
             <div className="flex items-center gap-4">
-              <Link href="/login" className="text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
+              <Link href="/login" className="text-[12px] font-semibold" style={{ color: "#ffffff" }}>
                 Log in
               </Link>
               <Link
