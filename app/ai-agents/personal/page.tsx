@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 const uc = {
   label: "Personal Productivity",
-  title: "AI for",
-  subtitle: "Your Personal Assistant",
+  title: "Your Personal",
+  subtitle: "AI Assistant",
   description: "The Personal Agent runs the daily administrative layer of your professional life: inbox, calendar, research, notes, and follow-up, so your attention stays on the work only you can do.",
   challenges: [
     "Inbox volume that never gets under control",
@@ -33,6 +33,5 @@ const uc = {
 };
 
 export default function PersonalPage() {
-  // hideHeroMeta: no category tag or wordmark in the hero on this page (David's call).
-  return <UseCaseTemplate uc={uc} hideHeroMeta />;
+  return <UseCaseTemplate uc={uc} />;
 }
