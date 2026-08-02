@@ -201,7 +201,7 @@ export default function Navbar() {
 
         {/* Main nav: white, category dropdowns + Pricing + Schedule a Consultation. */}
         <nav style={{ background: NAV_WHITE, borderBottom: `1px solid ${NAV_HAIRLINE}` }}>
-          <div className="container mx-auto flex h-[72px] items-center gap-4 px-5 md:px-8">
+          <div className="container mx-auto flex h-[88px] items-center gap-4 px-5 md:px-8">
             <Link href="/" className="flex shrink-0 items-center">
               <ApolloClawLogo ink={NAV_INK} height={36} />
             </Link>
@@ -244,7 +244,7 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-[72px] md:hidden" style={{ background: NAVY }}>
+        <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-[88px] md:hidden" style={{ background: NAVY }}>
           <div className="flex flex-col gap-1 px-6 py-8">
             {groups.map((group) => (
               <div key={group.label} className="border-b" style={{ borderColor: HAIRLINE }}>
