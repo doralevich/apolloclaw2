@@ -62,6 +62,8 @@ const INDUSTRIES = [
   { label: "Nonprofit", to: "/industries/nonprofit" },
   { label: "Financial Services", to: "/industries/financial-services" },
   { label: "Professional Services", to: "/industries/professional-services" },
+  // Real, already-live page (built earlier this engagement), not a Phase 2+ stub like the rest.
+  { label: "Academics", to: "/ai-consulting-education" },
 ];
 
 // "Built For" grid (David's reference: Composio's toolkits mega-menu), function-first instead
@@ -81,7 +83,6 @@ const SOLUTIONS: { label: string; description: string; to: string; Icon: LucideI
   { label: "Real Estate", Icon: Home, to: "/ai-agents/real-estate", description: "Qualify leads, schedule showings, and draft listings, follow up on offers." },
   { label: "Insurance", Icon: ShieldCheck, to: "/ai-agents/insurance", description: "Handle intake, quote requests, and claims follow-up, policy renewals." },
 ];
-const SOLUTIONS_COLUMNS = [SOLUTIONS.slice(0, 4), SOLUTIONS.slice(4, 7), SOLUTIONS.slice(7, 10)];
 
 const RESOURCES = [
   { label: "Blog", to: "/blog" },
@@ -155,47 +156,48 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
   );
 }
 
-// "Built For" mega-menu (David's reference: Composio's toolkits dropdown), icon + label +
-// truncated description, grouped into columns with a hairline divider between rows.
+// "Built For" mega-menu, icon tile + bold title + truncated description, per David's reference
+// (a competitor's nicer-looking dropdown), spacious rather than dense-with-dividers. Naming is
+// still open, David isn't sure "Built For" is right, kept as-is until he settles on something,
+// but the persona-based content (real agent types) stays, not the competitor's skills taxonomy.
 function solutionsPanel(pathname: string) {
   return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(680)}>
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(660)}>
       <div
         className="font-mono mb-4 text-[11px] font-bold uppercase tracking-[0.16em]"
         style={{ color: PAPER_MUTED }}
       >
         Built For
       </div>
-      <div className="grid grid-cols-3 gap-x-8">
-        {SOLUTIONS_COLUMNS.map((col, ci) => (
-          <div key={ci} className="flex flex-col">
-            {col.map((item, i) => {
-              const Icon = item.Icon;
-              const active = pathname === item.to;
-              return (
-                <Link
-                  key={item.to}
-                  href={item.to}
-                  className="block py-3 transition-colors"
-                  style={{ borderTop: i > 0 ? `1px solid ${HAIRLINE}` : undefined }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon size={14} style={{ color: active ? RED : PAPER_MUTED }} />
-                    <span
-                      className="font-mono text-[11px] font-bold uppercase tracking-[0.08em]"
-                      style={{ color: active ? RED : PAPER }}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 line-clamp-2 text-[12px] leading-[1.4]" style={{ color: PAPER_MUTED }}>
-                    {item.description}
-                  </p>
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+      <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+        {SOLUTIONS.map((item) => {
+          const Icon = item.Icon;
+          const active = pathname === item.to;
+          return (
+            <Link
+              key={item.to}
+              href={item.to}
+              className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: "rgba(245,246,248,0.07)" }}
+              >
+                <Icon size={18} style={{ color: active ? RED : PAPER }} />
+              </div>
+              <div className="min-w-0">
+                <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
+                  {item.label}
+                </div>
+                <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
+                  {item.description}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
