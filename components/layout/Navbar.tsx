@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArrowRight,
   Building2,
   ChevronDown,
   Heart,
@@ -11,6 +12,7 @@ import {
   Phone,
   Scale,
   ShieldCheck,
+  Sparkles,
   TrendingUp,
   UserSearch,
   Users,
@@ -160,44 +162,76 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
 // (a competitor's nicer-looking dropdown), spacious rather than dense-with-dividers. Naming is
 // still open, David isn't sure "Built For" is right, kept as-is until he settles on something,
 // but the persona-based content (real agent types) stays, not the competitor's skills taxonomy.
+// The CTA card on the right mirrors the reference's purple "Browse all" card, in brand red, and
+// points at /agents, the real live storefront, not a placeholder.
 function solutionsPanel(pathname: string) {
   return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(660)}>
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(820)}>
       <div
         className="font-mono mb-4 text-[11px] font-bold uppercase tracking-[0.16em]"
         style={{ color: PAPER_MUTED }}
       >
         Built For
       </div>
-      <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-        {SOLUTIONS.map((item) => {
-          const Icon = item.Icon;
-          const active = pathname === item.to;
-          return (
-            <Link
-              key={item.to}
-              href={item.to}
-              className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: "rgba(245,246,248,0.07)" }}
+      <div className="flex gap-6">
+        <div className="grid flex-1 grid-cols-3 gap-x-6 gap-y-4">
+          {SOLUTIONS.map((item) => {
+            const Icon = item.Icon;
+            const active = pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                href={item.to}
+                className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
-                <Icon size={18} style={{ color: active ? RED : PAPER }} />
-              </div>
-              <div className="min-w-0">
-                <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
-                  {item.label}
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                  style={{ background: "rgba(245,246,248,0.07)" }}
+                >
+                  <Icon size={18} style={{ color: active ? RED : PAPER }} />
                 </div>
-                <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
-                  {item.description}
-                </p>
-              </div>
-            </Link>
-          );
-        })}
+                <div className="min-w-0">
+                  <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
+                    {item.label}
+                  </div>
+                  <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
+                    {item.description}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <Link
+          href={GET_STARTED_URL}
+          className="flex w-[190px] shrink-0 flex-col rounded-2xl p-5 transition-transform hover:scale-[1.02]"
+          style={{ background: `linear-gradient(160deg, ${RED}, #8f1517)` }}
+        >
+          <div
+            className="mb-8 flex h-10 w-10 items-center justify-center rounded-xl"
+            style={{ background: "rgba(255,255,255,0.18)" }}
+          >
+            <Sparkles size={18} color="#ffffff" />
+          </div>
+          <span
+            className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
+            style={{ color: "rgba(255,255,255,0.75)" }}
+          >
+            Built for every team
+          </span>
+          <span className="font-heading mt-1 text-[17px] font-bold leading-tight text-white">
+            Browse all agents
+          </span>
+          <p className="mt-2 text-[12px] leading-[1.45]" style={{ color: "rgba(255,255,255,0.8)" }}>
+            Ten agent types, one storefront. Live and ready to deploy.
+          </p>
+          <span className="mt-auto flex items-center gap-1.5 pt-4 text-[13px] font-bold text-white">
+            Browse all <ArrowRight size={14} />
+          </span>
+        </Link>
       </div>
     </div>
   );
