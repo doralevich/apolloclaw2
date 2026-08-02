@@ -144,8 +144,10 @@ export function SoftLink({ href, children }: { href: string; children: React.Rea
   );
 }
 
-// Hero-only dot grid + red glow, light dots on the dark bg (design direction: subtle,
-// radial-masked, sparing, hero and at most one or two other sections, never blanketed).
+// Hero-only grid + glow, matching the reference image David sent (an actual line grid, like
+// graph paper, not a dot pattern, radial-masked so it fades out toward the edges, sparing,
+// hero and at most one or two other sections, never blanketed). Bumped more visible than the
+// original dot version per "the hero should have more texture."
 export function TextureBackground() {
   return (
     <>
@@ -153,17 +155,17 @@ export function TextureBackground() {
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage: `radial-gradient(rgba(245,246,248,0.08) 1px, transparent 1px)`,
-          backgroundSize: "22px 22px",
-          maskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black 0%, transparent 75%)",
-          WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black 0%, transparent 75%)",
+          backgroundImage: `linear-gradient(rgba(245,246,248,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,246,248,0.1) 1px, transparent 1px)`,
+          backgroundSize: "40px 40px",
+          maskImage: "radial-gradient(ellipse 75% 65% at 50% 25%, black 0%, transparent 78%)",
+          WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 25%, black 0%, transparent 78%)",
         }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse 60% 50% at 50% 15%, rgba(225,46,48,0.14) 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse 60% 50% at 50% 15%, rgba(225,46,48,0.16) 0%, transparent 70%)`,
         }}
       />
     </>
