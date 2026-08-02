@@ -5,17 +5,17 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// New site IA (rebuild Phase 1): Industries · Solutions · Pricing · Resources · Company.
-// Most of these destinations are built in later phases (2-5) and will 404 until then, the nav
-// itself is a Phase 1 deliverable per the work order, applied sitewide immediately since it's
-// shared chrome.
+// New site IA (rebuild Phase 1): Industries · Solutions · Resources · Company. Pricing dropped
+// from the nav per David's call. Most of these destinations are built in later phases (2-5)
+// and will 404 until then, the nav itself is a Phase 1 deliverable per the work order, applied
+// sitewide immediately since it's shared chrome.
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
 // layout, dark navy utility bar on top (email, Log in, Get Started), main nav in white
-// underneath (category dropdowns, Pricing, Schedule a Consultation). The AI Agents mega-menu
-// was dropped from the top nav entirely per David's call that it's not needed here, moved into
-// the Footer instead (components/layout/Footer.tsx).
+// underneath (category dropdowns, Schedule a Consultation). The AI Agents mega-menu was dropped
+// from the top nav entirely per David's call that it's not needed here, moved into the Footer
+// instead (components/layout/Footer.tsx). Pricing dropped from the nav entirely too.
 
 const NAVY = "#0B1729";
 const NAVY_DEEP = "#070F1C";
@@ -205,8 +205,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Main nav: white, category dropdowns + Pricing centered, Schedule a Consultation
-            flush right (its own solid-red button, no longer inline after Pricing). */}
+        {/* Main nav: white, category dropdowns centered, Schedule a Consultation flush right. */}
         <nav style={{ background: NAV_WHITE, borderBottom: `1px solid ${NAV_HAIRLINE}` }}>
           <div className="container mx-auto flex h-[88px] items-center gap-4">
             <Link href="/" className="flex shrink-0 items-center">
@@ -217,16 +216,6 @@ export default function Navbar() {
               {groups.map((group) => (
                 <DesktopDropdown key={group.label} group={group} pathname={pathname} />
               ))}
-              <Link
-                href="/pricing"
-                className="relative whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors"
-                style={{ color: NAV_INK }}
-              >
-                Pricing
-                {pathname === "/pricing" && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
-                )}
-              </Link>
             </div>
 
             <a
@@ -282,13 +271,6 @@ export default function Navbar() {
                 )}
               </div>
             ))}
-            <Link
-              href="/pricing"
-              className="font-heading border-b py-4 text-xl font-semibold"
-              style={{ color: PAPER, borderColor: HAIRLINE }}
-            >
-              Pricing
-            </Link>
             <Link href="/login" className="py-4 text-lg font-semibold" style={{ color: PAPER }}>
               Log in
             </Link>

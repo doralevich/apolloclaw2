@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function HeroAssistantInput() {
+export default function HeroAssistantInput({ placeholder = "Type your message…" }: { placeholder?: string }) {
   const [value, setValue] = useState("");
 
   const submit = () => {
@@ -29,7 +29,7 @@ export default function HeroAssistantInput() {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
-        placeholder="Type your message…"
+        placeholder={placeholder}
         style={{
           flex: 1,
           background: "transparent",

@@ -1,5 +1,6 @@
 import HeroAssistantInput from "@/components/HeroAssistantInput";
-import { HAIRLINE, NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, SecondaryButton, TextureBackground } from "@/components/home/ui";
+import { HeroAssistantDemo } from "@/components/home/HeroAssistantDemo";
+import { NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, SecondaryButton, TextureBackground } from "@/components/home/ui";
 
 const GET_STARTED_URL = "/agents"; // see TODO(GET_STARTED_URL) in components/layout/Navbar.tsx
 const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
@@ -51,15 +52,16 @@ export function Hero() {
           >
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "#16a34a",
-                    boxShadow: "0 0 8px rgba(22,163,74,0.6)",
-                  }}
-                />
+                <span className="relative inline-flex" style={{ width: 8, height: 8 }}>
+                  <span
+                    className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                    style={{ background: "#16a34a" }}
+                  />
+                  <span
+                    className="relative inline-flex h-full w-full rounded-full"
+                    style={{ background: "#16a34a", boxShadow: "0 0 8px rgba(22,163,74,0.6)" }}
+                  />
+                </span>
                 <span className="font-mono text-xs font-bold" style={{ color: PAPER }}>
                   Apollo<span style={{ color: RED }}>[</span>Claw<span style={{ color: RED }}>]</span> Assistant
                 </span>
@@ -68,15 +70,9 @@ export function Hero() {
                 Online
               </span>
             </div>
-            <div
-              className="rounded-[10px] border px-4 py-3.5 text-[13.5px] leading-[1.6]"
-              style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.04)", color: PAPER_MUTED }}
-            >
-              Hi! Ask me anything about what an agent can do for your business, I&apos;ll point
-              you in the right direction.
-            </div>
-            <div className="flex flex-1 flex-col justify-end">
-              <HeroAssistantInput />
+            <HeroAssistantDemo />
+            <div className="mt-3 flex flex-1 flex-col justify-end">
+              <HeroAssistantInput placeholder="Or ask your own question…" />
             </div>
           </div>
         </div>
