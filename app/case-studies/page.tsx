@@ -154,25 +154,6 @@ export default function CaseStudiesPage() {
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section style={{ background: RED }} className="py-10">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[
-              { stat: "6", label: "Industries Served" },
-              { stat: "10–20 hrs", label: "Recovered Per Week" },
-              { stat: "2 Weeks", label: "Average Time to Live" },
-              { stat: "40%+", label: "Avg. Conversion Lift" },
-            ].map((s, i) => (
-              <div key={i}>
-                <p className="font-display text-3xl font-bold text-white">{s.stat}</p>
-                <p className="font-mono text-xs uppercase tracking-widest mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Case Studies Grid */}
       <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-5xl px-5 md:px-8">
