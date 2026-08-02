@@ -2,13 +2,30 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X } from "lucide-react";
+import {
+  Building2,
+  ChevronDown,
+  Heart,
+  Home,
+  Menu,
+  Phone,
+  Scale,
+  ShieldCheck,
+  TrendingUp,
+  UserSearch,
+  Users,
+  Wallet,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // New site IA (rebuild Phase 1): Industries · Solutions · Resources · Company. Pricing dropped
-// from the nav per David's call. Most of these destinations are built in later phases (2-5)
-// and will 404 until then, the nav itself is a Phase 1 deliverable per the work order, applied
-// sitewide immediately since it's shared chrome.
+// from the nav per David's call. Solutions is a "Built For" function-based mega-menu (David's
+// reference: Composio's toolkits dropdown), not the old by-company-size list, it's the broad,
+// industry-agnostic entry point Industries alone doesn't cover. Most of these destinations are
+// built in later phases (2-5) and will 404 until then, the nav itself is a Phase 1 deliverable
+// per the work order, applied sitewide immediately since it's shared chrome.
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
@@ -47,12 +64,24 @@ const INDUSTRIES = [
   { label: "Professional Services", to: "/industries/professional-services" },
 ];
 
-const SOLUTIONS = [
-  { label: "Startups", to: "/solutions/startups" },
-  { label: "Small Business", to: "/solutions/small-business" },
-  { label: "Mid-Market", to: "/solutions/mid-market" },
-  { label: "Enterprise", to: "/solutions/enterprise" },
+// "Built For" grid (David's reference: Composio's toolkits mega-menu), function-first instead
+// of the old by-company-size list, so the nav has one broadly-applicable entry point again
+// (Industries stays vertical-specific for SEO keywords, this is the "it's not just for law
+// firms and hospitals" counterweight). Reuses the real 10 agent types, same destinations as
+// the Footer's AI Agents column, just a richer presentation up here.
+const SOLUTIONS: { label: string; description: string; to: string; Icon: LucideIcon }[] = [
+  { label: "Receptionist", Icon: Phone, to: "/ai-agents/receptionist", description: "Answer calls, route messages, and book appointments, keep the front line covered." },
+  { label: "CEO", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
+  { label: "CFO", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
+  { label: "Sales", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
+  { label: "Recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
+  { label: "HR", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
+  { label: "Legal", Icon: Scale, to: "/ai-agents/legal", description: "Draft first-pass agreements, track deadlines, and flag what needs review." },
+  { label: "Medical", Icon: Heart, to: "/ai-agents/medical", description: "Manage intake, scheduling, and follow-ups, HIPAA-aware from the ground up." },
+  { label: "Real Estate", Icon: Home, to: "/ai-agents/real-estate", description: "Qualify leads, schedule showings, and draft listings, follow up on offers." },
+  { label: "Insurance", Icon: ShieldCheck, to: "/ai-agents/insurance", description: "Handle intake, quote requests, and claims follow-up, policy renewals." },
 ];
+const SOLUTIONS_COLUMNS = [SOLUTIONS.slice(0, 4), SOLUTIONS.slice(4, 7), SOLUTIONS.slice(7, 10)];
 
 const RESOURCES = [
   { label: "Blog", to: "/blog" },
@@ -126,6 +155,52 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
   );
 }
 
+// "Built For" mega-menu (David's reference: Composio's toolkits dropdown), icon + label +
+// truncated description, grouped into columns with a hairline divider between rows.
+function solutionsPanel(pathname: string) {
+  return (
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(680)}>
+      <div
+        className="font-mono mb-4 text-[11px] font-bold uppercase tracking-[0.16em]"
+        style={{ color: PAPER_MUTED }}
+      >
+        Built For
+      </div>
+      <div className="grid grid-cols-3 gap-x-8">
+        {SOLUTIONS_COLUMNS.map((col, ci) => (
+          <div key={ci} className="flex flex-col">
+            {col.map((item, i) => {
+              const Icon = item.Icon;
+              const active = pathname === item.to;
+              return (
+                <Link
+                  key={item.to}
+                  href={item.to}
+                  className="block py-3 transition-colors"
+                  style={{ borderTop: i > 0 ? `1px solid ${HAIRLINE}` : undefined }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon size={14} style={{ color: active ? RED : PAPER_MUTED }} />
+                    <span
+                      className="font-mono text-[11px] font-bold uppercase tracking-[0.08em]"
+                      style={{ color: active ? RED : PAPER }}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 text-[12px] leading-[1.4]" style={{ color: PAPER_MUTED }}>
+                    {item.description}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -150,12 +225,8 @@ export default function Navbar() {
     },
     {
       label: "Solutions",
-      active: (p) => p.startsWith("/solutions"),
-      render: () => (
-        <div className="overflow-hidden rounded-xl" style={panelStyle(220)}>
-          <div className="flex flex-col gap-0.5 p-2">{SOLUTIONS.map((item) => simpleLink(item, pathname))}</div>
-        </div>
-      ),
+      active: (p) => p.startsWith("/ai-agents"),
+      render: () => solutionsPanel(pathname),
     },
     {
       label: "Resources",
@@ -258,15 +329,25 @@ export default function Navbar() {
                 </button>
                 {openSection === group.label && (
                   <div className="flex flex-col gap-1 pb-4 pl-2">
-                    {(group.label === "Industries" ? INDUSTRIES
-                      : group.label === "Solutions" ? SOLUTIONS
-                      : group.label === "Resources" ? RESOURCES
-                      : COMPANY
-                    ).map((item) => (
-                      <Link key={item.to} href={item.to} className="py-2 text-base" style={{ color: PAPER_MUTED }}>
-                        {item.label}
-                      </Link>
-                    ))}
+                    {(
+                      (group.label === "Industries" ? INDUSTRIES
+                        : group.label === "Solutions" ? SOLUTIONS
+                        : group.label === "Resources" ? RESOURCES
+                        : COMPANY) as { label: string; to: string; Icon?: LucideIcon }[]
+                    ).map((item) => {
+                      const Icon = item.Icon ?? null;
+                      return (
+                        <Link
+                          key={item.to}
+                          href={item.to}
+                          className="flex items-center gap-2.5 py-2 text-base"
+                          style={{ color: PAPER_MUTED }}
+                        >
+                          {Icon && <Icon size={16} />}
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
