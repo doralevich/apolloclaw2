@@ -38,6 +38,14 @@
 
   --color-accent-blue: hsl(217 91% 50%);
 
+  /* Brand rebuild tokens (site rebuild, Phase 1: nav + homepage only), additive, deliberately
+     separate names from the tokens above so untouched pages (which use --color-background,
+     --color-primary, etc. via shared ui/* components) don't get reskinned mid-migration. Once
+     the rebuild reaches the rest of the site, these become the real --color-background/-primary. */
+  --color-cream: #F2F0EB;
+  --color-ink: #1A1A1A;
+  --color-brand-red: #E12E30;
+
   /* Radius */
   --radius: 16px;
   --radius-lg: 16px;
@@ -48,6 +56,11 @@
   --font-display: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
+  /* Brand rebuild headline font (Bricolage Grotesque, via next/font in app/layout.tsx). Plain
+     literal fallback here (matching the --font-body/--font-mono pattern above); the real
+     optimized font value is injected as this same custom property on <body>, which the
+     cascade prefers over this :root-level fallback. */
+  --font-heading: 'Bricolage Grotesque', sans-serif;
 
   /* Custom animations */
   --animate-fade-up: fade-up 0.6s ease-out 0.1s forwards;
