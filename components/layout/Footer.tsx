@@ -17,6 +17,21 @@ const navLinks = [
   { label: "Case Studies", to: "/case-studies" },
 ];
 
+// Moved here from the top nav (Navbar.tsx), David's call that a 10-item mega-menu isn't
+// needed up top for a site this size.
+const agentLinks = [
+  { label: "AI Receptionist", to: "/ai-agents/receptionist" },
+  { label: "CEO Agent", to: "/ai-agents/ceo" },
+  { label: "CFO Agent", to: "/ai-agents/cfo" },
+  { label: "Sales Agent", to: "/ai-agents/sales" },
+  { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
+  { label: "HR Agent", to: "/ai-agents/hr" },
+  { label: "Legal Agent", to: "/ai-agents/legal" },
+  { label: "Medical Agent", to: "/ai-agents/medical" },
+  { label: "Real Estate Agent", to: "/ai-agents/real-estate" },
+  { label: "Insurance Agent", to: "/ai-agents/insurance" },
+];
+
 const resourceLinks = [
   { label: "AI 101", to: "/ai-101" },
   { label: "FAQ", to: "/faq" },
@@ -223,7 +238,7 @@ export default function Footer() {
       <NewsletterSignup />
       <div style={{ background: NAVY, color: "#FFFFFF" }}>
         <div className="container mx-auto px-5 md:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
             <div>
               <ApolloClawLogo ink="#FFFFFF" height={40} />
               <p
@@ -236,6 +251,27 @@ export default function Footer() {
                 <br />
                 <span style={{ color: RED }}>Your AI.</span>
               </p>
+            </div>
+
+            <div>
+              <h4
+                className="font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
+              >
+                AI Agents
+              </h4>
+              <div className="flex flex-col gap-2">
+                {agentLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    href={link.to}
+                    className="font-body text-[14px] transition-colors hover:text-white"
+                    style={{ color: WHITE_MUTED }}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             <div>

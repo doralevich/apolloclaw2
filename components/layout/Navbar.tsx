@@ -5,15 +5,17 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// New site IA (rebuild Phase 1): AI Agents · Industries · Solutions · Pricing · Resources ·
-// Company. Most of these destinations are built in later phases (2-5) and will 404 until then,
-// the nav itself is a Phase 1 deliverable per the work order, applied sitewide immediately
-// since it's shared chrome.
+// New site IA (rebuild Phase 1): Industries · Solutions · Pricing · Resources · Company.
+// Most of these destinations are built in later phases (2-5) and will 404 until then, the nav
+// itself is a Phase 1 deliverable per the work order, applied sitewide immediately since it's
+// shared chrome.
 //
-// Layout pivoted mid-Phase-1 (David's call, stackhaus.ai reference): tried a slim utility bar
-// above the main nav for account/contact actions, then merged back into a single nav row per
-// David's direct follow-up request. Schedule a Consultation is a persistent nav CTA (goes to
-// Calendly, same link used everywhere else on the site).
+// Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
+// main nav, merged it into one row, then split back into two tiers, this is that two-tier
+// layout, dark navy utility bar on top (email, Log in, Get Started), main nav in white
+// underneath (category dropdowns, Pricing, Schedule a Consultation). The AI Agents mega-menu
+// was dropped from the top nav entirely per David's call that it's not needed here, moved into
+// the Footer instead (components/layout/Footer.tsx).
 
 const NAVY = "#0B1729";
 const NAVY_DEEP = "#070F1C";
@@ -22,27 +24,14 @@ const PAPER_MUTED = "rgba(245,246,248,0.6)";
 const RED = "#E12E30";
 const HAIRLINE = "rgba(245,246,248,0.1)";
 
-const CONTACT_EMAIL = "hello@apolloclaw.ai";
+// Main nav row is white now (David wanted to try it), separate ink tokens since PAPER/HAIRLINE
+// above are tuned for the dark utility bar, mobile drawer, and dropdown flyout panels.
+const NAV_WHITE = "#FFFFFF";
+const NAV_INK = "#1A1A1A";
+const NAV_INK_MUTED = "rgba(26,26,26,0.6)";
+const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
-const AGENTS = [
-  { label: "AI Receptionist", to: "/ai-agents/receptionist" },
-  { label: "CEO Agent", to: "/ai-agents/ceo" },
-  { label: "CFO Agent", to: "/ai-agents/cfo" },
-  { label: "Sales Agent", to: "/ai-agents/sales" },
-  { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
-  { label: "HR Agent", to: "/ai-agents/hr" },
-  { label: "Legal Agent", to: "/ai-agents/legal" },
-  { label: "Medical Agent", to: "/ai-agents/medical" },
-  { label: "Real Estate Agent", to: "/ai-agents/real-estate" },
-  { label: "Insurance Agent", to: "/ai-agents/insurance" },
-];
-const AGENTS_SECONDARY = [
-  { label: "How It Works", to: "/ai-agents/how-it-works" },
-  { label: "Self-Serve", to: "/ai-agents/self-serve" },
-  { label: "Enterprise", to: "/ai-agents/enterprise" },
-  { label: "Integrations", to: "/ai-agents/integrations" },
-  { label: "Trust Center", to: "/ai-agents/security" },
-];
+const CONTACT_EMAIL = "hello@apolloclaw.ai";
 
 const INDUSTRIES = [
   { label: "Law Firms", to: "/industries/law-firms" },
@@ -95,8 +84,8 @@ function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: strin
   return (
     <div className="group relative">
       <button
-        className="relative flex items-center gap-1 pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
-        style={{ color: active ? PAPER : PAPER_MUTED }}
+        className="relative flex items-center gap-1 whitespace-nowrap pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
+        style={{ color: active ? NAV_INK : NAV_INK_MUTED }}
       >
         {group.label}
         <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
@@ -148,20 +137,6 @@ export default function Navbar() {
 
   const groups: NavGroup[] = [
     {
-      label: "AI Agents",
-      active: (p) => p.startsWith("/ai-agents"),
-      render: () => (
-        <div className="overflow-hidden rounded-xl" style={panelStyle(560)}>
-          <div className="grid grid-cols-2 gap-0.5 p-2">
-            {AGENTS.map((item) => simpleLink(item, pathname))}
-          </div>
-          <div className="flex flex-wrap gap-x-1 gap-y-0.5 border-t p-2" style={{ borderColor: HAIRLINE }}>
-            {AGENTS_SECONDARY.map((item) => simpleLink(item, pathname))}
-          </div>
-        </div>
-      ),
-    },
-    {
       label: "Industries",
       active: (p) => p.startsWith("/industries"),
       render: () => (
@@ -205,10 +180,30 @@ export default function Navbar() {
   return (
     <>
       <div className="fixed left-0 right-0 top-0 z-50">
-        <nav style={{ background: NAVY, borderBottom: `1px solid ${HAIRLINE}` }}>
+        {/* Utility bar: email + account actions, the "blue bar" from the stackhaus.ai reference. */}
+        <div className="hidden h-9 items-center justify-between px-5 md:flex md:px-8" style={{ background: NAVY_DEEP }}>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-[12px]" style={{ color: PAPER_MUTED }}>
+            {CONTACT_EMAIL}
+          </a>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
+              Log in
+            </Link>
+            <Link
+              href={GET_STARTED_URL}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
+              style={{ background: RED, color: "#ffffff", padding: "5px 14px" }}
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
+
+        {/* Main nav: white, category dropdowns + Pricing + Schedule a Consultation. */}
+        <nav style={{ background: NAV_WHITE, borderBottom: `1px solid ${NAV_HAIRLINE}` }}>
           <div className="container mx-auto flex h-[72px] items-center gap-4 px-5 md:px-8">
             <Link href="/" className="flex shrink-0 items-center">
-              <ApolloClawLogo ink={PAPER} height={36} />
+              <ApolloClawLogo ink={NAV_INK} height={36} />
             </Link>
 
             <div className="hidden flex-1 items-center justify-center gap-5 md:flex">
@@ -218,49 +213,29 @@ export default function Navbar() {
               <Link
                 href="/pricing"
                 className="relative whitespace-nowrap pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
-                style={{ color: pathname === "/pricing" ? PAPER : PAPER_MUTED }}
+                style={{ color: pathname === "/pricing" ? NAV_INK : NAV_INK_MUTED }}
               >
                 Pricing
                 {pathname === "/pricing" && (
                   <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
                 )}
               </Link>
-            </div>
-
-            <div className="hidden shrink-0 items-center gap-2.5 md:flex">
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="hidden whitespace-nowrap text-[12px] xl:inline"
-                style={{ color: PAPER_MUTED }}
-              >
-                {CONTACT_EMAIL}
-              </a>
-              <Link href="/login" className="whitespace-nowrap text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
-                Log in
-              </Link>
               <a
                 href={CONSULT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden whitespace-nowrap rounded-[6px] border text-[11px] font-bold tracking-[0.03em] transition-colors hover:bg-white/[0.06] xl:inline-flex xl:items-center xl:justify-center"
-                style={{ borderColor: HAIRLINE, color: PAPER, padding: "6px 12px" }}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] border text-[12px] font-bold tracking-[0.02em] transition-colors hover:bg-black/[0.03]"
+                style={{ borderColor: NAV_HAIRLINE, color: NAV_INK, padding: "7px 14px" }}
               >
                 Schedule a Consultation
               </a>
-              <Link
-                href={GET_STARTED_URL}
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
-                style={{ background: RED, color: "#ffffff", padding: "6px 14px" }}
-              >
-                Get Started
-              </Link>
             </div>
 
             <button
-              className="p-2 md:hidden"
+              className="ml-auto p-2 md:hidden"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
-              style={{ color: PAPER }}
+              style={{ color: NAV_INK }}
             >
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -286,8 +261,7 @@ export default function Navbar() {
                 </button>
                 {openSection === group.label && (
                   <div className="flex flex-col gap-1 pb-4 pl-2">
-                    {(group.label === "AI Agents" ? [...AGENTS, ...AGENTS_SECONDARY]
-                      : group.label === "Industries" ? INDUSTRIES
+                    {(group.label === "Industries" ? INDUSTRIES
                       : group.label === "Solutions" ? SOLUTIONS
                       : group.label === "Resources" ? RESOURCES
                       : COMPANY

@@ -33,7 +33,9 @@ export default function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className="pt-[72px]">{children}</main>
+      {/* Mobile: just the 72px main nav (utility bar is desktop-only). Desktop: utility bar
+          (36px) + main nav (72px) = 108px. */}
+      <main className="pt-[72px] md:pt-[108px]">{children}</main>
       <Footer />
       <ChatWidget />
     </>

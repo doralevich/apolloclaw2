@@ -76,6 +76,7 @@
   --animate-fade-up: fade-up 0.6s ease-out 0.1s forwards;
   --animate-fade-up-delay-1: fade-up 0.6s ease-out 0.3s forwards;
   --animate-fade-up-delay-2: fade-up 0.6s ease-out 0.5s forwards;
+  --animate-marquee: marquee 28s linear infinite;
 }
 
 /* Keyframes */
@@ -92,6 +93,15 @@
 @keyframes accordion-up {
   from { height: var(--radix-accordion-content-height); opacity: 1; }
   to { height: 0; opacity: 0; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
 }
 
 /* Base */
