@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "The CFO Agent: AI Financial Agent for Small Business",
     description: "The CFO Agent is your AI financial advisor for small business: automated financial reporting AI that handles your close cycle so you focus on decisions.",
-    url: "https://apolloclaw.ai/use-cases/cfo",
+    url: "https://apolloclaw.ai/ai-agents/cfo",
     type: "website",
   },
 };
@@ -19,17 +19,17 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Service",
-      "@id": "https://apolloclaw.ai/use-cases/cfo#service",
+      "@id": "https://apolloclaw.ai/ai-agents/cfo#service",
       name: "The CFO Agent: AI Financial Intelligence",
       description: "AI assistant for CFOs that automates financial reporting, cash forecasting, board prep, and month-end close.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
-      url: "https://apolloclaw.ai/use-cases/cfo",
+      url: "https://apolloclaw.ai/ai-agents/cfo",
       serviceType: "AI Automation for Finance Leaders",
       areaServed: "United States",
     },
     {
       "@type": "FAQPage",
-      "@id": "https://apolloclaw.ai/use-cases/cfo#faq",
+      "@id": "https://apolloclaw.ai/ai-agents/cfo#faq",
       mainEntity: [
         { "@type": "Question", name: "What financial systems does the CFO Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to QuickBooks, NetSuite, Sage, Xero, and most major ERP platforms. We also work with Excel and Google Sheets-based reporting environments." } },
         { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },

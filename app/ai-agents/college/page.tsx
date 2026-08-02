@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "AI for College Students | Apollo Claw",
   description: "Apollo Claw's College Agent guides students from sophomore year of high school through college graduation: deadlines, coursework, applications, financial aid, and everything in between.",
   alternates: {
-    canonical: "https://apolloclaw.ai/use-cases/college",
+    canonical: "https://apolloclaw.ai/ai-agents/college",
   },
   openGraph: {
     title: "AI for College Students | Apollo Claw",
     description: "One agent that guides students through every year of school, from sophomore year of high school through college graduation.",
-    url: "https://apolloclaw.ai/use-cases/college",
+    url: "https://apolloclaw.ai/ai-agents/college",
     type: "website",
   },
 };

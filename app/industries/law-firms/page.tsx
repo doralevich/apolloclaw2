@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI for Insurance Agencies | Apollo Claw - Quotes, Renewals & Claims Automation",
-  description: "Apollo Claw builds AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team focuses on closing, not chasing.",
-  alternates: {
-    canonical: "https://apolloclaw.ai/use-cases/insurance",
-  },
+  title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines | Apollo[Claw]",
+  description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable hours, not admin.",
   openGraph: {
-    title: "AI for Insurance Agencies | Apollo Claw - Quotes, Renewals & Claims Automation",
-    description: "Apollo Claw builds AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team focuses on closing, not chasing.",
-    url: "https://apolloclaw.ai/use-cases/insurance",
+    title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines",
+    description: "The Law Agent handles intake, deadline tracking, document summaries, and billing so your attorneys focus on billable work.",
+    url: "https://apolloclaw.ai/industries/law-firms",
     type: "website",
   },
 };
@@ -19,118 +16,118 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Service",
-      "@id": "https://apolloclaw.ai/use-cases/insurance#service",
-      name: "The Insurance Agent: AI for Insurance Agencies",
-      description: "AI assistant for insurance agencies that automates renewal outreach, quote follow-up, and client communication.",
+      "@id": "https://apolloclaw.ai/industries/law-firms#service",
+      name: "The Law Agent: AI for Law Firms",
+      description: "AI assistant for law firms that automates client intake, deadline tracking, document summaries, and billing follow-up.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
-      url: "https://apolloclaw.ai/use-cases/insurance",
-      serviceType: "AI Automation for Insurance Agencies",
+      url: "https://apolloclaw.ai/industries/law-firms",
+      serviceType: "AI Automation for Law Firms",
       areaServed: "United States",
     },
     {
       "@type": "FAQPage",
-      "@id": "https://apolloclaw.ai/use-cases/insurance#faq",
+      "@id": "https://apolloclaw.ai/industries/law-firms#faq",
       mainEntity: [
-        { "@type": "Question", name: "What agency management systems does the Insurance Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Applied Epic, Hawksoft, AMS360, EZLynx, and most major AMS platforms. We also work with AgencyZoom and other sales CRMs." } },
-        { "@type": "Question", name: "How does it handle renewal outreach?", acceptedAnswer: { "@type": "Answer", text: "The agent identifies policies approaching renewal, initiates outreach at your configured lead time, and runs a follow-up sequence until the client responds or the renewal closes." } },
-        { "@type": "Question", name: "Will it replace my service team?", acceptedAnswer: { "@type": "Answer", text: "No. It handles the first-touch communication, follow-up sequences, and status updates. Your team handles conversations that require judgment." } },
-        { "@type": "Question", name: "Is client data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We connect using least-privilege API credentials and your data does not pass through servers we do not control." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most agencies are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
+        { "@type": "Question", name: "What case management systems does the Law Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Clio, MyCase, PracticePanther, Filevine, and most major legal practice management platforms." } },
+        { "@type": "Question", name: "How does client intake work?", acceptedAnswer: { "@type": "Answer", text: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects the relevant facts, and schedules consultations with the right attorney." } },
+        { "@type": "Question", name: "Is client data secure and ethically compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is configured to meet your firm's ethical obligations and bar requirements." } },
+        { "@type": "Question", name: "Will it replace my paralegals?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive case support." } },
+        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
       ],
     },
   ],
 };
 
 const features = [
-  { title: "Quote Follow-Up", desc: "AI follows up with prospects after quotes are sent, answers common questions, and keeps your pipeline moving without chasing every lead manually." },
-  { title: "Renewal Automation", desc: "Automated renewal outreach sequences start 90 days out, ensure every client is contacted on time, and escalate non-responders to your team." },
-  { title: "Claims Communication", desc: "Automated status update outreach to clients in open claims, reducing inbound calls and keeping clients informed throughout the process." },
-  { title: "New Business Qualification", desc: "Prospects qualified, applications started, and follow-up sequenced automatically so your producers spend time with buyers, not chasers." },
-  { title: "Certificate Management", desc: "Certificate of insurance requests logged, processed, and delivered without backing up your service team." },
-  { title: "Cross-Sell Outreach", desc: "Identifies policy gaps in existing accounts and initiates cross-sell conversations at the right time, automatically." },
+  { title: "Client Intake Automation", desc: "AI pre-screens inquiries, collects intake information, and routes qualified leads to the right attorney, before you touch it." },
+  { title: "Deadline & Matter Tracking", desc: "Court dates, filing deadlines, and statute of limitations tracked automatically. Alerts go out before anything becomes urgent." },
+  { title: "Research & Summary", desc: "Background on new matters, relevant case law, and document summaries delivered to your inbox. Research in minutes, not hours." },
+  { title: "Document Organization", desc: "Incoming documents categorized, named, and filed automatically. Your team finds what they need without hunting through inboxes." },
+  { title: "Client Communication", desc: "Status updates, document requests, and follow-up sequences handled automatically so clients stay informed without your team making calls." },
+  { title: "Billing & Time Capture", desc: "Activity logging prompts sent at the end of every day to capture unbilled time before it disappears. Billing gaps close." },
 ];
 
 const process = [
   {
     phase: "Day 1",
     title: "We Configure Your Agent",
-    desc: "We map your book of business, connect your AMS and communication tools, and configure the agent for your agency's workflow. No IT team required.",
+    desc: "We map your practice areas, connect your case management system, and configure the agent for your intake and matter workflow. No IT team required.",
   },
   {
     phase: "Week 1",
     title: "Your Agent Goes to Work",
-    desc: "Quote follow-ups go out automatically. Renewal sequences start running. Claims clients get status updates without your team making calls. You review, approve, move.",
+    desc: "Intake inquiries get screened and routed automatically. Deadline alerts start running. Document summaries arrive before your first meeting on every new matter.",
   },
   {
     phase: "Month 1+",
     title: "It Gets Smarter Over Time",
-    desc: "The agent learns your carrier mix, your client communication style, and your retention patterns. Most agencies see measurable improvement in renewal retention within the first month.",
+    desc: "The agent learns your preferred communication style, your matter types, and your billing patterns. Most firms report meaningful improvement in billable hour capture within the first month.",
   },
 ];
 
 const testimonials = [
   {
-    industry: "P&C",
-    quote: "We were losing renewals not because of price but because nobody followed up in time. The Insurance Agent now flags every policy 90 days out, drafts the outreach, and makes sure my producers actually send it. Retention is up and I stopped micromanaging the process.",
-    role: "Principal, Independent Insurance Agency",
-    detail: "Regional P&C agency, 12 producers, Southeast",
+    industry: "Litigation",
+    quote: "Partners bill by the hour. Every minute I spent on admin was money we weren't capturing. The Law Agent handles my inbox triage, meeting prep, and follow-ups. I got back about ten hours a week. That's ten hours of billable work I was leaving on the table.",
+    role: "Managing Partner",
+    detail: "Litigation firm, 18 attorneys, Mid-Atlantic",
   },
   {
-    industry: "Commercial Lines",
-    quote: "Commercial renewals have 30-page submissions and six-week timelines. The agent tracks every renewal 120 days out, initiates the data gathering, and follows up with clients when we need information. Nothing slips anymore.",
-    role: "Commercial Lines Manager",
-    detail: "Mid-market commercial agency, Northeast",
+    industry: "Personal Injury",
+    quote: "We get 200 intake inquiries a month. Before, half of them fell through because we couldn't follow up fast enough. The agent screens every inquiry within minutes, collects the basic facts, and schedules a consultation with the right attorney. Our retained cases went up 40%.",
+    role: "Founding Partner",
+    detail: "Personal injury practice, Long Island",
   },
   {
-    industry: "Health & Benefits",
-    quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar: reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
-    role: "Benefits Agency Principal",
-    detail: "Group health and benefits, 200 employer groups",
+    industry: "Real Estate Law",
+    quote: "Closing coordination is a constant back-and-forth between clients, lenders, and title. The agent manages the document collection, sends reminders, and tracks what's outstanding on every deal. Nothing falls through anymore.",
+    role: "Real Estate Attorney",
+    detail: "Boutique real estate law firm, Queens",
   },
   {
-    industry: "Life",
-    quote: "Life insurance sales run on follow-up. Most agents follow up twice and give up. The agent follows up twelve times over six weeks without anyone having to track it. My close rate on term applications went up 30%.",
-    role: "Life Insurance Agent",
-    detail: "Independent producer, Long Island",
+    industry: "Family Law",
+    quote: "Family law clients need constant communication. They call constantly because they're anxious and don't know what's happening. The agent sends proactive updates at every milestone. My paralegal was spending 3 hours a day on status calls. Now it's under 30 minutes.",
+    role: "Partner, Family Law Practice",
+    detail: "12-attorney firm, Northeast",
   },
   {
-    industry: "Claims",
-    quote: "During CAT season, clients would call us 10 times asking about their claim status. The agent now sends proactive updates at every milestone. Inbound calls dropped by half and client satisfaction went up.",
-    role: "Claims Manager",
-    detail: "Regional carrier, Southeast",
+    industry: "Corporate",
+    quote: "We do M&A work and due diligence requires reviewing hundreds of documents. The agent pre-processes everything: categorizes it, flags the key issues, and gives my associates a starting point instead of a blank page. Deal timelines got shorter.",
+    role: "Corporate Partner",
+    detail: "Mid-market M&A practice, New York",
   },
   {
-    industry: "Agency Owner",
-    quote: "I have 8 producers and nobody was consistent on follow-up. The agent runs a follow-up sequence on every quote, every prospect, every renewal. My whole agency is consistent now. Revenue is up 22% year over year.",
-    role: "Agency Owner",
-    detail: "Multi-line independent agency, 8 producers",
+    industry: "Immigration",
+    quote: "Immigration matters have long timelines and clients who need frequent updates. The agent tracks every case, sends status updates automatically, and alerts my team when government processing times change. Client satisfaction scores went up. Referrals followed.",
+    role: "Managing Attorney",
+    detail: "Immigration law firm, 6 attorneys",
   },
 ];
 
 const faqs = [
   {
-    q: "What agency management systems does the Insurance Agent connect to?",
-    a: "We connect to Applied Epic, Hawksoft, AMS360, EZLynx, and most major AMS platforms. We also work with spreadsheet-based systems. Every engagement is scoped individually.",
+    q: "What case management systems does the Law Agent connect to?",
+    a: "We connect to Clio, MyCase, PracticePanther, Filevine, and most major legal practice management platforms. We also work with firms using Outlook and shared drives. Every engagement is scoped individually.",
   },
   {
-    q: "How does it handle renewal outreach?",
-    a: "The agent identifies policies approaching renewal, initiates outreach at your configured lead time (typically 90 days), follows up on non-responses, and escalates to your producers when a decision is needed.",
+    q: "How does client intake work?",
+    a: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects key facts, and routes qualified prospects to the right attorney with a summary already written.",
   },
   {
-    q: "Will it replace my service team?",
-    a: "No. It handles the first-touch communication, follow-up sequences, and status updates. Your team handles coverage decisions, complex questions, and relationship conversations.",
+    q: "Is client data secure and ethically compliant?",
+    a: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is reviewed against applicable bar rules in your jurisdiction. We do not store client communications on third-party servers without explicit authorization.",
   },
   {
-    q: "Is client data secure?",
-    a: "Yes. We connect using least-privilege API credentials and your data does not pass through servers we do not control. All connections are encrypted.",
+    q: "Will it replace my paralegals?",
+    a: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive legal support instead of coordination.",
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most agencies are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your book of business, AMS, and workflow. Pricing is discussed during your consultation.",
+    a: "Every engagement is custom-scoped based on your practice size, case types, and systems. Pricing is discussed during your consultation.",
   },
 ];
 
@@ -139,7 +136,7 @@ const CREAM = "#F2F1ED";
 const CREAM2 = "#FAFAF7";
 const RED = "#D72B2B";
 
-export default function InsurancePage() {
+export default function LegalPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -149,12 +146,12 @@ export default function InsurancePage() {
         <div aria-hidden style={{ position: "absolute", top: "-20%", left: "50%", transform: "translateX(-50%)", width: "70%", height: "120%", background: "radial-gradient(ellipse at center, rgba(215,43,43,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
         <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-5xl relative z-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/the-insurance-agent-white.png" alt="The Insurance Agent" style={{ height: 52, width: "auto", margin: "0 auto 32px" }} />
+          <img src="/the-law-agent-white.png" alt="The Law Agent" style={{ height: 52, width: "auto", margin: "0 auto 32px" }} />
           <h1 className="font-display leading-[1.05] tracking-tight" style={{ fontSize: "3.75em", fontWeight: 800, color: "#ffffff", margin: 0 }}>
-            Write More Business.<br />Lose Fewer Renewals.
+            Bill More Hours.<br />Miss Zero Deadlines.
           </h1>
           <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 820, margin: "24px auto 0" }}>
-            The Insurance Agent handles quote follow-up, renewal outreach, claims communication, and client management so your producers stay focused on selling.
+            The Law Agent handles client intake, deadline tracking, document summaries, and client communication so your attorneys stay focused on billable work.
           </p>
           <div style={{ marginTop: 36 }}>
             <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
@@ -167,15 +164,15 @@ export default function InsurancePage() {
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">
-          <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Insurance Intelligence</p>
+          <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Legal Intelligence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
-            The Best Agencies Win on Follow-Up. Not Just Price.
+            The Best Attorneys Focus on Law. Not Admin.
           </h2>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Renewals slip through because outreach starts too late. Quotes go cold because follow-up falls off after two attempts. Claims clients call constantly because nobody updated them.
+            Client intake takes too long. Deadlines pile up across dozens of matters. Clients call for status updates nobody has time to give. Billing gaps eat into revenue that was already earned.
           </p>
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
-            The Insurance Agent handles all of it automatically: renewal sequences, quote follow-up, claims updates, certificate requests, so your producers stay in front of buyers instead of behind on admin.
+            The Law Agent handles the administrative layer: intake, communication, deadline tracking, document routing, so your team spends time on legal work, not operational overhead.
           </p>
         </div>
       </section>
@@ -186,8 +183,8 @@ export default function InsurancePage() {
         <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">A Dedicated AI Agent for Insurance Agencies</h2>
-            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.55)" }}>Custom-configured for your book of business. Connected to your AMS. Running from day one.</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">A Dedicated AI Agent for Law Firms</h2>
+            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.55)" }}>Custom-configured for your practice area. Connected to your case management system. Running from day one.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f, i) => (
@@ -231,8 +228,8 @@ export default function InsurancePage() {
         <div className="container mx-auto max-w-5xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Insurance Professionals Say After 30 Days</h2>
-            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Agencies across the country are retaining more clients and writing more new business.</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Law Firms Say After 30 Days</h2>
+            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Attorneys across practice areas are capturing more billable hours and losing fewer clients to slow follow-up.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {testimonials.map((t, i) => (
@@ -254,9 +251,9 @@ export default function InsurancePage() {
       <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Agencies That Are Done Losing Renewals to Slow Outreach</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Firms That Are Done Leaving Billable Hours on the Table</h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every Insurance Agent deployment is custom-scoped to your agency. Pricing is discussed during your consultation based on your book size, AMS, and producer workflow.
+            Every Law Agent deployment is custom-scoped to your firm. Pricing is discussed during your consultation based on your practice areas, matter volume, and systems.
           </p>
           <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
             Schedule Your Consultation
@@ -285,9 +282,9 @@ export default function InsurancePage() {
       {/* Final CTA */}
       <section style={{ background: RED }} className="py-20">
         <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">Ready to Meet Your AI Insurance Agent?</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">Ready to Meet Your AI Law Agent?</h2>
           <p className="font-body text-base mb-10" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Schedule a 30-minute consultation. We will show you exactly how The Insurance Agent would be configured for your agency.
+            Schedule a 30-minute consultation. We will show you exactly how The Law Agent would be configured for your firm.
           </p>
           <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: "#ffffff", color: RED, fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none" }}>
             Schedule Your Consultation

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AI for Real Estate Agents | Automate Lead Follow-Up & Listing Management",
     description: "The Real Estate Agent handles lead follow-up, listing management, showing coordination, and CRM updates so you can focus on closing deals.",
-    url: "https://apolloclaw.ai/use-cases/real-estate",
+    url: "https://apolloclaw.ai/industries/real-estate",
     type: "website",
   },
 };
@@ -16,17 +16,17 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Service",
-      "@id": "https://apolloclaw.ai/use-cases/real-estate#service",
+      "@id": "https://apolloclaw.ai/industries/real-estate#service",
       name: "The Real Estate Agent: AI for Real Estate Professionals",
       description: "AI assistant for real estate agents that automates lead follow-up, listing management, showing coordination, and CRM updates.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
-      url: "https://apolloclaw.ai/use-cases/real-estate",
+      url: "https://apolloclaw.ai/industries/real-estate",
       serviceType: "AI Automation for Real Estate Agents",
       areaServed: "United States",
     },
     {
       "@type": "FAQPage",
-      "@id": "https://apolloclaw.ai/use-cases/real-estate#faq",
+      "@id": "https://apolloclaw.ai/industries/real-estate#faq",
       mainEntity: [
         { "@type": "Question", name: "What CRM systems does the Real Estate Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Follow Up Boss, kvCORE, BoomTown, HubSpot, Salesforce, and most major real estate CRMs." } },
         { "@type": "Question", name: "How fast does it follow up with new leads?", acceptedAnswer: { "@type": "Answer", text: "Within two minutes of a lead coming in, regardless of time of day. Speed to lead is one of the highest-leverage improvements most agents see immediately." } },

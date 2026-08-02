@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AI for Medical Practices | Reduce No-Shows & Automate Patient Follow-Up",
     description: "The Medical Agent handles scheduling, patient follow-up, documentation prep, and intake so your providers stay focused on care.",
-    url: "https://apolloclaw.ai/use-cases/health",
+    url: "https://apolloclaw.ai/industries/medical-practices",
     type: "website",
   },
 };
@@ -16,17 +16,17 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Service",
-      "@id": "https://apolloclaw.ai/use-cases/health#service",
+      "@id": "https://apolloclaw.ai/industries/medical-practices#service",
       name: "The Medical Agent: AI for Healthcare Practices",
       description: "HIPAA-compliant AI assistant for medical practices that automates scheduling, patient follow-up, intake, and documentation prep.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
-      url: "https://apolloclaw.ai/use-cases/health",
+      url: "https://apolloclaw.ai/industries/medical-practices",
       serviceType: "AI Automation for Medical Practices",
       areaServed: "United States",
     },
     {
       "@type": "FAQPage",
-      "@id": "https://apolloclaw.ai/use-cases/health#faq",
+      "@id": "https://apolloclaw.ai/industries/medical-practices#faq",
       mainEntity: [
         { "@type": "Question", name: "What EHR and practice management systems does the Medical Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to athenahealth, Epic, DrChrono, Kareo, Jane App, and most major EHR and practice management platforms." } },
         { "@type": "Question", name: "Is this HIPAA compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We execute a Business Associate Agreement with every healthcare client. All data handling follows HIPAA requirements throughout." } },

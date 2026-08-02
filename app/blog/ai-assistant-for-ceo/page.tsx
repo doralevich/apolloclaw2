@@ -24,11 +24,11 @@ const CREAM2 = "#FAFAF7";
 const RED = "#D72B2B";
 
 const useCaseLinks = [
-  { label: "The CEO Agent", href: "/use-cases/ceo" },
-  { label: "The CFO Agent", href: "/use-cases/cfo" },
-  { label: "AI for Law Firms", href: "/use-cases/legal" },
-  { label: "AI for Insurance Agencies", href: "/use-cases/insurance" },
-  { label: "AI for Real Estate", href: "/use-cases/real-estate" },
+  { label: "The CEO Agent", href: "/ai-agents/ceo" },
+  { label: "The CFO Agent", href: "/ai-agents/cfo" },
+  { label: "AI for Law Firms", href: "/industries/law-firms" },
+  { label: "AI for Insurance Agencies", href: "/industries/insurance" },
+  { label: "AI for Real Estate", href: "/industries/real-estate" },
 ];
 
 const serviceLinks = [

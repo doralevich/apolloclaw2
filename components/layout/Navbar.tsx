@@ -25,10 +25,8 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 // Resources (Blog, AI 101, FAQ) stays dropped from the nav, those pages stay live, just not
 // linked from here.
 //
-// NOTE: /industries/* and /ai-agents/* are not built yet, so every link in both dropdowns 404s
-// today. The real vertical and role pages currently live at /use-cases/*. The nav itself is a
-// Phase 1 deliverable per the work order and those routes land in phases 2-5, but the redirect
-// or rewire is an open decision, flagged to David.
+// Every destination in both dropdowns is a real page. The old /use-cases/* tree was retired and
+// split along these same two axes, with 301s from every old path (see next.config.ts).
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier

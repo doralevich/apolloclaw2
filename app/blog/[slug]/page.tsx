@@ -109,14 +109,14 @@ export default async function BlogPostPage({
   } catch {}
 
   const useCaseLinks = [
-    { label: "Healthcare", href: "/use-cases/healthcare" },
-    { label: "Legal", href: "/use-cases/legal" },
-    { label: "Real Estate", href: "/use-cases/real-estate" },
-    { label: "Accounting", href: "/use-cases/accounting" },
-    { label: "Restaurants", href: "/use-cases/restaurants" },
-    { label: "E-Commerce", href: "/use-cases/ecommerce" },
-    { label: "Construction", href: "/use-cases/construction" },
-    { label: "Finance", href: "/use-cases/finance" },
+    { label: "Healthcare", href: "/industries/medical-practicescare" },
+    { label: "Legal", href: "/industries/law-firms" },
+    { label: "Real Estate", href: "/industries/real-estate" },
+    { label: "Accounting", href: "/industries/accounting-finance" },
+    { label: "Restaurants", href: "/industries/restaurants" },
+    { label: "E-Commerce", href: "/industries/ecommerce" },
+    { label: "Construction", href: "/industries/construction" },
+    { label: "Finance", href: "/industries/financial-services" },
   ];
 
   const serviceLinks = [

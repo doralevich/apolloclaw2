@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "AI for Recruiting & Staffing Agencies | Apollo Claw",
   description: "Apollo Claw builds AI agents for recruiters and staffing agencies. Automate resume screening, interview scheduling, and candidate follow-up so your team fills roles faster.",
   alternates: {
-    canonical: "https://apolloclaw.ai/use-cases/recruiting",
+    canonical: "https://apolloclaw.ai/ai-agents/recruiting",
   },
   openGraph: {
     title: "AI for Recruiting & Staffing Agencies | Apollo Claw",
     description: "Automate resume screening, interview scheduling, and candidate follow-up so your team fills roles faster.",
-    url: "https://apolloclaw.ai/use-cases/recruiting",
+    url: "https://apolloclaw.ai/ai-agents/recruiting",
     type: "website",
   },
 };

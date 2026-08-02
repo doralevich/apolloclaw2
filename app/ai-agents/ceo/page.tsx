@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AI Assistant for CEOs | Automate Executive Workflows",
     description: "The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.",
-    url: "https://apolloclaw.ai/use-cases/ceo",
+    url: "https://apolloclaw.ai/ai-agents/ceo",
     type: "website",
   },
 };
@@ -17,17 +17,17 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Service",
-      "@id": "https://apolloclaw.ai/use-cases/ceo#service",
+      "@id": "https://apolloclaw.ai/ai-agents/ceo#service",
       name: "The CEO Bot: AI Executive Assistant",
       description: "AI executive assistant for CEOs that handles briefings, communications, research, and follow-up automatically.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
-      url: "https://apolloclaw.ai/use-cases/ceo",
+      url: "https://apolloclaw.ai/ai-agents/ceo",
       serviceType: "AI Automation for Executives",
       areaServed: "United States",
     },
     {
       "@type": "FAQPage",
-      "@id": "https://apolloclaw.ai/use-cases/ceo#faq",
+      "@id": "https://apolloclaw.ai/ai-agents/ceo#faq",
       mainEntity: [
         { "@type": "Question", name: "What exactly is an AI bot?", acceptedAnswer: { "@type": "Answer", text: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up, without being asked." } },
         { "@type": "Question", name: "How is this different from using ChatGPT or a generic AI tool?", acceptedAnswer: { "@type": "Answer", text: "ChatGPT is a conversation tool. The CEO Bot is connected to your systems and configured for your workflows. It knows your voice, your priorities, your team. The difference is a calculator versus a chief of staff." } },
