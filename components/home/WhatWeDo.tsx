@@ -1,5 +1,5 @@
-import { Play } from "lucide-react";
-import { BracketLabel, BodyLarge, H2, INK_SOFT, NAVY_ELEVATED, Section, SoftLink } from "@/components/home/ui";
+import DayWithJohnEmbed from "@/components/DayWithJohnEmbed";
+import { BracketLabel, BodyLarge, H2, NAVY_ELEVATED, Section, SoftLink } from "@/components/home/ui";
 
 export function WhatWeDo() {
   return (
@@ -20,25 +20,16 @@ export function WhatWeDo() {
           </div>
         </div>
 
-        {/* [ASSET] Video slot , explainer video placeholder until David provides the real one.
-            Clearly labeled, not a fabricated product screenshot. */}
-        <div
-          className="flex aspect-video items-center justify-center rounded-2xl border"
-          style={{ borderColor: "rgba(245,246,248,0.12)", background: "rgba(245,246,248,0.03)" }}
-        >
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div
-              className="flex h-14 w-14 items-center justify-center rounded-full"
-              style={{ background: "rgba(245,246,248,0.08)" }}
-            >
-              <Play className="h-6 w-6" style={{ color: INK_SOFT }} />
-            </div>
-            <p className="text-sm font-semibold" style={{ color: INK_SOFT }}>
-              [ASSET] Explainer video placeholder
-            </p>
-            <p className="max-w-xs text-xs" style={{ color: INK_SOFT }}>
-              Swap for the real product walkthrough when ready.
-            </p>
+        {/* Real demo, "A Day with John" (components/DayWithJohnEmbed.tsx), moved here from the
+            old Services page per David's call. The demo's own content is a narrow portrait
+            panel, so the box is sized to match instead of a wide 16:9 slot with dead black
+            bars on either side. */}
+        <div className="mx-auto w-full max-w-[380px] lg:mx-0 lg:ml-auto">
+          <div
+            className="relative overflow-hidden rounded-2xl border"
+            style={{ borderColor: "rgba(245,246,248,0.12)", background: "#0B1729", aspectRatio: "3 / 4" }}
+          >
+            <DayWithJohnEmbed />
           </div>
         </div>
       </div>

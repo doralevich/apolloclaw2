@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ArrowRight,
   Building2,
   ChevronDown,
   Heart,
@@ -12,7 +11,6 @@ import {
   Phone,
   Scale,
   ShieldCheck,
-  Sparkles,
   TrendingUp,
   UserSearch,
   Users,
@@ -91,12 +89,10 @@ const RESOURCES = [
   { label: "Case Studies", to: "/case-studies" },
   { label: "AI 101", to: "/ai-101" },
   { label: "FAQ", to: "/faq" },
-  { label: "The Weekly Claw", to: "/the-weekly-claw" },
 ];
 
 const COMPANY = [
   { label: "About", to: "/about" },
-  { label: "Services", to: "/services" },
   { label: "Contact", to: "/contact" },
 ];
 
@@ -162,76 +158,45 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
 // (a competitor's nicer-looking dropdown), spacious rather than dense-with-dividers. Naming is
 // still open, David isn't sure "Built For" is right, kept as-is until he settles on something,
 // but the persona-based content (real agent types) stays, not the competitor's skills taxonomy.
-// The CTA card on the right mirrors the reference's purple "Browse all" card, in brand red, and
-// points at /agents, the real live storefront, not a placeholder.
+// (A red "Browse all agents" CTA card was tried here and reverted, David didn't like it.)
 function solutionsPanel(pathname: string) {
   return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(820)}>
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(660)}>
       <div
         className="font-mono mb-4 text-[11px] font-bold uppercase tracking-[0.16em]"
         style={{ color: PAPER_MUTED }}
       >
         Built For
       </div>
-      <div className="flex gap-6">
-        <div className="grid flex-1 grid-cols-3 gap-x-6 gap-y-4">
-          {SOLUTIONS.map((item) => {
-            const Icon = item.Icon;
-            const active = pathname === item.to;
-            return (
-              <Link
-                key={item.to}
-                href={item.to}
-                className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+        {SOLUTIONS.map((item) => {
+          const Icon = item.Icon;
+          const active = pathname === item.to;
+          return (
+            <Link
+              key={item.to}
+              href={item.to}
+              className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: "rgba(245,246,248,0.07)" }}
               >
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                  style={{ background: "rgba(245,246,248,0.07)" }}
-                >
-                  <Icon size={18} style={{ color: active ? RED : PAPER }} />
+                <Icon size={18} style={{ color: active ? RED : PAPER }} />
+              </div>
+              <div className="min-w-0">
+                <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
+                  {item.label}
                 </div>
-                <div className="min-w-0">
-                  <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
-                    {item.label}
-                  </div>
-                  <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
-                    {item.description}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        <Link
-          href={GET_STARTED_URL}
-          className="flex w-[190px] shrink-0 flex-col rounded-2xl p-5 transition-transform hover:scale-[1.02]"
-          style={{ background: `linear-gradient(160deg, ${RED}, #8f1517)` }}
-        >
-          <div
-            className="mb-8 flex h-10 w-10 items-center justify-center rounded-xl"
-            style={{ background: "rgba(255,255,255,0.18)" }}
-          >
-            <Sparkles size={18} color="#ffffff" />
-          </div>
-          <span
-            className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]"
-            style={{ color: "rgba(255,255,255,0.75)" }}
-          >
-            Built for every team
-          </span>
-          <span className="font-heading mt-1 text-[17px] font-bold leading-tight text-white">
-            Browse all agents
-          </span>
-          <p className="mt-2 text-[12px] leading-[1.45]" style={{ color: "rgba(255,255,255,0.8)" }}>
-            Ten agent types, one storefront. Live and ready to deploy.
-          </p>
-          <span className="mt-auto flex items-center gap-1.5 pt-4 text-[13px] font-bold text-white">
-            Browse all <ArrowRight size={14} />
-          </span>
-        </Link>
+                <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
+                  {item.description}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -267,7 +232,7 @@ export default function Navbar() {
     {
       label: "Resources",
       active: (p) =>
-        ["/blog", "/case-studies", "/ai-101", "/faq", "/the-weekly-claw"].some((p2) => p.startsWith(p2)),
+        ["/blog", "/case-studies", "/ai-101", "/faq"].some((p2) => p.startsWith(p2)),
       render: () => (
         <div className="overflow-hidden rounded-xl" style={panelStyle(220)}>
           <div className="flex flex-col gap-0.5 p-2">{RESOURCES.map((item) => simpleLink(item, pathname))}</div>
@@ -276,7 +241,7 @@ export default function Navbar() {
     },
     {
       label: "Company",
-      active: (p) => ["/about", "/services", "/contact"].some((p2) => p.startsWith(p2)),
+      active: (p) => ["/about", "/contact"].some((p2) => p.startsWith(p2)),
       render: () => (
         <div className="overflow-hidden rounded-xl" style={panelStyle(180)}>
           <div className="flex flex-col gap-0.5 p-2">{COMPANY.map((item) => simpleLink(item, pathname))}</div>

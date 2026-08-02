@@ -37,7 +37,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/faq",          priority: 0.8 },
     { path: "/blog",         priority: 0.8 },
     { path: "/case-studies", priority: 0.8 },
-    { path: "/services",     priority: 0.8 },
     { path: "/ai-implementation",             priority: 0.8 },
     { path: "/ai-consulting-small-business",  priority: 0.8 },
     { path: "/ai-consulting-new-york",        priority: 0.8 },

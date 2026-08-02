@@ -11,7 +11,6 @@ const WHITE_SUBTLE = "rgba(255,255,255,0.45)";
 
 const navLinks = [
   { label: "About", to: "/about" },
-  { label: "Services", to: "/services" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Insights", to: "/blog" },
   { label: "Case Studies", to: "/case-studies" },
