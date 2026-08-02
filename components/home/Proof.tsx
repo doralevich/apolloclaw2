@@ -5,7 +5,7 @@ import { BracketLabel, BodyLarge, H2, Section, SoftLink } from "@/components/hom
 // implied "used to wait on staff", per the source doc's open item , flagged for David.)
 export function Proof() {
   return (
-    <Section bg="#F2F0EB">
+    <Section>
       <div className="mx-auto max-w-3xl text-center">
         <BracketLabel>Proof</BracketLabel>
         <H2>Six executives. Seven to twelve hours back a week. Each.</H2>

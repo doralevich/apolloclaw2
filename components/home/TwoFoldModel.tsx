@@ -14,14 +14,17 @@ const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
 export function TwoFoldModel() {
   return (
-    <Section bg="#F2F0EB">
+    <Section>
       <div className="mx-auto max-w-2xl text-center">
         <BracketLabel>Two Ways to Build</BracketLabel>
         <H2>Build it yourself. Or have us build it.</H2>
       </div>
 
       <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border bg-white p-8" style={{ borderColor: HAIRLINE }}>
+        <div
+          className="rounded-2xl border p-8"
+          style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.03)" }}
+        >
           <h3 className="font-heading text-[1.375rem] font-semibold leading-[1.2]" style={{ color: INK }}>
             Run it yourself.
           </h3>
@@ -31,7 +34,10 @@ export function TwoFoldModel() {
             hosting, plus API credits as you use them.
           </p>
         </div>
-        <div className="rounded-2xl border bg-white p-8" style={{ borderColor: HAIRLINE }}>
+        <div
+          className="rounded-2xl border p-8"
+          style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.03)" }}
+        >
           <h3 className="font-heading text-[1.375rem] font-semibold leading-[1.2]" style={{ color: INK }}>
             Have us build it.
           </h3>

@@ -1,9 +1,9 @@
 import { Play } from "lucide-react";
-import { BracketLabel, BodyLarge, H2, INK_SOFT, Section, SoftLink } from "@/components/home/ui";
+import { BracketLabel, BodyLarge, H2, INK_SOFT, NAVY_ELEVATED, Section, SoftLink } from "@/components/home/ui";
 
 export function WhatWeDo() {
   return (
-    <Section bg="#ffffff">
+    <Section bg={NAVY_ELEVATED}>
       <div className="mx-auto max-w-3xl text-center">
         <BracketLabel>How It Works</BracketLabel>
         <H2>You tell us the job. We build the employee. It ships the work.</H2>
@@ -20,12 +20,12 @@ export function WhatWeDo() {
           Clearly labeled, not a fabricated product screenshot. */}
       <div
         className="mx-auto mt-12 flex aspect-video max-w-4xl items-center justify-center rounded-2xl border"
-        style={{ borderColor: "rgba(26,26,26,0.12)", background: "#F2F0EB" }}
+        style={{ borderColor: "rgba(245,246,248,0.12)", background: "rgba(245,246,248,0.03)" }}
       >
         <div className="flex flex-col items-center gap-3 text-center">
           <div
             className="flex h-14 w-14 items-center justify-center rounded-full"
-            style={{ background: "rgba(26,26,26,0.06)" }}
+            style={{ background: "rgba(245,246,248,0.08)" }}
           >
             <Play className="h-6 w-6" style={{ color: INK_SOFT }} />
           </div>

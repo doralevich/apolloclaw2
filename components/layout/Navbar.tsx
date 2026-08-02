@@ -6,13 +6,23 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // New site IA (rebuild Phase 1): AI Agents · Industries · Solutions · Pricing · Resources ·
-// Company, plus the Get Started / Schedule a Consultation / Log in CTA cluster. Most of these
-// destinations are built in later phases (2-5) and will 404 until then , the nav itself is a
-// Phase 1 deliverable per the work order, applied sitewide immediately since it's shared chrome.
+// Company. Most of these destinations are built in later phases (2-5) and will 404 until then,
+// the nav itself is a Phase 1 deliverable per the work order, applied sitewide immediately
+// since it's shared chrome.
+//
+// Layout pivoted mid-Phase-1 (David's call, stackhaus.ai reference): a slim utility bar above
+// the main nav carries the account/contact actions (email, Log in, Get Started), so the main
+// nav itself is just category links, no buttons. Schedule a Consultation dropped from the
+// persistent nav entirely (still prominent in the hero and close section).
 
-const INK = "#1A1A1A";
-const INK_MUTED = "rgba(26,26,26,0.65)";
+const NAVY = "#0B1729";
+const NAVY_DEEP = "#070F1C";
+const PAPER = "#F5F6F8";
+const PAPER_MUTED = "rgba(245,246,248,0.6)";
 const RED = "#E12E30";
+const HAIRLINE = "rgba(245,246,248,0.1)";
+
+const CONTACT_EMAIL = "hello@apolloclaw.ai";
 
 const AGENTS = [
   { label: "AI Receptionist", to: "/ai-agents/receptionist" },
@@ -72,7 +82,6 @@ const COMPANY = [
 // onboarding, confirmed working end to end today). Flagging for David to confirm this is the
 // intended "Get Started" destination, or provide a different one.
 const GET_STARTED_URL = "/agents";
-const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
 interface NavGroup {
   label: string;
@@ -86,7 +95,7 @@ function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: strin
     <div className="group relative">
       <button
         className="relative flex items-center gap-1 pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
-        style={{ color: active ? INK : INK_MUTED }}
+        style={{ color: active ? PAPER : PAPER_MUTED }}
       >
         {group.label}
         <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
@@ -103,9 +112,9 @@ function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: strin
 
 function panelStyle(minWidth: number): React.CSSProperties {
   return {
-    background: "#ffffff",
-    border: "1px solid rgba(26,26,26,0.1)",
-    boxShadow: "0 20px 60px rgba(26,26,26,0.12), 0 0 0 1px rgba(26,26,26,0.04)",
+    background: NAVY_DEEP,
+    border: `1px solid ${HAIRLINE}`,
+    boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
     minWidth,
   };
 }
@@ -117,8 +126,8 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
       key={item.to}
       href={item.to}
       className="block whitespace-nowrap rounded-lg px-3.5 py-2 text-[12.5px] font-semibold transition-colors"
-      style={{ color: active ? RED : INK }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(26,26,26,0.04)")}
+      style={{ color: active ? RED : PAPER }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.06)")}
       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
     >
       {item.label}
@@ -145,7 +154,7 @@ export default function Navbar() {
           <div className="grid grid-cols-2 gap-0.5 p-2">
             {AGENTS.map((item) => simpleLink(item, pathname))}
           </div>
-          <div className="flex flex-wrap gap-x-1 gap-y-0.5 border-t p-2" style={{ borderColor: "rgba(26,26,26,0.08)" }}>
+          <div className="flex flex-wrap gap-x-1 gap-y-0.5 border-t p-2" style={{ borderColor: HAIRLINE }}>
             {AGENTS_SECONDARY.map((item) => simpleLink(item, pathname))}
           </div>
         </div>
@@ -194,80 +203,72 @@ export default function Navbar() {
 
   return (
     <>
-      <nav
-        className="fixed left-0 right-0 top-0 z-50"
-        style={{ background: "#ffffff", borderBottom: "1px solid rgba(26,26,26,0.08)" }}
-      >
-        <div className="container mx-auto flex h-[84px] items-center justify-between px-5 md:px-8">
-          <Link href="/" className="flex shrink-0 items-center">
-            <ApolloClawLogo ink={INK} height={40} />
-          </Link>
-
-          <div className="hidden flex-1 items-center justify-center gap-7 md:flex">
-            {groups.map((group) => (
-              <DesktopDropdown key={group.label} group={group} pathname={pathname} />
-            ))}
-            <Link
-              href="/pricing"
-              className="relative pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
-              style={{ color: pathname === "/pricing" ? INK : INK_MUTED }}
-            >
-              Pricing
-              {pathname === "/pricing" && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
-              )}
-            </Link>
-          </div>
-
-          <div className="hidden shrink-0 items-center gap-4 md:flex">
-            <Link
-              href="/login"
-              className="text-[13px] font-bold tracking-[0.01em] transition-colors"
-              style={{ color: pathname.startsWith("/login") || pathname.startsWith("/dashboard") ? INK : INK_MUTED }}
-            >
+      <div className="fixed left-0 right-0 top-0 z-50">
+        {/* Utility bar: email + account actions, kept slim and separate from the category nav. */}
+        <div className="hidden h-9 items-center justify-between px-5 md:flex md:px-8" style={{ background: NAVY_DEEP }}>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="text-[12px]" style={{ color: PAPER_MUTED }}>
+            {CONTACT_EMAIL}
+          </a>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
               Log in
             </Link>
-            <a
-              href={CONSULT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-[8px] border text-[12px] font-bold tracking-[0.04em] transition-colors"
-              style={{ borderColor: INK, color: INK, padding: "9px 18px" }}
-            >
-              Schedule a Consultation
-            </a>
             <Link
               href={GET_STARTED_URL}
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-[8px] text-[12px] font-bold tracking-[0.04em] transition-opacity hover:opacity-90"
-              style={{ background: INK, color: "#ffffff", padding: "10px 20px" }}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
+              style={{ background: RED, color: "#ffffff", padding: "5px 14px" }}
             >
               Get Started
             </Link>
           </div>
-
-          <button
-            className="p-2 md:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Toggle menu"
-            style={{ color: INK }}
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
-      </nav>
+
+        {/* Main nav: category links only, no buttons. */}
+        <nav style={{ background: NAVY, borderBottom: `1px solid ${HAIRLINE}` }}>
+          <div className="container mx-auto flex h-[72px] items-center justify-between px-5 md:px-8">
+            <Link href="/" className="flex shrink-0 items-center">
+              <ApolloClawLogo ink={PAPER} height={36} />
+            </Link>
+
+            <div className="hidden flex-1 items-center justify-center gap-7 md:flex">
+              {groups.map((group) => (
+                <DesktopDropdown key={group.label} group={group} pathname={pathname} />
+              ))}
+              <Link
+                href="/pricing"
+                className="relative pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
+                style={{ color: pathname === "/pricing" ? PAPER : PAPER_MUTED }}
+              >
+                Pricing
+                {pathname === "/pricing" && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
+                )}
+              </Link>
+            </div>
+
+            <div className="hidden w-[92px] shrink-0 md:block" aria-hidden />
+
+            <button
+              className="p-2 md:hidden"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-label="Toggle menu"
+              style={{ color: PAPER }}
+            >
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </nav>
+      </div>
 
       {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-24 md:hidden"
-          style={{ background: "#ffffff" }}
-        >
+        <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-[72px] md:hidden" style={{ background: NAVY }}>
           <div className="flex flex-col gap-1 px-6 py-8">
             {groups.map((group) => (
-              <div key={group.label} className="border-b" style={{ borderColor: "rgba(26,26,26,0.08)" }}>
+              <div key={group.label} className="border-b" style={{ borderColor: HAIRLINE }}>
                 <button
                   onClick={() => setOpenSection((s) => (s === group.label ? null : group.label))}
                   className="font-heading flex w-full items-center justify-between py-4 text-xl font-semibold"
-                  style={{ color: INK }}
+                  style={{ color: PAPER }}
                 >
                   {group.label}
                   <ChevronDown
@@ -283,7 +284,7 @@ export default function Navbar() {
                       : group.label === "Resources" ? RESOURCES
                       : COMPANY
                     ).map((item) => (
-                      <Link key={item.to} href={item.to} className="py-2 text-base" style={{ color: INK_MUTED }}>
+                      <Link key={item.to} href={item.to} className="py-2 text-base" style={{ color: PAPER_MUTED }}>
                         {item.label}
                       </Link>
                     ))}
@@ -294,27 +295,21 @@ export default function Navbar() {
             <Link
               href="/pricing"
               className="font-heading border-b py-4 text-xl font-semibold"
-              style={{ color: INK, borderColor: "rgba(26,26,26,0.08)" }}
+              style={{ color: PAPER, borderColor: HAIRLINE }}
             >
               Pricing
             </Link>
-            <Link href="/login" className="py-4 text-lg font-semibold" style={{ color: INK }}>
+            <Link href="/login" className="py-4 text-lg font-semibold" style={{ color: PAPER }}>
               Log in
             </Link>
             <div className="mt-2 flex flex-col gap-3">
-              <a
-                href={CONSULT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-[8px] border text-[13px] font-bold tracking-[0.04em]"
-                style={{ borderColor: INK, color: INK, padding: "13px 20px" }}
-              >
-                Schedule a Consultation
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-center text-sm" style={{ color: PAPER_MUTED }}>
+                {CONTACT_EMAIL}
               </a>
               <Link
                 href={GET_STARTED_URL}
                 className="inline-flex items-center justify-center rounded-[8px] text-[13px] font-bold tracking-[0.04em]"
-                style={{ background: INK, color: "#ffffff", padding: "14px 20px" }}
+                style={{ background: RED, color: "#ffffff", padding: "14px 20px" }}
               >
                 Get Started
               </Link>

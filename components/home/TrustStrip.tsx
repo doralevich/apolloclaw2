@@ -4,7 +4,7 @@ import { BracketLabel, BodyLarge, H2, Section, SoftLink } from "@/components/hom
 // or add claims beyond this , "SOC 2 in progress" stays exactly that, never a seal.
 export function TrustStrip() {
   return (
-    <Section bg="#ffffff">
+    <Section>
       <div className="mx-auto max-w-3xl text-center">
         <BracketLabel>Security First</BracketLabel>
         <H2>Security is how we built the whole thing, from the ground up.</H2>

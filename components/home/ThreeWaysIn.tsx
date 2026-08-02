@@ -1,4 +1,4 @@
-import { BracketLabel, H2, HAIRLINE, INK, INK_MUTED, Section, SoftLink } from "@/components/home/ui";
+import { BracketLabel, H2, HAIRLINE, INK, INK_MUTED, NAVY_ELEVATED, Section, SoftLink } from "@/components/home/ui";
 
 const DOORS = [
   {
@@ -23,7 +23,7 @@ const DOORS = [
 
 export function ThreeWaysIn() {
   return (
-    <Section bg="#ffffff">
+    <Section bg={NAVY_ELEVATED}>
       <div className="mx-auto max-w-2xl text-center">
         <BracketLabel>Find Your Fit</BracketLabel>
         <H2>Three ways to start, depending on how you think about the work.</H2>
@@ -31,7 +31,11 @@ export function ThreeWaysIn() {
 
       <div className="mt-14 grid gap-6 md:grid-cols-3">
         {DOORS.map((door) => (
-          <div key={door.title} className="rounded-2xl border p-8" style={{ borderColor: HAIRLINE }}>
+          <div
+            key={door.title}
+            className="rounded-2xl border p-8"
+            style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.03)" }}
+          >
             <h3 className="font-heading text-[1.375rem] font-semibold leading-[1.2]" style={{ color: INK }}>
               {door.title}
             </h3>

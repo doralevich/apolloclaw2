@@ -54,14 +54,14 @@ export function NewsletterForm() {
         placeholder="you@company.com"
         required
         disabled={status === "loading"}
-        className="min-w-0 flex-1 rounded-[8px] border bg-white px-4 py-3 text-sm outline-none"
-        style={{ borderColor: HAIRLINE, color: INK }}
+        className="min-w-0 flex-1 rounded-[8px] border px-4 py-3 text-sm outline-none"
+        style={{ borderColor: HAIRLINE, color: INK, background: "rgba(245,246,248,0.05)" }}
       />
       <button
         type="submit"
         disabled={status === "loading" || !email}
         className="rounded-[8px] px-6 py-3 text-[13px] font-bold tracking-[0.02em] text-white disabled:opacity-60"
-        style={{ background: INK }}
+        style={{ background: RED }}
       >
         {status === "loading" ? "Subscribing..." : "Subscribe"}
       </button>

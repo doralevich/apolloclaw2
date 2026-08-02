@@ -41,10 +41,20 @@
   /* Brand rebuild tokens (site rebuild, Phase 1: nav + homepage only), additive, deliberately
      separate names from the tokens above so untouched pages (which use --color-background,
      --color-primary, etc. via shared ui/* components) don't get reskinned mid-migration. Once
-     the rebuild reaches the rest of the site, these become the real --color-background/-primary. */
+     the rebuild reaches the rest of the site, these become the real --color-background/-primary.
+     Direction pivoted mid-Phase-1 (David's call, after seeing the light-cream build live) from
+     light/cream to dark navy, reusing the site's existing navy #0B1729 rather than the brief's
+     original light palette. Red #E12E30 (true logo value) stays the accent either way. */
   --color-cream: #F2F0EB;
   --color-ink: #1A1A1A;
   --color-brand-red: #E12E30;
+  --color-navy: #0B1729;
+  --color-navy-deep: #070F1C;
+  --color-navy-elevated: #101F38;
+  --color-paper: #F5F6F8;
+  --color-paper-muted: rgba(245,246,248,0.65);
+  --color-paper-soft: rgba(245,246,248,0.45);
+  --color-hairline-dark: rgba(245,246,248,0.1);
 
   /* Radius */
   --radius: 16px;
