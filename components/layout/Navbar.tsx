@@ -5,12 +5,8 @@ import { usePathname } from "next/navigation";
 import {
   Building2,
   ChevronDown,
-  Heart,
-  Home,
   Menu,
   Phone,
-  Scale,
-  ShieldCheck,
   TrendingUp,
   UserSearch,
   Users,
@@ -20,15 +16,19 @@ import {
 } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Solutions · Case Studies · Company ·
-// Contact. Solutions is a mega-menu with two columns side by side, "By Industry" (the old
-// standalone Industries dropdown) and "By Department" (the old "Built For" function-based grid),
-// merged into one trigger so the nav isn't stuck presenting only vertical-specific destinations.
-// Company is a small dropdown (About, Security), briefly flattened into standalone top-level
-// links and then put back per David's call. Resources (Blog, AI 101, FAQ) stays dropped from the
-// nav entirely, those pages stay live, just not linked from here. Most Solutions destinations are
-// built in later phases (2-5) and will 404 until then, the nav itself is a Phase 1 deliverable per
-// the work order, applied sitewide immediately since it's shared chrome.
+// Site IA, current top-level order per David's direct call: Company · Industries · Departments ·
+// Case Studies · Contact. Industries (which business you run) and Departments (which role you're
+// hiring) are two separate triggers, briefly merged into one two-column "Solutions" mega-menu and
+// then split back out as too dense. The two lists are now strictly non-overlapping: Legal,
+// Medical, Real Estate, and Insurance were dropped from Departments because each resolves to the
+// same page as its Industries counterpart. Company is a small dropdown (About, Security).
+// Resources (Blog, AI 101, FAQ) stays dropped from the nav, those pages stay live, just not
+// linked from here.
+//
+// NOTE: /industries/* and /ai-agents/* are not built yet, so every link in both dropdowns 404s
+// today. The real vertical and role pages currently live at /use-cases/*. The nav itself is a
+// Phase 1 deliverable per the work order and those routes land in phases 2-5, but the redirect
+// or rewire is an open decision, flagged to David.
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
@@ -69,22 +69,18 @@ const INDUSTRIES = [
   { label: "Academics", to: "/ai-consulting-education" },
 ];
 
-// "Built For" grid (David's reference: Composio's toolkits mega-menu), function-first instead
-// of the old by-company-size list, so the nav has one broadly-applicable entry point again
-// (Industries stays vertical-specific for SEO keywords, this is the "it's not just for law
-// firms and hospitals" counterweight). Reuses the real 10 agent types, same destinations as
-// the Footer's AI Agents column, just a richer presentation up here.
-const SOLUTIONS: { label: string; description: string; to: string; Icon: LucideIcon }[] = [
+// Departments: the role you're hiring the agent into, purely functional. Deliberately holds no
+// vertical names. Legal, Medical, Real Estate, and Insurance used to sit here too, but each one
+// resolves to the same page as its Industries entry (David caught this: "I see a law firms and a
+// Legal page, is that redundant?"), so the verticals live under Industries only and this list
+// stays the "which job" axis. Same destinations as the Footer's AI Agents column.
+const DEPARTMENTS: { label: string; description: string; to: string; Icon: LucideIcon }[] = [
   { label: "Receptionist", Icon: Phone, to: "/ai-agents/receptionist", description: "Answer calls, route messages, and book appointments, keep the front line covered." },
   { label: "CEO", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
   { label: "CFO", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
   { label: "Sales", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
   { label: "Recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
   { label: "HR", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
-  { label: "Legal", Icon: Scale, to: "/ai-agents/legal", description: "Draft first-pass agreements, track deadlines, and flag what needs review." },
-  { label: "Medical", Icon: Heart, to: "/ai-agents/medical", description: "Manage intake, scheduling, and follow-ups, HIPAA-aware from the ground up." },
-  { label: "Real Estate", Icon: Home, to: "/ai-agents/real-estate", description: "Qualify leads, schedule showings, and draft listings, follow up on offers." },
-  { label: "Insurance", Icon: ShieldCheck, to: "/ai-agents/insurance", description: "Handle intake, quote requests, and claims follow-up, policy renewals." },
 ];
 
 const COMPANY = [
@@ -103,6 +99,9 @@ interface NavGroup {
   label: string;
   active: (pathname: string) => boolean;
   render: () => React.ReactNode;
+  // What the mobile drawer lists when this group is expanded. Carried on the group itself so
+  // the drawer never has to branch on the label string to find the right array.
+  mobileItems: { label: string; to: string; Icon?: LucideIcon }[];
 }
 
 // Plain top-level links (Case Studies, Contact), no dropdown, just an active-state underline
@@ -179,66 +178,50 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
   );
 }
 
-// Merged "By Industry / By Department" mega-menu, matching the reference image's actual
-// structure (two columns in one flyout), not just its icon-tile style, per David's direct
-// call after asking "didn't we say we'd change that so we weren't so stuck with those areas?".
-// Left column: existing Industries list, plain text, SEO-important vertical keywords, kept
-// dense since there are 11 of them. Right column: existing persona-based "Built For" list,
-// icon + title + description, unchanged content, just reflowed into 2 sub-columns to fit.
-function solutionsPanel(pathname: string) {
+// Industries and Departments are two separate flyouts again (David: "let's do by Industry and
+// By Departments, that's too much, should be separated"). They were briefly merged into one
+// 820px-wide two-column mega-menu, which read as too dense. Industries stays a plain text list
+// (vertical keywords, SEO-important), Departments keeps the icon-tile treatment.
+function industriesPanel(pathname: string) {
   return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(820)}>
-      <div className="flex gap-6">
-        <div className="w-[200px] shrink-0" style={{ borderRight: `1px solid ${HAIRLINE}`, paddingRight: 20 }}>
-          <div
-            className="font-mono mb-3 text-[11px] font-bold uppercase tracking-[0.16em]"
-            style={{ color: PAPER_MUTED }}
-          >
-            By Industry
-          </div>
-          <div className="flex flex-col gap-0.5">
-            {INDUSTRIES.map((item) => simpleLink(item, pathname))}
-          </div>
-        </div>
+    <div className="overflow-hidden rounded-xl p-2" style={panelStyle(240)}>
+      <div className="flex flex-col gap-0.5">{INDUSTRIES.map((item) => simpleLink(item, pathname))}</div>
+    </div>
+  );
+}
 
-        <div className="flex-1">
-          <div
-            className="font-mono mb-3 text-[11px] font-bold uppercase tracking-[0.16em]"
-            style={{ color: PAPER_MUTED }}
-          >
-            By Department
-          </div>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-            {SOLUTIONS.map((item) => {
-              const Icon = item.Icon;
-              const active = pathname === item.to;
-              return (
-                <Link
-                  key={item.to}
-                  href={item.to}
-                  className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                    style={{ background: "rgba(245,246,248,0.07)" }}
-                  >
-                    <Icon size={18} style={{ color: active ? RED : PAPER }} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
-                      {item.label}
-                    </div>
-                    <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
-                      {item.description}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+function departmentsPanel(pathname: string) {
+  return (
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(560)}>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+        {DEPARTMENTS.map((item) => {
+          const Icon = item.Icon;
+          const active = pathname === item.to;
+          return (
+            <Link
+              key={item.to}
+              href={item.to}
+              className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: "rgba(245,246,248,0.07)" }}
+              >
+                <Icon size={18} style={{ color: active ? RED : PAPER }} />
+              </div>
+              <div className="min-w-0">
+                <div className="font-heading text-[14px] font-bold" style={{ color: active ? RED : PAPER }}>
+                  {item.label}
+                </div>
+                <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.35]" style={{ color: PAPER_MUTED }}>
+                  {item.description}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -254,32 +237,41 @@ export default function Navbar() {
     setOpenSection(null);
   }, [pathname]);
 
-  // Top-level order per David's direct call: Solutions, Case Studies, Company (About, Security),
-  // Contact. About and Security are back under a "Company" dropdown instead of standalone links.
-  // Resources (Blog, AI 101, FAQ) stays dropped from the nav, those pages stay live, just not
-  // linked from here.
+  // Top-level order per David's direct call: Company (About, Security), Industries, Departments,
+  // Case Studies, Contact. Industries and Departments are two separate triggers again after a
+  // brief run as one merged "Solutions" mega-menu. Resources (Blog, AI 101, FAQ) stays dropped
+  // from the nav, those pages stay live, just not linked from here.
   const navEntries: NavEntry[] = [
     {
       kind: "group",
-      label: "Solutions",
-      active: (p) => p.startsWith("/ai-agents") || p.startsWith("/industries") || p === "/ai-consulting-education",
-      render: () => solutionsPanel(pathname),
+      label: "Company",
+      active: (p) => ["/about", "/security"].some((p2) => p.startsWith(p2)),
+      mobileItems: COMPANY,
+      render: () => (
+        <div className="overflow-hidden rounded-xl" style={panelStyle(180)}>
+          <div className="flex flex-col gap-0.5 p-2">{COMPANY.map((item) => simpleLink(item, pathname))}</div>
+        </div>
+      ),
+    },
+    {
+      kind: "group",
+      label: "Industries",
+      active: (p) => p.startsWith("/industries") || p === "/ai-consulting-education",
+      mobileItems: INDUSTRIES,
+      render: () => industriesPanel(pathname),
+    },
+    {
+      kind: "group",
+      label: "Departments",
+      active: (p) => p.startsWith("/ai-agents"),
+      mobileItems: DEPARTMENTS,
+      render: () => departmentsPanel(pathname),
     },
     {
       kind: "link",
       label: "Case Studies",
       to: "/case-studies",
       active: (p) => p.startsWith("/case-studies"),
-    },
-    {
-      kind: "group",
-      label: "Company",
-      active: (p) => ["/about", "/security"].some((p2) => p.startsWith(p2)),
-      render: () => (
-        <div className="overflow-hidden rounded-xl" style={panelStyle(180)}>
-          <div className="flex flex-col gap-0.5 p-2">{COMPANY.map((item) => simpleLink(item, pathname))}</div>
-        </div>
-      ),
     },
     {
       kind: "link",
@@ -387,66 +379,22 @@ export default function Navbar() {
                     className={`transition-transform duration-200 ${openSection === entry.label ? "rotate-180" : ""}`}
                   />
                 </button>
-                {openSection === entry.label && entry.label === "Solutions" && (
-                  <div className="flex flex-col gap-4 pb-4 pl-2">
-                    <div>
-                      <div
-                        className="font-mono mb-1 text-[11px] font-bold uppercase tracking-[0.16em]"
-                        style={{ color: PAPER_MUTED }}
-                      >
-                        By Industry
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {INDUSTRIES.map((item) => (
-                          <Link
-                            key={item.to}
-                            href={item.to}
-                            className="flex items-center gap-2.5 py-2 text-base"
-                            style={{ color: PAPER_MUTED }}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div
-                        className="font-mono mb-1 text-[11px] font-bold uppercase tracking-[0.16em]"
-                        style={{ color: PAPER_MUTED }}
-                      >
-                        By Department
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {SOLUTIONS.map((item) => {
-                          const Icon = item.Icon;
-                          return (
-                            <Link
-                              key={item.to}
-                              href={item.to}
-                              className="flex items-center gap-2.5 py-2 text-base"
-                              style={{ color: PAPER_MUTED }}
-                            >
-                              <Icon size={16} />
-                              {item.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {openSection === entry.label && entry.label !== "Solutions" && (
+                {openSection === entry.label && (
                   <div className="flex flex-col gap-1 pb-4 pl-2">
-                    {COMPANY.map((item) => (
-                      <Link
-                        key={item.to}
-                        href={item.to}
-                        className="flex items-center gap-2.5 py-2 text-base"
-                        style={{ color: PAPER_MUTED }}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
+                    {entry.mobileItems.map((item) => {
+                      const Icon = item.Icon;
+                      return (
+                        <Link
+                          key={item.to}
+                          href={item.to}
+                          className="flex items-center gap-2.5 py-2 text-base"
+                          style={{ color: PAPER_MUTED }}
+                        >
+                          {Icon && <Icon size={16} />}
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
