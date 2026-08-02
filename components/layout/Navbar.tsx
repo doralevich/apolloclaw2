@@ -8,6 +8,7 @@ import {
   Menu,
   Phone,
   TrendingUp,
+  User,
   UserSearch,
   Users,
   Wallet,
@@ -79,6 +80,7 @@ const DEPARTMENTS: { label: string; description: string; to: string; Icon: Lucid
   { label: "Sales", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
   { label: "Recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
   { label: "HR", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
+  { label: "Personal", Icon: User, to: "/ai-agents/personal", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
 ];
 
 const COMPANY = [
