@@ -70,8 +70,8 @@ export function Hero() {
                 Online
               </span>
             </div>
-            <HeroAssistantDemo />
-            <div className="mt-3 flex flex-1 flex-col justify-end">
+            <HeroAssistantDemo className="min-h-0 flex-1" />
+            <div className="mt-3">
               <HeroAssistantInput placeholder="Or ask your own question…" />
             </div>
           </div>

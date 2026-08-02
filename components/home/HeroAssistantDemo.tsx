@@ -3,24 +3,32 @@
 import { useEffect, useRef, useState } from "react";
 import { HAIRLINE, PAPER, PAPER_MUTED, RED } from "@/components/home/ui";
 
-// Looping typed Q&A so the hero's assistant card reads as alive rather than a static screenshot.
-// Every answer paraphrases something already said elsewhere in the approved copy (Hero, What We
-// Do, Two-Fold Model, Trust Strip), nothing new is claimed here. Purely presentational, doesn't
-// call any real backend, the real HeroAssistantInput below it still does that.
-const EXCHANGES = [
-  { q: "Does it work in Slack and WhatsApp?", a: "Yes, it works where your team already works, Slack, WhatsApp, email, and more." },
-  { q: "How long does setup take?", a: "Answer a few questions and your agent is ready, with a dashboard and integrations from day one." },
-  { q: "Will it check with me before anything big?", a: "Always. It checks in before anything that matters, you stay in control." },
-  { q: "What about security?", a: "Encrypted in transit and at rest, isolated per client, hosted in the US." },
-  { q: "Can you build it for me instead?", a: "Sure, we design, deploy, and run it for you, with a 30-day onboarding." },
+// A continuous, looping conversation between a new visitor and the assistant, instead of
+// isolated Q&A pairs, so the hero reads as an actual chat happening rather than a static
+// screenshot. Every agent line paraphrases something already said elsewhere in the approved
+// copy (Hero, What We Do, Two-Fold Model, Trust Strip), nothing new is claimed. Purely
+// presentational, doesn't call any real backend, the real HeroAssistantInput below it does.
+type Role = "user" | "agent";
+const CONVERSATION: { role: Role; text: string }[] = [
+  { role: "user", text: "Hi, what does Apollo[Claw] actually do?" },
+  { role: "agent", text: "We build AI agents that do real work for your business, research, follow-ups, reports, scheduling, then check with you before anything that matters." },
+  { role: "user", text: "Does it work with the tools we already use?" },
+  { role: "agent", text: "Yes, Slack, WhatsApp, email, Google Workspace, Microsoft 365, Dropbox, wherever your team already works." },
+  { role: "user", text: "How fast can we get one running?" },
+  { role: "agent", text: "Answer a few questions and it's ready, dashboard and integrations included from day one." },
+  { role: "user", text: "What if we'd rather you build and run it for us?" },
+  { role: "agent", text: "We can do that too, a 30-day onboarding, we design, deploy, and run it for you." },
+  { role: "user", text: "Is our data safe?" },
+  { role: "agent", text: "Encrypted in transit and at rest, isolated per client, hosted in the US." },
+  { role: "user", text: "Great, how do I get started?" },
+  { role: "agent", text: "Hit Get Started below, or schedule a call if you'd rather talk it through first." },
 ];
 
-const TYPE_MS = 24;
-const THINK_MS = 700;
-const HOLD_MS = 2600;
-const GAP_MS = 500;
-
-type Phase = "typingQ" | "thinking" | "typingA" | "holding" | "gap";
+const TYPE_MS = 22;
+const THINK_MS = 650;
+const BETWEEN_MS = 500;
+const END_HOLD_MS = 3200;
+const RESTART_GAP_MS = 700;
 
 function TypingDots() {
   return (
@@ -29,10 +37,7 @@ function TypingDots() {
         <span
           key={i}
           className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{
-            background: PAPER_MUTED,
-            animation: `hero-dot 1s ease-in-out ${i * 0.15}s infinite`,
-          }}
+          style={{ background: PAPER_MUTED, animation: `hero-dot 1s ease-in-out ${i * 0.15}s infinite` }}
         />
       ))}
       <style>{`
@@ -42,12 +47,36 @@ function TypingDots() {
   );
 }
 
-export function HeroAssistantDemo() {
-  const [pairIndex, setPairIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>("typingQ");
-  const [qText, setQText] = useState("");
-  const [aText, setAText] = useState("");
+function Bubble({ role, text, cursor }: { role: Role; text: string; cursor?: boolean }) {
+  const isUser = role === "user";
+  return (
+    <div
+      className={`rounded-[10px] border px-4 py-2.5 text-[13px] leading-[1.55] ${isUser ? "self-start" : ""}`}
+      style={{
+        borderColor: HAIRLINE,
+        background: isUser ? "rgba(225,46,48,0.06)" : "rgba(245,246,248,0.04)",
+        color: isUser ? PAPER : PAPER_MUTED,
+        maxWidth: isUser ? "85%" : undefined,
+      }}
+    >
+      {text || " "}
+      {cursor && <span className="animate-pulse" style={{ color: RED }}>|</span>}
+    </div>
+  );
+}
+
+export function HeroAssistantDemo({ className = "" }: { className?: string }) {
+  const [revealed, setRevealed] = useState<{ role: Role; text: string }[]>([]);
+  const [typingText, setTypingText] = useState("");
+  const [typingRole, setTypingRole] = useState<Role | null>(null);
+  const [thinking, setThinking] = useState(false);
   const pausedRef = useRef(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [revealed, typingText, thinking]);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,53 +86,49 @@ export function HeroAssistantDemo() {
     };
 
     async function run() {
-      // Yield a tick first, state updates below are all scheduled work, not synchronous
-      // effect-body mutations.
       await Promise.resolve();
       if (cancelled) return;
 
       if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-        setQText(EXCHANGES[0].q);
-        setAText(EXCHANGES[0].a);
-        setPhase("holding");
+        setRevealed(CONVERSATION);
         return;
       }
 
-      let i = 0;
+      let idx = 0;
       while (!cancelled) {
-        const { q, a } = EXCHANGES[i % EXCHANGES.length];
-        setPairIndex(i % EXCHANGES.length);
+        if (idx >= CONVERSATION.length) {
+          await wait(END_HOLD_MS);
+          if (cancelled) break;
+          setRevealed([]);
+          await wait(RESTART_GAP_MS);
+          idx = 0;
+          continue;
+        }
 
-        setPhase("typingQ");
-        setQText("");
-        setAText("");
-        for (let c = 1; c <= q.length && !cancelled; c++) {
+        const msg = CONVERSATION[idx];
+        setTypingRole(msg.role);
+        setTypingText("");
+
+        if (msg.role === "agent") {
           await waitIfPaused();
-          setQText(q.slice(0, c));
+          setThinking(true);
+          await wait(THINK_MS);
+          if (cancelled) break;
+          setThinking(false);
+        }
+
+        for (let c = 1; c <= msg.text.length && !cancelled; c++) {
+          await waitIfPaused();
+          setTypingText(msg.text.slice(0, c));
           await wait(TYPE_MS);
         }
         if (cancelled) break;
 
-        await waitIfPaused();
-        setPhase("thinking");
-        await wait(THINK_MS);
-        if (cancelled) break;
-
-        setPhase("typingA");
-        for (let c = 1; c <= a.length && !cancelled; c++) {
-          await waitIfPaused();
-          setAText(a.slice(0, c));
-          await wait(TYPE_MS);
-        }
-        if (cancelled) break;
-
-        setPhase("holding");
-        await wait(HOLD_MS);
-        if (cancelled) break;
-
-        setPhase("gap");
-        await wait(GAP_MS);
-        i++;
+        setRevealed((prev) => [...prev, msg]);
+        setTypingText("");
+        setTypingRole(null);
+        await wait(BETWEEN_MS);
+        idx++;
       }
     }
 
@@ -115,36 +140,23 @@ export function HeroAssistantDemo() {
 
   return (
     <div
-      className="flex flex-col gap-2.5"
+      ref={scrollRef}
+      className={`flex flex-col gap-2 overflow-y-auto ${className}`}
       onFocus={() => (pausedRef.current = true)}
       onBlur={() => (pausedRef.current = false)}
       onMouseEnter={() => (pausedRef.current = true)}
       onMouseLeave={() => (pausedRef.current = false)}
     >
-      <div
-        className="self-start rounded-[10px] border px-4 py-2.5 text-[13px]"
-        style={{ borderColor: HAIRLINE, background: "rgba(225,46,48,0.06)", color: PAPER }}
-      >
-        {qText || " "}
-        {phase === "typingQ" && <span className="animate-pulse" style={{ color: RED }}>|</span>}
-      </div>
-      <div
-        className="min-h-[52px] rounded-[10px] border px-4 py-3.5 text-[13.5px] leading-[1.6]"
-        style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.04)", color: PAPER_MUTED }}
-      >
-        {phase === "thinking" ? (
+      {revealed.map((msg, i) => (
+        <Bubble key={i} role={msg.role} text={msg.text} />
+      ))}
+      {thinking ? (
+        <div className="rounded-[10px] border px-4 py-3" style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.04)" }}>
           <TypingDots />
-        ) : (
-          <>
-            {aText}
-            {phase === "typingA" && <span className="animate-pulse" style={{ color: RED }}>|</span>}
-            {!aText && phase !== "typingQ" && " "}
-          </>
-        )}
-      </div>
-      <p className="sr-only" aria-live="polite">
-        {pairIndex >= 0 ? EXCHANGES[pairIndex].q : ""}
-      </p>
+        </div>
+      ) : typingRole ? (
+        <Bubble role={typingRole} text={typingText} cursor />
+      ) : null}
     </div>
   );
 }
