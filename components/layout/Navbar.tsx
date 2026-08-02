@@ -130,19 +130,32 @@ type NavEntry = NavGroup | NavLink;
 
 function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: string }) {
   const active = group.active(pathname);
+  // The flyout opens on CSS hover, which on its own leaves it stuck open after you click
+  // through to a page: the cursor is still sitting on the trigger when the new page renders.
+  // Clicking anything inside dismisses it, and it re-arms once the cursor leaves the trigger.
+  const [dismissed, setDismissed] = useState(false);
+
   return (
-    <div className="group relative">
+    <div className="group relative" onMouseLeave={() => setDismissed(false)}>
       <button
         className="relative flex items-center gap-1 whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors"
         style={{ color: NAV_INK }}
       >
         {group.label}
-        <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
+        <ChevronDown
+          size={11}
+          className={`transition-transform ${dismissed ? "" : "group-hover:rotate-180"}`}
+        />
         {active && (
           <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
         )}
       </button>
-      <div className="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+      <div
+        onClick={() => setDismissed(true)}
+        className={`invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 ${
+          dismissed ? "" : "group-hover:visible group-hover:opacity-100"
+        }`}
+      >
         {group.render()}
       </div>
     </div>
