@@ -15,19 +15,25 @@ export function Hero() {
       <div className="container relative z-20 mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
           <div>
+            {/* Eyebrow above the headline, mirroring the hero on the current live site. */}
+            <span
+              className="font-mono mb-5 inline-block text-[12px] font-bold uppercase tracking-[0.16em]"
+              style={{ color: RED }}
+            >
+              AI Strategy &amp; Implementation
+            </span>
             <h1
               className="font-heading text-[clamp(2.5rem,5.5vw,4.25rem)] font-extrabold leading-[1.05] tracking-tight"
               style={{ color: PAPER, textWrap: "balance" }}
             >
-              AI employees that do real work in your business.
+              Your Business Runs on Decisions. Make Every One Smarter with AI
             </h1>
             <p
               className="font-body mt-6 text-[1.125rem] leading-[1.65]"
               style={{ color: PAPER_MUTED, maxWidth: 560 }}
             >
-              Apollo[Claw] builds AI agents that connect to your tools, work in Slack, WhatsApp,
-              and email, and get real work done with your approval. Run one yourself, or have us
-              build it for you.
+              Apollo Claw partners with executives and leadership teams to design, deploy, and
+              manage AI across the entire organization, from strategy to execution.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <PrimaryButton href={GET_STARTED_URL}>Get Started</PrimaryButton>

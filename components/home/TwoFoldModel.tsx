@@ -1,4 +1,4 @@
-import { Rocket, Users } from "lucide-react";
+import { Cloud, Server } from "lucide-react";
 import {
   BracketLabel,
   H2,
@@ -12,15 +12,16 @@ import {
   SecondaryButton,
 } from "@/components/home/ui";
 
-const GET_STARTED_URL = "/agents"; // see TODO(GET_STARTED_URL) in components/layout/Navbar.tsx
 const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
+// Reframed around where the agent runs rather than who builds it, per David's call, and the
+// per-agent price came off both cards: every path now routes to a consultation instead.
 export function TwoFoldModel() {
   return (
     <Section>
       <div className="mx-auto max-w-2xl text-center">
-        <BracketLabel>Two Ways to Build</BracketLabel>
-        <H2>Build it yourself. Or have us build it.</H2>
+        <BracketLabel>Two Ways to Deploy</BracketLabel>
+        <H2>Self hosted and cloud hosted.</H2>
       </div>
 
       <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
@@ -32,23 +33,23 @@ export function TwoFoldModel() {
             className="mb-5 flex h-11 w-11 items-center justify-center rounded-full"
             style={{ background: "rgba(245,246,248,0.08)" }}
           >
-            <Rocket className="h-5 w-5" style={{ color: PAPER }} />
+            <Cloud className="h-5 w-5" style={{ color: PAPER }} />
           </div>
           <h3 className="font-heading text-[1.375rem] font-semibold leading-[1.2]" style={{ color: INK }}>
             Run it yourself.
           </h3>
+          <p className="font-body mt-3 text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: RED }}>
+            Cloud hosted, on a virtual private server
+          </p>
           <p className="font-body mt-3 flex-1 text-[1rem] leading-[1.7]" style={{ color: INK_MUTED }}>
-            Answer a few questions, and your agent is ready, with a dashboard, integrations, and
-            access from the web, WhatsApp, Telegram, or Slack.
-          </p>
-          <p className="font-heading mt-6 text-[1.5rem] font-extrabold" style={{ color: PAPER }}>
-            $2,500 <span className="text-[0.9rem] font-semibold" style={{ color: INK_MUTED }}>per agent</span>
-          </p>
-          <p className="text-[13px]" style={{ color: INK_MUTED }}>
-            + $189/mo hosting, plus API credits as you use them.
+            Your agent runs on its own virtual private server that we provision for you. Answer a
+            few questions and it is ready, with a dashboard, integrations, and access from the web,
+            WhatsApp, Telegram, or Slack.
           </p>
           <div className="mt-6">
-            <PrimaryButton href={GET_STARTED_URL}>Get Started</PrimaryButton>
+            <PrimaryButton href={CONSULT_URL} external>
+              Schedule a Consultation
+            </PrimaryButton>
           </div>
         </div>
 
@@ -60,20 +61,18 @@ export function TwoFoldModel() {
             className="mb-5 flex h-11 w-11 items-center justify-center rounded-full"
             style={{ background: "rgba(225,46,48,0.15)" }}
           >
-            <Users className="h-5 w-5" style={{ color: RED }} />
+            <Server className="h-5 w-5" style={{ color: RED }} />
           </div>
           <h3 className="font-heading text-[1.375rem] font-semibold leading-[1.2]" style={{ color: INK }}>
             Have us build it.
           </h3>
+          <p className="font-body mt-3 text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: RED }}>
+            Self hosted, inside your own environment
+          </p>
           <p className="font-body mt-3 flex-1 text-[1rem] leading-[1.7]" style={{ color: INK_MUTED }}>
-            We design, deploy, and run your agents for you, with a 30-day onboarding and senior
-            attention the whole way. This is where custom work lives, including custom voice.
-          </p>
-          <p className="font-heading mt-6 text-[1.5rem] font-extrabold" style={{ color: PAPER }}>
-            Book a call
-          </p>
-          <p className="text-[13px]" style={{ color: INK_MUTED }}>
-            30 minutes, we scope it together, no pressure.
+            We design, deploy, and run your agents inside your own infrastructure, with a 30-day
+            onboarding and senior attention the whole way. This is where custom work lives,
+            including custom voice.
           </p>
           <div className="mt-6">
             <SecondaryButton href={CONSULT_URL} external>

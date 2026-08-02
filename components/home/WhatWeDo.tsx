@@ -10,17 +10,24 @@ export function WhatWeDo() {
     <Section bg={TAN}>
       <div className="grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
         <div className="max-w-2xl">
-          <BracketLabel light>How It Works</BracketLabel>
-          <H2 light>You tell us the job. We build the employee. It ships the work.</H2>
+          <BracketLabel light>What Is an Agent</BracketLabel>
+          <H2 light>Your AI Assistant</H2>
           <div className="mt-6">
             <BodyLarge light>
-              An Apollo[Claw] agent does the real work, research, follow-ups, intake, reports,
-              scheduling, and it checks with you before anything that matters. It works where your
-              team already works, and it connects to the tools you already use.
+              Apollo[Claw] builds AI agents that work inside your existing business, not alongside
+              it. The agent connects to the tools you already use and handles the repetitive,
+              time-consuming work that keeps you buried in your inbox.
+            </BodyLarge>
+          </div>
+          <div className="mt-5">
+            <BodyLarge light>
+              The result: fewer hours on administrative tasks, faster response times, fewer things
+              falling through the cracks. For many clients, an Apollo[Claw] agent replaces 10-20
+              hours per week of manual work within the first month.
             </BodyLarge>
           </div>
           <div className="mt-8">
-            <SoftLink light href="/ai-agents">See how it works →</SoftLink>
+            <SoftLink light href="/how-it-works">See How Implementation Works →</SoftLink>
           </div>
         </div>
 

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "AI for Accounting & Finance Firms",
-  description: "Apollo[Claw] AI agents for accountants and CPA firms. Automate client communication, document collection, deadline reminders, and reporting.",
+  title: { absolute: "AI for Accounting Firms | Apollo[Claw]" },
+  description: "AI agents for accounting firms and CPAs. Automate client communication, document collection, deadline reminders, and reporting.",
 };
 
 const uc = {
-  label: "Accounting & Finance",
+  label: "Accounting Firms",
   title: "AI for",
-  subtitle: "Accountants",
+  subtitle: "Accounting Firms",
   description: "Apollo[Claw] helps CPA firms and financial services businesses automate the repetitive work that spikes during tax season and never fully goes away.",
   challenges: [
     "Document collection from clients taking weeks",

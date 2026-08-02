@@ -112,7 +112,7 @@ export default async function BlogPostPage({
     { label: "Healthcare", href: "/industries/medical-practices" },
     { label: "Legal", href: "/industries/law-firms" },
     { label: "Real Estate", href: "/industries/real-estate" },
-    { label: "Accounting", href: "/industries/accounting-finance" },
+    { label: "Accounting", href: "/industries/accounting-firms" },
     { label: "Restaurants", href: "/industries/restaurants" },
     { label: "E-Commerce", href: "/industries/ecommerce" },
     { label: "Construction", href: "/industries/construction" },

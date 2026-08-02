@@ -1,23 +1,25 @@
 import { BracketLabel, BodyLarge, H2, Section, SoftLink } from "@/components/home/ui";
 
-// Security wording placed exactly as specified in the master brief / copy doc. Do not rephrase
-// or add claims beyond this , "SOC 2 in progress" stays exactly that, never a seal.
+// Was the "Security First" block; replaced with the positioning statement per David's call.
+// The security detail itself still lives on /security, reachable from the nav and the footer.
 export function TrustStrip() {
   return (
     <Section>
       <div className="mx-auto max-w-4xl text-center">
-        <BracketLabel>Security First</BracketLabel>
-        <H2>Security is how we built the whole thing, from the ground up.</H2>
+        <BracketLabel>The Difference</BracketLabel>
+        <H2>What Is an AI Implementation Partner?</H2>
         <div className="mt-6">
           <BodyLarge>
-            Encrypted in transit and at rest. Isolated per client. Hosted in the US. SOC 2 in
-            progress, and built to meet the bar your industry sets, HIPAA for medical, the
-            standards finance and regulated buyers expect. We say what&apos;s true, and we back up
-            every word.
+            Most businesses don&apos;t need a strategy deck. They need a working system. An AI
+            implementation partner does what traditional consultants won&apos;t: we build the actual
+            AI infrastructure inside your operation, connect it to the tools you already use, and
+            stay on to make sure it keeps working. Apollo Claw is that partner, for small
+            businesses, growing mid-market teams, and enterprise organizations ready to move from
+            AI curiosity to AI operations.
           </BodyLarge>
         </div>
         <div className="mt-8">
-          <SoftLink href="/security">Visit the Trust Center →</SoftLink>
+          <SoftLink href="/how-it-works">See how implementation works →</SoftLink>
         </div>
       </div>
     </Section>

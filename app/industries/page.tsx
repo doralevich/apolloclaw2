@@ -26,7 +26,7 @@ const data: CategoryIndexData = {
     { label: "PE-Backed Portfolio Companies", to: "/industries/private-equity", description: "Standardized reporting and back-office automation that repeats across every company in the portfolio." },
     { label: "Real Estate", to: "/industries/real-estate", description: "Lead follow-up within minutes, showings scheduled, and listings drafted before someone else calls back." },
     { label: "Insurance", to: "/industries/insurance", description: "Quote follow-up, renewals, and claims chasing that runs consistently without a producer driving it." },
-    { label: "Accounting & Finance", to: "/industries/accounting-finance", description: "Client requests, document collection, and close support that hold up through every busy season." },
+    { label: "Accounting Firms", to: "/industries/accounting-firms", description: "Client requests, document collection, and close support that hold up through every busy season." },
     { label: "Financial Services", to: "/industries/financial-services", description: "Client onboarding, review prep, and follow-up that stays inside your compliance requirements." },
     { label: "Professional Services", to: "/industries/professional-services", description: "Intake, project admin, and client follow-up, so billable people spend their time on billable work." },
     { label: "E-commerce", to: "/industries/ecommerce", description: "Order questions, returns, and post-purchase follow-up handled at volume without a bigger support team." },

@@ -25,6 +25,7 @@ const data: CategoryIndexData = {
     { label: "CEO Agent", to: "/ai-agents/ceo", description: "Pulls reports, tracks KPIs, and preps board decks, and briefs you before every meeting." },
     { label: "CFO Agent", to: "/ai-agents/cfo", description: "Categorizes expenses, reconciles payouts, chases invoices, and drafts reports for close." },
     { label: "Sales Agent", to: "/ai-agents/sales", description: "Qualifies leads, drafts follow-ups, and books meetings, so the pipeline keeps moving." },
+    { label: "Marketing Agent", to: "/ai-agents/marketing", description: "Drafts content, runs the campaign calendar, nurtures leads, and keeps reporting current." },
     { label: "Recruiting Agent", to: "/ai-agents/recruiting", description: "Screens candidates, schedules interviews, sends offers, and runs onboarding." },
     { label: "Human Resources Agent", to: "/ai-agents/hr", description: "Handles PTO requests, onboarding, and policy questions, and keeps employee records straight." },
     { label: "Personal Agent", to: "/ai-agents/personal", description: "Runs your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },

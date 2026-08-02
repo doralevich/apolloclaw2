@@ -9,7 +9,7 @@ const USE_CASE_MAP: Record<string, string> = {
   healthcare: "/industries/medical-practices",
   "real-estate": "/industries/real-estate",
   insurance: "/industries/insurance",
-  accounting: "/industries/accounting-finance",
+  accounting: "/industries/accounting-firms",
   ecommerce: "/industries/ecommerce",
   nonprofit: "/industries/nonprofit",
   finance: "/industries/financial-services",
