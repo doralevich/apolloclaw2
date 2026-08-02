@@ -17,7 +17,7 @@ export function TrustStrip() {
           </BodyLarge>
         </div>
         <div className="mt-8">
-          <SoftLink href="/ai-agents/security">Visit the Trust Center →</SoftLink>
+          <SoftLink href="/security">Visit the Trust Center →</SoftLink>
         </div>
       </div>
     </Section>

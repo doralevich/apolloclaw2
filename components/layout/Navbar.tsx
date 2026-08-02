@@ -3,10 +3,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Briefcase,
   Building2,
+  Calculator,
   ChevronDown,
+  GraduationCap,
+  HeartHandshake,
+  Home,
+  Landmark,
   Menu,
   Phone,
+  Scale,
+  ShieldCheck,
+  ShoppingCart,
+  Stethoscope,
   TrendingUp,
   User,
   UserSearch,
@@ -53,19 +63,21 @@ const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
 
-const INDUSTRIES = [
-  { label: "Law Firms", to: "/industries/law-firms" },
-  { label: "Medical Practices", to: "/industries/medical-practices" },
-  { label: "PE-Backed Portfolio Companies", to: "/industries/private-equity" },
-  { label: "Real Estate", to: "/industries/real-estate" },
-  { label: "Insurance", to: "/industries/insurance" },
-  { label: "Accounting & Finance", to: "/industries/accounting-finance" },
-  { label: "E-commerce", to: "/industries/ecommerce" },
-  { label: "Nonprofit", to: "/industries/nonprofit" },
-  { label: "Financial Services", to: "/industries/financial-services" },
-  { label: "Professional Services", to: "/industries/professional-services" },
-  // Real, already-live page (built earlier this engagement), not a Phase 2+ stub like the rest.
-  { label: "Academics", to: "/ai-consulting-education" },
+// Industries: which business you run. Same icon-tile treatment as Departments (David's call)
+// so the two flyouts read as one system. Academics points at the real, already-live education
+// landing page rather than a /industries/* route.
+const INDUSTRIES: { label: string; description: string; to: string; Icon: LucideIcon }[] = [
+  { label: "Law Firms", Icon: Scale, to: "/industries/law-firms", description: "Client intake, deadline tracking, and billing follow-up, so attorneys stay on billable work." },
+  { label: "Medical Practices", Icon: Stethoscope, to: "/industries/medical-practices", description: "Scheduling, reminders, and patient follow-up, HIPAA-aware from the ground up." },
+  { label: "PE-Backed Portfolio Companies", Icon: Briefcase, to: "/industries/private-equity", description: "Standardized reporting and back-office automation across every portfolio company." },
+  { label: "Real Estate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
+  { label: "Insurance", Icon: ShieldCheck, to: "/industries/insurance", description: "Quote follow-up, renewals, and claims chasing that runs without a producer on it." },
+  { label: "Accounting & Finance", Icon: Calculator, to: "/industries/accounting-finance", description: "Client requests, document collection, and close support through every busy season." },
+  { label: "E-commerce", Icon: ShoppingCart, to: "/industries/ecommerce", description: "Order questions, returns, and post-purchase follow-up handled at volume." },
+  { label: "Nonprofit", Icon: HeartHandshake, to: "/industries/nonprofit", description: "Donor stewardship, grant deadlines, and volunteer coordination on a lean team." },
+  { label: "Financial Services", Icon: Landmark, to: "/industries/financial-services", description: "Client onboarding, review prep, and compliance-aware follow-up." },
+  { label: "Professional Services", Icon: Users, to: "/industries/professional-services", description: "Intake, project admin, and client follow-up, so billable people stay billable." },
+  { label: "Academics", Icon: GraduationCap, to: "/ai-consulting-education", description: "Admissions, student services, and campus operations without adding headcount." },
 ];
 
 // Departments: the role you're hiring the agent into, purely functional. Deliberately holds no
@@ -182,19 +194,17 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
 // By Departments, that's too much, should be separated"). They were briefly merged into one
 // 820px-wide two-column mega-menu, which read as too dense. Industries stays a plain text list
 // (vertical keywords, SEO-important), Departments keeps the icon-tile treatment.
-function industriesPanel(pathname: string) {
+// Both category flyouts render the same way: a two-column grid of icon tiles. Shared so
+// Industries and Departments cannot drift apart visually.
+function tilePanel(
+  items: { label: string; description: string; to: string; Icon: LucideIcon }[],
+  pathname: string,
+  minWidth: number,
+) {
   return (
-    <div className="overflow-hidden rounded-xl p-2" style={panelStyle(240)}>
-      <div className="flex flex-col gap-0.5">{INDUSTRIES.map((item) => simpleLink(item, pathname))}</div>
-    </div>
-  );
-}
-
-function departmentsPanel(pathname: string) {
-  return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(560)}>
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(minWidth)}>
       <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-        {DEPARTMENTS.map((item) => {
+        {items.map((item) => {
           const Icon = item.Icon;
           const active = pathname === item.to;
           return (
@@ -258,14 +268,14 @@ export default function Navbar() {
       label: "Industries",
       active: (p) => p.startsWith("/industries") || p === "/ai-consulting-education",
       mobileItems: INDUSTRIES,
-      render: () => industriesPanel(pathname),
+      render: () => tilePanel(INDUSTRIES, pathname, 640),
     },
     {
       kind: "group",
       label: "Departments",
       active: (p) => p.startsWith("/ai-agents"),
       mobileItems: DEPARTMENTS,
-      render: () => departmentsPanel(pathname),
+      render: () => tilePanel(DEPARTMENTS, pathname, 560),
     },
     {
       kind: "link",

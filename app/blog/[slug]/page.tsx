@@ -109,7 +109,7 @@ export default async function BlogPostPage({
   } catch {}
 
   const useCaseLinks = [
-    { label: "Healthcare", href: "/industries/medical-practicescare" },
+    { label: "Healthcare", href: "/industries/medical-practices" },
     { label: "Legal", href: "/industries/law-firms" },
     { label: "Real Estate", href: "/industries/real-estate" },
     { label: "Accounting", href: "/industries/accounting-finance" },
@@ -120,10 +120,10 @@ export default async function BlogPostPage({
   ];
 
   const serviceLinks = [
-    { label: "The Collegiate", href: "/collegiate" },
-    { label: "The Personal Assistant", href: "/personal" },
-    { label: "The Executive", href: "/executive" },
-    { label: "The Department", href: "/departments" },
+    { label: "The College Agent", href: "/ai-agents/college" },
+    { label: "The Personal Agent", href: "/ai-agents/personal" },
+    { label: "The CEO Agent", href: "/ai-agents/ceo" },
+    { label: "The CFO Agent", href: "/ai-agents/cfo" },
   ];
 
   return (

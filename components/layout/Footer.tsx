@@ -18,6 +18,9 @@ const navLinks = [
 
 // Moved here from the top nav (Navbar.tsx), David's call that a 10-item mega-menu isn't
 // needed up top for a site this size.
+// The last four are vertical pages, so they live under /industries/*, not /ai-agents/*. They
+// used to point at /ai-agents/{legal,medical,real-estate,insurance}, which never existed and
+// 404'd from every page on the site.
 const agentLinks = [
   { label: "AI Receptionist", to: "/ai-agents/receptionist" },
   { label: "CEO Agent", to: "/ai-agents/ceo" },
@@ -25,10 +28,11 @@ const agentLinks = [
   { label: "Sales Agent", to: "/ai-agents/sales" },
   { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
   { label: "HR Agent", to: "/ai-agents/hr" },
-  { label: "Legal Agent", to: "/ai-agents/legal" },
-  { label: "Medical Agent", to: "/ai-agents/medical" },
-  { label: "Real Estate Agent", to: "/ai-agents/real-estate" },
-  { label: "Insurance Agent", to: "/ai-agents/insurance" },
+  { label: "Personal Agent", to: "/ai-agents/personal" },
+  { label: "Law Firms", to: "/industries/law-firms" },
+  { label: "Medical Practices", to: "/industries/medical-practices" },
+  { label: "Real Estate", to: "/industries/real-estate" },
+  { label: "Insurance", to: "/industries/insurance" },
 ];
 
 const resourceLinks = [

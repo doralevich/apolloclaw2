@@ -33,5 +33,6 @@ const uc = {
 };
 
 export default function PersonalPage() {
-  return <UseCaseTemplate uc={uc} />;
+  // hideHeroMeta: no category tag or wordmark in the hero on this page (David's call).
+  return <UseCaseTemplate uc={uc} hideHeroMeta />;
 }
