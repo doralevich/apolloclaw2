@@ -25,10 +25,11 @@ const RED = "#E12E30";
 const HAIRLINE = "rgba(245,246,248,0.1)";
 
 // Main nav row is white now (David wanted to try it), separate ink tokens since PAPER/HAIRLINE
-// above are tuned for the dark utility bar, mobile drawer, and dropdown flyout panels.
+// above are tuned for the dark utility bar, mobile drawer, and dropdown flyout panels. Link
+// text is solid black per David's direct feedback (no muted/active distinction anymore, the
+// red underline alone marks the active page).
 const NAV_WHITE = "#FFFFFF";
-const NAV_INK = "#1A1A1A";
-const NAV_INK_MUTED = "rgba(26,26,26,0.6)";
+const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
@@ -84,8 +85,8 @@ function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: strin
   return (
     <div className="group relative">
       <button
-        className="relative flex items-center gap-1 whitespace-nowrap pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
-        style={{ color: active ? NAV_INK : NAV_INK_MUTED }}
+        className="relative flex items-center gap-1 whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors"
+        style={{ color: NAV_INK }}
       >
         {group.label}
         <ChevronDown size={11} className="transition-transform group-hover:rotate-180" />
@@ -180,28 +181,34 @@ export default function Navbar() {
   return (
     <>
       <div className="fixed left-0 right-0 top-0 z-50">
-        {/* Utility bar: email + account actions, the "blue bar" from the stackhaus.ai reference. */}
-        <div className="hidden h-9 items-center justify-between px-5 md:flex md:px-8" style={{ background: NAVY_DEEP }}>
-          <a href={`mailto:${CONTACT_EMAIL}`} className="text-[12px]" style={{ color: PAPER_MUTED }}>
-            {CONTACT_EMAIL}
-          </a>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
-              Log in
-            </Link>
-            <Link
-              href={GET_STARTED_URL}
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
-              style={{ background: RED, color: "#ffffff", padding: "5px 14px" }}
-            >
-              Get Started
-            </Link>
+        {/* Utility bar: email + account actions, the "blue bar" from the stackhaus.ai reference.
+            Uses the same .container as the main nav below so email/Log in/Get Started line up
+            exactly with the logo and right edge underneath, instead of the ad-hoc px-5/px-8
+            this used to carry on its own. */}
+        <div className="hidden h-9 md:flex" style={{ background: NAVY_DEEP }}>
+          <div className="container mx-auto flex w-full items-center justify-between">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-[12px]" style={{ color: PAPER_MUTED }}>
+              {CONTACT_EMAIL}
+            </a>
+            <div className="flex items-center gap-4">
+              <Link href="/login" className="text-[12px] font-semibold" style={{ color: PAPER_MUTED }}>
+                Log in
+              </Link>
+              <Link
+                href={GET_STARTED_URL}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
+                style={{ background: RED, color: "#ffffff", padding: "5px 14px" }}
+              >
+                Get Started
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Main nav: white, category dropdowns + Pricing + Schedule a Consultation. */}
+        {/* Main nav: white, category dropdowns + Pricing centered, Schedule a Consultation
+            flush right (its own solid-red button, no longer inline after Pricing). */}
         <nav style={{ background: NAV_WHITE, borderBottom: `1px solid ${NAV_HAIRLINE}` }}>
-          <div className="container mx-auto flex h-[88px] items-center gap-4 px-5 md:px-8">
+          <div className="container mx-auto flex h-[88px] items-center gap-4">
             <Link href="/" className="flex shrink-0 items-center">
               <ApolloClawLogo ink={NAV_INK} height={36} />
             </Link>
@@ -212,24 +219,25 @@ export default function Navbar() {
               ))}
               <Link
                 href="/pricing"
-                className="relative whitespace-nowrap pb-1 text-[13px] font-bold tracking-[0.01em] transition-colors"
-                style={{ color: pathname === "/pricing" ? NAV_INK : NAV_INK_MUTED }}
+                className="relative whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors"
+                style={{ color: NAV_INK }}
               >
                 Pricing
                 {pathname === "/pricing" && (
                   <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
                 )}
               </Link>
-              <a
-                href={CONSULT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] border text-[12px] font-bold tracking-[0.02em] transition-colors hover:bg-black/[0.03]"
-                style={{ borderColor: NAV_HAIRLINE, color: NAV_INK, padding: "7px 14px" }}
-              >
-                Schedule a Consultation
-              </a>
             </div>
+
+            <a
+              href={CONSULT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] text-[13px] font-bold tracking-[0.02em] transition-opacity hover:opacity-90 md:inline-flex"
+              style={{ background: RED, color: "#ffffff", padding: "10px 18px" }}
+            >
+              Schedule a Consultation
+            </a>
 
             <button
               className="ml-auto p-2 md:hidden"
