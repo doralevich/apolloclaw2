@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI for Real Estate Agents | Automate Lead Follow-Up & Listing Management | Apollo[Claw]",
+  title: { absolute: "AI for Real Estate Agents | Apollo[Claw]" },
   description: "The Real Estate Agent follows up with leads in under 2 minutes, manages your CRM, and coordinates showings automatically so you can focus on closing.",
   openGraph: {
     title: "AI for Real Estate Agents | Automate Lead Follow-Up & Listing Management",

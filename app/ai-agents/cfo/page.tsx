@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The CFO Agent: AI Financial Agent for Small Business",
+  title: { absolute: "The CFO Agent | AI for Finance Teams | Apollo[Claw]" },
   description: "The CFO Agent is your AI financial advisor for small business: automating financial reporting, cash forecasts, and board prep so your team drives strategy.",
   alternates: {
     canonical: "https://thecfoagent.ai",

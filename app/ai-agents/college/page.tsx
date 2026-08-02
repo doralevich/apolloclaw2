@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "AI for College Students | Apollo Claw",
-  description: "Apollo Claw's College Agent guides students from sophomore year of high school through college graduation: deadlines, coursework, applications, financial aid, and everything in between.",
+  title: { absolute: "AI for College Students | Apollo Claw" },
+  description:
+    "The College Agent guides students from sophomore year of high school through graduation: deadlines, coursework, applications, and financial aid.",
   alternates: {
     canonical: "https://apolloclaw.ai/ai-agents/college",
   },

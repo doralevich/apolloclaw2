@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "The Brokers Agent | Apollo Claw AI for Brokerages",
+  title: { absolute: "The Brokers Agent | Apollo Claw AI for Brokerages" },
   description: "Apollo[Claw] AI agents for brokers and brokerage firms. Automate client requests, deal pipelines, KYC documentation, and compliance workflows.",
 };
 

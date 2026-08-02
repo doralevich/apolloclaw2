@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "AI for Recruiting & Staffing Agencies | Apollo Claw",
-  description: "Apollo Claw builds AI agents for recruiters and staffing agencies. Automate resume screening, interview scheduling, and candidate follow-up so your team fills roles faster.",
+  title: { absolute: "AI for Recruiting & Staffing Agencies | Apollo Claw" },
+  description:
+    "AI agents for recruiters and staffing agencies. Automate resume screening, interview scheduling, and candidate follow-up so your team fills roles faster.",
   alternates: {
     canonical: "https://apolloclaw.ai/ai-agents/recruiting",
   },

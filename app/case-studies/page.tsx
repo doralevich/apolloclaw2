@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Case Studies | Apollo[Claw]",
+  title: { absolute: "Case Studies | Apollo[Claw]" },
   description: "Real businesses. Real results. See how Apollo[Claw] AI agents are transforming operations across industries.",
 };
 

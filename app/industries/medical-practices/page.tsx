@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI for Medical Practices | Reduce No-Shows & Automate Patient Follow-Up | Apollo[Claw]",
-  description: "The Medical Agent automates appointment reminders, patient intake, follow-up, and documentation prep. HIPAA compliant. Most practices see no-shows drop within 30 days.",
+  title: { absolute: "AI for Medical Practices | Apollo[Claw]" },
+  description:
+    "The Medical Agent automates appointment reminders, patient intake, and follow-up. HIPAA-aware. Most practices see no-shows drop within 30 days.",
   openGraph: {
     title: "AI for Medical Practices | Reduce No-Shows & Automate Patient Follow-Up",
     description: "The Medical Agent handles scheduling, patient follow-up, documentation prep, and intake so your providers stay focused on care.",

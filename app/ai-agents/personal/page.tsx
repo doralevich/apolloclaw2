@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "The Personal Agent | Apollo Claw AI Personal Assistant",
+  title: { absolute: "The Personal Agent | Apollo Claw AI Personal Assistant" },
   description: "Apollo[Claw] AI personal assistant agents for executives and business owners. Manage your inbox, calendar, contacts, and tasks so you focus on what matters.",
 };
 

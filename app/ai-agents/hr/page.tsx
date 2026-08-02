@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "The HR Agent | AI for PTO, Onboarding & Policy Questions | Apollo[Claw]",
+  title: { absolute: "AI for Human Resources | Apollo[Claw]" },
   description:
     "The HR Agent handles PTO requests, onboarding steps, and policy questions, and keeps employee records straight so a small HR team can support a growing headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/hr" },

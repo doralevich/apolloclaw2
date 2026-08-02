@@ -4,7 +4,7 @@ import CategoryIndex, { type CategoryIndexData } from "@/components/CategoryInde
 export const metadata: Metadata = {
   title: { absolute: "AI Agents by Role | Apollo Claw" },
   description:
-    "Hire an AI agent for a specific seat: receptionist, CEO, CFO, sales, recruiting, HR, or a personal assistant. Each one is built, hosted, and maintained by Apollo Claw.",
+    "Hire an AI agent for a specific seat: receptionist, CEO, CFO, sales, recruiting, HR, or personal assistant. Built and hosted by Apollo Claw.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents" },
   openGraph: {
     title: "AI Agents by Role | Apollo Claw",

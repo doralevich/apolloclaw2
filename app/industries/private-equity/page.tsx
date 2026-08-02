@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "AI for PE-Backed Portfolio Companies | Apollo[Claw]",
+  title: { absolute: "AI for PE-Backed Portfolio Companies | Apollo[Claw]" },
   description:
-    "Apollo[Claw] deploys AI agents across portfolio companies to standardize reporting, cut back-office cost, and free operating teams from manual work, without adding headcount at each company.",
+    "Apollo[Claw] deploys AI agents across portfolio companies to standardize reporting and cut back-office cost, without adding headcount at each company.",
   alternates: { canonical: "https://apolloclaw.ai/industries/private-equity" },
   openGraph: {
     title: "AI for PE-Backed Portfolio Companies | Apollo[Claw]",

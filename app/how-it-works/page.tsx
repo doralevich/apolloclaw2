@@ -4,9 +4,9 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "How It Works | Apollo Claw AI Consulting Process",
+  title: { absolute: "How It Works | Apollo Claw AI Consulting Process" },
   description:
-    "Apollo Claw's AI implementation process works for businesses of any size, from small teams to enterprise organizations and universities. Four clear steps from discovery to live AI agent.",
+    "Apollo Claw's AI implementation process, for teams of any size. Four clear steps from discovery to a live AI agent working inside your business.",
   alternates: {
     canonical: "https://apolloclaw.ai/how-it-works",
   },

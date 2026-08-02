@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "AI for Nonprofits & Mission-Driven Organizations",
+  title: { absolute: "AI for Nonprofits | Apollo[Claw]" },
   description: "Apollo[Claw] AI agents for nonprofits. Automate donor communication, grant research, volunteer coordination, and event management.",
 };
 

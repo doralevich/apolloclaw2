@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "AI Assistant for CEOs | Automate Executive Workflows | Apollo[Claw]",
+  title: { absolute: "AI Assistant for CEOs | Apollo[Claw]" },
   description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck; let your bot run the details.",
   openGraph: {
     title: "AI Assistant for CEOs | Automate Executive Workflows",

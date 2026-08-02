@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
-  title: "The Receptionist Agent | AI Phone & Front Desk Coverage | Apollo[Claw]",
+  title: { absolute: "AI Receptionist Agent | Apollo[Claw]" },
   description:
-    "The Receptionist Agent answers calls, routes messages, and books appointments so the front line stays covered without adding headcount or sending callers to voicemail.",
+    "The Receptionist Agent answers calls, routes messages, and books appointments, so the front line stays covered without adding headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/receptionist" },
   openGraph: {
     title: "The Receptionist Agent | AI Phone & Front Desk Coverage",

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
-  title: "AI 101: What Business Owners Need to Know",
+  title: { absolute: "AI 101 for Business Owners | Apollo[Claw]" },
   description:
     "A plain-English guide to AI for business owners. What AI agents are, what they can do, and how to get started without the hype.",
 };

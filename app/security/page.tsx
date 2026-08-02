@@ -5,7 +5,7 @@ import PageHero from "@/components/PageHero";
 export const metadata: Metadata = {
   title: { absolute: "AI Data Security & Privacy | Apollo Claw" },
   description:
-    "Your business data stays in your environment. Apollo Claw's AI implementation approach: no vendor lock-in, no data leaving your control. See how we protect your operation.",
+    "Your business data stays in your environment. No vendor lock-in, no data leaving your control. See exactly how Apollo Claw protects your operation.",
   alternates: { canonical: "https://apolloclaw.ai/security" },
   openGraph: {
     title: "AI Data Security & Privacy | Apollo Claw",

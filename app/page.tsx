@@ -11,7 +11,7 @@ import { Close } from "@/components/home/Close";
 // the /ai-agents hub, so the homepage only targets it SOFTLY (title, description, one early body
 // line) rather than competing for the term outright. H1 stays the brand hero line.
 export const metadata: Metadata = {
-  title: "AI Agents for Business | Apollo[Claw]",
+  title: { absolute: "AI Agents for Business | Apollo[Claw]" },
   description:
     "Apollo[Claw] builds AI agents for business that connect to your tools, work in Slack and WhatsApp, and ship real work with your approval. Get started today.",
   alternates: {

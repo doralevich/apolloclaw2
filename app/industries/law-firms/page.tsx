@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines | Apollo[Claw]",
+  title: { absolute: "AI for Law Firms | Apollo[Claw]" },
   description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable hours, not admin.",
   openGraph: {
     title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines",
