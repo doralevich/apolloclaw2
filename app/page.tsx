@@ -5,7 +5,7 @@ import { Proof } from "@/components/home/Proof";
 import { ThreeWaysIn } from "@/components/home/ThreeWaysIn";
 import { TwoFoldModel } from "@/components/home/TwoFoldModel";
 import { TrustStrip } from "@/components/home/TrustStrip";
-import { Close } from "@/components/home/Close";
+import { LogoStrip } from "@/components/home/LogoStrip";
 
 // Per the SEO/metadata spec (master brief section 5.5): "ai agents for business" canonicals to
 // the /ai-agents hub, so the homepage only targets it SOFTLY (title, description, one early body
@@ -31,10 +31,13 @@ export default function HomePage() {
       <Hero />
       <WhatWeDo />
       <Proof />
+      {/* "What Is an AI Implementation Partner?" sits directly under the client results per
+          David's call, so the proof leads into the positioning statement. */}
+      <TrustStrip />
       <ThreeWaysIn />
       <TwoFoldModel />
-      <TrustStrip />
-      <Close />
+      {/* Homepage only, per David's call. Was sitewide via RootShell. */}
+      <LogoStrip />
     </>
   );
 }

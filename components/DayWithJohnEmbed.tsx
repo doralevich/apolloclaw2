@@ -143,16 +143,22 @@ export default function DayWithJohnEmbed() {
             &times;
           </button>
 
-          {/* Clicks inside the frame must not close the lightbox. */}
+          {/* Clicks inside the frame must not close the lightbox.
+              public/demo.html is a 1920x1080 slide deck (section.slide is hard-coded to those
+              dimensions), NOT a phone mockup, so the frame has to be 16:9 and as wide as the
+              viewport allows. It was previously a 520px portrait box, which squeezed a
+              landscape deck into roughly a quarter of its intended width and made the text
+              unreadable. Width is capped by whichever runs out first, the viewport width or the
+              height a 16:9 box needs. */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: "min(100%, 520px)",
-              height: "min(92vh, 950px)",
-              borderRadius: 18,
+              width: "min(96vw, calc(90vh * 16 / 9))",
+              aspectRatio: "16 / 9",
+              maxHeight: "90vh",
+              borderRadius: 10,
               overflow: "hidden",
               background: "#0B1729",
-              border: "1px solid rgba(255,255,255,0.12)",
               boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
             }}
           >
