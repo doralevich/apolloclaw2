@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
-import IntegrationGlobe from "@/components/IntegrationGlobe";
+import { LogoStrip } from "@/components/home/LogoStrip";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { Proof } from "@/components/home/Proof";
 import { ThreeWaysIn } from "@/components/home/ThreeWaysIn";
@@ -30,17 +30,14 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <IntegrationGlobe
-        subtitle="Connect to the tools you already use, from Gmail and Slack to Salesforce and Stripe."
-        ctaHref="/agents"
-        ctaLabel="Get Started"
-      />
       <WhatWeDo />
       <Proof />
       <ThreeWaysIn />
       <TwoFoldModel />
       <TrustStrip />
       <Close />
+      {/* Sits directly above the Footer's "Weekly Claw" newsletter box (David's call). */}
+      <LogoStrip />
     </>
   );
 }
