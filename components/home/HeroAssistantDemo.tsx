@@ -24,6 +24,10 @@ const CONVERSATION: { role: Role; text: string }[] = [
   { role: "agent", text: "Hit Get Started below, or schedule a call if you'd rather talk it through first." },
 ];
 
+// Only appended after the first full pass, points the visitor at the real input below instead
+// of repeating on every loop.
+const CLOSING_LINE = { role: "agent" as Role, text: "Ask your question now." };
+
 const TYPE_MS = 22;
 const THINK_MS = 650;
 const BETWEEN_MS = 500;
@@ -90,45 +94,46 @@ export function HeroAssistantDemo({ className = "" }: { className?: string }) {
       if (cancelled) return;
 
       if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-        setRevealed(CONVERSATION);
+        setRevealed([...CONVERSATION, CLOSING_LINE]);
         return;
       }
 
-      let idx = 0;
+      let firstLoop = true;
       while (!cancelled) {
-        if (idx >= CONVERSATION.length) {
-          await wait(END_HOLD_MS);
+        const script = firstLoop ? [...CONVERSATION, CLOSING_LINE] : CONVERSATION;
+
+        for (let idx = 0; idx < script.length && !cancelled; idx++) {
+          const msg = script[idx];
+          setTypingRole(msg.role);
+          setTypingText("");
+
+          if (msg.role === "agent") {
+            await waitIfPaused();
+            setThinking(true);
+            await wait(THINK_MS);
+            if (cancelled) break;
+            setThinking(false);
+          }
+
+          for (let c = 1; c <= msg.text.length && !cancelled; c++) {
+            await waitIfPaused();
+            setTypingText(msg.text.slice(0, c));
+            await wait(TYPE_MS);
+          }
           if (cancelled) break;
-          setRevealed([]);
-          await wait(RESTART_GAP_MS);
-          idx = 0;
-          continue;
-        }
 
-        const msg = CONVERSATION[idx];
-        setTypingRole(msg.role);
-        setTypingText("");
-
-        if (msg.role === "agent") {
-          await waitIfPaused();
-          setThinking(true);
-          await wait(THINK_MS);
-          if (cancelled) break;
-          setThinking(false);
-        }
-
-        for (let c = 1; c <= msg.text.length && !cancelled; c++) {
-          await waitIfPaused();
-          setTypingText(msg.text.slice(0, c));
-          await wait(TYPE_MS);
+          setRevealed((prev) => [...prev, msg]);
+          setTypingText("");
+          setTypingRole(null);
+          await wait(BETWEEN_MS);
         }
         if (cancelled) break;
 
-        setRevealed((prev) => [...prev, msg]);
-        setTypingText("");
-        setTypingRole(null);
-        await wait(BETWEEN_MS);
-        idx++;
+        firstLoop = false;
+        await wait(END_HOLD_MS);
+        if (cancelled) break;
+        setRevealed([]);
+        await wait(RESTART_GAP_MS);
       }
     }
 
@@ -142,6 +147,7 @@ export function HeroAssistantDemo({ className = "" }: { className?: string }) {
     <div
       ref={scrollRef}
       className={`flex flex-col gap-2 overflow-y-auto ${className}`}
+      style={{ height: 260 }}
       onFocus={() => (pausedRef.current = true)}
       onBlur={() => (pausedRef.current = false)}
       onMouseEnter={() => (pausedRef.current = true)}

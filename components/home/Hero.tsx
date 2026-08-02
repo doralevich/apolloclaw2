@@ -47,7 +47,6 @@ export function Hero() {
               borderColor: "rgba(225,46,48,0.2)",
               boxShadow: "0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(225,46,48,0.05)",
               backdropFilter: "blur(16px)",
-              minHeight: 420,
             }}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -70,7 +69,7 @@ export function Hero() {
                 Online
               </span>
             </div>
-            <HeroAssistantDemo className="min-h-0 flex-1" />
+            <HeroAssistantDemo />
             <div className="mt-3">
               <HeroAssistantInput placeholder="Or ask your own question…" />
             </div>
