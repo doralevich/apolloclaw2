@@ -26,7 +26,7 @@ const data: CategoryIndexData = {
     { label: "CFO Agent", to: "/ai-agents/cfo", description: "Categorizes expenses, reconciles payouts, chases invoices, and drafts reports for close." },
     { label: "Sales Agent", to: "/ai-agents/sales", description: "Qualifies leads, drafts follow-ups, and books meetings, so the pipeline keeps moving." },
     { label: "Recruiting Agent", to: "/ai-agents/recruiting", description: "Screens candidates, schedules interviews, sends offers, and runs onboarding." },
-    { label: "HR Agent", to: "/ai-agents/hr", description: "Handles PTO requests, onboarding, and policy questions, and keeps employee records straight." },
+    { label: "Human Resources Agent", to: "/ai-agents/hr", description: "Handles PTO requests, onboarding, and policy questions, and keeps employee records straight." },
     { label: "Personal Agent", to: "/ai-agents/personal", description: "Runs your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
     { label: "Brokers Agent", to: "/ai-agents/brokers", description: "Handles inquiries, documentation, and follow-up through the length of a deal." },
     { label: "College Agent", to: "/ai-agents/college", description: "Guides a student from high school through graduation: classes, deadlines, applications, and aid." },

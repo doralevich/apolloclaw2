@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 };
 
 const uc = {
-  label: "HR",
+  label: "Human Resources",
   title: "AI for",
-  subtitle: "People Operations",
+  subtitle: "Human Resources",
   description:
     "The HR Agent takes the repetitive half of people ops off your plate. It answers the policy questions, moves PTO requests along, runs new hires through onboarding, and keeps the records current, so your HR team spends its time on people instead of paperwork.",
   challenges: [

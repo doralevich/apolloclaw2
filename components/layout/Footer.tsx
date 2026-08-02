@@ -27,7 +27,7 @@ const agentLinks = [
   { label: "CFO Agent", to: "/ai-agents/cfo" },
   { label: "Sales Agent", to: "/ai-agents/sales" },
   { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
-  { label: "HR Agent", to: "/ai-agents/hr" },
+  { label: "Human Resources Agent", to: "/ai-agents/hr" },
   { label: "Personal Agent", to: "/ai-agents/personal" },
   { label: "Law Firms", to: "/industries/law-firms" },
   { label: "Medical Practices", to: "/industries/medical-practices" },

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 const uc = {
   label: "Financial Services",
   title: "AI for",
-  subtitle: "Finance",
+  subtitle: "Financial Services",
   description: "Apollo[Claw] helps financial services firms automate the time-consuming client communication and administrative work that pulls advisors away from advisory work.",
   challenges: [
     "Client portfolio review preparation taking hours",
