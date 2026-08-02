@@ -14,8 +14,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const staticPages = [
-    { path: "/",             priority: 1.0 },
-    { path: "/how-it-works", priority: 0.9 },
+    { path: "/",                 priority: 1.0 },
+    { path: "/how-it-works",     priority: 0.9 },
+    { path: "/create-an-agent",  priority: 0.9 },
     { path: "/use-cases/ceo",          priority: 0.9 },
     { path: "/use-cases/cfo",          priority: 0.9 },
     { path: "/use-cases/health",       priority: 0.9 },
