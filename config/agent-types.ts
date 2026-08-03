@@ -15,6 +15,11 @@ export interface AgentType {
   description: string;
   // Agent37 template name passed to POST /v1/instances.
   template: string;
+  // Former names for the SAME template, tried in order when `template` isn't in the Agent37
+  // registry. Renaming a template is two systems moving at different times — this repo and
+  // the Agent37 account — and a customer who pays during that gap must still get an agent.
+  // Once every environment is on the new name, deleting the alias is a one-line cleanup.
+  templateAliases?: string[];
   resources: AgentTypeResources;
   // Monthly managed-spend cap in USD (converted to micros at create time).
   monthlyCapUsd: number;
@@ -139,9 +144,14 @@ export const AGENT_TYPES: AgentType[] = [
   // The license build. Every /onboard purchase provisions this one type; the customization
   // comes from the buyer's onboarding answers (written in as USER.md), not from the SKU.
   //
-  // The template is `college-agent` — David's call, so every build starts from the Apollo
-  // Claw content and behaviour already proven in production rather than from one of the
-  // per-role templates that were never exercised at this volume.
+  // The template is the Apollo Claw build — David's call, so every agent starts from the
+  // content and behaviour already proven in production rather than from one of the per-role
+  // templates that were never exercised at this volume.
+  //
+  // It was called `college-agent` (the image it grew out of, still the GHCR path), which the
+  // dashboard printed at customers: someone who had bought an Apollo Agent read that they
+  // owned a college agent. Renamed to `apollo-agent`; the old name stays as an alias so
+  // provisioning works whichever name the Agent37 registry currently carries.
   //
   // No `planKey`: it is not sold per-type through /api/build/checkout. /api/onboard/complete
   // provisions it once the license checkout is confirmed paid. `internal` keeps it out of
@@ -151,7 +161,8 @@ export const AGENT_TYPES: AgentType[] = [
     label: "Apollo Agent",
     description:
       "A private AI agent built around one business — its people, its stack, its bottlenecks — from the answers given at onboarding.",
-    template: "college-agent",
+    template: "apollo-agent",
+    templateAliases: ["college-agent"],
     ...PAID_AGENT,
     available: true,
     internal: true,
