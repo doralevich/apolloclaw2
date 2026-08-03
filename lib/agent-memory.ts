@@ -38,6 +38,70 @@ function repairCommand(): string {
   );
 }
 
+// Undo for the pointer. The repair walks every instance the API key can see, and this
+// account is shared with The College Agent — so a fleet-wide run reaches agents belonging to
+// a different product. This takes the block back out of a named instance's SOUL.md.
+//
+// The removal is an exact-substring delete done in Node rather than a line-range delete in
+// sed: the block is appended at the end today, but anything the agent itself writes afterwards
+// would sit below it, and "delete from the marker to EOF" would take that with it.
+function removeCommand(): string {
+  const pointerB64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
+  const script = `
+const fs = require("fs");
+const file = process.argv[1];
+const block = Buffer.from(process.argv[2], "base64").toString("utf8");
+const before = fs.readFileSync(file, "utf8");
+if (!before.includes(block)) { console.log("ABSENT:" + file); process.exit(0); }
+fs.writeFileSync(file, before.split(block).join(""));
+console.log("REMOVED:" + file);
+`;
+  const scriptB64 = Buffer.from(script, "utf8").toString("base64");
+
+  return (
+    'DIRS=""; ' +
+    'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
+    '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
+    '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
+    `printf '%s' '${scriptB64}' | base64 -d > /tmp/strip-pointer.js; ` +
+    'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || continue; ' +
+    `node /tmp/strip-pointer.js "$F" '${pointerB64}'; done; ` +
+    'rm -f /tmp/strip-pointer.js; ' +
+    'echo REMOVE_OK'
+  );
+}
+
+/**
+ * Take the pointer block back out of the named instances. Instance ids are REQUIRED — an
+ * undo that defaults to "every agent on the account" is not an undo worth having.
+ */
+export async function removeUserMdPointer(instanceIds: string[]): Promise<RepairResult[]> {
+  if (!instanceIds.length) throw new Error("removeUserMdPointer requires explicit instance ids");
+  const cmd = removeCommand();
+
+  const results: RepairResult[] = [];
+  for (const id of instanceIds) {
+    try {
+      const { stdout } = await agent37.exec(id, cmd);
+      const removed = stdout.match(/REMOVED:(\S+)/g);
+      results.push({
+        id,
+        name: id,
+        outcome: removed ? "repaired" : "already-correct",
+        detail: removed ? `pointer removed from ${removed.length} file(s)` : "pointer not present",
+      });
+    } catch (err) {
+      results.push({
+        id,
+        name: id,
+        outcome: "failed",
+        detail: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+  return results;
+}
+
 /** Visit every instance (or the ones named) and put USER.md where its runtime reads it. */
 export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairResult[]> {
   const cmd = repairCommand();

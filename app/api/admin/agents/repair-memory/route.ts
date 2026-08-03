@@ -1,6 +1,6 @@
 import { requirePlatformAdmin } from "@/lib/admin";
-import { json, route } from "@/lib/http";
-import { repairAgentMemory } from "@/lib/agent-memory";
+import { ApiError, json, route } from "@/lib/http";
+import { removeUserMdPointer, repairAgentMemory } from "@/lib/agent-memory";
 
 // /api/admin/agents/repair-memory — put every agent's USER.md where its runtime actually
 // reads it, and make sure its SOUL.md points at it. The CLI twin is
@@ -15,8 +15,21 @@ import { repairAgentMemory } from "@/lib/agent-memory";
 const repair = route(async (request: Request) => {
   await requirePlatformAdmin();
 
+  const params = new URL(request.url).searchParams;
   // ?id=abc&id=def limits the run to named instances; no ids visits everything.
-  const ids = new URL(request.url).searchParams.getAll("id").filter(Boolean);
+  const ids = params.getAll("id").filter(Boolean);
+
+  // ?undo=1 takes the pointer back out instead of putting it in — for instances this
+  // account shares with another product, which a fleet-wide repair reaches by accident.
+  // Named ids are mandatory here: an undo that defaults to everything is not an undo.
+  if (params.get("undo") === "1") {
+    if (!ids.length) {
+      throw new ApiError(400, "invalid_request", "undo requires at least one ?id= instance");
+    }
+    const undone = await removeUserMdPointer(ids);
+    return json({ undo: true, visited: undone.length, results: undone });
+  }
+
   const results = await repairAgentMemory(ids.length ? ids : undefined);
 
   const summary = results.reduce<Record<string, number>>((acc, r) => {
