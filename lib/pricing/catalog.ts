@@ -58,49 +58,66 @@ export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";
 // credit here rather than being cut off. One-time purchases, delivered to the instance's
 // runtime balance and recorded in wallet_transactions.
 //
-// PLACEHOLDER AMOUNTS — every `amountCents` and `creditUsd` below is a stand-in awaiting
-// David's numbers. Nothing is seeded into Stripe until they are real: `amountCents` is what
-// the customer pays and `creditUsd` is the runtime credit they receive, so the gap between
-// them is the margin. They are separate fields precisely so the two can differ.
+// The price is the round number: $25, $50, $100, $250, $500. That is what the customer picks,
+// what the button says, and what Stripe charges.
+//
+// `creditMicros` is what actually reaches the runtime — the price with our 7% taken out
+// (price / 1.07, rounded DOWN to the cent so no pack slips under the margin). Two fields
+// rather than one derived from the other, because the price is a fact Stripe holds its own
+// copy of: a formula that drifts from the seeded price would have us charging one number and
+// granting another, which nobody notices until month end.
+export const CREDIT_MARKUP = 0.07;
+
 export interface CreditPack {
   /** Stripe product metadata.catalog_key + price lookup_key. */
   catalogKey: string;
   /** Stripe product display name (what the customer sees at checkout). */
   name: string;
-  /** What the customer pays, in cents. PLACEHOLDER. */
+  /** What the customer pays, in cents. The round headline number. */
   amountCents: number;
-  /** Runtime credit delivered, in whole USD. PLACEHOLDER. */
-  creditUsd: number;
+  /** Runtime credit delivered, in micros. Equals amountCents / (1 + CREDIT_MARKUP). */
+  creditMicros: number;
   /** Rough guidance shown on the card. Rewrite once real usage data says otherwise. */
   blurb: string;
 }
 
 export const CREDIT_PACKS: CreditPack[] = [
   {
-    catalogKey: "apollo_credits_small",
-    name: "ApolloClaw API Credits - Small",
+    catalogKey: "apollo_credits_25",
+    name: "ApolloClaw API Credits - $25",
     amountCents: 2500,
-    creditUsd: 25,
-    blurb: "A busy month on top of what hosting already covers.",
+    creditMicros: 23_360_000,
+    blurb: "Doubles the usage hosting already covers.",
   },
   {
-    catalogKey: "apollo_credits_medium",
-    name: "ApolloClaw API Credits - Medium",
+    catalogKey: "apollo_credits_50",
+    name: "ApolloClaw API Credits - $50",
+    amountCents: 5000,
+    creditMicros: 46_720_000,
+    blurb: "A heavier month than usual.",
+  },
+  {
+    catalogKey: "apollo_credits_100",
+    name: "ApolloClaw API Credits - $100",
     amountCents: 10000,
-    creditUsd: 100,
-    blurb: "Heavy daily use, or a few agents sharing the load.",
+    creditMicros: 93_450_000,
+    blurb: "Daily use across a whole team.",
   },
   {
-    catalogKey: "apollo_credits_large",
-    name: "ApolloClaw API Credits - Large",
+    catalogKey: "apollo_credits_250",
+    name: "ApolloClaw API Credits - $250",
     amountCents: 25000,
-    creditUsd: 250,
-    blurb: "Long-running research and document work.",
+    creditMicros: 233_640_000,
+    blurb: "Long research runs and document work.",
+  },
+  {
+    catalogKey: "apollo_credits_500",
+    name: "ApolloClaw API Credits - $500",
+    amountCents: 50000,
+    creditMicros: 467_280_000,
+    blurb: "Several agents working flat out.",
   },
 ];
-
-/** True while the packs still carry placeholder pricing. Flip by setting real amounts. */
-export const CREDIT_PACKS_ARE_PLACEHOLDER = true;
 
 export function creditPackForCatalogKey(catalogKey: string): CreditPack | undefined {
   return CREDIT_PACKS.find((p) => p.catalogKey === catalogKey);

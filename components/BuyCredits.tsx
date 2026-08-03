@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { CREDIT_PACKS, CREDIT_PACKS_ARE_PLACEHOLDER } from "@/lib/pricing/catalog";
+import { CREDIT_PACKS } from "@/lib/pricing/catalog";
 import { Button } from "@/components/ui/button";
 
 // Buying half of the Credits tab: pick a pack, go to Stripe, come back. Nothing is granted
@@ -19,6 +19,10 @@ interface Purchase {
 }
 
 const money = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
+
+// Runtime credit, which is the price net of our margin and so rarely a round number.
+const credit = (micros: number) =>
+  `$${(micros / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -80,17 +84,13 @@ export function BuyCredits({ agentId, workspaceId }: { agentId: string | null; w
         One-time top-ups on top of your monthly allowance. They don&apos;t expire.
       </p>
 
-      {CREDIT_PACKS_ARE_PLACEHOLDER && (
-        <p className="mt-3 rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">
-          Placeholder pricing - these amounts are not final and are not yet live in Stripe.
-        </p>
-      )}
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {CREDIT_PACKS.map((pack) => (
           <div key={pack.catalogKey} className="flex flex-col rounded-lg border p-4">
-            <div className="text-lg font-semibold tabular-nums">${pack.creditUsd}</div>
-            <div className="text-xs text-muted-foreground">of credit</div>
+            <div className="text-lg font-semibold tabular-nums">{money(pack.amountCents)}</div>
+            <div className="text-xs text-muted-foreground">
+              {credit(pack.creditMicros)} of usage
+            </div>
             <p className="mt-2 flex-1 text-xs text-muted-foreground">{pack.blurb}</p>
             <Button
               size="sm"
@@ -98,7 +98,7 @@ export function BuyCredits({ agentId, workspaceId }: { agentId: string | null; w
               disabled={!agentId || busy !== null}
               onClick={() => buy(pack.catalogKey)}
             >
-              {busy === pack.catalogKey ? "Starting…" : `Buy for ${money(pack.amountCents)}`}
+              {busy === pack.catalogKey ? "Starting…" : "Buy"}
             </Button>
           </div>
         ))}

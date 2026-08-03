@@ -1,6 +1,5 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
-import { usdToMicros } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { creditPackForCatalogKey, type CreditPack } from "@/lib/pricing/catalog";
 
@@ -36,7 +35,7 @@ export async function recordCreditPurchase(input: RecordPurchaseInput): Promise<
       workspace_id: input.workspaceId,
       agent37_id: input.agent37Id,
       kind: "topup",
-      amount_micros: usdToMicros(input.pack.creditUsd),
+      amount_micros: input.pack.creditMicros,
       amount_cents: input.pack.amountCents,
       catalog_key: input.pack.catalogKey,
       stripe_session_id: input.stripeSessionId,
