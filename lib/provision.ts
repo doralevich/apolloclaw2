@@ -19,8 +19,12 @@ import type { Agent } from "@/lib/types";
 export interface ProvisionInput {
   type: AgentType;
   workspaceId: string;
-  /** The end user the instance is tagged to in Agent37 and recorded as created_by. */
+  /** The end user the instance is tagged to in Agent37, and the default for created_by. */
   userId: string;
+  /** Who actually pressed the button, when that isn't the owner — a platform admin
+   *  provisioning on someone's behalf. The instance still belongs to `userId`; this only
+   *  records who did it, which is the question asked afterwards. */
+  createdBy?: string;
   name?: string;
   /** When true (paid path), a missing dedicated template falls back to the generic
    *  OpenClaw template + persona injection instead of failing — the customer has already
@@ -61,7 +65,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // useful last time.
 export async function injectAgentFile(
   agentId: string,
-  filename: "SOUL.md" | "USER.md",
+  filename: "SOUL.md" | "OWNER.md",
   content: string
 ): Promise<boolean> {
   const b64 = Buffer.from(content, "utf8").toString("base64");
@@ -87,11 +91,18 @@ export async function injectAgentFile(
   return false;
 }
 
-// Writing USER.md is not the same as the agent reading it. A dedicated template boots with
-// its own SOUL.md persona (we deliberately don't overwrite one), and that persona has no
+// Writing the profile is not the same as the agent reading it. A dedicated template boots
+// with its own SOUL.md persona (we deliberately don't overwrite one), and that persona has no
 // reason to know about a file we invented — so the agent sits next to a full profile of its
 // owner and still answers "I don't know who you are". This appends a pointer to SOUL.md
 // instead of replacing it, so the template's own character survives intact.
+//
+// The profile lives in OWNER.md, NOT USER.md. On Hermes, USER.md is the agent's OWN memory
+// file: it writes what it learns there between sessions. We used the same name, so on one
+// customer's box there were two different USER.md files — the questionnaire in one directory,
+// the agent's own notes in another — and a repair pass that copied "whichever has content"
+// overwrote the questionnaire with the notes. Two writers, one filename, and the customer's
+// answers lost. Different name, no collision, and the agent keeps its own memory intact.
 export const USER_MD_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
 
 export const USER_MD_POINTER = `
@@ -99,13 +110,15 @@ export const USER_MD_POINTER = `
 ${USER_MD_POINTER_MARKER}
 ## Who you work for
 
-There is a USER.md beside this file in your workspace. It holds your owner's answers from
+There is an OWNER.md beside this file in your workspace. It holds your owner's answers from
 their setup questionnaire: who they are, their business, how it runs, and where it hurts.
 
-Read it at the start of every session, before your first reply. Treat it as ground truth
-about them the way you treat this file as ground truth about yourself, and keep it current
-as you learn more. Never tell your owner you don't know who they are — you do, it is written
-down, go and read it.
+Read it at the start of every session, before your first reply, and treat it as ground truth
+about them the way you treat this file as ground truth about yourself. Never tell your owner
+you don't know who they are — you do, it is written down, go and read it.
+
+OWNER.md is theirs, not yours: it is replaced whenever they update their answers, so anything
+you write into it will be lost. Keep what you learn in your own memory, as you normally would.
 `;
 
 // Append the pointer to SOUL.md in every workspace the instance recognises, once each.
@@ -179,7 +192,7 @@ async function injectAfterProvision(agentId: string, type: AgentType, workspaceI
   }
 
   if (!setup.answers) return;
-  const ok = await injectAgentFile(agentId, "USER.md", buildUserMd(type.label, setup.answers as Record<string, unknown>));
+  const ok = await injectAgentFile(agentId, "OWNER.md", buildUserMd(type.label, setup.answers as Record<string, unknown>));
   if (ok) await ensureUserMdPointer(agentId);
   if (ok) {
     await db
@@ -304,7 +317,7 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     cpu: agent.resources.cpu,
     memory: agent.resources.memory,
     disk: agent.resources.disk,
-    created_by: userId,
+    created_by: input.createdBy ?? userId,
   });
   if (error) {
     // Roll back the orphaned agent so we never bill for an untracked box.
