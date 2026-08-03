@@ -2,6 +2,8 @@ import type Stripe from "stripe";
 import { NextResponse, after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
+import { deliverCredit, recordCreditPurchase } from "@/lib/credits";
+import { creditPackForCatalogKey } from "@/lib/pricing/catalog";
 import { ApiError } from "@/lib/http";
 import { findAuthUserIdByEmail } from "@/lib/license-session";
 import { publicSiteOrigin } from "@/lib/site-url";
@@ -102,6 +104,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return;
   }
 
+  // An API credit pack bought from the dashboard's Credits tab (/api/credits/checkout).
+  if (meta.flow === "credit_topup") {
+    await handleCreditPurchase(session);
+    return;
+  }
+
   const { user_id: userId, workspace_id: workspaceId, agent_type: agentTypeId } = meta;
 
   // Not an Apollo agent purchase (e.g. a College Agent checkout on this shared account).
@@ -162,6 +170,54 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     }
     throw err;
   }
+}
+
+// ─── Credit pack: record first, deliver second ────────────────────────────────
+//
+// The purchase is written down the moment payment is confirmed, BEFORE we try to hand the
+// credit to the runtime. If that hand-off fails the row stays pending and a retry sweep
+// picks it up — the customer's money is never somewhere we can't see it.
+//
+// Delivery failure deliberately does NOT throw. Throwing would fail the webhook, Stripe
+// would redeliver, and we would be re-deciding a payment that already settled; the pending
+// row is the better record of "paid, not yet applied".
+async function handleCreditPurchase(session: Stripe.Checkout.Session): Promise<void> {
+  const meta = session.metadata ?? {};
+  const { workspace_id: workspaceId, agent37_id: agentId, catalog_key: catalogKey } = meta;
+
+  if (!workspaceId || !agentId || !catalogKey) {
+    console.error("[stripe-webhook] credit session missing metadata:", session.id);
+    return;
+  }
+  if (session.payment_status !== "paid") {
+    console.log("[stripe-webhook] credit session unpaid, waiting:", session.id);
+    return;
+  }
+
+  const pack = creditPackForCatalogKey(catalogKey);
+  if (!pack) {
+    console.error("[stripe-webhook] paid credit session for unknown pack:", catalogKey, session.id);
+    return;
+  }
+
+  const rowId = await recordCreditPurchase({
+    workspaceId,
+    agent37Id: agentId,
+    pack,
+    stripeSessionId: session.id,
+    purchasedBy: meta.user_id || undefined,
+  });
+  // null = this session was already recorded (webhook retry). The original row is either
+  // delivered or waiting for the sweep; either way there is nothing new to grant.
+  if (rowId === null) {
+    console.log("[stripe-webhook] credit purchase already recorded:", session.id);
+    return;
+  }
+
+  after(async () => {
+    const ok = await deliverCredit(rowId);
+    console.log("[stripe-webhook] credit", ok ? "delivered" : "PENDING (delivery failed)", session.id);
+  });
 }
 
 // ─── License purchase: the account is created HERE, from the paid session ─────

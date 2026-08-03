@@ -9,6 +9,8 @@ import { usd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Budget, Usage } from "@/lib/types";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { useWorkspace } from "@/components/WorkspaceProvider";
+import { BuyCredits } from "@/components/BuyCredits";
 import { Button } from "@/components/ui/button";
 
 // Read-only API Credits tab: the active agent's remaining balance, monthly allowance,
@@ -35,6 +37,7 @@ function monthLabel(period: string): string {
 
 export function CreditsView() {
   const { active, agents, loading: agentsLoading, error: agentsError, refresh: refreshAgents } = useActiveAgent();
+  const { current } = useWorkspace();
   const agentId = active?.agent37_id ?? null;
 
   const [data, setData] = useState<CreditsData | null>(null);
@@ -154,6 +157,10 @@ export function CreditsView() {
       ) : (
         <CreditsCards data={data} />
       )}
+
+      {/* Buying stays available even when the balance read fails — an unreachable runtime is
+          the moment someone is most likely to be topping up. */}
+      {!showSkeleton && <BuyCredits agentId={agentId} workspaceId={current?.id ?? null} />}
     </div>
   );
 }
