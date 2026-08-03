@@ -77,7 +77,10 @@ export function BuyCredits({ agentId, workspaceId }: { agentId: string | null; w
     <div className="rounded-xl border bg-card p-6">
       <h2 className="text-base font-semibold">Buy credits</h2>
       <p className="mt-0.5 text-xs text-muted-foreground">
-        One-time top-ups on top of your monthly allowance. They don&apos;t expire.
+        One-time top-ups on top of your monthly allowance. They don&apos;t expire.{" "}
+        {/* Said out loud, because the card is saved for off-session use and that is not
+            something to do quietly. It is also the thing that unlocks auto-recharge. */}
+        Your card is saved so you can turn on auto-recharge.
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

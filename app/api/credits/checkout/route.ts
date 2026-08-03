@@ -48,7 +48,18 @@ export const POST = route(async (request: Request) => {
     mode: "payment",
     line_items: [{ price: price.id, quantity: 1 }],
     metadata,
-    payment_intent_data: { metadata },
+    payment_intent_data: {
+      metadata,
+      // Save the card against the customer for later off-session use. This is the ONLY thing
+      // that makes auto-recharge possible: without a stored payment method there is nothing to
+      // charge when the balance runs low, and we'd have to email someone and hope. Buying a
+      // pack manually is therefore also the act of enabling the safety net — which is why the
+      // Credits page says so next to the buttons rather than doing it quietly.
+      setup_future_usage: "off_session",
+    },
+    // A Customer has to exist for the payment method to attach to. In payment mode Stripe only
+    // creates one if asked.
+    customer_creation: "always",
     ...(user.email ? { customer_email: user.email } : {}),
     success_url: `${origin}/dashboard/credits?purchased=1`,
     cancel_url: `${origin}/dashboard/credits?canceled=1`,
