@@ -19,6 +19,68 @@ export interface RepairResult {
   detail?: string;
 }
 
+export interface InspectResult {
+  id: string;
+  files: { path: string; bytes: number; hasPointer?: boolean }[];
+  /**
+   * Headings and field LABELS, values stripped — "- Email: x@y.com" comes back "- Email:".
+   * Enough to see the questionnaire shape is there and populated. Deliberately NOT enough to
+   * tell whose it is: proving a customer's agent is configured shouldn't require reading the
+   * customer's details.
+   */
+  preview: string[];
+  error?: string;
+}
+
+/**
+ * Read-only check: does this agent's memory file actually have content, and does its persona
+ * point at it. Deliberately reports SIZE and LABELS, never the file's contents — the whole
+ * point of this route is to verify a customer's agent without reading a customer's data.
+ */
+export async function inspectAgentMemory(instanceIds: string[]): Promise<InspectResult[]> {
+  if (!instanceIds.length) throw new Error("inspectAgentMemory requires explicit instance ids");
+
+  const cmd =
+    'DIRS=""; ' +
+    'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
+    '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
+    '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
+    'for D in $DIRS; do F="$D/USER.md"; ' +
+    '[ -f "$F" ] && echo "FILE:$F:$(wc -c < "$F" | tr -d " ")" || echo "FILE:$F:missing"; done; ' +
+    'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || continue; ' +
+    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" && echo "POINTER:$F" || echo "NOPOINTER:$F"; done; ` +
+    // Headings and bullet LABELS only — everything after the colon on a bullet is dropped, so
+    // "- Email: someone@example.com" comes back as "- Email". Enough to tell a populated
+    // profile from an empty one, and to tell whose it is, without lifting the contents.
+    'for D in $DIRS; do F="$D/USER.md"; [ -s "$F" ] || continue; ' +
+    `grep -E '^#|^- ' "$F" | sed 's/:.*$/:/' | head -14 | sed 's/^/PREVIEW:/'; break; done; ` +
+    'echo INSPECT_OK';
+
+  const results: InspectResult[] = [];
+  for (const id of instanceIds) {
+    try {
+      const { stdout } = await agent37.exec(id, cmd);
+      const pointers = new Set((stdout.match(/POINTER:(\S+)/g) ?? []).map((s) => s.slice(8)));
+      const files = (stdout.match(/FILE:(\S+)/g) ?? []).map((raw) => {
+        const rest = raw.slice(5);
+        const idx = rest.lastIndexOf(":");
+        const path = rest.slice(0, idx);
+        const size = rest.slice(idx + 1);
+        return {
+          path,
+          bytes: size === "missing" ? -1 : Number(size),
+          hasPointer: pointers.has(path.replace(/USER\.md$/, "SOUL.md")),
+        };
+      });
+      const preview = (stdout.match(/PREVIEW:(.*)/g) ?? []).map((s) => s.slice(8).trim());
+      results.push({ id, files, preview });
+    } catch (err) {
+      results.push({ id, files: [], preview: [], error: err instanceof Error ? err.message : String(err) });
+    }
+  }
+  return results;
+}
+
 function repairCommand(): string {
   const b64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
   return (
