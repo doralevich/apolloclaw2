@@ -4,6 +4,7 @@ import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { Proof } from "@/components/home/Proof";
 import { TwoFoldModel } from "@/components/home/TwoFoldModel";
 import { TrustStrip } from "@/components/home/TrustStrip";
+import { IndustryCards } from "@/components/home/IndustryCards";
 import { LatestFromBlog } from "@/components/home/LatestFromBlog";
 import { LogoStrip } from "@/components/home/LogoStrip";
 
@@ -39,6 +40,7 @@ export default function HomePage() {
       <TrustStrip />
       <Proof />
       <WhatWeDo />
+      <IndustryCards />
       <TwoFoldModel />
       <LatestFromBlog />
       {/* Homepage only, per David's call. Was sitewide via RootShell. */}

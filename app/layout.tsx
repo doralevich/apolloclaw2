@@ -5,6 +5,7 @@ import "./globals.css";
 import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
 import PageViewTracker from "@/components/GoogleAnalytics";
+import CookieConsent from "@/components/CookieConsent";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -242,15 +243,35 @@ export default function RootLayout({
           src="https://www.googletagmanager.com/gtag/js?id=G-4ZR38XGEME"
           strategy="afterInteractive"
         />
+        {/* Google Consent Mode v2. Analytics storage starts DENIED, so no analytics cookie or
+            identifier is written until the visitor accepts in the banner (components/
+            CookieConsent.tsx, which calls gtag('consent','update',...)). A returning visitor's
+            stored choice is replayed here synchronously, before the config call, so they don't
+            spend the first 500ms of every page in the denied state. */}
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            wait_for_update: 500
+          });
+          try {
+            if (localStorage.getItem('ac-cookie-consent') === 'accepted') {
+              gtag('consent', 'update', { analytics_storage: 'granted' });
+            }
+          } catch (e) {}
           gtag('js', new Date());
           gtag('config', 'G-4ZR38XGEME', { send_page_view: false });
         `}</Script>
         <PageViewTracker />
         <RootShell>{children}</RootShell>
+        {/* Outside RootShell so it also shows on the dashboard/login surfaces, which render
+            bare children but still load the analytics script from this layout. */}
+        <CookieConsent />
         <Toaster richColors />
       </body>
     </html>

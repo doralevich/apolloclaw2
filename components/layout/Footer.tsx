@@ -239,7 +239,7 @@ export default function Footer() {
             <p className="font-body text-xs" style={{ color: WHITE_SUBTLE }}>
               &copy; 2026 Apollo[Claw]
             </p>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
               <Link
                 href="/accessibility"
                 className="font-body text-xs transition-colors hover:text-white"
@@ -253,6 +253,20 @@ export default function Footer() {
                 style={{ color: WHITE_MUTED }}
               >
                 Security
+              </Link>
+              <Link
+                href="/privacy"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/cookies"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Cookie Policy
               </Link>
             </div>
           </div>

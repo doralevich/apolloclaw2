@@ -48,8 +48,31 @@ export default function DayWithJohnEmbed() {
           fontFamily: "inherit",
         }}
       >
+        {/* Static poster instead of a live iframe, per David's call now that the real demo
+            opens in a lightbox. Captured from public/demo.html itself (the phone frame, cropped
+            out of its 1920x1080 slide) so it always matches what the popup actually plays.
+            eslint-disable: next/image would need a loader config for no benefit on a single
+            local asset that is never resized. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/day-with-john-poster.png"
+          alt=""
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+        />
+        {/* Darkened so the play button and title stay legible over the chat bubbles. */}
+        <span
+          aria-hidden
+          style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(7,15,28,0.72) 0%, rgba(7,15,28,0.88) 100%)" }}
+        />
+        {/* position: relative on the play button and the caption, not just a wrapper: the
+            poster and its scrim are absolutely positioned, and positioned elements paint above
+            static in-flow siblings regardless of source order. Without this they cover the
+            controls entirely. A display:contents wrapper cannot fix it, since it generates no
+            box for position to apply to. */}
         <span
           style={{
+            position: "relative",
             width: 78,
             height: 78,
             borderRadius: "50%",
@@ -72,11 +95,11 @@ export default function DayWithJohnEmbed() {
             <path d="M21 13L1 25.124V0.876L21 13Z" fill="#D72B2B" />
           </svg>
         </span>
-        <div style={{ textAlign: "center", padding: "0 18px" }}>
+        <div style={{ position: "relative", textAlign: "center", padding: "0 18px" }}>
           <p
             style={{
               fontFamily: "var(--font-body), Inter, sans-serif",
-              fontSize: "clamp(26px, 2.6vw, 34px)",
+              fontSize: "clamp(22px, 2vw, 28px)",
               fontWeight: 800,
               letterSpacing: "-0.02em",
               margin: 0,
@@ -144,12 +167,12 @@ export default function DayWithJohnEmbed() {
           </button>
 
           {/* Clicks inside the frame must not close the lightbox.
-              public/demo.html is a 1920x1080 slide deck (section.slide is hard-coded to those
-              dimensions), NOT a phone mockup, so the frame has to be 16:9 and as wide as the
-              viewport allows. It was previously a 520px portrait box, which squeezed a
-              landscape deck into roughly a quarter of its intended width and made the text
-              unreadable. Width is capped by whichever runs out first, the viewport width or the
-              height a 16:9 box needs. */}
+              public/demo.html is a 1920x1080 slide (section.slide is hard-coded to those
+              dimensions) containing a 580x1040 phone mockup centred in it, so the frame has to
+              be 16:9 to show the slide undistorted. It was previously a 520px portrait box,
+              which squeezed the whole landscape slide into roughly a quarter of its intended
+              width and made the chat text unreadable. Width is capped by whichever runs out
+              first, the viewport width or the height a 16:9 box needs. */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{

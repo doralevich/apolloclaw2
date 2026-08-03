@@ -62,7 +62,9 @@ export function Section({
 }) {
   return (
     <section style={{ background: bg }} className={`relative overflow-hidden ${className}`}>
-      <div className="container relative z-10 mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">{children}</div>
+      {/* Tightened from py-20 md:py-28 per David's call that the bands sat too far apart.
+          Every homepage/pre-footer section goes through here, so the rhythm stays uniform. */}
+      <div className="container relative z-10 mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">{children}</div>
     </section>
   );
 }
