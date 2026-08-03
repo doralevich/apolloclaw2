@@ -28,29 +28,56 @@ export interface ProvisionInput {
   allowTemplateFallback?: boolean;
 }
 
-// Where OpenClaw keeps its workspace on the instance (same state dir the signed-url
-// route reads the gateway token from). SOUL.md there is the agent's persona; USER.md is
-// what the agent knows about its owner's business (from the setup questionnaire).
-const WRITE_FILE_CMD_PREFIX =
-  'WS="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; mkdir -p "$WS" && ';
+// Where the agent keeps the files it reads about itself and its owner. This is NOT one
+// fixed path: templates carry different runtimes, and they disagree.
+//
+//   * OpenClaw images keep them in $OPENCLAW_STATE_DIR/workspace (default ~/.openclaw).
+//   * Hermes images keep them in $HERMES_STATE_DIR/memories (default ~/.hermes), which is
+//     also where the agent itself writes what it learns between sessions.
+//
+// We used to assume the first one. On a Hermes image that produced the worst possible
+// outcome: the write SUCCEEDED, into a directory nothing reads, while the agent's real
+// USER.md sat empty a few directories away — so the dashboard reported setup Complete and
+// the agent answered "I don't know who you are".
+//
+// So: write to every candidate that exists on the box, rather than picking one. Both are
+// the right place on some image and harmless on the other, and a template that grows a
+// third location shows up as one line here instead of a silent hole.
+const CANDIDATE_DIRS =
+  'DIRS=""; ' +
+  'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
+  '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
+  // Nothing recognisable on the box (very early boot, or an image we haven't seen): fall
+  // back to the OpenClaw layout, which is what every instance before this used.
+  '[ -n "$DIRS" ] || { D="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; mkdir -p "$D"; DIRS="$D"; }; ';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Best-effort write of a markdown file into the instance's OpenClaw workspace. The
+// Best-effort write of a markdown file into every workspace the instance recognises. The
 // instance boots asynchronously after create, so retry exec for a while; a miss is
 // logged and reported (false), not thrown — the agent exists and the write can rerun.
+//
+// Reports which directories it landed in, because "the write succeeded" told us nothing
+// useful last time.
 export async function injectAgentFile(
   agentId: string,
   filename: "SOUL.md" | "USER.md",
   content: string
 ): Promise<boolean> {
   const b64 = Buffer.from(content, "utf8").toString("base64");
-  const cmd = `${WRITE_FILE_CMD_PREFIX}printf '%s' '${b64}' | base64 -d > "$WS/${filename}" && echo WRITE_OK`;
+  const cmd =
+    `${CANDIDATE_DIRS}` +
+    `for D in $DIRS; do printf '%s' '${b64}' | base64 -d > "$D/${filename}" && echo "WROTE:$D"; done; ` +
+    `echo WRITE_OK`;
 
   for (let attempt = 1; attempt <= 6; attempt++) {
     try {
       const { stdout } = await agent37.exec(agentId, cmd);
-      if (stdout.includes("WRITE_OK")) return true;
+      if (stdout.includes("WRITE_OK")) {
+        const landed = stdout.match(/WROTE:(\S+)/g)?.join(" ") ?? "(none)";
+        console.log("[provision:file-injected]", agentId, filename, landed);
+        return true;
+      }
     } catch {
       // instance still provisioning/booting — wait and retry
     }
@@ -81,14 +108,16 @@ as you learn more. Never tell your owner you don't know who they are — you do,
 down, go and read it.
 `;
 
-// Append the pointer to the instance's SOUL.md, once. Idempotent via the marker, so
-// re-submitted setup answers can't stack duplicate blocks. Best-effort and retried for the
-// same reason injectAgentFile is: the instance may still be booting.
+// Append the pointer to SOUL.md in every workspace the instance recognises, once each.
+// Idempotent via the marker, so re-submitted setup answers can't stack duplicate blocks.
+// Best-effort and retried for the same reason injectAgentFile is: the instance may still
+// be booting.
 export async function ensureUserMdPointer(agentId: string): Promise<boolean> {
   const b64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
   const cmd =
-    `${WRITE_FILE_CMD_PREFIX}F="$WS/SOUL.md"; touch "$F"; ` +
-    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" || printf '%s' '${b64}' | base64 -d >> "$F"; ` +
+    `${CANDIDATE_DIRS}` +
+    `for D in $DIRS; do F="$D/SOUL.md"; touch "$F"; ` +
+    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" || printf '%s' '${b64}' | base64 -d >> "$F"; done; ` +
     `echo POINTER_OK`;
 
   for (let attempt = 1; attempt <= 6; attempt++) {
