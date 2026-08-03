@@ -60,6 +60,50 @@ export async function injectAgentFile(
   return false;
 }
 
+// Writing USER.md is not the same as the agent reading it. A dedicated template boots with
+// its own SOUL.md persona (we deliberately don't overwrite one), and that persona has no
+// reason to know about a file we invented — so the agent sits next to a full profile of its
+// owner and still answers "I don't know who you are". This appends a pointer to SOUL.md
+// instead of replacing it, so the template's own character survives intact.
+const USER_MD_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
+
+const USER_MD_POINTER = `
+
+${USER_MD_POINTER_MARKER}
+## Who you work for
+
+There is a USER.md beside this file in your workspace. It holds your owner's answers from
+their setup questionnaire: who they are, their business, how it runs, and where it hurts.
+
+Read it at the start of every session, before your first reply. Treat it as ground truth
+about them the way you treat this file as ground truth about yourself, and keep it current
+as you learn more. Never tell your owner you don't know who they are — you do, it is written
+down, go and read it.
+`;
+
+// Append the pointer to the instance's SOUL.md, once. Idempotent via the marker, so
+// re-submitted setup answers can't stack duplicate blocks. Best-effort and retried for the
+// same reason injectAgentFile is: the instance may still be booting.
+export async function ensureUserMdPointer(agentId: string): Promise<boolean> {
+  const b64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
+  const cmd =
+    `${WRITE_FILE_CMD_PREFIX}F="$WS/SOUL.md"; touch "$F"; ` +
+    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" || printf '%s' '${b64}' | base64 -d >> "$F"; ` +
+    `echo POINTER_OK`;
+
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      const { stdout } = await agent37.exec(agentId, cmd);
+      if (stdout.includes("POINTER_OK")) return true;
+    } catch {
+      // instance still provisioning/booting — wait and retry
+    }
+    await sleep(15_000);
+  }
+  console.error("[provision:pointer-inject-failed]", agentId);
+  return false;
+}
+
 // Render questionnaire answers as the USER.md the agent reads. Labels come from the
 // shared onboarding section builder (the same one behind the free /onboard lead form and
 // its PDF/email) so the file reads like notes, not a form dump.
@@ -107,6 +151,7 @@ async function injectAfterProvision(agentId: string, type: AgentType, workspaceI
 
   if (!setup.answers) return;
   const ok = await injectAgentFile(agentId, "USER.md", buildUserMd(type.label, setup.answers as Record<string, unknown>));
+  if (ok) await ensureUserMdPointer(agentId);
   if (ok) {
     await db
       .from("agent_setup")
