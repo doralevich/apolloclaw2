@@ -32,16 +32,16 @@ const CATALOG = [
   { catalogKey: "apollo_hosting", name: "ApolloClaw Agent Hosting", amountCents: 18900, interval: "month" },
 ];
 
-// API credit packs. What the customer PAYS: the credit they receive ($25, $50, $100, $250,
-// $500) plus a 7% markup, rounded up to a whole dollar. The credit amount itself lives in lib/pricing/catalog.ts, which is
-// what the app delivers to the runtime — keep the two files in step, since Stripe charging one
-// number while the app grants another is the kind of mismatch nobody notices until month end.
+// API credit packs. These are the prices the customer pays. What actually reaches the runtime
+// is the price minus our 7% (see creditMicros in lib/pricing/catalog.ts) — keep the two files
+// in step, since Stripe charging one number while the app grants another is the kind of
+// mismatch nobody notices until month end.
 const CREDIT_PACKS = [
-  { catalogKey: "apollo_credits_25", name: "ApolloClaw API Credits - $25", amountCents: 2700 },
-  { catalogKey: "apollo_credits_50", name: "ApolloClaw API Credits - $50", amountCents: 5400 },
-  { catalogKey: "apollo_credits_100", name: "ApolloClaw API Credits - $100", amountCents: 10700 },
-  { catalogKey: "apollo_credits_250", name: "ApolloClaw API Credits - $250", amountCents: 26800 },
-  { catalogKey: "apollo_credits_500", name: "ApolloClaw API Credits - $500", amountCents: 53500 },
+  { catalogKey: "apollo_credits_25", name: "ApolloClaw API Credits - $25", amountCents: 2500 },
+  { catalogKey: "apollo_credits_50", name: "ApolloClaw API Credits - $50", amountCents: 5000 },
+  { catalogKey: "apollo_credits_100", name: "ApolloClaw API Credits - $100", amountCents: 10000 },
+  { catalogKey: "apollo_credits_250", name: "ApolloClaw API Credits - $250", amountCents: 25000 },
+  { catalogKey: "apollo_credits_500", name: "ApolloClaw API Credits - $500", amountCents: 50000 },
 ];
 
 // ── Load .env.local (same pattern as apollo-setup-followup.mjs) ────────────────
