@@ -59,7 +59,10 @@ export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";
 // runtime balance and recorded in wallet_transactions.
 //
 // `creditUsd` is what the customer receives, `amountCents` is what they pay. Two fields, not
-// one, so the margin is written down rather than implied: we charge cost + 7% (David's call).
+// one, so the margin is written down rather than implied: we charge cost + 7% (David's call),
+// ROUNDED UP to a whole dollar. Rounding up rather than to nearest keeps every pack at or
+// above the intended margin, and it means nobody is ever asked to pay $26.75 for something.
+//
 // The arithmetic is done here at authoring time rather than computed at runtime, because a
 // price is a fact Stripe also has to agree with — a formula that drifts from the seeded price
 // is worse than a number you can read.
@@ -82,14 +85,14 @@ export const CREDIT_PACKS: CreditPack[] = [
   {
     catalogKey: "apollo_credits_25",
     name: "ApolloClaw API Credits - $25",
-    amountCents: 2675,
+    amountCents: 2700,
     creditUsd: 25,
     blurb: "Doubles the usage hosting already covers.",
   },
   {
     catalogKey: "apollo_credits_50",
     name: "ApolloClaw API Credits - $50",
-    amountCents: 5350,
+    amountCents: 5400,
     creditUsd: 50,
     blurb: "A heavier month than usual.",
   },
@@ -103,7 +106,7 @@ export const CREDIT_PACKS: CreditPack[] = [
   {
     catalogKey: "apollo_credits_250",
     name: "ApolloClaw API Credits - $250",
-    amountCents: 26750,
+    amountCents: 26800,
     creditUsd: 250,
     blurb: "Long research runs and document work.",
   },

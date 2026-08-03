@@ -33,14 +33,14 @@ const CATALOG = [
 ];
 
 // API credit packs. What the customer PAYS: the credit they receive ($25, $50, $100, $250,
-// $500) plus a 7% markup. The credit amount itself lives in lib/pricing/catalog.ts, which is
+// $500) plus a 7% markup, rounded up to a whole dollar. The credit amount itself lives in lib/pricing/catalog.ts, which is
 // what the app delivers to the runtime — keep the two files in step, since Stripe charging one
 // number while the app grants another is the kind of mismatch nobody notices until month end.
 const CREDIT_PACKS = [
-  { catalogKey: "apollo_credits_25", name: "ApolloClaw API Credits - $25", amountCents: 2675 },
-  { catalogKey: "apollo_credits_50", name: "ApolloClaw API Credits - $50", amountCents: 5350 },
+  { catalogKey: "apollo_credits_25", name: "ApolloClaw API Credits - $25", amountCents: 2700 },
+  { catalogKey: "apollo_credits_50", name: "ApolloClaw API Credits - $50", amountCents: 5400 },
   { catalogKey: "apollo_credits_100", name: "ApolloClaw API Credits - $100", amountCents: 10700 },
-  { catalogKey: "apollo_credits_250", name: "ApolloClaw API Credits - $250", amountCents: 26750 },
+  { catalogKey: "apollo_credits_250", name: "ApolloClaw API Credits - $250", amountCents: 26800 },
   { catalogKey: "apollo_credits_500", name: "ApolloClaw API Credits - $500", amountCents: 53500 },
 ];
 
