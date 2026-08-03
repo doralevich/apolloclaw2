@@ -5,7 +5,16 @@ import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError } from "@/lib/http";
 import { buildIntakeSections, escapeHtml, sectionsToHtml } from "@/lib/onboardingSections";
 import { renderSectionsPdf } from "@/lib/pdf";
-import { buildUserMd, ensureUserMdPointer, injectOwnerProfile, provisionTypedAgent } from "@/lib/provision";
+import { CONTEXT_FILENAME } from "@/config/agent-workspace";
+import { buildOwnerContext } from "@/lib/enrichment";
+import {
+  buildUserMd,
+  ensureUserMdPointer,
+  injectAgentFile,
+  injectOwnerProfile,
+  provisionTypedAgent,
+  writeGeneratedFiles,
+} from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadAgentAvatar } from "@/lib/supabase/avatar-storage";
 import { sendTelegram } from "@/lib/telegram";
@@ -166,6 +175,9 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
         // The customer has already paid — a missing dedicated template must not fail the
         // order.
         allowTemplateFallback: true,
+        // We enrich below, with the uploaded files still in memory; provisioning's own pass
+        // would only see the website and would be racing us for the same file.
+        callerWritesContext: true,
       });
       agentId = agent.id;
     } catch (err) {
@@ -198,13 +210,35 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
       .eq("agent37_id", agentId);
   }
 
+  const businessName = typeof answers.companyName === "string" ? answers.companyName : "";
+
   if (agentId) {
     const ws = workspaceId;
     const id = agentId;
     after(async () => {
-      const ok = await injectOwnerProfile(id, buildUserMd(type.label, answers));
+      // Uploads and website into readable text. This is the ONLY moment the uploaded bytes
+      // exist — they are never persisted — so it happens here or not at all. It runs before
+      // the profile write because the profile has to name what it produced.
+      const context = await buildOwnerContext({
+        uploads: rawUploads,
+        website: typeof answers.website === "string" ? answers.website : undefined,
+        businessName: businessName || undefined,
+      }).catch((err) => {
+        // Enrichment is a bonus; the profile is the product. Never let it take the profile down.
+        console.error("[agent-setup] enrichment failed:", err);
+        return null;
+      });
+
+      const ok = await injectOwnerProfile(id, buildUserMd(type.label, answers, context?.summary));
       // The file alone doesn't reach the agent — SOUL.md has to point at it.
       if (ok) await ensureUserMdPointer(id);
+      // Only written once the profile that names it has landed, so the agent is never
+      // pointed at a file we failed to create — or left holding one nothing references.
+      if (ok && context) await injectAgentFile(id, CONTEXT_FILENAME, context.markdown);
+      // AGENTS.md, TOOLS.md, IDENTITY.md — the rest of what the runtime loads at session
+      // start, built from the same answers. Gated on the profile write for the same reason:
+      // if that failed the instance isn't reachable yet.
+      if (ok) await writeGeneratedFiles(id, { answers, agentName, contextSummary: context?.summary });
       if (ok) {
         await db
           .from("agent_setup")
@@ -218,7 +252,6 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
   // Team heads-up: Telegram (same channel as the intake flows) + an email with a PDF of the
   // full submission. Runs after the response so PDF rendering and email never block the
   // buyer's "building your agent" screen.
-  const businessName = typeof answers.companyName === "string" ? answers.companyName : "";
   const sections = buildIntakeSections({ ...answers, uploadedFiles: rawUploads, trackType: "business" });
   const provisioned = !!agentId;
 

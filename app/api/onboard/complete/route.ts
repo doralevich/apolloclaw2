@@ -20,6 +20,11 @@ import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 // Nothing else ever will: the webhook creates the account and stops, on purpose, because
 // under this model what gets built depends on the answers that only arrive here.
 
+// Provisioning, enrichment and the USER.md write all happen in `after()`, against an instance
+// that is still booting — minutes of work behind a response that returns immediately. It
+// counts against this function's duration all the same.
+export const maxDuration = 300;
+
 export const POST = route(async (request: Request) => {
   const limited = await enforceRateLimit(request, "onboard_complete", LIMITS.form);
   if (limited) return limited;

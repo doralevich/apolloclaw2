@@ -1,11 +1,15 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { CONTEXT_FILENAME } from "@/config/agent-workspace";
+import { buildOwnerContext } from "@/lib/enrichment";
 import {
   buildUserMd,
   ensureUserMdPointer,
+  injectAgentFile,
   injectOwnerProfile,
   USER_MD_POINTER,
   USER_MD_POINTER_MARKER,
+  writeGeneratedFiles,
 } from "@/lib/provision";
 import { getAgentType } from "@/config/agent-types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -249,12 +253,35 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
         continue;
       }
 
-      const md = buildUserMd(type?.label ?? "Apollo Agent", setup.answers as Record<string, unknown>);
+      const answers = setup.answers as Record<string, unknown>;
+
+      // Website only — the uploaded files were never persisted, so an agent that predates
+      // enrichment gets its site read here but not its documents. Re-submitting the
+      // questionnaire is the only way to get those in.
+      const context = await buildOwnerContext({
+        website: typeof answers.website === "string" ? answers.website : undefined,
+        businessName: typeof answers.companyName === "string" ? answers.companyName : undefined,
+      }).catch((err) => {
+        console.error("[agent-memory] enrichment failed:", id, err);
+        return null;
+      });
+
+      const md = buildUserMd(type?.label ?? "Apollo Agent", answers, context?.summary);
       const wrote = await injectOwnerProfile(id, md);
       if (!wrote) {
         results.push({ id, name, outcome: "failed", detail: "could not write the profile into USER.md on the instance" });
         continue;
       }
+      if (context) await injectAgentFile(id, CONTEXT_FILENAME, context.markdown);
+
+      // The rest of what OpenClaw loads at session start. An agent provisioned before these
+      // existed has generic template text where its owner's priorities, voice and stack
+      // should be — this is how it catches up without them re-doing the questionnaire.
+      await writeGeneratedFiles(id, {
+        answers,
+        agentName: row.name || undefined,
+        contextSummary: context?.summary,
+      });
 
       // The same writer provisioning uses: it REPLACES whatever pointer version is on the
       // box, including the old block that named USER.md. "Already present" was the reason a

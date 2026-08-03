@@ -27,6 +27,10 @@ import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 // one-agent-per-type-per-workspace cap inside provisionTypedAgent turns a duplicate into
 // a 409, which we treat as "already provisioned" and acknowledge.
 
+// Stripe gets its 200 immediately; provisioning and the profile/context writes run in
+// `after()` against a booting instance, and that work counts against this function's duration.
+export const maxDuration = 300;
+
 export const POST = async (request: Request) => {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret) {
