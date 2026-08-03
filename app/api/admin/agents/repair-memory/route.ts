@@ -1,6 +1,6 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { ApiError, json, route } from "@/lib/http";
-import { removeUserMdPointer, repairAgentMemory } from "@/lib/agent-memory";
+import { inspectAgentMemory, removeUserMdPointer, repairAgentMemory } from "@/lib/agent-memory";
 
 // /api/admin/agents/repair-memory — put every agent's USER.md where its runtime actually
 // reads it, and make sure its SOUL.md points at it. The CLI twin is
@@ -18,6 +18,16 @@ const repair = route(async (request: Request) => {
   const params = new URL(request.url).searchParams;
   // ?id=abc&id=def limits the run to named instances; no ids visits everything.
   const ids = params.getAll("id").filter(Boolean);
+
+  // ?inspect=1 reports whether the memory file has content and whether the persona points at
+  // it — sizes and field labels only, never the contents. Verifying a customer's agent must
+  // not mean reading a customer's data.
+  if (params.get("inspect") === "1") {
+    if (!ids.length) {
+      throw new ApiError(400, "invalid_request", "inspect requires at least one ?id= instance");
+    }
+    return json({ inspect: true, results: await inspectAgentMemory(ids) });
+  }
 
   // ?undo=1 takes the pointer back out instead of putting it in — for instances this
   // account shares with another product, which a fleet-wide repair reaches by accident.
