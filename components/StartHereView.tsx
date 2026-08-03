@@ -22,7 +22,10 @@ export function StartHereView() {
   if (agents.length === 0 || !active) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
-        <p className="text-sm text-muted-foreground">No agents in this workspace yet.</p>
+        <p className="text-sm text-muted-foreground">
+          No agents in this workspace yet. Your Apollo Agent is created for you once your
+          license purchase and setup questionnaire are complete.
+        </p>
         <div className="mt-4 flex justify-center">
           <CreateAgentModal />
         </div>

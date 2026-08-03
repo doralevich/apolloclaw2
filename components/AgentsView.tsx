@@ -99,7 +99,13 @@ export function AgentsView() {
         </div>
       ) : agents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-sm text-muted-foreground">No agents in this workspace yet.</p>
+          {/* There is nothing to press when no type is self-serve: an Apollo Agent arrives
+              with the license, so an empty workspace is a billing state, not a missing click.
+              CreateAgentModal renders nothing in that case and this text carries the answer. */}
+          <p className="text-sm text-muted-foreground">
+            No agents in this workspace yet. Your Apollo Agent is created for you once your
+            license purchase and setup questionnaire are complete.
+          </p>
           <div className="mt-4 flex justify-center">
             <CreateAgentModal />
           </div>

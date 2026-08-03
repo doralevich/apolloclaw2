@@ -135,6 +135,12 @@ export function CreateAgentModal({
 
   if (!current) return null;
 
+  // Nothing left to pick: both registry entries are internal — the Apollo Agent arrives with
+  // the license, and the College Agent is another product on another site. Render no trigger
+  // at all rather than a button that opens an empty dialog. When there is a self-serve type
+  // again, the button comes back on its own.
+  if (pickableTypes.length === 0) return null;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>

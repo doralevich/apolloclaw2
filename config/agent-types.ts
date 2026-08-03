@@ -49,8 +49,14 @@ const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 
 
 export const AGENT_TYPES: AgentType[] = [
   {
-    // Sold and provisioned on thecollegeagent.ai; the card here is a hand-off, so nothing in
-    // this app ever creates one. The template name still matters, though: that site
+    // `internal` keeps it out of the create-agent modal. It is a DIFFERENT PRODUCT on a
+    // different site, and once the retired per-role types were removed it was the only card
+    // left — so an ApolloClaw customer pressing "Create Agent" was offered a college agent
+    // and a button off to thecollegeagent.ai. The entry stays because the registry is what
+    // resolves `agent_type` on existing rows and what the templates check reads.
+    //
+    // Sold and provisioned on thecollegeagent.ai; nothing in this app ever creates one. The
+    // template name still matters, though: that site
     // provisions from `college-agent` on the SAME Agent37 account we use, so the name has to
     // keep existing there. It does — as its own template alongside `apollo-agent`, both
     // pointing at the same image, after renaming ours broke theirs for exactly as long as it
@@ -64,6 +70,7 @@ export const AGENT_TYPES: AgentType[] = [
     monthlyCapUsd: 5,
     available: true,
     icon: "GraduationCap",
+    internal: true,
     externalUrl: "https://thecollegeagent.ai/build",
     priceLabel: "$599 one-time + hosting",
   },
