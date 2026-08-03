@@ -23,15 +23,12 @@ import { fileURLToPath } from "url";
 import Stripe from "stripe";
 
 const CURRENCY = "usd";
+// We sell one thing: the license, plus the hosting subscription that carries it. The eight
+// per-agent plans at $4,500 are retired (see lib/pricing/catalog.ts). They are not listed
+// here, so this seed no longer manages them — their Stripe products still exist untouched
+// and can be archived by hand in the dashboard.
 const CATALOG = [
-  { catalogKey: "ceo_plan", name: "The CEO Agent", amountCents: 450000 },
-  { catalogKey: "cfo_plan", name: "The CFO Agent", amountCents: 450000 },
-  { catalogKey: "legal_plan", name: "The Legal Agent", amountCents: 450000 },
-  { catalogKey: "medical_plan", name: "The Medical Agent", amountCents: 450000 },
-  { catalogKey: "insurance_plan", name: "The Insurance Agent", amountCents: 450000 },
-  { catalogKey: "realestate_plan", name: "The Real Estate Agent", amountCents: 450000 },
-  { catalogKey: "sales_plan", name: "The Sales Agent", amountCents: 450000 },
-  { catalogKey: "recruiting_plan", name: "The Recruiting Agent", amountCents: 450000 },
+  { catalogKey: "apollo_license", name: "ApolloClaw Agent License", amountCents: 250000 },
   { catalogKey: "apollo_hosting", name: "ApolloClaw Agent Hosting", amountCents: 18900, interval: "month" },
 ];
 

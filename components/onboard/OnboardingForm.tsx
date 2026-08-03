@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
@@ -407,6 +407,104 @@ function Success({ nextStep }: { nextStep?: boolean }) {
   );
 }
 // ════════════════════════════════════════════════════════════
+// PAYWALL (lead mode — between "Start Here" and "Your Business")
+// ════════════════════════════════════════════════════════════
+// David's call on how the funnel works now: the lead details are captured first (so a
+// drop-off here is still a lead we have), then payment, then the questionnaire. The buyer
+// has no account at this point and does not need one — /api/onboard/checkout is anonymous
+// and the account is created from the completed checkout by the Stripe webhook.
+// One priced line on the paywall. Module scope, not defined inside Paywall: a component
+// created during render is a fresh type on every render, which remounts its subtree.
+function PriceLine({ label, sub, price, per }: { label: string; sub: string; price: string; per: string }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, padding: "18px 0", borderBottom: `1px solid ${BDR}` }}>
+      <div>
+        <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: TX }}>{label}</p>
+        <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>{sub}</p>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: TX }}>{price}</p>
+        <p style={{ margin: "2px 0 0", fontSize: 12, color: TXD }}>{per}</p>
+      </div>
+    </div>
+  );
+}
+
+function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+
+  const go = async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/onboard/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first: gate.first,
+          last: gate.last,
+          email: gate.email,
+          personalEmail: gate.personalEmail,
+          phone: gate.phone,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body?.url) {
+        throw new Error(body?.error?.message || "We could not start checkout. Please try again.");
+      }
+      window.location.href = body.url as string;
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "We could not start checkout. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "clamp(28px,5vw,48px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
+          Let&apos;s Make It <span style={{ color: R }}>Yours.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: TXM, maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>
+          We do not sell an off-the-shelf bot. We build one around your business, and the
+          questionnaire that follows is what we build from.
+        </p>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+        <div style={{ width: "100%", maxWidth: 640, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
+
+          <PriceLine label="Agent License" sub="One-time. Your build, your customization, yours to keep." price="$2,500" per="once" />
+          <PriceLine label="Managed Hosting" sub="We run it, patch it, and keep it online. Includes $25/mo of token usage." price="$189" per="per month" />
+
+          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "20px 0 0" }}>
+            Billed securely through Stripe. Your account is created the moment payment clears,
+            and we will email you a link to set your password.
+          </p>
+
+          {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
+
+          <button type="button" onClick={go} disabled={loading} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "15px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1, letterSpacing: "0.01em" }}>
+            {loading ? "Taking you to checkout…" : "Continue to Payment →"}
+          </button>
+          <button type="button" onClick={onBack} disabled={loading} style={{ width: "100%", marginTop: 10, background: "transparent", border: "none", color: TXD, fontFamily: "inherit", fontSize: 13, padding: "8px", cursor: loading ? "default" : "pointer" }}>
+            ← Back
+          </button>
+
+          <p style={{ textAlign: "center", fontSize: 12, color: TXD, marginTop: 14, lineHeight: 1.6 }}>
+            Running it on your own hardware instead, or need something bespoke?{" "}
+            <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us first</a> — that
+            is a different conversation and we will set it up for you.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
 // PAYMENT SPLASH (customer mode, fresh from Stripe checkout)
 // ════════════════════════════════════════════════════════════
 function PaymentSplash({ agentLabel, onStart }: { agentLabel: string; onStart: () => void }) {
@@ -720,6 +818,65 @@ export interface OnboardingFormProps {
   justPaid?: boolean;
 }
 
+// Stripe takes the buyer off-site, so the "Start Here" answers have to survive a full page
+// load to still be there when they come back. sessionStorage rather than localStorage: this
+// is one sitting, and it should not outlive the tab. Nothing sensitive is stored — the same
+// five contact fields they just typed, which are also on the Stripe session.
+const GATE_STORAGE_KEY = "apolloclaw.onboard.gate";
+
+const EMPTY_GATE: GateData = { first: "", last: "", email: "", personalEmail: "", phone: "", linkedin: "", company: "" };
+
+// The three pieces useSyncExternalStore needs. The snapshot is the RAW string, not a parsed
+// object: React compares snapshots with Object.is, and parsing here would hand it a fresh
+// object every render and loop forever.
+function readStoredGateRaw(): string | null {
+  try {
+    return window.sessionStorage.getItem(GATE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+// The server snapshot. There is no sessionStorage there, and saying so explicitly is what
+// keeps the first client render identical to the server's.
+function readNoStoredGate(): string | null {
+  return null;
+}
+
+// sessionStorage fires no events for same-tab writes and we only read it once on the way
+// back from Stripe, so there is nothing to subscribe to.
+function subscribeNever(): () => void {
+  return () => {};
+}
+
+function parseStoredGate(raw: string | null): GateData | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<GateData>;
+    // An email is the one field that makes the rest worth restoring.
+    return parsed?.email ? { ...EMPTY_GATE, ...parsed } : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredGate(gate: GateData): void {
+  try {
+    window.sessionStorage.setItem(GATE_STORAGE_KEY, JSON.stringify(gate));
+  } catch {
+    // Private browsing or a full quota. Losing this only costs them retyping five fields
+    // after checkout, so it must never block the sale.
+  }
+}
+
+function clearStoredGate(): void {
+  try {
+    window.sessionStorage.removeItem(GATE_STORAGE_KEY);
+  } catch {
+    // Nothing to do — see writeStoredGate.
+  }
+}
+
 export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, justPaid }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
   // White glove submits down the same unauthenticated /api/intake path as the plain lead
@@ -729,15 +886,54 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // the gate and the questionnaire, keyed on mode === "lead" — this mode is exempt by design,
   // which is the entire reason it exists.
   const isWhiteGlove = mode === "whiteglove";
-  const [phase, setPhase] = useState<"splash" | "gate" | "personalize" | "form" | "submitting" | "done" | "building">(
-    isCustomer && justPaid ? "splash" : "gate"
-  );
-  const [gate, setGate] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", linkedin: "", company: "" });
+  // Only the public /onboard journey is paywalled. White glove is exempt by design (its
+  // commercial terms were agreed offline) and customer mode has already paid.
+  const isPaywalled = mode === "lead";
+
+  // Coming back from Stripe: `justPaid` is read from ?paid=1 on the SERVER and arrives as a
+  // prop, while the answers themselves were stashed in sessionStorage before the redirect.
+  //
+  // The stash is read through useSyncExternalStore rather than a useState initializer,
+  // because the server has no sessionStorage. An initializer would return null on the server
+  // (rendering "Start Here") and the stored answers on the client (rendering the
+  // questionnaire) — different DOM for the same render, which is a hydration error. This
+  // hook hands React a server snapshot of null, so the first client render matches the
+  // server's, and the stored value arrives on the render after.
+  const storedGateRaw = useSyncExternalStore(subscribeNever, readStoredGateRaw, readNoStoredGate);
+  const restored = justPaid ? parseStoredGate(storedGateRaw) : null;
+
+  // `null` means "not chosen yet, use whatever the current state of the world implies".
+  // Phase is DERIVED rather than seeded, so it can change when the stored value lands
+  // without a setState in an effect. Any explicit setPhase from here on takes over.
+  const [chosenPhase, setPhase] = useState<"splash" | "gate" | "paywall" | "personalize" | "form" | "submitting" | "done" | "building" | null>(null);
+  const phase =
+    chosenPhase ??
+    (isCustomer && justPaid
+      ? "splash"
+      // Paid, and we still know who they are: straight into "Your Business", the step the
+      // paywall was standing in front of. Paid on another device and the stash is gone, so
+      // they re-enter the five fields — and skip the paywall on the way through, since
+      // justPaid is what gates it.
+      : justPaid && restored
+        ? "form"
+        : "gate");
+
+  const [enteredGate, setGate] = useState<GateData | null>(null);
+  const gate = enteredGate ?? restored ?? EMPTY_GATE;
   const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: "", avatarFile: null, avatarPresetColor: null });
   const [buildingWorkspaceId, setBuildingWorkspaceId] = useState<string | undefined>(workspaceId);
   // Naming/avatar is a paid-customer thing (matches The College Agent: personalization
   // happens post-payment, never on the free lead form).
-  const handleGate = (info: GateData) => { setGate(info); setPhase(isCustomer ? "personalize" : "form"); };
+  const handleGate = (info: GateData) => {
+    setGate(info);
+    if (isCustomer) return setPhase("personalize");
+    // Persist before the paywall, because the next click leaves the site for Stripe.
+    if (isPaywalled && !justPaid) {
+      writeStoredGate(info);
+      return setPhase("paywall");
+    }
+    setPhase("form");
+  };
   const handlePersonalize = (d: PersonalizeData) => { setPersonalize(d); setPhase("form"); };
   const handleDone = async (data: Record<string, unknown>, trackType: string) => {
     setPhase("submitting");
@@ -768,9 +964,11 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       const res = await fetch("/api/intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, trackType, leadSource: isWhiteGlove ? "white-glove" : "self-serve" }),
+        body: JSON.stringify({ ...data, trackType, leadSource: isWhiteGlove ? "white-glove" : "self-serve", paid: Boolean(justPaid) }),
       });
       if (!res.ok) throw new Error("Submission failed");
+      // The questionnaire is in; the stashed contact details have done their job.
+      clearStoredGate();
       setPhase("done");
     } catch (err) {
       console.error("Submission error:", err);
@@ -786,6 +984,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
   );
+  if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} />;
   if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
   if (phase === "submitting") return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>

@@ -34,6 +34,20 @@ function isWhiteGlove(d: Record<string, unknown>): boolean {
   return String(d.leadSource || "") === "white-glove";
 }
 
+// Set when the questionnaire was completed on the paid side of the /onboard paywall, which
+// is the difference between a customer's build brief and a prospect's enquiry. This is a
+// display hint only — the money is confirmed by the Stripe webhook, never by a form post.
+function isPaidIntake(d: Record<string, unknown>): boolean {
+  return d.paid === true;
+}
+
+// What to call this submission in the subject line and on the PDF badge.
+function intakeKind(d: Record<string, unknown>): string | null {
+  if (isWhiteGlove(d)) return "White Glove";
+  if (isPaidIntake(d)) return "Paid";
+  return null;
+}
+
 // ─── Build the intake sections, grouped by track ──────────────────────────────
 // The business/personal core is shared with the paid post-checkout flow (see
 // lib/onboardingSections.ts); student/admin/agency are legacy tracks specific to
@@ -108,7 +122,7 @@ async function generateIntakePdf(data: Record<string, unknown>): Promise<Buffer 
       docTitle: "Client Intake Form",
       heading,
       submittedAt,
-      badge: [trackLabel[track] || track, isWhiteGlove(data) ? "White Glove" : null].filter(Boolean).join(" • "),
+      badge: [trackLabel[track] || track, intakeKind(data)].filter(Boolean).join(" • "),
       sections: buildIntakeSections(data),
     });
   } catch (err) {
@@ -434,7 +448,7 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: "david@apolloclaw.ai",
       toName: "David Oralevich",
-      subject: `${isWhiteGlove(data) ? "White Glove Intake" : "New Intake"}: ${fullName}${company ? ` — ${company}` : ""} [${track}]`,
+      subject: `${intakeKind(data) ? `${intakeKind(data)} Intake` : "New Intake"}: ${fullName}${company ? ` — ${company}` : ""} [${track}]`,
       html: davidHtml,
       pdfBuffer: pdfBuffer || undefined,
       pdfFilename: pdfBuffer ? filename : undefined,

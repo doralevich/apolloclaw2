@@ -1,6 +1,4 @@
-// The ApolloClaw Stripe catalog — the single source of truth for what the storefront
-// sells. Every purchasable agent bundles its one-time build fee with the shared monthly
-// hosting subscription at checkout.
+// The ApolloClaw Stripe catalog — the single source of truth for what the site sells.
 //
 // Keys are stable identifiers, never display names:
 //   - `catalogKey`  -> stamped on the Stripe PRODUCT as metadata.catalog_key (how the seed
@@ -27,25 +25,47 @@ export interface CatalogPlan {
 
 export const CURRENCY = "usd";
 
-/** One-time build fee per agent — $4,500 each. */
-export const AGENT_PLANS: CatalogPlan[] = [
-  { catalogKey: "ceo_plan", name: "The CEO Agent", amountCents: 450000, agentTypeId: "ceo" },
-  { catalogKey: "cfo_plan", name: "The CFO Agent", amountCents: 450000, agentTypeId: "cfo" },
-  { catalogKey: "legal_plan", name: "The Legal Agent", amountCents: 450000, agentTypeId: "legal" },
-  { catalogKey: "medical_plan", name: "The Medical Agent", amountCents: 450000, agentTypeId: "medical" },
-  { catalogKey: "insurance_plan", name: "The Insurance Agent", amountCents: 450000, agentTypeId: "insurance" },
-  { catalogKey: "realestate_plan", name: "The Real Estate Agent", amountCents: 450000, agentTypeId: "realestate" },
-  { catalogKey: "sales_plan", name: "The Sales Agent", amountCents: 450000, agentTypeId: "sales" },
-  { catalogKey: "recruiting_plan", name: "The Recruiting Agent", amountCents: 450000, agentTypeId: "recruiting" },
-];
+// ─── The single product ───────────────────────────────────────────────────────
+//
+// David's call: we no longer sell named agents (CEO Agent, CFO Agent, and so on). We sell
+// the customization. One licensing fee, one hosting subscription, and what gets built is
+// decided by the onboarding answers rather than by which SKU someone clicked.
 
-/** Shared recurring hosting price — every agent purchase subscribes to this. */
+/** One-time licensing fee. Charged once, at the /onboard paywall. */
+export const LICENSE_PLAN = {
+  catalogKey: "apollo_license",
+  name: "ApolloClaw Agent License",
+  amountCents: 250000,
+} as const;
+
+/** Shared recurring hosting price — every license subscribes to this. */
 export const HOSTING_PLAN = {
   catalogKey: "apollo_hosting",
   name: "ApolloClaw Agent Hosting",
   amountCents: 18900,
   interval: "month",
 } as const;
+
+/** Human display of the bundle, used at the paywall. */
+export const BUNDLE_PRICE_LABEL = "$2,500 license + $189/mo hosting";
+
+/** What the $189 covers. Stated plainly because it is the first thing people ask. */
+export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";
+
+// ─── Retired: the per-agent plans ─────────────────────────────────────────────
+//
+// Eight plans at $4,500 each used to live here, one per agent type, sold through the
+// /agents storefront and the dashboard's create-agent modal. Both entry points are gone.
+//
+// This is deliberately an empty list rather than a deleted export. `planForAgentType` still
+// resolves, it just finds nothing, so /api/build/checkout answers "isn't sold through
+// checkout" rather than failing to compile, and the provisioning machinery behind it (which
+// still works and which the license flow will grow into) stays intact. Restoring a
+// per-agent SKU is one line here, not an archaeology exercise.
+//
+// The Stripe products themselves are untouched: the seed creates and updates, it never
+// deletes. Archive them in the Stripe dashboard if you want them out of the product list.
+export const AGENT_PLANS: CatalogPlan[] = [];
 
 export function planForAgentType(agentTypeId: string): CatalogPlan | undefined {
   return AGENT_PLANS.find((p) => p.agentTypeId === agentTypeId);
@@ -54,6 +74,3 @@ export function planForAgentType(agentTypeId: string): CatalogPlan | undefined {
 export function planForCatalogKey(catalogKey: string): CatalogPlan | undefined {
   return AGENT_PLANS.find((p) => p.catalogKey === catalogKey);
 }
-
-/** Human display of the bundle, used on the storefront cards. */
-export const BUNDLE_PRICE_LABEL = "$4,500 build + $189/mo hosting";
