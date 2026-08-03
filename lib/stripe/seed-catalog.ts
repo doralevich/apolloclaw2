@@ -1,6 +1,6 @@
 import "server-only";
 import type Stripe from "stripe";
-import { AGENT_PLANS, CURRENCY, HOSTING_PLAN } from "@/lib/pricing/catalog";
+import { AGENT_PLANS, CURRENCY, HOSTING_PLAN, LICENSE_PLAN } from "@/lib/pricing/catalog";
 
 // Idempotent Stripe catalog sync — safe to run any number of times, against test or live.
 //
@@ -28,13 +28,21 @@ export interface SeedAction {
 
 function entries(): SeedEntry[] {
   return [
-    ...AGENT_PLANS.map(({ catalogKey, name, amountCents }) => ({ catalogKey, name, amountCents })),
+    {
+      catalogKey: LICENSE_PLAN.catalogKey,
+      name: LICENSE_PLAN.name,
+      amountCents: LICENSE_PLAN.amountCents,
+    },
     {
       catalogKey: HOSTING_PLAN.catalogKey,
       name: HOSTING_PLAN.name,
       amountCents: HOSTING_PLAN.amountCents,
       interval: HOSTING_PLAN.interval,
     },
+    // AGENT_PLANS is empty now that the per-agent SKUs are retired, so this spread
+    // contributes nothing. It stays because restoring one of those plans should be a single
+    // line in the catalog, with the seed picking it up without being edited too.
+    ...AGENT_PLANS.map(({ catalogKey, name, amountCents }) => ({ catalogKey, name, amountCents })),
   ];
 }
 
@@ -116,7 +124,7 @@ async function seedEntry(stripe: Stripe, entry: SeedEntry): Promise<SeedAction> 
   };
 }
 
-/** Sync the full ApolloClaw catalog (7 agent plans + hosting). Returns one action per entry. */
+/** Sync the ApolloClaw catalog (license + hosting). Returns one action per entry. */
 export async function seedStripeCatalog(stripe: Stripe): Promise<SeedAction[]> {
   const results: SeedAction[] = [];
   for (const entry of entries()) {
