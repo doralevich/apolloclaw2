@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
 import { getAgentType } from "@/config/agent-types";
+import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
@@ -183,7 +184,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
           <tr>
             <th className="px-3 py-2 font-medium">Instance</th>
             <th className="px-3 py-2 font-medium">Status</th>
-            <th className="px-3 py-2 font-medium">Template</th>
+            <th className="px-3 py-2 font-medium">Type</th>
             <th className="px-3 py-2 font-medium">Resources</th>
             <th className="px-3 py-2 font-medium">Budget (spent / cap)</th>
             <th className="px-3 py-2 font-medium">Usage (period)</th>
@@ -211,13 +212,16 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
                   </div>
                 )}
               </td>
-              {/* Product name first, image underneath. The admin view is where you diagnose,
-                  so the raw template stays visible — but "college-agent" as the whole answer
-                  is what a customer's Apollo Agent looked like in here. */}
+              {/* Product name, then the RUNTIME rather than the image name. Which runtime an
+                  instance is decides where it keeps the files it reads, so it's the fact worth
+                  having here — the image name only ever told us what the build was once
+                  called. An unrecognised image falls back to showing its raw name. */}
               <td className="px-3 py-2 text-muted-foreground">
                 {a.agent_type ? getAgentType(a.agent_type)?.label ?? a.agent_type : "—"}
-                {a.template && (
-                  <div className="text-[11px] text-muted-foreground/70">{a.template}</div>
+                {(runtimeForTemplate(a.template) ?? a.template) && (
+                  <div className="text-[11px] text-muted-foreground/70">
+                    {runtimeForTemplate(a.template) ?? a.template}
+                  </div>
                 )}
               </td>
               <td className="px-3 py-2 text-muted-foreground">
