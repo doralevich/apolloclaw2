@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
+import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { apiFetch } from "@/lib/api";
 
@@ -1022,6 +1023,9 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       writeStoredGate(info);
       return setPhase("paywall");
     }
+    // Already paid but arriving through the gate (they checked out on another device, so
+    // the stashed answers were gone). Naming the agent still comes before the questions.
+    if (isPaywalled && justPaid) return setPhase("personalize");
     setPhase("form");
   };
   const handlePersonalize = (d: PersonalizeData) => { setPersonalize(d); setPhase("form"); };
@@ -1051,6 +1055,46 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         setPhase("building");
         return;
       }
+      // Paid license buyer: this is a build brief, not a lead. It goes to
+      // /api/onboard/complete, which stores the answers, provisions the agent from them,
+      // and writes them in as USER.md. Authorized by the paid Stripe session, since the
+      // buyer has an account but has never signed in.
+      //
+      // A 409 means the Stripe webhook has not created their account yet — it fires in
+      // parallel with the browser redirect, so a fast buyer really can arrive first. Retry
+      // rather than fail: it resolves itself in seconds and their answers are already typed.
+      if (isPaywalled && justPaid && sessionId) {
+        let avatar_upload: Awaited<ReturnType<typeof readFileAsBase64>> | undefined;
+        let avatar_preset: string | undefined;
+        if (personalize.avatarFile) {
+          try { avatar_upload = await readFileAsBase64(personalize.avatarFile); } catch { avatar_upload = undefined; }
+        } else if (personalize.avatarPresetColor) {
+          avatar_preset = initialsAvatarDataUri(personalize.agentName || "Agent", personalize.avatarPresetColor);
+        }
+        const payload = JSON.stringify({
+          session_id: sessionId,
+          answers: data,
+          agent_name: personalize.agentName || undefined,
+          avatar_upload,
+          avatar_preset,
+        });
+        for (let attempt = 0; attempt < 6; attempt++) {
+          const r = await fetch("/api/onboard/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+          });
+          if (r.ok) {
+            clearStoredGate();
+            setPhase("building");
+            return;
+          }
+          if (r.status !== 409) throw new Error("Submission failed");
+          await new Promise((resolve) => setTimeout(resolve, 2500));
+        }
+        throw new Error("Submission failed");
+      }
+
       const res = await fetch("/api/intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1079,7 +1123,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     <PaymentConfirmation
       sessionId={sessionId}
       email={gate.email || undefined}
-      onContinue={() => setPhase(restored ? "form" : "gate")}
+      onContinue={() => setPhase(restored ? "personalize" : "gate")}
     />
   );
   if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
@@ -1091,7 +1135,16 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       <style>{`@keyframes oc-spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
-  if (phase === "building") return <BuildScreen agentTypeId={agentTypeId || ""} agentLabel={agentLabel || "Agent"} workspaceId={buildingWorkspaceId} />;
+  if (phase === "building") return (
+    <BuildScreen
+      agentTypeId={agentTypeId || LICENSE_AGENT_TYPE_ID}
+      agentLabel={personalize.agentName || agentLabel || "Agent"}
+      workspaceId={buildingWorkspaceId}
+      // License buyers have no session to poll the dashboard API with; the paid checkout
+      // session authorizes their status reads instead.
+      sessionId={isCustomer ? undefined : sessionId}
+    />
+  );
   if (phase === "done") return <Success nextStep={isWhiteGlove} />;
   if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} />;
   return null;

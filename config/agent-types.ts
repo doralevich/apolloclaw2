@@ -33,6 +33,10 @@ export interface AgentType {
   // Price line shown on storefront cards for external types (paid types use the shared
   // BUNDLE_PRICE_LABEL from lib/pricing/catalog.ts).
   priceLabel?: string;
+  // Provisioned by the platform, never chosen from a card. The create-agent modal filters
+  // these out entirely rather than showing them disabled, because "you cannot pick this"
+  // and "this is not a thing you pick" are different messages.
+  internal?: boolean;
 }
 
 // Shared shape for the paid Apollo agents — one machine size and spend cap across the line.
@@ -132,8 +136,44 @@ export const AGENT_TYPES: AgentType[] = [
     icon: "UserSearch",
     planKey: "recruiting_plan",
   },
+  // The license build. Every /onboard purchase provisions this one type; the customization
+  // comes from the buyer's onboarding answers (written in as USER.md), not from the SKU.
+  //
+  // The template is `college-agent` — David's call, so every build starts from the Apollo
+  // Claw content and behaviour already proven in production rather than from one of the
+  // per-role templates that were never exercised at this volume.
+  //
+  // No `planKey`: it is not sold per-type through /api/build/checkout. /api/onboard/complete
+  // provisions it once the license checkout is confirmed paid. `internal` keeps it out of
+  // the create-agent modal, which is for picking a product, and this is not one.
+  {
+    id: "apollo",
+    label: "Apollo Agent",
+    description:
+      "A private AI agent built around one business — its people, its stack, its bottlenecks — from the answers given at onboarding.",
+    template: "college-agent",
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Bot",
+  },
 ];
 
 export function getAgentType(id: string): AgentType | undefined {
   return AGENT_TYPES.find((t) => t.id === id);
+}
+
+// ─── The license build ────────────────────────────────────────────────────────
+//
+// We sell one thing now: the customization. Every license purchase provisions THIS type,
+// and what makes one customer's agent different from another's is their onboarding answers
+// (written into the instance as USER.md), not a different SKU.
+export const LICENSE_AGENT_TYPE_ID = "apollo";
+
+export function licenseAgentType(): AgentType {
+  const type = getAgentType(LICENSE_AGENT_TYPE_ID);
+  // Unreachable unless the entry is removed from AGENT_TYPES. Throwing beats provisioning
+  // something arbitrary for a customer who has already paid.
+  if (!type) throw new Error(`agent type "${LICENSE_AGENT_TYPE_ID}" is missing from AGENT_TYPES`);
+  return type;
 }

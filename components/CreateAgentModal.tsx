@@ -85,13 +85,18 @@ export function CreateAgentModal({
   const alreadyHas = (t: (typeof AGENT_TYPES)[number]) =>
     existing.has(t.id) || existing.has(t.template);
 
-  const selectedType = AGENT_TYPES.find((t) => t.id === selected) ?? null;
+  // Internal types (the license build) are provisioned by the platform after checkout, not
+  // picked from a card. Filtered out rather than shown disabled: "you cannot choose this"
+  // and "this is not a thing you choose" are different messages.
+  const pickableTypes = AGENT_TYPES.filter((t) => !t.internal);
+
+  const selectedType = pickableTypes.find((t) => t.id === selected) ?? null;
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
       // Fresh form on every open, preselecting the first type that can actually be created.
-      setSelected(AGENT_TYPES.find((t) => t.available && !alreadyHas(t))?.id ?? null);
+      setSelected(pickableTypes.find((t) => t.available && !alreadyHas(t))?.id ?? null);
     }
   }
 
@@ -150,7 +155,7 @@ export function CreateAgentModal({
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
-          {AGENT_TYPES.map((t) => {
+          {pickableTypes.map((t) => {
             const Icon = (t.icon && TYPE_ICONS[t.icon]) || Bot;
             const alreadyCreated = t.available && alreadyHas(t);
             const disabled = !t.available || alreadyCreated;

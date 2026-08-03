@@ -3,6 +3,7 @@ import { NextResponse, after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
 import { ApiError } from "@/lib/http";
+import { findAuthUserIdByEmail } from "@/lib/license-session";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -251,24 +252,6 @@ async function handleLicensePurchase(session: Stripe.Checkout.Session): Promise<
     await sendPasswordSetupEmail(db, email, first);
     await notifyLicensePurchase({ email, name: [first, last].filter(Boolean).join(" "), amount, sessionId: session.id });
   });
-}
-
-// Page through auth users to find one by email. supabase-js has no getUserByEmail, and the
-// user base here is small enough that paging is cheaper than adding a lookup table. Capped
-// so a runaway never spins: if an account is somehow past the cap, the caller throws and
-// Stripe redelivers, which surfaces the problem rather than hiding it.
-async function findAuthUserIdByEmail(
-  db: ReturnType<typeof createAdminClient>,
-  email: string
-): Promise<string | null> {
-  for (let page = 1; page <= 20; page++) {
-    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 200 });
-    if (error) throw new Error(`user lookup failed: ${error.message}`);
-    const hit = data.users.find((u) => u.email?.toLowerCase() === email);
-    if (hit) return hit.id;
-    if (data.users.length < 200) return null;
-  }
-  return null;
 }
 
 // The buyer has an account but no password — they never chose one, they paid. This sends
