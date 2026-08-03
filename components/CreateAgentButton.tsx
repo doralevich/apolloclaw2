@@ -7,8 +7,12 @@ import { useAsyncAction } from "@/lib/useAsyncAction";
 import { Button, type ButtonProps } from "@/components/ui/button";
 
 // Provisions an agent into a workspace via POST /api/agents (server-side: platform-admin
-// only). Reused by the admin god-view's per-workspace "Create Hermes" action — the label
-// and size are configurable so the same flow serves both the action button and the row.
+// only, and since #78 the same Apollo Agent a purchase produces). Used by the admin
+// god-view's per-workspace action — label and size are configurable so the same flow serves
+// both the action button and the row.
+//
+// The label said "Create Hermes" while the route built a stock OpenClaw box: wrong on both
+// counts, and wrong in opposite directions, which is what made it hard to notice.
 export function CreateAgentButton({
   workspaceId,
   onCreated,
