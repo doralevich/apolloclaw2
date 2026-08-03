@@ -23,8 +23,11 @@ export function PreFooter() {
         <div className="relative z-10">
           <Section bg="transparent">
             <div className="mx-auto max-w-3xl text-center">
+              {/* Hard break before "AI Implemented?" is deliberate (David's call), so the two
+                  halves of the line always split at the same place rather than wherever the
+                  viewport happens to put them. */}
               <H2>
-                Ready to move from AI curiosity to AI <span style={{ color: RED }}>operations?</span>
+                Ready to move from AI curiosity to<br />AI <span style={{ color: RED }}>Implemented?</span>
               </H2>
               <p className="font-body mx-auto mt-5 text-[1.0625rem] leading-[1.7]" style={{ color: PAPER_MUTED, maxWidth: 560 }}>
                 Book a free 30-minute discovery call. You bring the bottlenecks, we bring the build.
