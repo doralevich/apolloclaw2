@@ -25,6 +25,15 @@ const trackLabel: Record<string, string> = {
   agency: "Agency / Reseller",
 };
 
+// Which entry point the submission came through. /white-glove-onboarding sends
+// "white-glove"; plain /onboard sends "self-serve". Older submissions predate the field and
+// send nothing, so absence is treated as self-serve rather than as an error. The two forms
+// are identical, so without this marker there is no way to tell an invited client's
+// onboarding from a cold lead once it lands in the inbox.
+function isWhiteGlove(d: Record<string, unknown>): boolean {
+  return String(d.leadSource || "") === "white-glove";
+}
+
 // ─── Build the intake sections, grouped by track ──────────────────────────────
 // The business/personal core is shared with the paid post-checkout flow (see
 // lib/onboardingSections.ts); student/admin/agency are legacy tracks specific to
@@ -99,7 +108,7 @@ async function generateIntakePdf(data: Record<string, unknown>): Promise<Buffer 
       docTitle: "Client Intake Form",
       heading,
       submittedAt,
-      badge: trackLabel[track] || track,
+      badge: [trackLabel[track] || track, isWhiteGlove(data) ? "White Glove" : null].filter(Boolean).join(" • "),
       sections: buildIntakeSections(data),
     });
   } catch (err) {
@@ -425,7 +434,7 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: "david@apolloclaw.ai",
       toName: "David Oralevich",
-      subject: `New Intake: ${fullName}${company ? ` — ${company}` : ""} [${track}]`,
+      subject: `${isWhiteGlove(data) ? "White Glove Intake" : "New Intake"}: ${fullName}${company ? ` — ${company}` : ""} [${track}]`,
       html: davidHtml,
       pdfBuffer: pdfBuffer || undefined,
       pdfFilename: pdfBuffer ? filename : undefined,
