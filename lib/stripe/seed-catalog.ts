@@ -1,6 +1,6 @@
 import "server-only";
 import type Stripe from "stripe";
-import { AGENT_PLANS, CURRENCY, HOSTING_PLAN, LICENSE_PLAN } from "@/lib/pricing/catalog";
+import { AGENT_PLANS, CREDIT_PACKS, CURRENCY, HOSTING_PLAN, LICENSE_PLAN } from "@/lib/pricing/catalog";
 
 // Idempotent Stripe catalog sync — safe to run any number of times, against test or live.
 //
@@ -43,6 +43,11 @@ function entries(): SeedEntry[] {
     // contributes nothing. It stays because restoring one of those plans should be a single
     // line in the catalog, with the seed picking it up without being edited too.
     ...AGENT_PLANS.map(({ catalogKey, name, amountCents }) => ({ catalogKey, name, amountCents })),
+    // Credit packs sell through the dashboard rather than the paywall, but Stripe doesn't
+    // care where a price is used — leaving them out would make the admin sync button quietly
+    // narrower than the CLI twin, and the packs would only exist wherever someone last ran
+    // the script.
+    ...CREDIT_PACKS.map(({ catalogKey, name, amountCents }) => ({ catalogKey, name, amountCents })),
   ];
 }
 
