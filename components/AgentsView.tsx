@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { statusVariant } from "@/lib/format";
+import { getAgentType } from "@/config/agent-types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
@@ -111,7 +112,7 @@ export function AgentsView() {
                 <th className="px-4 py-2 font-medium">Name</th>
                 <th className="px-4 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 font-medium">Setup</th>
-                <th className="px-4 py-2 font-medium">Template</th>
+                <th className="px-4 py-2 font-medium">Type</th>
                 <th className="px-4 py-2 font-medium">Resources</th>
                 <th className="px-4 py-2 text-center font-medium">Quick actions</th>
               </tr>
@@ -139,7 +140,13 @@ export function AgentsView() {
                   <td className="px-4 py-3 text-sm">
                     <SetupCell agent={a} />
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{a.template ?? "-"}</td>
+                  {/* The product name, not the image it was built from. Every Apollo Agent
+                      provisions from the `college-agent` template (config/agent-types.ts), so
+                      showing the raw template told a paying ApolloClaw customer they had bought
+                      something called "college-agent". */}
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {(a.agent_type ? getAgentType(a.agent_type)?.label : undefined) ?? a.template ?? "-"}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
                   </td>

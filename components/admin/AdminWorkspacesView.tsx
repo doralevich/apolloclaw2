@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
+import { getAgentType } from "@/config/agent-types";
 import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
@@ -210,7 +211,15 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
                   </div>
                 )}
               </td>
-              <td className="px-3 py-2 text-muted-foreground">{a.template ?? "-"}</td>
+              {/* Product name first, image underneath. The admin view is where you diagnose,
+                  so the raw template stays visible — but "college-agent" as the whole answer
+                  is what a customer's Apollo Agent looked like in here. */}
+              <td className="px-3 py-2 text-muted-foreground">
+                {a.agent_type ? getAgentType(a.agent_type)?.label ?? a.agent_type : "—"}
+                {a.template && (
+                  <div className="text-[11px] text-muted-foreground/70">{a.template}</div>
+                )}
+              </td>
               <td className="px-3 py-2 text-muted-foreground">
                 {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
               </td>
