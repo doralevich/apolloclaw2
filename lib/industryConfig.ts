@@ -110,9 +110,42 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Other",
         ],
       },
+      {
+        key: "clinical_staff",
+        label: "Clinical and admin staff",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
+      },
+      {
+        key: "payer_mix",
+        label: "Payer mix",
+        type: "multiselect",
+        helper: "Shapes how much of the agent's work is billing and authorization chasing.",
+        options: ["Commercial insurance", "Medicare", "Medicaid", "Cash pay / self pay", "Workers' compensation", "Concierge / membership", "Grant or program funded"],
+      },
+      {
+        key: "patient_comms",
+        label: "How patients reach you",
+        type: "multiselect",
+        options: ["Phone", "Patient portal", "Email", "Text message", "Online booking", "Walk-in", "Referring provider"],
+      },
+      {
+        key: "admin_burden",
+        label: "How heavy is documentation and compliance right now?",
+        type: "scale",
+        helper: "1 is manageable, 10 is the thing keeping you late.",
+      },
     ],
   },
 
+  // Repaired, not written from scratch. The first four fields below were sitting in the
+  // Healthcare branch, and this branch existed with an EMPTY fields array. Two live bugs
+  // fell out of that: every medical practice was asked, as required questions, which
+  // practice areas it covers (from a list starting "Personal injury, Family, Estate
+  // planning") and whether it runs Clio or Filevine, with no way past the step without
+  // answering nonsense; and every law firm got an Industry Deep-Dive step containing no
+  // questions at all. Same fields, correct home, plus the three a firm actually needs.
   Legal: {
     stepTitle: "Your Law Practice",
     stepSubtitle: "The shape of your firm so the agent handles matters the way you do.",
@@ -177,6 +210,26 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Other",
         ],
       },
+      {
+        key: "legal_bottlenecks",
+        label: "Biggest bottleneck",
+        type: "multiselect",
+        helper: "Select all that apply",
+        options: ["Client intake and screening", "Document drafting", "Discovery and document review", "Deadline and docket tracking", "Billing and collections", "Client updates and status", "Conflict checks", "Referral follow-up"],
+      },
+      {
+        key: "matter_sources",
+        label: "Where new matters come from",
+        type: "multiselect",
+        options: ["Client referrals", "Attorney referrals", "Search and web", "Paid ads", "Directories (Avvo, FindLaw)", "Speaking and writing", "Existing clients", "Court appointments"],
+      },
+      {
+        key: "billable_target",
+        label: "Billable hour expectation",
+        type: "dropdown",
+        helper: "Tells the agent how much of your day is already spoken for.",
+        options: ["No formal target", "Under 1,200 a year", "1,200 to 1,600", "1,600 to 1,900", "1,900 to 2,200", "Over 2,200"],
+      },
     ],
   },
 
@@ -234,6 +287,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Other",
         ],
       },
+      {
+        key: "re_team",
+        label: "Team shape",
+        type: "dropdown",
+        required: true,
+        options: ["Solo", "Solo with an assistant", "Small team (2 to 5)", "Large team (6 to 20)", "Brokerage with agents under me"],
+      },
+      {
+        key: "re_lead_sources",
+        label: "Where business comes from",
+        type: "multiselect",
+        options: ["Referrals and sphere", "Past clients", "Portals (Zillow, Realtor.com)", "Open houses", "Paid ads", "SEO and content", "Farming and mailers", "Investor network", "Builder relationships"],
+      },
+      {
+        key: "re_stall_points",
+        label: "Where deals stall",
+        type: "multiselect",
+        options: ["Lead response time", "Nurturing leads that are not ready", "Showing coordination", "Contract and paperwork", "Lender and title chasing", "Inspection and repair negotiation", "Post-close follow-up"],
+      },
     ],
   },
 
@@ -289,6 +361,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Canopy",
           "Other",
         ],
+      },
+      {
+        key: "cpa_staff",
+        label: "Team size",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
+      },
+      {
+        key: "cpa_seasonality",
+        label: "How seasonal is the work?",
+        type: "radio",
+        options: ["Heavily seasonal - it all lands at once", "Somewhat seasonal", "Steady year round"],
+      },
+      {
+        key: "cpa_service_mix",
+        label: "Services you sell",
+        type: "multiselect",
+        options: ["Individual tax", "Business tax", "Bookkeeping", "Payroll", "Audit and assurance", "Advisory / fractional CFO", "Tax planning", "Entity setup", "IRS representation"],
       },
     ],
   },
@@ -349,6 +440,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Other",
         ],
       },
+      {
+        key: "ria_households",
+        label: "Households or clients served",
+        type: "dropdown",
+        required: true,
+        options: ["Under 50", "50 to 150", "150 to 400", "400 to 1,000", "1,000+"],
+      },
+      {
+        key: "ria_segments",
+        label: "Who you serve",
+        type: "multiselect",
+        options: ["Mass affluent", "High net worth", "Ultra high net worth", "Business owners", "Retirees and pre-retirees", "Physicians and dentists", "Executives with equity comp", "Institutions and endowments"],
+      },
+      {
+        key: "ria_compliance",
+        label: "How much time goes to compliance?",
+        type: "radio",
+        options: ["Very little", "A meaningful slice of every week", "It is a role of its own"],
+      },
     ],
   },
 
@@ -399,6 +509,26 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Review management",
         ],
       },
+      {
+        key: "ecom_channels",
+        label: "Where you sell",
+        type: "multiselect",
+        required: true,
+        options: ["Own website", "Amazon", "Walmart", "Etsy", "eBay", "TikTok Shop", "Instagram / Facebook", "Physical store", "Wholesale / B2B", "Pop-ups and markets"],
+      },
+      {
+        key: "ecom_fulfillment",
+        label: "How orders ship",
+        type: "dropdown",
+        options: ["In-house", "3PL", "Dropship", "Print on demand", "Mixed"],
+      },
+      {
+        key: "ecom_support_volume",
+        label: "Customer messages per week",
+        type: "dropdown",
+        helper: "Support volume is usually the first thing an agent can take off you.",
+        options: ["Under 25", "25 to 100", "100 to 400", "400+"],
+      },
     ],
   },
 
@@ -410,6 +540,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "client_load", label: "Active clients", type: "dropdown", required: true, options: ["Under 10", "10 to 25", "25 to 60", "60+"] },
       { key: "agency_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["New business and pitching", "Client reporting", "Content production", "Campaign management", "Scope creep and billing", "Team capacity", "Lead follow-up"] },
       { key: "agency_tool", label: "Primary platform", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Airtable", "GoHighLevel", "AgencyAnalytics", "None", "Other"] },
+      {
+        key: "agency_team",
+        label: "Team size",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
+      },
+      {
+        key: "agency_revenue_mix",
+        label: "How the work is sold",
+        type: "radio",
+        options: ["Mostly monthly retainer", "Mostly project", "Even split", "Performance or commission based"],
+      },
+      {
+        key: "agency_services",
+        label: "What you actually deliver",
+        type: "multiselect",
+        options: ["Paid media", "SEO", "Content and copy", "Social management", "Email and lifecycle", "Web design and build", "Brand and creative", "PR", "Analytics and reporting", "Strategy retainers"],
+      },
     ],
   },
 
@@ -421,6 +570,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "saas_motion", label: "Go-to-market motion", type: "dropdown", required: true, options: ["Product-led / self-serve", "Sales-led", "Hybrid"] },
       { key: "saas_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Onboarding and activation", "Support tickets", "Churn and retention", "Sales follow-up", "Lead qualification", "Billing and dunning", "Feature request triage"] },
       { key: "saas_tool", label: "Primary CRM / support tool", type: "dropdown", options: ["HubSpot", "Salesforce", "Intercom", "Zendesk", "Pipedrive", "Stripe Billing", "None", "Other"] },
+      {
+        key: "saas_team",
+        label: "Team size",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 10", "11 to 30", "31 to 100", "100+"],
+      },
+      {
+        key: "saas_acv",
+        label: "Typical annual contract value",
+        type: "dropdown",
+        options: ["Under $1k", "$1k to $10k", "$10k to $50k", "$50k to $250k", "$250k+"],
+      },
+      {
+        key: "saas_support",
+        label: "How customers reach you",
+        type: "multiselect",
+        options: ["In-app chat", "Email", "Help centre", "Community / Slack", "Phone", "Dedicated CSM"],
+      },
     ],
   },
 
@@ -432,6 +600,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "engagement_model", label: "Primary engagement model", type: "dropdown", required: true, options: ["Retainer", "Project-based", "Hourly", "Performance-based", "Mix"] },
       { key: "services_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and scoping", "Client onboarding", "Project delivery", "Time tracking and billing", "Lead follow-up", "Scheduling"] },
       { key: "services_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Notion", "Dubsado / HoneyBook", "None", "Other"] },
+      {
+        key: "services_team",
+        label: "Team size",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
+      },
+      {
+        key: "services_clients",
+        label: "Active clients",
+        type: "dropdown",
+        options: ["Under 10", "10 to 30", "30 to 80", "80+"],
+      },
+      {
+        key: "services_delivery",
+        label: "Where delivery gets messy",
+        type: "multiselect",
+        options: ["Scoping and proposals", "Kickoff and onboarding", "Status reporting", "Scope creep", "Handoffs between people", "Invoicing and collections", "Renewals"],
+      },
     ],
   },
 
@@ -443,6 +630,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "covers_volume", label: "Weekly covers / guests", type: "dropdown", required: true, options: ["Under 500", "500 to 2000", "2000 to 5000", "5000+"] },
       { key: "hosp_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Reservations and no-shows", "Staffing and scheduling", "Reviews and reputation", "Ordering and inventory", "Guest messaging", "Loyalty and marketing"] },
       { key: "hosp_tool", label: "Primary system", type: "dropdown", options: ["Toast", "Square", "Resy / OpenTable", "Clover", "7shifts", "None", "Other"] },
+      {
+        key: "hosp_locations",
+        label: "Locations",
+        type: "dropdown",
+        required: true,
+        options: ["One", "2 to 3", "4 to 10", "10+"],
+      },
+      {
+        key: "hosp_staff",
+        label: "Staff on payroll",
+        type: "dropdown",
+        options: ["Under 10", "10 to 30", "30 to 75", "75+"],
+      },
+      {
+        key: "hosp_channels",
+        label: "Where guests come from",
+        type: "multiselect",
+        options: ["Walk-in", "Reservations platform", "Delivery apps", "Direct phone", "Events and catering", "Corporate accounts", "Social media", "Hotel or venue partners"],
+      },
     ],
   },
 
@@ -454,6 +660,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "student_volume", label: "Active students / members", type: "dropdown", required: true, options: ["Under 25", "25 to 100", "100 to 500", "500+"] },
       { key: "edu_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Enrollment and sales", "Student onboarding", "Content delivery", "Scheduling", "Support and questions", "Retention and renewals"] },
       { key: "edu_tool", label: "Primary platform", type: "dropdown", options: ["Kajabi", "Teachable", "Thinkific", "Circle", "Skool", "Calendly", "None", "Other"] },
+      {
+        key: "edu_delivery",
+        label: "How you teach",
+        type: "multiselect",
+        required: true,
+        options: ["Live one to one", "Live group", "Cohort based", "Self-paced course", "Membership community", "In person", "Hybrid"],
+      },
+      {
+        key: "edu_team",
+        label: "Team size",
+        type: "dropdown",
+        options: ["Just me", "2 to 5", "6 to 15", "16+"],
+      },
+      {
+        key: "edu_revenue_model",
+        label: "How you charge",
+        type: "dropdown",
+        options: ["One-time course fee", "Monthly membership", "Per session", "Package or program fee", "Institutional contract", "Free with upsell"],
+      },
     ],
   },
 
@@ -465,6 +690,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "mfg_volume", label: "Monthly order volume", type: "dropdown", required: true, options: ["Under 100", "100 to 1000", "1000 to 5000", "5000+"] },
       { key: "mfg_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Order processing", "Inventory management", "Quoting and RFQs", "Supplier coordination", "Shipping and tracking", "Customer service"] },
       { key: "mfg_tool", label: "Primary system", type: "dropdown", options: ["NetSuite", "SAP", "QuickBooks", "Fishbowl", "ShipStation", "None", "Other"] },
+      {
+        key: "mfg_team",
+        label: "Team size",
+        type: "dropdown",
+        required: true,
+        options: ["Under 10", "10 to 50", "50 to 200", "200+"],
+      },
+      {
+        key: "mfg_customers",
+        label: "Who you sell to",
+        type: "multiselect",
+        options: ["Distributors", "Retailers", "Direct to consumer", "OEMs", "Government", "Contractors"],
+      },
+      {
+        key: "mfg_supply_pain",
+        label: "Where the chain hurts",
+        type: "multiselect",
+        options: ["Supplier lead times", "Inventory accuracy", "Quoting and RFQs", "Production scheduling", "Quality and returns", "Freight and carrier coordination", "Compliance paperwork"],
+      },
     ],
   },
 
@@ -476,6 +720,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "job_volume", label: "Jobs per month", type: "dropdown", required: true, options: ["Under 10", "10 to 30", "30 to 100", "100+"] },
       { key: "trade_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Lead follow-up and estimates", "Scheduling and dispatch", "Quoting and bids", "Invoicing and collections", "Client updates", "Crew coordination"] },
       { key: "trade_tool", label: "Primary system", type: "dropdown", options: ["ServiceTitan", "Jobber", "Housecall Pro", "Procore", "Buildertrend", "QuickBooks", "None", "Other"] },
+      {
+        key: "trade_crew",
+        label: "Crew size",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 5", "6 to 20", "20 to 75", "75+"],
+      },
+      {
+        key: "trade_job_size",
+        label: "Typical job value",
+        type: "dropdown",
+        options: ["Under $5k", "$5k to $25k", "$25k to $100k", "$100k to $1M", "$1M+"],
+      },
+      {
+        key: "trade_pipeline",
+        label: "Where jobs get lost",
+        type: "multiselect",
+        options: ["Answering the phone", "Estimating and bidding", "Scheduling crews", "Material ordering", "Change orders", "Subcontractor coordination", "Invoicing and collections", "Permits and inspections"],
+      },
     ],
   },
 
@@ -487,6 +750,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "np_size", label: "Annual budget", type: "dropdown", required: true, options: ["Under $250k", "$250k to $1M", "$1M to $5M", "$5M+"] },
       { key: "np_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Donor outreach and follow-up", "Grant writing and reporting", "Volunteer coordination", "Event management", "Donor data and CRM", "Communications"] },
       { key: "np_tool", label: "Primary system", type: "dropdown", options: ["Salesforce NPSP", "Bloomerang", "DonorPerfect", "Little Green Light", "Kindful", "None", "Other"] },
+      {
+        key: "np_staff",
+        label: "Paid staff",
+        type: "dropdown",
+        required: true,
+        options: ["All volunteer", "1 to 5", "6 to 20", "21 to 75", "75+"],
+      },
+      {
+        key: "np_funding",
+        label: "Where funding comes from",
+        type: "multiselect",
+        options: ["Individual donors", "Major gifts", "Grants", "Government contracts", "Corporate sponsorship", "Events", "Earned revenue", "Membership dues"],
+      },
+      {
+        key: "np_reporting",
+        label: "Reporting burden",
+        type: "radio",
+        options: ["Light", "Steady - regular grant and board reporting", "Heavy - multiple funders with different formats"],
+      },
     ],
   },
 
@@ -498,6 +780,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "consult_load", label: "Active clients", type: "dropdown", required: true, options: ["1 to 3", "4 to 10", "10 to 25", "25+"] },
       { key: "consult_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and pitching", "Client onboarding", "Deliverable production", "Scheduling", "Billing and time tracking", "Lead follow-up"] },
       { key: "consult_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Notion", "Asana", "Dubsado", "None", "Other"] },
+      {
+        key: "consult_team",
+        label: "Team size",
+        type: "dropdown",
+        required: true,
+        options: ["Just me", "2 to 5", "6 to 15", "16+"],
+      },
+      {
+        key: "consult_engagement",
+        label: "Typical engagement length",
+        type: "dropdown",
+        options: ["Days", "Weeks", "A few months", "Six months or more", "Ongoing retainer"],
+      },
+      {
+        key: "consult_pipeline",
+        label: "Where the pipeline leaks",
+        type: "multiselect",
+        options: ["Finding qualified leads", "Proposals and SOWs", "Pricing the work", "Delivery capacity", "Following up after the pitch", "Turning a project into a retainer", "Case studies and proof"],
+      },
     ],
   },
 
@@ -509,6 +810,25 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "audience_volume", label: "Audience size", type: "dropdown", required: true, options: ["Under 10k", "10k to 100k", "100k to 1M", "1M+"] },
       { key: "media_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Content production", "Scheduling and publishing", "Audience and community", "Sponsor and brand deals", "Monetization", "Analytics and reporting"] },
       { key: "media_tool", label: "Primary tool", type: "dropdown", options: ["Notion", "Airtable", "Later / Buffer", "Patreon", "ConvertKit", "None", "Other"] },
+      {
+        key: "media_formats",
+        label: "What you produce",
+        type: "multiselect",
+        required: true,
+        options: ["Video", "Podcast", "Written / newsletter", "Live streaming", "Music", "Film and TV", "Events", "Photography"],
+      },
+      {
+        key: "media_monetization",
+        label: "How it pays",
+        type: "multiselect",
+        options: ["Advertising", "Sponsorship", "Subscriptions", "Licensing", "Live events and tickets", "Merchandise", "Client work for hire", "Platform revenue share"],
+      },
+      {
+        key: "media_cadence",
+        label: "Publishing cadence",
+        type: "dropdown",
+        options: ["Daily", "Several times a week", "Weekly", "A few times a month", "Project by project"],
+      },
     ],
   },
 };
