@@ -144,7 +144,7 @@ export function AdminWorkspacesView() {
                           <CreateAgentButton
                             workspaceId={w.id}
                             onCreated={() => onCreated(w.id)}
-                            label="Create Hermes"
+                            label="Create Apollo Agent"
                             size="sm"
                           />
                         </div>
