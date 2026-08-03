@@ -45,7 +45,6 @@ const resourceLinks = [
   { label: "AI 101", to: "/ai-101" },
   { label: "FAQ", to: "/faq" },
   { label: "Security", to: "/security" },
-  { label: "Membership", to: "/membership" },
   { label: "Contact", to: "/contact" },
   {
     label: "Get Started",

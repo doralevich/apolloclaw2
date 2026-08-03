@@ -141,6 +141,14 @@ const nextConfig: NextConfig = {
         destination: "/contact",
         permanent: true,
       },
+      // /membership deleted (David: "not needed, just noise"). It was linked from the footer
+      // Resources column, so it has been crawled. /contact is the honest destination: anyone
+      // who landed there was looking for a way to work with us.
+      {
+        source: "/membership",
+        destination: "/contact",
+        permanent: true,
+      },
       // The /use-cases/* tree was retired and split along the two axes the nav actually
       // presents: /industries/* (the business you run) and /ai-agents/* (the role you're
       // hiring). Every old path was indexed at sitemap priority 0.9, so each one 301s to its
