@@ -13,15 +13,17 @@ const USE_CASE_MAP: Record<string, string> = {
   ecommerce: "/industries/ecommerce",
   nonprofit: "/industries/nonprofit",
   finance: "/industries/financial-services",
-  construction: "/industries/construction",
-  restaurants: "/industries/restaurants",
   ceo: "/ai-agents/ceo",
   cfo: "/ai-agents/cfo",
   sales: "/ai-agents/sales",
   recruiting: "/ai-agents/recruiting",
-  brokers: "/ai-agents/brokers",
   personal: "/ai-agents/personal",
-  college: "/ai-agents/college",
+  // construction, restaurants, brokers, and college are deliberately absent. Their destination
+  // pages were removed (David's call), so a mapping here would 301 an old indexed URL straight
+  // into a 404 — a soft-404 to Google, and worse for a visitor than an honest 404. Dropping the
+  // entry lets /use-cases/<slug> 404 directly, which is the correct signal for content that is
+  // genuinely gone. If any of these should instead point at a surviving page (brokers ->
+  // /industries/real-estate is the closest real match), add the line back with that destination.
 };
 
 const USE_CASE_REDIRECTS = Object.entries(USE_CASE_MAP).map(([slug, destination]) => ({

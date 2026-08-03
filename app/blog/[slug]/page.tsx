@@ -113,14 +113,11 @@ export default async function BlogPostPage({
     { label: "Legal", href: "/industries/law-firms" },
     { label: "Real Estate", href: "/industries/real-estate" },
     { label: "Accounting", href: "/industries/accounting-firms" },
-    { label: "Restaurants", href: "/industries/restaurants" },
     { label: "E-Commerce", href: "/industries/ecommerce" },
-    { label: "Construction", href: "/industries/construction" },
     { label: "Finance", href: "/industries/financial-services" },
   ];
 
   const serviceLinks = [
-    { label: "The College Agent", href: "/ai-agents/college" },
     { label: "The Personal Agent", href: "/ai-agents/personal" },
     { label: "The CEO Agent", href: "/ai-agents/ceo" },
     { label: "The CFO Agent", href: "/ai-agents/cfo" },
