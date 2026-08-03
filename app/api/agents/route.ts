@@ -75,6 +75,29 @@ export const GET = route(async (request: Request) => {
     .order("created_at", { ascending: false });
   if (error) throw new ApiError(500, "db_error", error.message);
 
+  // Which agent types in this workspace have had their setup questionnaire completed, and
+  // whether those answers have reached the running agent. Read with the service-role client
+  // because agent_setup is deliberately RLS-on-no-policy (server-only); the caller's membership
+  // was already checked by requireMember above.
+  //
+  // Setup is tracked PER AGENT, not per workspace: buying a CFO agent after a CEO agent means
+  // filling in the CFO questionnaire, because the answers that make a CEO agent useful are not
+  // the ones a CFO agent needs (David's call).
+  const setupByType = new Map<string, { completed: boolean; injected: boolean }>();
+  try {
+    const { data: setupRows } = await createAdminClient()
+      .from("agent_setup")
+      .select("agent_type, injected_at")
+      .eq("workspace_id", workspaceId);
+    for (const r of (setupRows ?? []) as { agent_type: string; injected_at: string | null }[]) {
+      setupByType.set(r.agent_type, { completed: true, injected: !!r.injected_at });
+    }
+  } catch (err) {
+    // A failed lookup must not blank out the agent list; the UI treats "unknown" as complete
+    // rather than nagging a customer who has already filled it in.
+    console.error("[agents] agent_setup lookup failed:", (err as Error).message);
+  }
+
   let live = new Map<string, Agent>();
   let templateImages = new Map<string, string>();
   const [liveRes, tmplRes] = await Promise.allSettled([
@@ -108,6 +131,10 @@ export const GET = route(async (request: Request) => {
       past_due: l?.past_due ?? false,
       ports: l?.ports ?? [],
       update_available: !!(l?.image_ref && latestImage && l.image_ref !== latestImage),
+      // Undefined when the lookup failed — distinct from false, so the UI can stay quiet
+      // rather than wrongly telling someone their setup is incomplete.
+      setup_completed: row.agent_type ? setupByType.get(row.agent_type)?.completed ?? false : undefined,
+      setup_injected: row.agent_type ? setupByType.get(row.agent_type)?.injected ?? false : undefined,
     };
   });
 

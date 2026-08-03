@@ -6,6 +6,17 @@ what is actually here rather than from zero.
 
 **Audited against `main` at commit 8c4fe00 on 2026-08-03.**
 
+## DECIDED: intake runs in full for every agent
+
+**David, 2026-08-03.** Nothing is carried over between agents — a customer buying a CFO agent
+after a CEO agent answers the CFO questionnaire from scratch. The reasoning: the answers that
+make a CEO agent useful are not the ones a CFO agent needs, and a precisely configured agent is
+worth more than a saved minute.
+
+This matches how `agent_setup` is already keyed `(workspace_id, agent_type)`, so no data
+reshaping was needed. §1–§3 of the brief are unblocked, with the funnel resolved **per agent**
+rather than per workspace.
+
 ## Read this first: the two products have different shapes
 
 The brief assumes **one user, one agent**. Its whole funnel — the four booleans, the single
@@ -46,8 +57,8 @@ workspace with a CEO agent is "done" and never showing intake for the CFO agent 
 
 ## What to settle before building
 
-1. **Does the funnel go per-workspace or per-agent?** Everything in §1–§3 depends on this, and it
-   is a product call, not a technical one.
+1. ~~**Does the funnel go per-workspace or per-agent?**~~ **Answered: per agent, full intake every
+   time.** See the decision at the top of this file.
 2. **Which of the missing tables do we actually want?** `stripe_events`, `audit_log`, and
    `rate_limits` come from the security playbook and are worth having regardless.
    `wallet_transactions` and the referral tables are a billing model we have not decided on. Chat
@@ -61,7 +72,7 @@ workspace with a CEO agent is "done" and never showing intake for the CFO agent 
 Deliberately different from the brief's §13, because steps 1–3 of that list are the ones blocked on
 the per-workspace/per-agent decision, and because a lot of §7 is already built.
 
-1. Settle the funnel question above.
+1. ~~Settle the funnel question above.~~ **Done — per agent.**
 2. Add `stripe_events`, `audit_log`, `rate_limits` — wanted by the security playbook anyway, and
    independent of the funnel decision.
 3. Expand `buildUserMd` into the brief's three-file split, with unit tests on the builders. This is
