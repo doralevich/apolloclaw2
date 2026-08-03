@@ -258,7 +258,7 @@ export default function PreCall() {
         </form>
         <p style={{ fontSize: 13, color: TXD, textAlign: "center", marginTop: 20, lineHeight: 1.6 }}>
           Or{" "}
-          <Link href="/onboard" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>book a discovery call directly</Link>
+          <Link href="/onboard" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>schedule a consultation directly</Link>
         </p>
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>

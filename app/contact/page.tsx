@@ -3,11 +3,11 @@ import PageHero from "@/components/PageHero";
 import ContactClient from "./ContactClient";
 
 export const metadata: Metadata = {
-  title: { absolute: "Contact Apollo[Claw] | Book a Discovery Call" },
-  description: "Book a discovery call with Apollo[Claw] and find out exactly which AI agent fits your business. We scope every engagement individually.",
+  title: { absolute: "Contact Apollo[Claw] | Schedule a Consultation" },
+  description: "Schedule a consultation with Apollo[Claw] and find out exactly which AI agent fits your business. We scope every engagement individually.",
   openGraph: {
-    title: "Contact Apollo[Claw] | Book a Discovery Call",
-    description: "Book a discovery call and find out exactly which AI agent fits your business.",
+    title: "Contact Apollo[Claw] | Schedule a Consultation",
+    description: "Schedule a consultation and find out exactly which AI agent fits your business.",
     url: "https://apolloclaw.ai/contact",
     type: "website",
   },

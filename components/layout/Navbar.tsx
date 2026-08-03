@@ -20,7 +20,7 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 //
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
-// layout, dark navy utility bar on top (email, Log in, Get Started), main nav in white
+// layout, dark navy utility bar on top (email, Log in), main nav in white
 // underneath (category dropdowns, Schedule a Consultation). The AI Agents mega-menu was dropped
 // from the top nav entirely per David's call that it's not needed here, moved into the Footer
 // instead (components/layout/Footer.tsx). Pricing dropped from the nav entirely too.
@@ -48,10 +48,6 @@ const COMPANY = [
   { label: "Security", to: "/security" },
 ];
 
-// TODO(GET_STARTED_URL): pointed at the live self-serve storefront (/agents -> checkout ->
-// onboarding, confirmed working end to end today). Flagging for David to confirm this is the
-// intended "Get Started" destination, or provide a different one.
-const GET_STARTED_URL = "/agents";
 const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
 interface NavGroup {
@@ -256,9 +252,10 @@ export default function Navbar() {
     <>
       <div className="fixed left-0 right-0 top-0 z-50">
         {/* Utility bar: email + account actions, the "blue bar" from the stackhaus.ai reference.
-            Uses the same .container as the main nav below so email/Log in/Get Started line up
-            exactly with the logo and right edge underneath, instead of the ad-hoc px-5/px-8
-            this used to carry on its own. */}
+            Uses the same .container as the main nav below so email/Log in line up exactly
+            with the logo and right edge underneath, instead of the ad-hoc px-5/px-8 this used
+            to carry on its own. Get Started was removed from both this bar and the mobile
+            drawer (David's call), leaving Schedule a Consultation as the single nav CTA. */}
         <div className="hidden py-[5px] md:flex" style={{ background: NAVY_DEEP }}>
           <div className="container mx-auto flex w-full items-center justify-between">
             <a
@@ -273,13 +270,6 @@ export default function Navbar() {
             <div className="flex items-center gap-4">
               <Link href="/login" className="text-[12px] font-semibold" style={{ color: "#ffffff" }}>
                 Log in
-              </Link>
-              <Link
-                href={GET_STARTED_URL}
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] text-[11px] font-bold tracking-[0.03em] transition-opacity hover:opacity-90"
-                style={{ background: RED, color: "#ffffff", padding: "5px 14px" }}
-              >
-                Get Started
               </Link>
             </div>
           </div>
@@ -387,13 +377,6 @@ export default function Navbar() {
               >
                 Schedule a Consultation
               </a>
-              <Link
-                href={GET_STARTED_URL}
-                className="inline-flex items-center justify-center rounded-[8px] text-[13px] font-bold tracking-[0.04em]"
-                style={{ background: RED, color: "#ffffff", padding: "14px 20px" }}
-              >
-                Get Started
-              </Link>
             </div>
           </div>
         </div>

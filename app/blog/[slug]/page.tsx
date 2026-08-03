@@ -174,7 +174,7 @@ export default async function BlogPostPage({
                 Ready to put AI to work?
               </h3>
               <p className="font-body text-muted-foreground mb-6">
-                Book a free discovery call and let&apos;s talk about your business.
+                Schedule a consultation and let&apos;s talk about your business.
               </p>
               <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer">
                 <Button variant="cta" size="lg">Schedule Today</Button>
@@ -215,7 +215,7 @@ export default async function BlogPostPage({
             </div>
 
             <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 text-center">
-              <div className="font-mono text-xs text-primary uppercase tracking-widest mb-2">Free Discovery Call</div>
+              <div className="font-mono text-xs text-primary uppercase tracking-widest mb-2">Free Consultation</div>
               <h3 className="font-display text-base text-foreground mb-2">See AI working in your business</h3>
               <p className="font-body text-xs text-muted-foreground mb-4">30 minutes. No obligation.</p>
               <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="block">
