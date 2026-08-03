@@ -1,6 +1,12 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
-import { buildUserMd, injectAgentFile, USER_MD_POINTER, USER_MD_POINTER_MARKER } from "@/lib/provision";
+import {
+  buildUserMd,
+  ensureUserMdPointer,
+  injectAgentFile,
+  USER_MD_POINTER,
+  USER_MD_POINTER_MARKER,
+} from "@/lib/provision";
 import { getAgentType } from "@/config/agent-types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -87,21 +93,6 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
     }
   }
   return results;
-}
-
-function pointerOnlyCommand(): string {
-  const b64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
-  return (
-    'DIRS=""; ' +
-    'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
-    '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
-    '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
-    // Nothing is read to decide what to write. The previous version chose a source file by
-    // looking at what was on disk, which is how it picked the agent's own notes.
-    'PTR=0; for D in $DIRS; do F="$D/SOUL.md"; touch "$F"; ' +
-    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" || { printf '%s' '${b64}' | base64 -d >> "$F"; PTR=1; }; done; ` +
-    'echo "RESULT pointer=$PTR"'
-  );
 }
 
 // Undo for the pointer. The repair walks every instance the API key can see, and this
@@ -237,8 +228,6 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       detail: "not an agent of this dashboard — refusing to touch it",
     }));
 
-  const pointerCmd = pointerOnlyCommand();
-
   for (const id of requested.filter((i) => ours.has(i))) {
     const row = ours.get(id)!;
     const name = row.name || id;
@@ -263,17 +252,17 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
         continue;
       }
 
-      const { stdout } = await agent37.exec(id, pointerCmd);
-      if (stdout.includes("NO_WORKSPACE")) {
-        results.push({ id, name, outcome: "no-workspace" });
-        continue;
-      }
-      const addedPointer = /pointer=1/.test(stdout);
+      // The same writer provisioning uses: it REPLACES whatever pointer version is on the
+      // box, including the old block that named USER.md. "Already present" was the reason a
+      // repaired agent still read the wrong file.
+      const pointed = await ensureUserMdPointer(id);
       results.push({
         id,
         name,
-        outcome: "repaired",
-        detail: `wrote OWNER.md from the questionnaire${addedPointer ? ", added pointer" : " (pointer already present)"}`,
+        outcome: pointed ? "repaired" : "failed",
+        detail: pointed
+          ? "wrote OWNER.md from the questionnaire, pointer set to current version"
+          : "OWNER.md written but the pointer could not be set — the agent will not know to read it",
       });
     } catch (err) {
       results.push({ id, name, outcome: "failed", detail: err instanceof Error ? err.message : String(err) });

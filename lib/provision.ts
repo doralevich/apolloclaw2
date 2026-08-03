@@ -103,7 +103,17 @@ export async function injectAgentFile(
 // the agent's own notes in another — and a repair pass that copied "whichever has content"
 // overwrote the questionnaire with the notes. Two writers, one filename, and the customer's
 // answers lost. Different name, no collision, and the agent keeps its own memory intact.
-export const USER_MD_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
+// The block is fenced by a START and an END marker so it can be REPLACED, not merely
+// detected. The first version had one marker and skipped the write whenever it was present —
+// so when the profile moved from USER.md to OWNER.md, every instance kept the old text
+// telling the agent to read USER.md, which by then held its own notes. "Already there" is
+// not the same as "already right", and a guard that can only add is a guard against fixing.
+export const USER_MD_POINTER_MARKER = "<!-- apollo:owner-pointer:start -->";
+export const USER_MD_POINTER_END = "<!-- apollo:owner-pointer:end -->";
+
+// The single-marker block written before the fence existed. Removed on sight, because it
+// points at the wrong file.
+export const LEGACY_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
 
 export const USER_MD_POINTER = `
 
@@ -119,24 +129,67 @@ you don't know who they are — you do, it is written down, go and read it.
 
 OWNER.md is theirs, not yours: it is replaced whenever they update their answers, so anything
 you write into it will be lost. Keep what you learn in your own memory, as you normally would.
+${USER_MD_POINTER_END}
 `;
 
-// Append the pointer to SOUL.md in every workspace the instance recognises, once each.
-// Idempotent via the marker, so re-submitted setup answers can't stack duplicate blocks.
-// Best-effort and retried for the same reason injectAgentFile is: the instance may still
-// be booting.
+// Put the CURRENT pointer block into SOUL.md in every workspace the instance recognises,
+// replacing whatever version is already there.
+//
+// Done in Node rather than shell because it is a rewrite, not an append: strip any fenced
+// block, strip the legacy single-marker block, then append the current text. Everything the
+// template or the agent wrote is preserved — only our own block is touched.
 export async function ensureUserMdPointer(agentId: string): Promise<boolean> {
-  const b64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
+  const script = `
+const fs = require("fs");
+const [file, blockB64, startM, endM, legacyM] = process.argv.slice(2);
+if (!file || !blockB64) { console.log("BADARGS"); process.exit(1); }
+const block = Buffer.from(blockB64, "base64").toString("utf8");
+let text = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+
+// Fenced block: drop everything from start marker to end marker, wherever it sits.
+for (;;) {
+  const a = text.indexOf(startM);
+  if (a === -1) break;
+  const b = text.indexOf(endM, a);
+  if (b === -1) { text = text.slice(0, a); break; }
+  text = text.slice(0, a) + text.slice(b + endM.length);
+}
+
+// Legacy block: one marker, no end, written by appending — so it ran to the end of the file
+// at the time. Cut from the marker to the end of ITS last line, not to EOF, in case the agent
+// has written below it since.
+const li = text.indexOf(legacyM);
+if (li !== -1) {
+  const tail = "down, go and read it.";
+  const te = text.indexOf(tail, li);
+  text = te === -1 ? text.slice(0, li) : text.slice(0, li) + text.slice(te + tail.length);
+}
+
+fs.writeFileSync(file, text.replace(/\s+$/, "") + block);
+console.log("POINTER_SET:" + file);
+`;
+  const scriptB64 = Buffer.from(script, "utf8").toString("base64");
+  const blockB64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
+
   const cmd =
     `${CANDIDATE_DIRS}` +
-    `for D in $DIRS; do F="$D/SOUL.md"; touch "$F"; ` +
-    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" || printf '%s' '${b64}' | base64 -d >> "$F"; done; ` +
-    `echo POINTER_OK`;
+    'command -v node >/dev/null 2>&1 || { echo NO_NODE; exit 1; }; ' +
+    `printf '%s' '${scriptB64}' | base64 -d > /tmp/apollo-pointer.js; ` +
+    'for D in $DIRS; do F="$D/SOUL.md"; touch "$F"; ' +
+    `node /tmp/apollo-pointer.js "$F" '${blockB64}' '${USER_MD_POINTER_MARKER}' '${USER_MD_POINTER_END}' '${LEGACY_POINTER_MARKER}' 2>&1; done; ` +
+    'rm -f /tmp/apollo-pointer.js; ' +
+    'echo POINTER_OK';
 
   for (let attempt = 1; attempt <= 6; attempt++) {
     try {
       const { stdout } = await agent37.exec(agentId, cmd);
-      if (stdout.includes("POINTER_OK")) return true;
+      if (stdout.includes("POINTER_SET")) return true;
+      // POINTER_OK without a single POINTER_SET means the script never wrote anything —
+      // report that as a failure rather than counting the shell's own exit as success.
+      if (stdout.includes("POINTER_OK")) {
+        console.error("[provision:pointer-no-write]", agentId, stdout.trim().slice(0, 300));
+        return false;
+      }
     } catch {
       // instance still provisioning/booting — wait and retry
     }
