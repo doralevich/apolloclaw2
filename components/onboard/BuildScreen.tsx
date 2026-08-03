@@ -44,31 +44,56 @@ function StepRow({ state, label }: { state: "done" | "active" | "pending"; label
   );
 }
 
-export function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTypeId: string; agentLabel: string; workspaceId?: string }) {
+// Two ways in, because the two flows authorize differently:
+//
+//   workspaceId — the per-agent flow. A logged-in member polls /api/agents.
+//   sessionId   — the license flow. The buyer has an account but has never signed in, so
+//                 there is no session to poll with; the paid Stripe checkout session
+//                 authorizes /api/onboard/status instead. They also cannot be dropped into
+//                 the dashboard at the end, because they still have no password — the
+//                 closing screen points them at the email that lets them set one.
+export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }: { agentTypeId: string; agentLabel: string; workspaceId?: string; sessionId?: string }) {
+  const viaSession = !!sessionId && !workspaceId;
   // created: the agent row exists; running: the instance reports running.
-  const [phase, setPhase] = useState<"provisioning" | "starting" | "ready" | "slow">(workspaceId ? "provisioning" : "slow");
+  const [phase, setPhase] = useState<"provisioning" | "starting" | "ready" | "slow">(workspaceId || sessionId ? "provisioning" : "slow");
   const phaseRef = useRef(phase);
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
 
   useEffect(() => {
-    if (!workspaceId) return;
+    if (!workspaceId && !sessionId) return;
     let cancelled = false;
     const started = Date.now();
     // Read through a function: the ref mutates between polls, so inline comparisons
     // would get (wrongly) narrowed by TS control-flow analysis.
     const isReady = () => phaseRef.current === "ready";
 
+    // Both endpoints answer the same two questions — does the agent exist, is it running —
+    // and differ only in what authorizes the read.
+    const poll = async (): Promise<{ created: boolean; running: boolean }> => {
+      if (workspaceId) {
+        const { agents } = await apiFetch<{ agents: MergedAgent[] }>(`/api/agents?workspace=${encodeURIComponent(workspaceId)}`);
+        const mine = agents.find((a) => a.agent_type === agentTypeId);
+        return { created: !!mine, running: mine?.live_status === "running" };
+      }
+      const res = await fetch(`/api/onboard/status?id=${encodeURIComponent(sessionId!)}`);
+      if (!res.ok) throw new Error("status unavailable");
+      return (await res.json()) as { created: boolean; running: boolean };
+    };
+
     const tick = async () => {
       if (cancelled || isReady()) return;
       try {
-        const { agents } = await apiFetch<{ agents: MergedAgent[] }>(`/api/agents?workspace=${encodeURIComponent(workspaceId)}`);
-        const mine = agents.find((a) => a.agent_type === agentTypeId);
-        if (mine) {
-          if (mine.live_status === "running") {
+        const { created, running } = await poll();
+        if (created) {
+          if (running) {
             setPhase("ready");
-            setTimeout(() => { if (!cancelled) window.location.assign("/dashboard/start-here"); }, 1800);
+            // Only the logged-in flow can be walked into the dashboard. A license buyer has
+            // no session yet, so they stay here and read the closing instructions.
+            if (!viaSession) {
+              setTimeout(() => { if (!cancelled) window.location.assign("/dashboard/start-here"); }, 1800);
+            }
             return;
           }
           setPhase("starting");
@@ -82,7 +107,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTyp
     };
     void tick();
     return () => { cancelled = true; };
-  }, [workspaceId, agentTypeId]);
+  }, [workspaceId, sessionId, agentTypeId, viaSession]);
 
   const provisioned = phase === "starting" || phase === "ready";
   return (
@@ -92,21 +117,37 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId }: { agentTyp
       <div style={{ width: "100%", maxWidth: 480, marginTop: 28, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "32px 36px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
         <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 6px", letterSpacing: "-0.02em" }}>Building Your {agentLabel}</h2>
-        <p style={{ fontSize: 13, color: TXM, margin: "0 0 18px", lineHeight: 1.6 }}>This usually takes a minute or two. You&apos;ll be taken to your dashboard the moment it&apos;s ready.</p>
+        <p style={{ fontSize: 13, color: TXM, margin: "0 0 18px", lineHeight: 1.6 }}>
+          {viaSession
+            ? "This usually takes a minute or two. Your answers are already in — we're building your agent around them now."
+            : "This usually takes a minute or two. You'll be taken to your dashboard the moment it's ready."}
+        </p>
         <div style={{ borderTop: `1px solid ${BDR}` }}>
           <StepRow state="done" label="Business profile saved" />
           <StepRow state={provisioned ? "done" : "active"} label={`Provisioning your ${agentLabel}`} />
           <StepRow state={phase === "ready" ? "done" : phase === "starting" ? "active" : "pending"} label="Starting it up" />
-          <StepRow state={phase === "ready" ? "active" : "pending"} label="Entering your dashboard" />
+          {viaSession ? (
+            <StepRow state={phase === "ready" ? "done" : "pending"} label="Writing your business profile in" />
+          ) : (
+            <StepRow state={phase === "ready" ? "active" : "pending"} label="Entering your dashboard" />
+          )}
         </div>
+        {viaSession && phase === "ready" && (
+          <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
+            Your agent is live. Check your email for the link to set your password — that is
+            what gets you into your dashboard for the first time.
+          </div>
+        )}
         {phase === "slow" && (
           <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
             Your agent is still being built in the background; it will appear in your dashboard
             automatically once it&apos;s ready.
           </div>
         )}
-        <a href="/dashboard/start-here" style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" ? R : "transparent", color: phase === "slow" ? "#fff" : TXM, border: phase === "slow" ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
-          Go to My Dashboard →
+        {/* A license buyer has no password yet, so "go to my dashboard" would bounce them to
+            a login they cannot pass. Point at the email that lets them set one instead. */}
+        <a href={viaSession ? "/login" : "/dashboard/start-here"} style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" || (viaSession && phase === "ready") ? R : "transparent", color: phase === "slow" || (viaSession && phase === "ready") ? "#fff" : TXM, border: phase === "slow" || (viaSession && phase === "ready") ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
+          {viaSession ? "Go to Log In →" : "Go to My Dashboard →"}
         </a>
       </div>
     </div>
