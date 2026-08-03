@@ -31,7 +31,9 @@ export const POST = route(async (request: Request) => {
 
   if (!body.agent_type) throw new ApiError(400, "invalid_request", "agent_type is required");
   const type = getAgentType(body.agent_type);
-  if (!type || !type.planKey) throw new ApiError(404, "not_found", "Unknown agent type");
+  if (!type) throw new ApiError(404, "not_found", "Unknown agent type");
+  // Sold and configured on another site — its questionnaire is not ours to accept.
+  if (type.externalUrl) throw new ApiError(404, "not_found", "Unknown agent type");
 
   // The checkout success URL carries the workspace; a direct visit falls back to the
   // user's first workspace (the common case — self-serve users have exactly one).
@@ -47,6 +49,30 @@ export const POST = route(async (request: Request) => {
   }
   if (!workspaceId) throw new ApiError(400, "invalid_request", "No workspace found for this account");
   await requireMember(supabase, workspaceId, user.id);
+
+  // This route used to serve only PAID types, which meant the license build — the one thing
+  // we actually sell — had no way to be configured except by buying it again. Opening it up
+  // needs a rule that can't be abused into free provisioning, and this is it: you may fill in
+  // the questionnaire for an agent THAT ALREADY EXISTS in your workspace.
+  //
+  // Paid types are exempt because they race the Stripe webhook: the buyer often lands here
+  // before provisioning finishes, and the answers are stored for the webhook to pick up.
+  if (!type.planKey) {
+    const { data: existing } = await createAdminClient()
+      .from("agents")
+      .select("agent37_id")
+      .eq("workspace_id", workspaceId)
+      .eq("agent_type", type.id)
+      .limit(1)
+      .maybeSingle();
+    if (!existing) {
+      throw new ApiError(
+        400,
+        "invalid_request",
+        `There is no ${type.label} in this workspace to set up yet.`
+      );
+    }
+  }
 
   const result = await storeAgentSetup({
     type,

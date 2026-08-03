@@ -23,7 +23,10 @@ type Props = {
 export default async function AgentSetupPage({ params, searchParams }: Props) {
   const { agent } = await params;
   const type = getAgentType(agent);
-  if (!type || !type.planKey) notFound();
+  // Any type this app configures, not just the paid ones. /api/agent-setup enforces the real
+  // rule — an agent of this type must already exist in the workspace unless it is a paid type
+  // still waiting on its Stripe webhook — so reaching this page can never conjure an agent.
+  if (!type || type.externalUrl) notFound();
 
   const { user } = await getSession();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/onboard/${agent}`)}`);
