@@ -134,6 +134,13 @@ const nextConfig: NextConfig = {
         destination: "/contact",
         permanent: true,
       },
+      // /create-an-agent retired too (David's call). It was in the sitemap at priority 0.9, so
+      // it may well be indexed; commercial intent, same destination as the storefront.
+      {
+        source: "/create-an-agent",
+        destination: "/contact",
+        permanent: true,
+      },
       // The /use-cases/* tree was retired and split along the two axes the nav actually
       // presents: /industries/* (the business you run) and /ai-agents/* (the role you're
       // hiring). Every old path was indexed at sitemap priority 0.9, so each one 301s to its
