@@ -1,6 +1,7 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
 import { USER_MD_POINTER, USER_MD_POINTER_MARKER } from "@/lib/provision";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Repair pass for instances provisioned before the runtime-path fix. In-app twin of
 // scripts/backfill-agent-memory.mjs — same shell, same outcomes — so the repair can be run
@@ -195,15 +196,39 @@ export async function removeUserMdPointer(instanceIds: string[]): Promise<Repair
   return results;
 }
 
-/** Visit every instance (or the ones named) and put USER.md where its runtime reads it. */
+/**
+ * Visit this dashboard's agents (or the named subset of them) and put USER.md where the
+ * runtime reads it.
+ *
+ * Targets come from OUR `agents` table, never from listAgents(). The Agent37 account is
+ * shared with The College Agent, so "every instance the key can see" includes another
+ * product's live customers — a fleet-wide run appended our pointer to two of them before this
+ * was scoped. An explicit id that isn't ours is refused rather than quietly honoured.
+ */
 export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairResult[]> {
   const cmd = repairCommand();
 
-  const targets = instanceIds?.length
-    ? instanceIds.map((id) => ({ id, name: id }))
-    : (await agent37.listAgents()).data.map((i) => ({ id: i.id, name: i.name || i.id }));
+  const { data, error } = await createAdminClient().from("agents").select("agent37_id, name");
+  if (error) throw new Error(`could not read this dashboard's agents: ${error.message}`);
 
-  const results: RepairResult[] = [];
+  const rows = (data ?? []) as { agent37_id: string; name: string | null }[];
+  const ours = new Map(rows.map((r) => [r.agent37_id, r.name || r.agent37_id]));
+
+  const requested = instanceIds?.length ? instanceIds : [...ours.keys()];
+
+  // An id we don't own is refused and SAID SO, rather than skipped quietly — a caller who
+  // pasted the wrong instance should learn that, not read an empty result as success.
+  const results: RepairResult[] = requested
+    .filter((id) => !ours.has(id))
+    .map((id) => ({
+      id,
+      name: id,
+      outcome: "failed" as const,
+      detail: "not an agent of this dashboard — refusing to touch it",
+    }));
+
+  const targets = requested.filter((id) => ours.has(id)).map((id) => ({ id, name: ours.get(id) as string }));
+
   for (const t of targets) {
     try {
       const { stdout } = await agent37.exec(t.id, cmd);
