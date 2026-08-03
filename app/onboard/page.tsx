@@ -12,9 +12,9 @@ import OnboardingForm from "@/components/onboard/OnboardingForm";
 // client. Stripe's success URL comes back to this page, and reading the flag on the server
 // means the first client render already knows to resume at the questionnaire — no flash of
 // "Start Here" before it corrects itself.
-type Props = { searchParams: Promise<{ paid?: string }> };
+type Props = { searchParams: Promise<{ paid?: string; session_id?: string }> };
 
 export default async function OnboardPage({ searchParams }: Props) {
-  const { paid } = await searchParams;
-  return <OnboardingForm mode="lead" justPaid={paid === "1"} />;
+  const { paid, session_id } = await searchParams;
+  return <OnboardingForm mode="lead" justPaid={paid === "1"} sessionId={session_id} />;
 }
