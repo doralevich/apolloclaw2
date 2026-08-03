@@ -103,6 +103,16 @@ export interface MergedAgent extends AgentRow {
   past_due: boolean;
   ports: Agent["ports"];
   update_available: boolean;
+  /**
+   * Whether this agent's setup questionnaire has been completed, and whether those answers
+   * have been pushed into the running agent. Tracked per agent type, not per workspace.
+   *
+   * `undefined` means the lookup failed, which is deliberately distinct from `false`: the UI
+   * stays quiet rather than telling someone their setup is incomplete when we simply could
+   * not tell.
+   */
+  setup_completed?: boolean;
+  setup_injected?: boolean;
 }
 
 // ---- Agent37 Agents API (per-instance web chat) ----

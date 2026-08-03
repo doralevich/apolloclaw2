@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentNameCell } from "@/components/AgentNameCell";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
+import { SetupBanner, SetupCell } from "@/components/SetupPrompt";
 
 // The Agents table reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
 // lifecycle actions here — create/start/stop/delete/rename — immediately update Chat,
@@ -80,6 +81,9 @@ export function AgentsView() {
         <CreateAgentModal triggerSize="sm" />
       </div>
 
+      {/* Nothing used to tell a customer their agent was unconfigured. */}
+      <SetupBanner agents={agents} />
+
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : agents.length === 0 && error ? (
@@ -106,6 +110,7 @@ export function AgentsView() {
               <tr>
                 <th className="px-4 py-2 font-medium">Name</th>
                 <th className="px-4 py-2 font-medium">Status</th>
+                <th className="px-4 py-2 font-medium">Setup</th>
                 <th className="px-4 py-2 font-medium">Template</th>
                 <th className="px-4 py-2 font-medium">Resources</th>
                 <th className="px-4 py-2 text-center font-medium">Quick actions</th>
@@ -130,6 +135,9 @@ export function AgentsView() {
                         {a.status_reason.message}
                       </div>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <SetupCell agent={a} />
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{a.template ?? "-"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
