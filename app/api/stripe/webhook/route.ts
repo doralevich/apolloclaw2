@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { NextResponse, after } from "next/server";
 import { getAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
+import { rememberStripeCustomer } from "@/lib/credit-settings";
 import { deliverCredit, recordCreditPurchase } from "@/lib/credits";
 import { creditPackForCatalogKey } from "@/lib/pricing/catalog";
 import { ApiError } from "@/lib/http";
@@ -203,6 +204,14 @@ async function handleCreditPurchase(session: Stripe.Checkout.Session): Promise<v
     console.error("[stripe-webhook] paid credit session for unknown pack:", catalogKey, session.id);
     return;
   }
+
+  // Remember whose card this was, before anything that can fail. The checkout saved the
+  // payment method for off-session use (setup_future_usage in /api/credits/checkout), and this
+  // is the id auto-recharge charges later. Done on every purchase, not just the first: someone
+  // buying again has just re-confirmed a working card.
+  const customerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
+  if (customerId) await rememberStripeCustomer(agentId, workspaceId, customerId);
 
   const rowId = await recordCreditPurchase({
     workspaceId,

@@ -11,6 +11,8 @@ import type { Budget, Usage } from "@/lib/types";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { BuyCredits } from "@/components/BuyCredits";
+import { CreditSafetyNet } from "@/components/CreditSafetyNet";
+import { CreditsGlossary } from "@/components/CreditsGlossary";
 import { Button } from "@/components/ui/button";
 
 // Read-only API Credits tab: the active agent's remaining balance, monthly allowance,
@@ -161,6 +163,13 @@ export function CreditsView() {
       {/* Buying stays available even when the balance read fails — an unreachable runtime is
           the moment someone is most likely to be topping up. */}
       {!showSkeleton && <BuyCredits agentId={agentId} workspaceId={current?.id ?? null} />}
+
+      {/* The safety net sits AFTER buying, deliberately: auto-recharge needs a saved card, and
+          a card is saved by buying a pack. Offering the switch above the thing that unlocks it
+          would read as broken. */}
+      {!showSkeleton && <CreditSafetyNet agentId={agentId} />}
+
+      {!showSkeleton && <CreditsGlossary />}
     </div>
   );
 }
