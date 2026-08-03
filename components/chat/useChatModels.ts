@@ -27,12 +27,17 @@ export function useChatModels(agentId: string): ChatModelsState {
         if (cancelled) return;
         const byProvider = new Map<string, ModelOption[]>();
         for (const m of res.data ?? []) {
-          // Current builds report the provider slug as `owned_by`; the older metered build used
-          // `provider`. Group + send whichever the instance provides.
+          // Group under our own vendor label when the server curated this list
+          // (config/chat-models.ts), so the heading reads "anthropic" rather than whatever
+          // transport slug the gateway happens to use. Falls back to `owned_by`, then the
+          // older metered build's `provider`.
+          const group = m.display_provider ?? m.owned_by ?? m.provider ?? "model";
+          // What gets SENT stays the gateway's own value — display grouping must not change
+          // the provider the instance is asked to route through.
           const provider = m.owned_by ?? m.provider ?? "model";
-          const arr = byProvider.get(provider) ?? [];
+          const arr = byProvider.get(group) ?? [];
           arr.push({ id: m.id, label: m.label, provider });
-          byProvider.set(provider, arr);
+          byProvider.set(group, arr);
         }
         // Prefer the explicit default; fall back to whichever model is flagged is_default.
         const defaultModel = res.default_model ?? (res.data ?? []).find((m) => m.is_default)?.id ?? null;
