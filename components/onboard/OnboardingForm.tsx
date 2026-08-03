@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
@@ -505,6 +505,93 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
 }
 
 // ════════════════════════════════════════════════════════════
+// CONFIRMATION (lead mode, back from Stripe)
+// ════════════════════════════════════════════════════════════
+// Someone has just spent $2,500. Dropping them straight into a form with no acknowledgement
+// reads as though the payment went nowhere, so this marks the moment before the
+// questionnaire starts.
+//
+// The amount is read back from the checkout session rather than printed from the catalog,
+// because a promotion code means the two disagree, and a wrong number on a payment
+// confirmation is exactly the thing that generates a worried email. This is not the receipt
+// — Stripe emails that — and the copy says so.
+function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: string; email?: string; onContinue: () => void }) {
+  const [detail, setDetail] = useState<{ amountTotal: number | null; currency: string | null; email: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    fetch(`/api/onboard/session?id=${encodeURIComponent(sessionId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d) setDetail({ amountTotal: d.amountTotal ?? null, currency: d.currency ?? null, email: d.email ?? null });
+      })
+      .catch(() => {
+        // The payment happened either way. Failing to read it back must not strand anyone
+        // on this screen, so the amount line simply does not appear.
+      });
+    return () => { cancelled = true; };
+  }, [sessionId]);
+
+  const total =
+    detail?.amountTotal != null
+      ? `$${(detail.amountTotal / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+      : null;
+  const shownEmail = detail?.email || email || "";
+
+  return (
+    <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column" }}>
+      <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", height: 60, borderBottom: `1px solid ${BDR}`, background: "rgba(250,250,247,0.97)" }}>
+        <ApolloWordmark size={17} />
+        <span style={{ fontSize: 12, color: TXM }}>Order Confirmed</span>
+      </nav>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%)` }}>
+        <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 26px" }}>
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </div>
+
+        <h1 style={{ fontSize: "clamp(28px,5vw,46px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px", textAlign: "center" }}>
+          Payment Received.<br /><span style={{ color: R }}>Welcome aboard.</span>
+        </h1>
+
+        <div style={{ width: "100%", maxWidth: 460, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "22px 26px", margin: "18px 0 28px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "8px 0", fontSize: 14 }}>
+            <span style={{ color: TXD }}>Agent License</span>
+            <span style={{ fontWeight: 700 }}>one time</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "8px 0", fontSize: 14, borderBottom: total ? `1px solid ${BDR}` : "none" }}>
+            <span style={{ color: TXD }}>Managed Hosting</span>
+            <span style={{ fontWeight: 700 }}>$189 / month</span>
+          </div>
+          {total && (
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "14px 0 4px", fontSize: 15 }}>
+              <span style={{ fontWeight: 700 }}>Charged today</span>
+              <span style={{ fontWeight: 800 }}>{total}</span>
+            </div>
+          )}
+          {shownEmail && (
+            <p style={{ margin: "14px 0 0", fontSize: 12, color: TXD, lineHeight: 1.6 }}>
+              Your receipt and a link to set your password are on their way to{" "}
+              <strong style={{ color: TXM }}>{shownEmail}</strong>.
+            </p>
+          )}
+        </div>
+
+        <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto 30px", lineHeight: 1.65, textAlign: "center" }}>
+          Next, the part that actually shapes what we build. Tell us about your business so
+          your agent starts day one already knowing it.
+        </p>
+
+        <button type="button" onClick={onContinue} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 16, padding: "16px 44px", borderRadius: 8, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
+          Continue to the Questions →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
 // PAYMENT SPLASH (customer mode, fresh from Stripe checkout)
 // ════════════════════════════════════════════════════════════
 function PaymentSplash({ agentLabel, onStart }: { agentLabel: string; onStart: () => void }) {
@@ -816,6 +903,8 @@ export interface OnboardingFormProps {
   agentLabel?: string;
   workspaceId?: string;
   justPaid?: boolean;
+  /** Stripe checkout session id, from the success URL. Lead mode only. */
+  sessionId?: string;
 }
 
 // Stripe takes the buyer off-site, so the "Start Here" answers have to survive a full page
@@ -877,7 +966,7 @@ function clearStoredGate(): void {
   }
 }
 
-export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, justPaid }: OnboardingFormProps) {
+export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, justPaid, sessionId }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
   // White glove submits down the same unauthenticated /api/intake path as the plain lead
   // form. The difference is what it means: these people have already been sold, offline, so
@@ -905,17 +994,18 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // `null` means "not chosen yet, use whatever the current state of the world implies".
   // Phase is DERIVED rather than seeded, so it can change when the stored value lands
   // without a setState in an effect. Any explicit setPhase from here on takes over.
-  const [chosenPhase, setPhase] = useState<"splash" | "gate" | "paywall" | "personalize" | "form" | "submitting" | "done" | "building" | null>(null);
+  const [chosenPhase, setPhase] = useState<"splash" | "gate" | "paywall" | "confirm" | "personalize" | "form" | "submitting" | "done" | "building" | null>(null);
   const phase =
     chosenPhase ??
     (isCustomer && justPaid
       ? "splash"
-      // Paid, and we still know who they are: straight into "Your Business", the step the
-      // paywall was standing in front of. Paid on another device and the stash is gone, so
-      // they re-enter the five fields — and skip the paywall on the way through, since
-      // justPaid is what gates it.
-      : justPaid && restored
-        ? "form"
+      // Back from Stripe: acknowledge the payment before asking for anything else. What
+      // follows the confirmation depends on whether the stash survived — normally straight
+      // into "Your Business", the step the paywall was standing in front of, but back to
+      // the five contact fields if they paid on another device. Either way the paywall is
+      // skipped, since justPaid is what gates it.
+      : justPaid
+        ? "confirm"
         : "gate");
 
   const [enteredGate, setGate] = useState<GateData | null>(null);
@@ -985,6 +1075,13 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     />
   );
   if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} />;
+  if (phase === "confirm") return (
+    <PaymentConfirmation
+      sessionId={sessionId}
+      email={gate.email || undefined}
+      onContinue={() => setPhase(restored ? "form" : "gate")}
+    />
+  );
   if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
   if (phase === "submitting") return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>

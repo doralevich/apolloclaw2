@@ -93,8 +93,11 @@ export const POST = route(async (request: Request) => {
     customer_email: email,
     metadata,
     subscription_data: { metadata },
-    // Back into the questionnaire at "Your Business", the step the paywall sits in front of.
-    success_url: `${origin}/onboard?paid=1`,
+    // Back to /onboard, which shows the confirmation screen and then continues into the
+    // questionnaire. The session id lets that screen read back what was actually charged
+    // (promotion codes and proration mean the catalog price is not always the total) and
+    // confirm the payment with Stripe rather than trusting ?paid=1.
+    success_url: `${origin}/onboard?paid=1&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/onboard?checkout=cancelled`,
     allow_promotion_codes: true,
   });
