@@ -1,17 +1,24 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
-import { USER_MD_POINTER, USER_MD_POINTER_MARKER } from "@/lib/provision";
+import { buildUserMd, injectAgentFile, USER_MD_POINTER, USER_MD_POINTER_MARKER } from "@/lib/provision";
+import { getAgentType } from "@/config/agent-types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// Repair pass for instances provisioned before the runtime-path fix. In-app twin of
-// scripts/backfill-agent-memory.mjs — same shell, same outcomes — so the repair can be run
-// from a browser by an admin instead of needing a live API key on someone's laptop.
+// Repair pass for instances provisioned before the runtime-path fix, run from a browser by
+// an admin rather than needing a live API key on someone's laptop.
 //
-// Two problems it fixes, both invisible from outside the box:
-//   1. WRONG PLACE. OpenClaw images read $OPENCLAW_STATE_DIR/workspace, Hermes images read
-//      $HERMES_STATE_DIR/memories. We wrote to the OpenClaw path unconditionally, so on a
-//      Hermes box the write succeeded into a directory nothing reads.
-//   2. NO POINTER. A template's own SOUL.md has no reason to mention a file we invented.
+// It writes the owner profile from agent_setup into every workspace the box recognises, and
+// makes sure SOUL.md points at it.
+//
+// WHAT IT NO LONGER DOES, AND WHY. The first version copied "whichever USER.md has content"
+// between directories, on the assumption that any USER.md it found was ours. On Hermes,
+// USER.md is the AGENT'S own memory file. So on a live customer's box it found the agent's
+// notes, decided those were the good copy, and wrote them over the questionnaire profile it
+// was sent to rescue. The answers survived only because they were still in the database.
+//
+// The profile now lives in OWNER.md — a name nothing else writes — and is re-rendered from
+// agent_setup rather than copied from whatever happens to be on disk. Nothing here reads a
+// file to decide what should be in it.
 
 export interface RepairResult {
   id: string;
@@ -82,22 +89,18 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
   return results;
 }
 
-function repairCommand(): string {
+function pointerOnlyCommand(): string {
   const b64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
   return (
     'DIRS=""; ' +
     'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
     '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
     '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
-    // -s: exists AND is non-empty. The Hermes USER.md that started this existed at 0 bytes,
-    // which a plain -f test would have called "already fine".
-    'SRC=""; for D in $DIRS; do [ -s "$D/USER.md" ] && { SRC="$D/USER.md"; break; }; done; ' +
-    '[ -n "$SRC" ] || { echo NO_USER_MD; exit 0; }; ' +
-    'COPIED=0; for D in $DIRS; do [ "$D/USER.md" = "$SRC" ] && continue; ' +
-    'cmp -s "$SRC" "$D/USER.md" || { cp "$SRC" "$D/USER.md"; COPIED=1; }; done; ' +
+    // Nothing is read to decide what to write. The previous version chose a source file by
+    // looking at what was on disk, which is how it picked the agent's own notes.
     'PTR=0; for D in $DIRS; do F="$D/SOUL.md"; touch "$F"; ' +
     `grep -qF '${USER_MD_POINTER_MARKER}' "$F" || { printf '%s' '${b64}' | base64 -d >> "$F"; PTR=1; }; done; ` +
-    'echo "RESULT copied=$COPIED pointer=$PTR src=$SRC"'
+    'echo "RESULT pointer=$PTR"'
   );
 }
 
@@ -197,23 +200,30 @@ export async function removeUserMdPointer(instanceIds: string[]): Promise<Repair
 }
 
 /**
- * Visit this dashboard's agents (or the named subset of them) and put USER.md where the
- * runtime reads it.
+ * Re-render each agent's owner profile from agent_setup, write it as OWNER.md, and make sure
+ * SOUL.md points at it.
+ *
+ * The profile comes from the DATABASE every time. The previous version copied a file it found
+ * on the instance, which meant a box in an unexpected state could feed its own contents back
+ * in as the answer — and on one customer's agent it did exactly that.
  *
  * Targets come from OUR `agents` table, never from listAgents(). The Agent37 account is
  * shared with The College Agent, so "every instance the key can see" includes another
- * product's live customers — a fleet-wide run appended our pointer to two of them before this
- * was scoped. An explicit id that isn't ours is refused rather than quietly honoured.
+ * product's live customers. An explicit id that isn't ours is refused rather than quietly
+ * honoured.
  */
 export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairResult[]> {
-  const cmd = repairCommand();
-
-  const { data, error } = await createAdminClient().from("agents").select("agent37_id, name");
+  const db = createAdminClient();
+  const { data, error } = await db.from("agents").select("agent37_id, name, workspace_id, agent_type");
   if (error) throw new Error(`could not read this dashboard's agents: ${error.message}`);
 
-  const rows = (data ?? []) as { agent37_id: string; name: string | null }[];
-  const ours = new Map(rows.map((r) => [r.agent37_id, r.name || r.agent37_id]));
-
+  const rows = (data ?? []) as {
+    agent37_id: string;
+    name: string | null;
+    workspace_id: string;
+    agent_type: string | null;
+  }[];
+  const ours = new Map(rows.map((r) => [r.agent37_id, r]));
   const requested = instanceIds?.length ? instanceIds : [...ours.keys()];
 
   // An id we don't own is refused and SAID SO, rather than skipped quietly — a caller who
@@ -227,34 +237,46 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       detail: "not an agent of this dashboard — refusing to touch it",
     }));
 
-  const targets = requested.filter((id) => ours.has(id)).map((id) => ({ id, name: ours.get(id) as string }));
+  const pointerCmd = pointerOnlyCommand();
 
-  for (const t of targets) {
+  for (const id of requested.filter((i) => ours.has(i))) {
+    const row = ours.get(id)!;
+    const name = row.name || id;
     try {
-      const { stdout } = await agent37.exec(t.id, cmd);
-      const m = stdout.match(/RESULT copied=(\d) pointer=(\d) src=(\S+)/);
-      if (m) {
-        const [, copied, pointer, src] = m;
-        const did = [copied === "1" && "copied USER.md", pointer === "1" && "added pointer"]
-          .filter(Boolean)
-          .join(", ");
-        results.push(
-          did
-            ? { id: t.id, name: t.name, outcome: "repaired", detail: `${did} (source ${src})` }
-            : { id: t.id, name: t.name, outcome: "already-correct", detail: `source ${src}` }
-        );
-      } else if (stdout.includes("NO_WORKSPACE")) {
-        results.push({ id: t.id, name: t.name, outcome: "no-workspace" });
-      } else {
-        results.push({ id: t.id, name: t.name, outcome: "no-user-md" });
+      const type = row.agent_type ? getAgentType(row.agent_type) : undefined;
+      const { data: setup } = await db
+        .from("agent_setup")
+        .select("answers")
+        .eq("workspace_id", row.workspace_id)
+        .eq("agent_type", row.agent_type ?? "")
+        .maybeSingle();
+
+      if (!setup?.answers) {
+        results.push({ id, name, outcome: "no-user-md", detail: "no questionnaire answers to write" });
+        continue;
       }
-    } catch (err) {
+
+      const md = buildUserMd(type?.label ?? "Apollo Agent", setup.answers as Record<string, unknown>);
+      const wrote = await injectAgentFile(id, "OWNER.md", md);
+      if (!wrote) {
+        results.push({ id, name, outcome: "failed", detail: "could not write OWNER.md to the instance" });
+        continue;
+      }
+
+      const { stdout } = await agent37.exec(id, pointerCmd);
+      if (stdout.includes("NO_WORKSPACE")) {
+        results.push({ id, name, outcome: "no-workspace" });
+        continue;
+      }
+      const addedPointer = /pointer=1/.test(stdout);
       results.push({
-        id: t.id,
-        name: t.name,
-        outcome: "failed",
-        detail: err instanceof Error ? err.message : String(err),
+        id,
+        name,
+        outcome: "repaired",
+        detail: `wrote OWNER.md from the questionnaire${addedPointer ? ", added pointer" : " (pointer already present)"}`,
       });
+    } catch (err) {
+      results.push({ id, name, outcome: "failed", detail: err instanceof Error ? err.message : String(err) });
     }
   }
   return results;

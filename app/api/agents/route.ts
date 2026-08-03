@@ -2,24 +2,10 @@ import { agent37 } from "@/lib/agent37";
 import { requireEntitled, requireMember, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEFAULT_AGENT } from "@/config/agents";
-import { getAgentType } from "@/config/agent-types";
+import { getAgentType, licenseAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
-import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import type { Agent, AgentRow, MergedAgent } from "@/lib/types";
-
-async function resolveTemplate(): Promise<string | undefined> {
-  try {
-    const { data } = await agent37.listTemplates();
-    const preferred = data.find((t) => t.name === DEFAULT_AGENT.template);
-    if (preferred) return preferred.name;
-    const builtin = data.find((t) => t.scope === "system");
-    return (builtin ?? data[0])?.name;
-  } catch {
-    return DEFAULT_AGENT.template;
-  }
-}
 
 // Self-serve provisioning: any entitled member of the workspace can create one agent per
 // type. Everything spend-shaped (template, machine size, budget cap) comes from the
@@ -150,11 +136,19 @@ export const POST = route(async (request: Request) => {
     return createTypedAgent(body.type, body.workspace_id, body.name);
   }
 
-  // No `type` -> the original platform-admin flow, unchanged: admins provision the default
-  // OpenClaw agent (for any workspace, on a user's behalf).
+  // No `type` -> the platform-admin flow: provision into ANY workspace, on the owner's
+  // behalf, without the membership and entitlement gates the self-serve path applies.
+  //
+  // It used to build a stock OpenClaw box from DEFAULT_AGENT — the pre-product admin tool,
+  // still wired to the platform default long after we had a product. An admin pressing
+  // "create" in the god-view got something no customer has: wrong runtime, wrong resources,
+  // no agent_type, and so no questionnaire tracking or USER.md injection.
+  //
+  // It now provisions the Apollo Agent, the same type and the same path the customer's
+  // purchase takes. The only difference left between the two is who is allowed to ask.
   const { user } = await requirePlatformAdmin();
 
-  // Shape is fixed server-side (DEFAULT_AGENT); the caller only picks the workspace.
+  // Shape is fixed server-side by the agent type; the caller only picks the workspace.
   const workspaceId = body.workspace_id;
   if (!workspaceId) throw new ApiError(400, "invalid_request", "workspace_id is required");
 
@@ -173,40 +167,20 @@ export const POST = route(async (request: Request) => {
   if (!workspace) throw new ApiError(404, "not_found", "Workspace not found");
   const ownerId = (workspace.owner_id as string) ?? user.id;
 
-  const template = await resolveTemplate();
-
-  const agent = await agent37.createAgent({
-    template,
-    resources: {
-      cpu: DEFAULT_AGENT.cpu,
-      memory: DEFAULT_AGENT.memory,
-      disk: DEFAULT_AGENT.disk,
-    },
-    user: ownerId,
-    metadata: { app_workspace: workspaceId },
-    budget: { monthly_cap_micros: usdToMicros(DEFAULT_AGENT.monthlyCapUsd) },
+  // Same pipeline as a purchase: template resolution (including the rename alias), the
+  // one-per-type cap, rollback if the row insert fails, and the setup-answer injection that
+  // makes the agent know whose it is. The instance belongs to the workspace owner;
+  // created_by records the admin who pressed the button.
+  const agent = await provisionTypedAgent({
+    type: licenseAgentType(),
+    workspaceId,
+    userId: ownerId,
+    createdBy: user.id,
+    name: body.name,
+    // No customer has paid here, so a missing template should fail loudly rather than
+    // quietly hand an admin the wrong kind of box — which is the bug this replaces.
+    allowTemplateFallback: false,
   });
-
-  const { error } = await db.from("agents").insert({
-    agent37_id: agent.id,
-    workspace_id: workspaceId,
-    name: agent.name || null,
-    status: agent.status,
-    template: agent.template,
-    cpu: agent.resources.cpu,
-    memory: agent.resources.memory,
-    disk: agent.resources.disk,
-    created_by: user.id,
-  });
-  if (error) {
-    // Roll back the orphaned agent so we never bill for an untracked box.
-    try {
-      await agent37.deleteAgent(agent.id);
-    } catch (rollbackErr) {
-      console.error("[agents:rollback-failed]", agent.id, rollbackErr);
-    }
-    throw new ApiError(500, "db_error", error.message);
-  }
 
   return json(agent, 201);
 });

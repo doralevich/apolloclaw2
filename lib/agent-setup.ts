@@ -202,7 +202,7 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
     const ws = workspaceId;
     const id = agentId;
     after(async () => {
-      const ok = await injectAgentFile(id, "USER.md", buildUserMd(type.label, answers));
+      const ok = await injectAgentFile(id, "OWNER.md", buildUserMd(type.label, answers));
       // The file alone doesn't reach the agent — SOUL.md has to point at it.
       if (ok) await ensureUserMdPointer(id);
       if (ok) {
