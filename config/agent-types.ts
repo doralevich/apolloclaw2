@@ -45,7 +45,12 @@ export interface AgentType {
 }
 
 // Shared shape for the paid Apollo agents — one machine size and spend cap across the line.
-const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 5 };
+//
+// The cap MUST match what hosting is sold as including (HOSTING_INCLUDED_TOKENS_LABEL in
+// lib/pricing/catalog.ts, "$25/mo of token usage"). It sat at $5 while the paywall promised
+// $25, so a customer using their agent normally hit a wall at a fifth of what they had paid
+// for, with credit packs the only way past it. Change one of these two and change the other.
+const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 25 };
 
 export const AGENT_TYPES: AgentType[] = [
   {
