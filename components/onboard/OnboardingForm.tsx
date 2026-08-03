@@ -782,7 +782,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
       <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} />
-      <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
+      <FF label="Website" required><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
       <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF><FF label="Business Model"><TSelect value={s2.model} onChange={v => f2("model", v)} options={BIZ_MODEL} /></FF></Row2>
     </Stack>
