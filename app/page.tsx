@@ -41,8 +41,11 @@ export default function HomePage() {
       <Proof />
       <WhatWeDo />
       <IndustryCards />
-      <TwoFoldModel />
+      {/* "Self hosted and cloud hosted" sits below the blog, per David's call. It also breaks
+          up two adjacent navy bands: industry cards (navy) -> blog (tan) -> deploy options
+          (navy) alternates, where the previous order stacked the two navy sections. */}
       <LatestFromBlog />
+      <TwoFoldModel />
       {/* Homepage only, per David's call. Was sitewide via RootShell. */}
       <LogoStrip />
     </>
