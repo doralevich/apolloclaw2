@@ -29,6 +29,27 @@ const TEMPLATE_PORTS: Record<string, readonly PortName[]> = {
   "apollo-agent": [],
 };
 
+// Which runtime an image actually is, which is a different question from what the template
+// is called. It decides where an agent keeps the files it reads — Hermes under
+// $HERMES_STATE_DIR/memories, OpenClaw under $OPENCLAW_STATE_DIR/workspace — so it is the
+// fact worth showing an operator, and the one we got wrong for every agent this morning.
+//
+// null for an image we don't recognise: better a raw template name on screen than a
+// confident guess about a box nobody has looked inside.
+const TEMPLATE_RUNTIMES: Record<string, "Hermes" | "OpenClaw"> = {
+  "agent37-openclaw": "OpenClaw",
+  "agent37-hermes": "Hermes",
+  "agent37-hermes-small": "Hermes",
+  // The Apollo build, under both its names. Confirmed Hermes: its memory file lives at
+  // /home/node/.hermes/memories/USER.md, and its port remap targets the Hermes surfaces.
+  "college-agent": "Hermes",
+  "apollo-agent": "Hermes",
+};
+
+export function runtimeForTemplate(template: string | null | undefined): "Hermes" | "OpenClaw" | null {
+  return (template ? TEMPLATE_RUNTIMES[template] : undefined) ?? null;
+}
+
 export function portsForTemplate(
   template: string | null | undefined
 ): Partial<Record<PortName, number>> {
