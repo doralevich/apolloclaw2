@@ -63,9 +63,15 @@ console.log("REMOVED:" + file);
     'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
     '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
     '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
+    // The marker is checked in shell BEFORE Node is involved. A missing or broken node would
+    // otherwise produce silence, which the first version of this reported as "not present" —
+    // indistinguishable from a confirmed clean file, and wrong in the one case that matters.
+    'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || { echo "NOFILE:$D"; continue; }; ' +
+    `grep -qF '${USER_MD_POINTER_MARKER}' "$F" && echo "MARKER:$F" || echo "NOMARKER:$F"; done; ` +
+    'command -v node >/dev/null 2>&1 || { echo NO_NODE; exit 0; }; ' +
     `printf '%s' '${scriptB64}' | base64 -d > /tmp/strip-pointer.js; ` +
     'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || continue; ' +
-    `node /tmp/strip-pointer.js "$F" '${pointerB64}'; done; ` +
+    `node /tmp/strip-pointer.js "$F" '${pointerB64}' 2>&1; done; ` +
     'rm -f /tmp/strip-pointer.js; ' +
     'echo REMOVE_OK'
   );
@@ -83,13 +89,33 @@ export async function removeUserMdPointer(instanceIds: string[]): Promise<Repair
   for (const id of instanceIds) {
     try {
       const { stdout } = await agent37.exec(id, cmd);
-      const removed = stdout.match(/REMOVED:(\S+)/g);
-      results.push({
-        id,
-        name: id,
-        outcome: removed ? "repaired" : "already-correct",
-        detail: removed ? `pointer removed from ${removed.length} file(s)` : "pointer not present",
-      });
+      const removed = stdout.match(/REMOVED:(\S+)/g) ?? [];
+      const absent = stdout.match(/ABSENT:(\S+)/g) ?? [];
+      const marked = stdout.match(/MARKER:(\S+)/g) ?? [];
+
+      if (removed.length) {
+        results.push({ id, name: id, outcome: "repaired", detail: `pointer removed from ${removed.length} file(s)` });
+      } else if (marked.length) {
+        // The marker is there but the exact block didn't match — the file was edited after we
+        // appended, or an older build wrote different text. Do NOT call that clean.
+        results.push({
+          id,
+          name: id,
+          outcome: "failed",
+          detail: `marker found in ${marked.length} file(s) but the block did not match exactly; needs a look. stdout: ${stdout.trim().slice(0, 400)}`,
+        });
+      } else if (absent.length) {
+        results.push({ id, name: id, outcome: "already-correct", detail: "pointer confirmed absent" });
+      } else {
+        // No marker, no ABSENT, no REMOVED: node missing, exec truncated, something unexpected.
+        // Report the raw output rather than inventing a verdict.
+        results.push({
+          id,
+          name: id,
+          outcome: "failed",
+          detail: `inconclusive. stdout: ${stdout.trim().slice(0, 400) || "(empty)"}`,
+        });
+      }
     } catch (err) {
       results.push({
         id,
