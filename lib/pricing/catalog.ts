@@ -58,7 +58,7 @@ export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";
 // credit here rather than being cut off. One-time purchases, delivered to the instance's
 // runtime balance and recorded in wallet_transactions.
 //
-// The price is the round number: $25, $50, $100, $250, $500. That is what the customer picks,
+// The price is the round number: $25, $50, $100, $250. That is what the customer picks,
 // what the button says, and what Stripe charges.
 //
 // `creditMicros` is what actually reaches the runtime — the price with our 7% taken out
@@ -110,13 +110,9 @@ export const CREDIT_PACKS: CreditPack[] = [
     creditMicros: 233_640_000,
     blurb: "Long research runs and document work.",
   },
-  {
-    catalogKey: "apollo_credits_500",
-    name: "ApolloClaw API Credits - $500",
-    amountCents: 50000,
-    creditMicros: 467_280_000,
-    blurb: "Several agents working flat out.",
-  },
+  // $500 removed at David's call. The Stripe product and price still exist - the seed creates
+  // and updates, it never deletes - so nothing bought at that price is disturbed and putting
+  // it back is one entry here. Archive it in the Stripe dashboard to hide it there too.
 ];
 
 export function creditPackForCatalogKey(catalogKey: string): CreditPack | undefined {

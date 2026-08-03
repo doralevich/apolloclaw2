@@ -189,42 +189,49 @@ export const agent37 = {
 
   // Add one-time credit to a running instance, in micros (1 USD = 1_000_000).
   //
-  // UNVERIFIED CONTRACT. createAgent takes `budget: { monthly_cap_micros, topup_micros }`, so
-  // the budget resource is known to speak `topup_micros` — but nothing in this codebase has
-  // ever mutated the budget of an instance that already exists, and the Agent37 API reference
-  // isn't in this repo. This is the shape that follows from create; confirm it before the
-  // first real sale. If it turns out to be PATCH, or /budget/credit, or `credit_micros`, this
-  // one function is the only thing that changes.
+  // The budget endpoint is a FULL REPLACE, not a partial update: sending only the top-up came
+  // back "monthly_cap_micros is required". So the whole object goes every time, and the
+  // monthly cap is read back and passed through unchanged — omitting it would not leave it
+  // alone, it would be rejected, and guessing a value would silently re-cap a customer.
   //
-  // Callers must treat a throw as "not delivered, retry later" rather than "money lost" —
-  // lib/credits.ts records the purchase before this runs, precisely so a wrong guess here is
-  // recoverable (see deliverPendingCredits).
-  // Add one-time credit to a running instance, in micros (1 USD = 1_000_000).
+  // Because it replaces, `topup_micros` is ABSOLUTE. Adding credit means reading the current
+  // remaining credit and writing the sum; writing just the new amount would erase whatever the
+  // customer had left. Newer builds report that balance as credit_remaining_micros and older
+  // ones as topup_remaining_micros, so both are read (same fallback the Credits tab uses).
   //
-  // The VERB is discovered, not assumed. We knew the path was right — GET /budget is how the
-  // balance loads — but POST came back 405 Method Not Allowed on a real customer's purchase,
-  // after the money had been taken. So rather than swap one guess for another, this tries the
-  // plausible verbs in order and logs which one the API accepts. 405 means "wrong verb, keep
-  // going"; any other error is a real answer and stops the loop immediately, so a 400 about
-  // the body shape or a 402 about billing surfaces instead of being retried three times.
-  //
-  // Once the logs name a winner, collapse this back to a single call.
+  // The verb is still discovered — PATCH, then PUT, then POST — because 405 was where this
+  // started and the log is the only record of which one the API takes.
   addCredit: async (id: string, micros: number): Promise<Budget> => {
-    const body = JSON.stringify({ topup_micros: micros });
+    const current = await call<Budget & { credit_remaining_micros?: number }>(
+      `/instances/${id}/budget`
+    );
+    const existingCredit = current.credit_remaining_micros ?? current.topup_remaining_micros ?? 0;
+
+    const body = JSON.stringify({
+      monthly_cap_micros: current.monthly_cap_micros,
+      topup_micros: existingCredit + micros,
+    });
+
     let last: unknown;
     for (const method of ["PATCH", "PUT", "POST"] as const) {
       try {
         const result = await call<Budget>(`/instances/${id}/budget`, { method, body });
-        console.log("[agent37:addCredit] accepted verb:", method);
+        console.log(
+          "[agent37:addCredit] accepted verb:", method,
+          "credit", existingCredit, "->", existingCredit + micros
+        );
         return result;
       } catch (err) {
         last = err;
+        // 405 is "wrong verb, keep going". Anything else is a real answer about the request
+        // itself and must surface immediately rather than being retried under two more verbs.
         if (err instanceof Agent37Error && err.status === 405) continue;
         throw err;
       }
     }
     throw last;
   },
+
   getUsage: (id: string, month?: string) =>
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 

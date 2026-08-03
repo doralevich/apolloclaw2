@@ -80,7 +80,7 @@ export function BuyCredits({ agentId, workspaceId }: { agentId: string | null; w
         One-time top-ups on top of your monthly allowance. They don&apos;t expire.
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {CREDIT_PACKS.map((pack) => (
           <div key={pack.catalogKey} className="flex flex-col rounded-lg border p-4">
             {/* Price only. What reaches the runtime is the price net of our margin, and that
