@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
@@ -78,33 +77,6 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="relative pt-[60px] pb-[60px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-primary/5" />
-        <div className="container mx-auto px-4 md:px-8 text-center relative">
-          <ScrollReveal>
-            <h2 className="font-display text-2xl md:text-4xl text-foreground">
-              Start with a free discovery call
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <p className="font-body text-lg text-muted-foreground mt-6 max-w-xl mx-auto">
-              No commitment. Just a real conversation about your business.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal delay={400}>
-            <a
-              href="https://calendly.com/therealdaveo/apolloai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-10"
-            >
-              <Button variant="cta" size="xl">
-                Schedule Today
-              </Button>
-            </a>
-          </ScrollReveal>
-        </div>
-      </section>
     </>
   );
 }

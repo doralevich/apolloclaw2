@@ -152,26 +152,6 @@ export default function CaseStudiesPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
-        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center relative z-10">
-          <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Your Industry</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">Want to See Results From Your Industry?</h2>
-          <p className="font-body text-base mb-10" style={{ color: "rgba(255,255,255,0.6)" }}>
-            Book a discovery call and we will walk you through relevant examples specific to your business, workflow, and goals.
-          </p>
-          <a
-            href="https://calendly.com/therealdaveo/apolloai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-            style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}
-          >
-            Schedule a Discovery Call
-          </a>
-        </div>
-      </section>
     </>
   );
 }

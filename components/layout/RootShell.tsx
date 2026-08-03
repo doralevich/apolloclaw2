@@ -2,6 +2,7 @@
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { PreFooter } from '@/components/layout/PreFooter';
 import ChatWidget from '@/components/ChatWidget';
 
 // Marketing pages that render without the marketing nav/footer (but keep chat).
@@ -36,6 +37,8 @@ export default function RootShell({ children }: { children: React.ReactNode }) {
       {/* Mobile: just the 88px main nav (utility bar is desktop-only). Desktop: utility bar
           (36px) + main nav (88px) = 124px. */}
       <main className="pt-[88px] md:pt-[124px]">{children}</main>
+      {/* Standing discovery-call + newsletter bands, identical on every marketing page. */}
+      <PreFooter />
       <Footer />
       <ChatWidget />
     </>

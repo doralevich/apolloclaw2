@@ -1,8 +1,7 @@
 import HeroAssistantInput from "@/components/HeroAssistantInput";
 import { HeroAssistantDemo } from "@/components/home/HeroAssistantDemo";
-import { NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, SecondaryButton, TextureBackground } from "@/components/home/ui";
+import { NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, TextureBackground } from "@/components/home/ui";
 
-const GET_STARTED_URL = "/agents"; // see TODO(GET_STARTED_URL) in components/layout/Navbar.tsx
 const CONSULT_URL = "https://calendly.com/therealdaveo/apolloai";
 
 // Side-by-side layout matching the structure of the current live hero (copy widened on the
@@ -38,11 +37,13 @@ export function Hero() {
               Apollo Claw partners with executives and leadership teams to design, deploy, and
               manage AI across the entire organization, from strategy to execution.
             </p>
+            {/* Single CTA for now, per David's call: "Get Started" pointed at /agents, which
+                isn't where he wants hero traffic going yet. Schedule a Consultation was the
+                secondary button and is promoted to primary now that it stands alone. */}
             <div className="mt-8 flex flex-wrap gap-4">
-              <PrimaryButton href={GET_STARTED_URL}>Get Started</PrimaryButton>
-              <SecondaryButton href={CONSULT_URL} external>
+              <PrimaryButton href={CONSULT_URL} external>
                 Schedule a Consultation
-              </SecondaryButton>
+              </PrimaryButton>
             </div>
           </div>
 

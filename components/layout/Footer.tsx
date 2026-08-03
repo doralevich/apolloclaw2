@@ -27,7 +27,6 @@ const agentLinks = [
   { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
   { label: "Human Resources Agent", to: "/ai-agents/hr" },
   { label: "Personal Agent", to: "/ai-agents/personal" },
-  { label: "All Agents", to: "/ai-agents" },
 ];
 
 const industryLinks = [
@@ -39,7 +38,6 @@ const industryLinks = [
   { label: "Financial Services", to: "/industries/financial-services" },
   { label: "Professional Services", to: "/industries/professional-services" },
   { label: "Private Equity", to: "/industries/private-equity" },
-  { label: "All Industries", to: "/industries" },
 ];
 
 const resourceLinks = [

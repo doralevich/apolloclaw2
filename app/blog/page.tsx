@@ -3,7 +3,6 @@ import Link from "next/link";
 import { sanityClient } from "@/lib/sanity";
 import { POSTS_QUERY } from "@/lib/sanity-queries";
 import ScrollReveal from "@/components/ScrollReveal";
-import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const revalidate = 3600;
@@ -91,17 +90,6 @@ export default async function BlogPage() {
           </div>
         )}
 
-        <div className="text-center mt-16 pb-8">
-          <a
-            href="https://calendly.com/therealdaveo/apolloai"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="cta" size="lg">
-              Book a Free Consultation
-            </Button>
-          </a>
-        </div>
       </div>
     </div>
     </>
