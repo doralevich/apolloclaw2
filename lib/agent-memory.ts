@@ -1,14 +1,15 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { CONTEXT_FILENAME } from "@/config/agent-workspace";
 import { buildOwnerContext } from "@/lib/enrichment";
 import {
   buildUserMd,
-  CONTEXT_FILENAME,
   ensureUserMdPointer,
   injectAgentFile,
   injectOwnerProfile,
   USER_MD_POINTER,
   USER_MD_POINTER_MARKER,
+  writeGeneratedFiles,
 } from "@/lib/provision";
 import { getAgentType } from "@/config/agent-types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -272,6 +273,15 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
         continue;
       }
       if (context) await injectAgentFile(id, CONTEXT_FILENAME, context.markdown);
+
+      // The rest of what OpenClaw loads at session start. An agent provisioned before these
+      // existed has generic template text where its owner's priorities, voice and stack
+      // should be — this is how it catches up without them re-doing the questionnaire.
+      await writeGeneratedFiles(id, {
+        answers,
+        agentName: row.name || undefined,
+        contextSummary: context?.summary,
+      });
 
       // The same writer provisioning uses: it REPLACES whatever pointer version is on the
       // box, including the old block that named USER.md. "Already present" was the reason a

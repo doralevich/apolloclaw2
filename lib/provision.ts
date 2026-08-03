@@ -3,6 +3,14 @@ import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
 import { DEFAULT_AGENT } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
+import {
+  AGENTS_FENCE,
+  CONTEXT_FILENAME,
+  GENERATED_FILES,
+  IDENTITY_FENCE,
+  TOOLS_FENCE,
+} from "@/config/agent-workspace";
+import { buildAgentsMd, buildIdentityMd, buildToolsMd } from "@/lib/agent-files";
 import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
@@ -59,16 +67,6 @@ const CANDIDATE_DIRS =
   // Nothing recognisable on the box (very early boot, or an image we haven't seen): fall
   // back to the OpenClaw layout, which is what every instance before this used.
   '[ -n "$DIRS" ] || { D="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; mkdir -p "$D"; DIRS="$D"; }; ';
-
-// The long-form source material from the customer's uploads and website (lib/enrichment.ts).
-// It sits BESIDE USER.md rather than inside it: USER.md is injected into the system prompt
-// every session, and thirty thousand characters of price list would be paid for on every turn
-// for the sake of the one conversation a month that needs it. The profile names this file; the
-// agent opens it when the question calls for it.
-//
-// Unfenced and wholly ours — unlike USER.md, nothing else writes here, so each setup
-// submission replaces it outright.
-export const CONTEXT_FILENAME = "BUSINESS-CONTEXT.md";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -140,26 +138,36 @@ export const LEGACY_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
 export const USER_MD_POINTER = `
 
 ${USER_MD_POINTER_MARKER}
-## Who you work for
+## Who you work for, and what was written for you
 
-Your USER.md holds your owner's answers from their setup questionnaire — who they are, their
-business, how it runs, where it hurts — inside a block marked "apollo:owner-profile".
+Your owner filled out a setup questionnaire before you existed. Their answers became the
+files sitting beside this one:
 
-Treat it as ground truth about them, the way you treat this file as ground truth about
-yourself. Never tell your owner you don't know who they are.
+- **USER.md** — who they are: them, their business, how it runs, where it hurts.
+- **AGENTS.md** — how to work for them: what to push on, how to sound, what not to touch.
+- **TOOLS.md** — the software their business actually runs on.
+- **IDENTITY.md** — your name and who you serve.
 
-That block is theirs, not yours: it is rewritten whenever they update their answers, so
-anything you put INSIDE it will be lost. The rest of USER.md is yours as usual.
+Treat them as ground truth about your owner, the way you treat this file as ground truth
+about yourself. Never tell your owner you don't know who they are — it's written down.
+
+Each of those files has a block marked \`apollo:…:start\` … \`:end\`. That block is theirs,
+not yours: it is rewritten whenever they update their answers, so anything you put INSIDE
+one will be lost. Everything outside the markers is yours to keep — write there.
 ${USER_MD_POINTER_END}
 `;
 
-// Merge the owner profile INTO USER.md, inside our fence, in every workspace the instance
-// recognises. Anything outside the fence — everything the agent has written about its owner
-// between sessions — is preserved exactly.
+// Merge a block INTO a file, inside our fence, in every workspace the instance recognises.
+// Anything outside the fence is preserved exactly.
 //
 // Node, not shell, because this is a surgical replace of one region of a file that another
 // writer owns the rest of.
-export async function injectOwnerProfile(agentId: string, markdown: string): Promise<boolean> {
+export async function injectFencedBlock(
+  agentId: string,
+  filename: string,
+  markdown: string,
+  markers: { start: string; end: string }
+): Promise<boolean> {
   const script = `
 const fs = require("fs");
 const [file, bodyB64, startM, endM] = process.argv.slice(2);
@@ -189,8 +197,8 @@ console.log("PROFILE_SET:" + file);
     `${CANDIDATE_DIRS}` +
     'command -v node >/dev/null 2>&1 || { echo NO_NODE; exit 1; }; ' +
     `printf '%s' '${scriptB64}' | base64 -d > /tmp/apollo-profile.js; ` +
-    'for D in $DIRS; do F="$D/USER.md"; touch "$F"; ' +
-    `node /tmp/apollo-profile.js "$F" '${bodyB64}' '${OWNER_BLOCK_START}' '${OWNER_BLOCK_END}' 2>&1; done; ` +
+    `for D in $DIRS; do F="$D/${filename}"; touch "$F"; ` +
+    `node /tmp/apollo-profile.js "$F" '${bodyB64}' '${markers.start}' '${markers.end}' 2>&1; done; ` +
     'rm -f /tmp/apollo-profile.js; ' +
     'echo PROFILE_OK';
 
@@ -199,11 +207,11 @@ console.log("PROFILE_SET:" + file);
       const { stdout } = await agent37.exec(agentId, cmd);
       const landed = stdout.match(/PROFILE_SET:(\S+)/g);
       if (landed) {
-        console.log("[provision:profile-injected]", agentId, landed.join(" "));
+        console.log("[provision:file-merged]", agentId, filename, landed.join(" "));
         return true;
       }
       if (stdout.includes("PROFILE_OK")) {
-        console.error("[provision:profile-no-write]", agentId, stdout.trim().slice(0, 300));
+        console.error("[provision:file-no-write]", agentId, filename, stdout.trim().slice(0, 300));
         return false;
       }
     } catch {
@@ -211,8 +219,16 @@ console.log("PROFILE_SET:" + file);
     }
     await sleep(15_000);
   }
-  console.error("[provision:profile-inject-failed]", agentId);
+  console.error("[provision:file-merge-failed]", agentId, filename);
   return false;
+}
+
+/** The owner profile, into USER.md — the file both runtimes load as "who you work for". */
+export function injectOwnerProfile(agentId: string, markdown: string): Promise<boolean> {
+  return injectFencedBlock(agentId, "USER.md", markdown, {
+    start: OWNER_BLOCK_START,
+    end: OWNER_BLOCK_END,
+  });
 }
 
 // Put the CURRENT pointer block into SOUL.md in every workspace the instance recognises,
@@ -280,6 +296,44 @@ console.log("POINTER_SET:" + file);
   }
   console.error("[provision:pointer-inject-failed]", agentId);
   return false;
+}
+
+export interface WorkspaceWrite {
+  answers: Record<string, unknown>;
+  /** The name the customer chose for their agent, for IDENTITY.md. */
+  agentName?: string;
+  /** What enrichment produced, if anything — one line for AGENTS.md's "where to look". */
+  contextSummary?: string;
+}
+
+/**
+ * Write the questionnaire-derived files an OpenClaw agent auto-loads: AGENTS.md (how to work
+ * for this owner), TOOLS.md (their stack), IDENTITY.md (who this agent is).
+ *
+ * USER.md is NOT here — it goes through injectOwnerProfile, which every caller does first and
+ * gates on, because a failed profile write means the box isn't ready and there is no point
+ * trying three more.
+ *
+ * Sequential, and each write is independent: one file failing (a template that ships AGENTS.md
+ * read-only, say) must not cost the other two. Returns what landed, for the logs.
+ */
+export async function writeGeneratedFiles(agentId: string, input: WorkspaceWrite): Promise<string[]> {
+  const files: Array<[string, string, { start: string; end: string }]> = [
+    [GENERATED_FILES.agents, buildAgentsMd(input.answers, input.contextSummary), AGENTS_FENCE],
+    [GENERATED_FILES.tools, buildToolsMd(input.answers), TOOLS_FENCE],
+    [GENERATED_FILES.identity, buildIdentityMd(input.agentName, input.answers), IDENTITY_FENCE],
+  ];
+
+  const landed: string[] = [];
+  for (const [filename, body, markers] of files) {
+    try {
+      if (await injectFencedBlock(agentId, filename, body, markers)) landed.push(filename);
+    } catch (err) {
+      console.error("[provision:generated-file-failed]", agentId, filename, err);
+    }
+  }
+  console.log("[provision:generated-files]", agentId, landed.join(" ") || "(none)");
+  return landed;
 }
 
 // Render questionnaire answers as the USER.md the agent reads. Labels come from the
@@ -376,6 +430,13 @@ async function injectAfterProvision(
   const ok = await injectOwnerProfile(agentId, buildUserMd(type.label, answers, context?.summary));
   if (ok) await ensureUserMdPointer(agentId);
   if (ok && context) await injectAgentFile(agentId, CONTEXT_FILENAME, context.markdown);
+  if (ok) {
+    await writeGeneratedFiles(agentId, {
+      answers,
+      agentName: (setup.agent_name as string | null) ?? undefined,
+      contextSummary: context?.summary,
+    });
+  }
   if (ok) {
     await db
       .from("agent_setup")

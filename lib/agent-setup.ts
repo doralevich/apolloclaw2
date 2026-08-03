@@ -5,14 +5,15 @@ import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError } from "@/lib/http";
 import { buildIntakeSections, escapeHtml, sectionsToHtml } from "@/lib/onboardingSections";
 import { renderSectionsPdf } from "@/lib/pdf";
+import { CONTEXT_FILENAME } from "@/config/agent-workspace";
 import { buildOwnerContext } from "@/lib/enrichment";
 import {
   buildUserMd,
-  CONTEXT_FILENAME,
   ensureUserMdPointer,
   injectAgentFile,
   injectOwnerProfile,
   provisionTypedAgent,
+  writeGeneratedFiles,
 } from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadAgentAvatar } from "@/lib/supabase/avatar-storage";
@@ -234,6 +235,10 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
       // Only written once the profile that names it has landed, so the agent is never
       // pointed at a file we failed to create — or left holding one nothing references.
       if (ok && context) await injectAgentFile(id, CONTEXT_FILENAME, context.markdown);
+      // AGENTS.md, TOOLS.md, IDENTITY.md — the rest of what the runtime loads at session
+      // start, built from the same answers. Gated on the profile write for the same reason:
+      // if that failed the instance isn't reachable yet.
+      if (ok) await writeGeneratedFiles(id, { answers, agentName, contextSummary: context?.summary });
       if (ok) {
         await db
           .from("agent_setup")
