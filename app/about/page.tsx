@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
@@ -379,58 +378,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CTA — cream */}
-      <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 text-center max-w-4xl">
-          <ScrollReveal>
-            <h2
-              className="font-display leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(28px, 4vw, 50px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
-            >
-              Ready to find out what AI can actually{" "}
-              <span style={{ color: "#D72B2B" }}>do</span> for your business?
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={150}>
-            <p
-              className="font-body"
-              style={{
-                fontSize: "clamp(15px, 1.1vw, 17px)",
-                lineHeight: 1.65,
-                color: "#555555",
-                maxWidth: 560,
-                margin: "22px auto 0",
-              }}
-            >
-              A 30-minute discovery session to understand your business, identify opportunities,
-              and determine where AI can create the greatest operational impact. No sales
-              presentation. No technical jargon. Just a practical conversation.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal delay={300}>
-            <div style={{ marginTop: 36 }}>
-              <a
-                href="https://calendly.com/therealdaveo/apolloai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-                style={{
-                  background: "#D72B2B",
-                  color: "#ffffff",
-                  fontSize: 13,
-                  letterSpacing: "0.1em",
-                  padding: "14px 32px",
-                  borderRadius: 4,
-                  textDecoration: "none",
-                  boxShadow: "0 8px 24px rgba(215,43,43,0.28)",
-                }}
-              >
-                Schedule a Discovery Session
-              </a>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
     </>
   );
 }

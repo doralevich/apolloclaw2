@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
-import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
@@ -65,25 +64,6 @@ export default function AI101Page() {
           ))}
         </div>
 
-        <ScrollReveal>
-          <div className="bauhaus-card p-8 text-center">
-            <h2 className="font-display text-2xl text-foreground mb-3">
-              Ready to see what AI can do for your business specifically?
-            </h2>
-            <p className="font-body text-muted-foreground mb-6">
-              Book a free 30-minute call and we&apos;ll walk through your exact situation.
-            </p>
-            <a
-              href="https://calendly.com/therealdaveo/apolloai"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="cta" size="lg">
-                Schedule Today
-              </Button>
-            </a>
-          </div>
-        </ScrollReveal>
       </div>
     </div>
     </>

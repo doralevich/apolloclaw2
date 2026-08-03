@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
-import { Button } from "@/components/ui/button";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
@@ -61,22 +60,6 @@ export default function MembershipPage() {
             ))}
           </div>
 
-          <ScrollReveal delay={400}>
-            <div className="text-center mt-16">
-              <p className="font-body text-muted-foreground mb-6">
-                Membership pricing is included in your engagement quote.
-              </p>
-              <a
-                href="https://calendly.com/therealdaveo/apolloai"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="cta" size="lg">
-                  Schedule a Discovery Call
-                </Button>
-              </a>
-            </div>
-          </ScrollReveal>
         </div>
       </section>
     </>

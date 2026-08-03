@@ -27,7 +27,6 @@ const agentLinks = [
   { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
   { label: "Human Resources Agent", to: "/ai-agents/hr" },
   { label: "Personal Agent", to: "/ai-agents/personal" },
-  { label: "All Agents", to: "/ai-agents" },
 ];
 
 const industryLinks = [
@@ -39,7 +38,6 @@ const industryLinks = [
   { label: "Financial Services", to: "/industries/financial-services" },
   { label: "Professional Services", to: "/industries/professional-services" },
   { label: "Private Equity", to: "/industries/private-equity" },
-  { label: "All Industries", to: "/industries" },
 ];
 
 const resourceLinks = [
@@ -241,7 +239,7 @@ export default function Footer() {
             <p className="font-body text-xs" style={{ color: WHITE_SUBTLE }}>
               &copy; 2026 Apollo[Claw]
             </p>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
               <Link
                 href="/accessibility"
                 className="font-body text-xs transition-colors hover:text-white"
@@ -255,6 +253,20 @@ export default function Footer() {
                 style={{ color: WHITE_MUTED }}
               >
                 Security
+              </Link>
+              <Link
+                href="/privacy"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/cookies"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Cookie Policy
               </Link>
             </div>
           </div>

@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
@@ -110,26 +108,6 @@ export default function WhatWeDoPage() {
 
       <div className="section-divider" />
 
-      <section className="relative pt-[60px] pb-[60px] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-primary/5" />
-        <div className="container mx-auto px-4 md:px-8 text-center relative">
-          <ScrollReveal>
-            <h2 className="font-display text-3xl md:text-5xl text-foreground">
-              Not sure what you need?
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <p className="font-body text-lg text-muted-foreground mt-4 max-w-xl mx-auto">
-              That is exactly what the discovery call is for. We listen, ask the right questions, and tell you what would actually make a difference.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal delay={400}>
-            <a href="https://calendly.com/therealdaveo/apolloai?month=2026-04" target="_blank" rel="noopener noreferrer" className="inline-block mt-10">
-              <Button variant="cta" size="xl">Book a Free Call</Button>
-            </a>
-          </ScrollReveal>
-        </div>
-      </section>
     </>
   );
 }

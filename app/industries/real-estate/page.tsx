@@ -277,18 +277,6 @@ export default function RealEstatePage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section style={{ background: RED }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">Ready to Meet Your AI Real Estate Agent?</h2>
-          <p className="font-body text-base mb-10" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Schedule a 30-minute consultation. We will show you exactly how The Real Estate Agent would be configured for your business.
-          </p>
-          <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: "#ffffff", color: RED, fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none" }}>
-            Schedule Your Consultation
-          </a>
-        </div>
-      </section>
     </>
   );
 }

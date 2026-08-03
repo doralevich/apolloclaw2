@@ -295,65 +295,6 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
         </div>
       </section>
 
-      {/* CTA — dark navy */}
-      <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "radial-gradient(ellipse 70% 60% at 50% 100%, rgba(215,43,43,0.16) 0%, transparent 60%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 text-center max-w-4xl relative z-10">
-          <ScrollReveal>
-            <h2
-              className="font-display leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 800, color: "#ffffff", margin: 0 }}
-            >
-              Ready to find out what AI can do{" "}
-              <span style={{ color: "#D72B2B" }}>for your business?</span>
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={150}>
-            <p
-              className="font-body"
-              style={{
-                fontSize: "clamp(15px, 1.1vw, 17px)",
-                lineHeight: 1.65,
-                color: "rgba(255,255,255,0.72)",
-                maxWidth: 500,
-                margin: "22px auto 0",
-              }}
-            >
-              A free 30-minute conversation. You bring the bottlenecks, we&apos;ll bring the answers.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal delay={300}>
-            <div style={{ marginTop: 36 }}>
-              <a
-                href="https://calendly.com/therealdaveo/apolloai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-                style={{
-                  background: "#D72B2B",
-                  color: "#ffffff",
-                  fontSize: 13,
-                  letterSpacing: "0.1em",
-                  padding: "14px 32px",
-                  borderRadius: 4,
-                  textDecoration: "none",
-                  boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
-                }}
-              >
-                Schedule Today
-              </a>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
     </>
   );
 }
