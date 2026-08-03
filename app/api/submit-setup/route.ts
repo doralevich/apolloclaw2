@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { upsertPipelineDeal, findOrCreateCrmEntity } from "@/lib/crm";
+import { encryptAnswerSecrets } from "@/lib/crypto/byo";
 import { sendTelegram } from "@/lib/telegram";
 import { findAttioDealByEmail, addAttioNote, updateAttioDealStage } from "@/lib/attio";
 import { upsertMailchimpContact, tagMailchimpContact } from "@/lib/mailchimp";
@@ -64,7 +65,9 @@ async function upsertAgentSetup(email: string, agentType: string, answers: Recor
       body: JSON.stringify({
         workspace_id: workspaceId,
         agent_type: agentType,
-        answers,
+        // Customer-supplied API keys and tokens are enveloped before they touch Postgres, so a
+        // database dump does not hand over their third-party accounts. See lib/crypto/byo.ts.
+        answers: encryptAnswerSecrets(answers),
         updated_at: new Date().toISOString(),
       }),
     });
