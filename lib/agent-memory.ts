@@ -59,14 +59,17 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
     'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
     '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
     '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
-    'for D in $DIRS; do F="$D/USER.md"; ' +
-    '[ -f "$F" ] && echo "FILE:$F:$(wc -c < "$F" | tr -d " ")" || echo "FILE:$F:missing"; done; ' +
+    // Both files, because which one is populated is the whole diagnosis: OWNER.md is ours
+    // (the questionnaire), USER.md is the agent's own memory. Confusing them cost a customer
+    // their profile once already.
+    'for D in $DIRS; do for N in OWNER.md USER.md; do F="$D/$N"; ' +
+    '[ -f "$F" ] && echo "FILE:$F:$(wc -c < "$F" | tr -d " ")" || echo "FILE:$F:missing"; done; done; ' +
     'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || continue; ' +
     `grep -qF '${USER_MD_POINTER_MARKER}' "$F" && echo "POINTER:$F" || echo "NOPOINTER:$F"; done; ` +
     // Headings and bullet LABELS only — everything after the colon on a bullet is dropped, so
     // "- Email: someone@example.com" comes back as "- Email". Enough to tell a populated
     // profile from an empty one, and to tell whose it is, without lifting the contents.
-    'for D in $DIRS; do F="$D/USER.md"; [ -s "$F" ] || continue; ' +
+    'for D in $DIRS; do F="$D/OWNER.md"; [ -s "$F" ] || continue; ' +
     `grep -E '^#|^- ' "$F" | sed 's/:.*$/:/' | head -14 | sed 's/^/PREVIEW:/'; break; done; ` +
     'echo INSPECT_OK';
 
@@ -83,7 +86,7 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
         return {
           path,
           bytes: size === "missing" ? -1 : Number(size),
-          hasPointer: pointers.has(path.replace(/USER\.md$/, "SOUL.md")),
+          hasPointer: pointers.has(path.replace(/(OWNER|USER)\.md$/, "SOUL.md")),
         };
       });
       const preview = (stdout.match(/PREVIEW:(.*)/g) ?? []).map((s) => s.slice(8).trim());
