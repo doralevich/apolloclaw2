@@ -47,10 +47,15 @@ function repairCommand(): string {
 // would sit below it, and "delete from the marker to EOF" would take that with it.
 function removeCommand(): string {
   const pointerB64 = Buffer.from(USER_MD_POINTER, "utf8").toString("base64");
+  // argv[0] is node, argv[1] is THIS script, so the caller's arguments start at [2]. Getting
+  // that wrong pointed the script at its own source, where it duly found no pointer block and
+  // reported the file as clean — which is how it came back "ABSENT:/tmp/strip-pointer.js".
   const script = `
 const fs = require("fs");
-const file = process.argv[1];
-const block = Buffer.from(process.argv[2], "base64").toString("utf8");
+const file = process.argv[2];
+const encoded = process.argv[3];
+if (!file || !encoded) { console.log("BADARGS:" + JSON.stringify(process.argv.slice(1))); process.exit(1); }
+const block = Buffer.from(encoded, "base64").toString("utf8");
 const before = fs.readFileSync(file, "utf8");
 if (!before.includes(block)) { console.log("ABSENT:" + file); process.exit(0); }
 fs.writeFileSync(file, before.split(block).join(""));
