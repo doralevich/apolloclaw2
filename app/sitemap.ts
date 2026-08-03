@@ -44,7 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/ai-consulting-education",       priority: 0.8 },
     { path: "/contact",      priority: 0.7 },
     { path: "/what-we-do",       priority: 0.8 },
-    { path: "/agents",       priority: 0.9 },
     { path: "/ai-101",       priority: 0.7 },
     { path: "/security",       priority: 0.6 },
     { path: "/membership",       priority: 0.7 },

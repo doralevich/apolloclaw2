@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 const steps = [
   {
     step: "01",
-    title: "Discovery Call",
+    title: "Consultation",
     desc: "We start with a free 45-minute conversation about your business, your biggest time drains, and what you&apos;d most like to automate. No pitch. Just listening.",
   },
   {

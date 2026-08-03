@@ -59,7 +59,9 @@ const CSP_DIRECTIVES = [
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors 'none'",
+  // 'self' to match X-Frame-Options above, so the demo lightbox keeps working when this
+  // policy is promoted from report-only to enforced.
+  "frame-ancestors 'self'",
   // NOTE: `upgrade-insecure-requests` is deliberately absent. Browsers ignore it in a
   // report-only policy and log a warning saying so on every page load, which is exactly the
   // console noise that makes a real violation easy to miss while we are watching for them.
@@ -71,9 +73,15 @@ const securityHeaders = [
   // terminates for every deployment.
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Content-Type-Options", value: "nosniff" },
-  // Nothing here is meant to be embedded. frame-ancestors above is the modern equivalent; this
-  // stays for older browsers that ignore it.
-  { key: "X-Frame-Options", value: "DENY" },
+  // SAMEORIGIN rather than DENY, deliberately. DENY blocks framing by ANY origin INCLUDING our
+  // own, which broke the "A Day with John" lightbox: it iframes /demo.html from our own pages,
+  // and the popup rendered blank. SAMEORIGIN still keeps every other site out, which is the
+  // actual threat (clickjacking), while allowing the one same-origin frame we intend.
+  //
+  // A per-path override for /demo.html was tried first and did not work: when two header rules
+  // match the same request, Next.js does not let the later one replace a key set by the
+  // earlier catch-all. Verified by curl, not assumed.
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
   // REPORT-ONLY on purpose. This logs violations to the browser console without blocking
@@ -106,14 +114,24 @@ const nextConfig: NextConfig = {
         destination: "/contact",
         permanent: true,
       },
+      // /agents (the self-serve storefront) was retired — David's call that it is no longer
+      // relevant, alongside removing the Get Started buttons that pointed at it. These two
+      // are indexed pricing-intent URLs, so they move to /contact rather than being dropped:
+      // someone searching for our pricing still wants to reach a human, and a 301 into a 404
+      // is worse than either.
       {
         source: "/pricing",
-        destination: "/agents",
+        destination: "/contact",
         permanent: true,
       },
       {
         source: "/cost-estimator",
-        destination: "/agents",
+        destination: "/contact",
+        permanent: true,
+      },
+      {
+        source: "/agents",
+        destination: "/contact",
         permanent: true,
       },
       // The /use-cases/* tree was retired and split along the two axes the nav actually

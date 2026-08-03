@@ -30,7 +30,7 @@ export function PreFooter() {
                 Ready to move from AI curiosity to<br />AI <span style={{ color: RED }}>Implemented?</span>
               </H2>
               <p className="font-body mx-auto mt-5 text-[1.0625rem] leading-[1.7]" style={{ color: PAPER_MUTED, maxWidth: 560 }}>
-                Book a free 30-minute discovery call. You bring the bottlenecks, we bring the build.
+                Schedule a free 30-minute consultation. You bring the bottlenecks, we bring the build.
               </p>
               <div className="mt-9">
                 <a
@@ -46,7 +46,7 @@ export function PreFooter() {
                     boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
                   }}
                 >
-                  Book a Free Discovery Call
+                  Schedule a Consultation
                 </a>
               </div>
             </div>

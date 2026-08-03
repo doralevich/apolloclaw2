@@ -333,7 +333,7 @@ export default function AiAssistantForCeoPost() {
                 className="font-mono text-xs uppercase tracking-widest mb-2"
                 style={{ color: RED }}
               >
-                Free Discovery Call
+                Free Consultation
               </div>
               <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>
                 See AI working in your business

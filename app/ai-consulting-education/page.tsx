@@ -22,7 +22,7 @@ const data: SeoLandingData = {
     titleAccent: "Education",
     description:
       "Apollo Claw partners with schools, colleges, and universities to deploy AI across admissions, student services, and campus operations, without adding headcount.",
-    cta: { label: "Book a Free Discovery Call", href: "/contact" },
+    cta: { label: "Schedule a Consultation", href: "/contact" },
   },
   sections: [
     {
@@ -90,8 +90,8 @@ const data: SeoLandingData = {
       type: "cta",
       heading: "Ready to bring AI into your",
       headingAccent: "institution?",
-      sub: "Book a free discovery call. We will show you exactly where AI helps first on your campus.",
-      button: { label: "Book a Free Discovery Call", href: "/contact" },
+      sub: "Schedule a consultation. We will show you exactly where AI helps first on your campus.",
+      button: { label: "Schedule a Consultation", href: "/contact" },
     },
   ],
 };

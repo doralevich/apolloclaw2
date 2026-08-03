@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: "How much does it cost?",
-    a: "Pricing depends on your setup and the tier you need. We don't publish rates publicly because every engagement is scoped differently. Book a discovery call and we'll give you a precise number.",
+    a: "Pricing depends on your setup and the tier you need. We don't publish rates publicly because every engagement is scoped differently. Schedule a consultation and we'll give you a precise number.",
   },
   {
     q: "What if I want to cancel?",

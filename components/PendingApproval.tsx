@@ -59,7 +59,7 @@ export function PendingApproval({
         <div className="flex flex-wrap items-center justify-center gap-3">
           {!lapsed && (
             <Button asChild>
-              <a href="/agents">Browse agents</a>
+              <a href="/contact">Talk to us</a>
             </Button>
           )}
           <Button variant="outline" onClick={signOut}>

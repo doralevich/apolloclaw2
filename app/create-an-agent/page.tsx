@@ -28,7 +28,7 @@ const data: SeoLandingData = {
     titleAccent: "We build the employee.",
     description:
       "An Apollo[Claw] agent is not a chatbot. It is a role you fill. Pick the seat you need covered, tell us how the work gets done today, and we build, host, and maintain an agent that does it inside the tools your team already uses.",
-    cta: { label: "Browse Agents", href: "/agents" },
+    cta: { label: "Schedule a Consultation", href: "/contact" },
   },
   sections: [
     {
@@ -108,7 +108,7 @@ const data: SeoLandingData = {
       heading: "Ready to create your",
       headingAccent: "agent?",
       sub: "Browse the built agents and start the setup, or book a call and we will help you pick the right seat to fill first.",
-      button: { label: "Browse Agents", href: "/agents" },
+      button: { label: "Schedule a Consultation", href: "/contact" },
     },
   ],
 };

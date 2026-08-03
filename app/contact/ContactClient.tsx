@@ -249,7 +249,7 @@ export default function ContactClient() {
               <div className="bg-card border border-border/60 rounded-2xl p-6">
                 <h3 className="font-display text-lg font-bold text-foreground mb-2">Prefer to talk live?</h3>
                 <p className="font-body text-sm text-muted-foreground mb-4">
-                  Book a free 30-minute discovery call and we&apos;ll walk through your needs together.
+                  Schedule a free 30-minute consultation and we&apos;ll walk through your needs together.
                 </p>
                 <a href="https://calendly.com/therealdaveo/apolloai" target="_blank" rel="noopener noreferrer">
                   <Button variant="cta" size="default" className="w-full">Schedule Today</Button>
