@@ -24,14 +24,48 @@ function instanceBaseUrl(id: string): string {
   return `https://${id}.${INSTANCE_DOMAIN}`;
 }
 
+// ─── The budget write verb ────────────────────────────────────────────────────
+//
+// /instances/:id/budget accepts exactly one write verb and Agent37 doesn't say which. See
+// writeBudget below for how it's found; these are the pieces it needs at module scope so the
+// answer survives between calls in a warm lambda.
+const BUDGET_VERBS = ["PATCH", "PUT", "POST"] as const;
+type BudgetVerb = (typeof BUDGET_VERBS)[number];
+
+let acceptedBudgetVerb: BudgetVerb | null = null;
+
+function isBudgetVerb(v: string): v is BudgetVerb {
+  return (BUDGET_VERBS as readonly string[]).includes(v);
+}
+
+/** Pin the verb from the environment once we're certain, skipping discovery entirely. */
+function envBudgetVerb(): BudgetVerb | null {
+  const v = (process.env.AGENT37_BUDGET_VERB || "").trim().toUpperCase();
+  return v && isBudgetVerb(v) ? v : null;
+}
+
+/** First write verb named by an `Allow` header ("GET, PUT, OPTIONS" -> PUT). */
+function parseAllowedVerb(allow?: string): BudgetVerb | null {
+  if (!allow) return null;
+  for (const part of allow.split(",")) {
+    const v = part.trim().toUpperCase();
+    if (isBudgetVerb(v)) return v;
+  }
+  return null;
+}
+
 export class Agent37Error extends Error {
   status: number;
   code: string;
-  constructor(status: number, code: string, message: string) {
+  /** The `Allow` header, when the server sent one (405s). Kept as data, not just prose in
+   *  the message, so callers can act on it instead of parsing English. */
+  allow?: string;
+  constructor(status: number, code: string, message: string, allow?: string) {
     super(message);
     this.name = "Agent37Error";
     this.status = status;
     this.code = code;
+    this.allow = allow;
   }
 }
 
@@ -61,13 +95,11 @@ async function parseAgent37<T>(res: Response, augment402 = false): Promise<T> {
       // Almost always an unfunded wallet at create/start time — point the operator at billing.
       message = `${message} (Agent37 payment required — fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
     }
-    if (res.status === 405) {
-      // Surface which verbs the endpoint DOES accept — diagnosis gold when the
-      // write contract is undocumented.
-      const allow = res.headers.get("allow");
-      if (allow) message = `${message} (allow: ${allow})`;
-    }
-    throw new Agent37Error(res.status, err.code || "error", message);
+    // Surface which verbs the endpoint DOES accept — diagnosis gold when the write contract
+    // is undocumented, and the input writeBudget uses to correct itself in one hop.
+    const allow = res.status === 405 ? res.headers.get("allow") ?? undefined : undefined;
+    if (allow) message = `${message} (allow: ${allow})`;
+    throw new Agent37Error(res.status, err.code || "error", message, allow);
   }
 
   return data as T;
@@ -192,27 +224,58 @@ export const agent37 = {
   // each one should be. Nothing here reads its own defaults; a caller that omits a field
   // would be re-capping a customer by accident.
   //
-  // The verb is discovered: PATCH, then PUT, then POST. 405 means wrong verb and moves on;
-  // any other status is a real answer about the request and stops the loop immediately, so a
+  // The verb is discovered rather than assumed, because Agent37 doesn't document this one and
+  // guessing wrong costs a customer their credit. Discovery is now one hop, not three:
+  //
+  //   1. Try BUDGET_VERB (env override), else the verb this process last saw accepted, else
+  //      PATCH.
+  //   2. On 405, the server's own `Allow` header says what it wants — go straight there.
+  //      Only if it sent no Allow do we fall back to trying the remaining verbs in order.
+  //
+  // Anything other than 405 is a real answer about the request and stops immediately, so a
   // 400 about the body surfaces instead of being retried under two more verbs.
+  //
+  // The accepted verb is remembered for the life of the lambda, so a warm instance writes a
+  // budget in a single call. Set AGENT37_BUDGET_VERB once we've watched the logs long enough
+  // to be sure, and this becomes one call from cold too.
   writeBudget: async (
     id: string,
     fields: { monthly_cap_micros: number; topup_micros: number }
   ): Promise<Budget> => {
     const body = JSON.stringify(fields);
-    let last: unknown;
-    for (const method of ["PATCH", "PUT", "POST"] as const) {
-      try {
-        const result = await call<Budget>(`/instances/${id}/budget`, { method, body });
+    const attempt = async (method: BudgetVerb): Promise<Budget> => {
+      const result = await call<Budget>(`/instances/${id}/budget`, { method, body });
+      if (acceptedBudgetVerb !== method) {
+        // Logged on the transition only — the line David needs to read once, not on every
+        // top-up forever.
         console.log("[agent37:writeBudget] accepted verb:", method, fields);
-        return result;
-      } catch (err) {
-        last = err;
-        if (err instanceof Agent37Error && err.status === 405) continue;
-        throw err;
+        acceptedBudgetVerb = method;
       }
+      return result;
+    };
+
+    const first = envBudgetVerb() ?? acceptedBudgetVerb ?? "PATCH";
+    try {
+      return await attempt(first);
+    } catch (err) {
+      if (!(err instanceof Agent37Error) || err.status !== 405) throw err;
+
+      // The server named its verbs; believe it over our list.
+      const advertised = parseAllowedVerb(err.allow);
+      const remaining = (advertised ? [advertised] : BUDGET_VERBS).filter((m) => m !== first);
+
+      let last: unknown = err;
+      for (const method of remaining) {
+        try {
+          return await attempt(method);
+        } catch (e) {
+          last = e;
+          if (e instanceof Agent37Error && e.status === 405) continue;
+          throw e;
+        }
+      }
+      throw last;
     }
-    throw last;
   },
 
   // Add one-time credit, in micros (1 USD = 1_000_000).

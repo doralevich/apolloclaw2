@@ -15,6 +15,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // This route's own job is authorization: a logged-in member of the workspace. Everything
 // after that is shared with the license flow and lives in lib/agent-setup.ts.
 
+// The response goes out in a second; the work AFTER it is what needs the room. `after()`
+// here reads the customer's website, extracts their uploads, and then retries exec against an
+// instance that may still be booting — and all of that counts against this function's
+// duration. The default 60s cut it off mid-retry.
+export const maxDuration = 300;
+
 export const POST = route(async (request: Request) => {
   const { supabase, user } = await requireUser();
   const body = await readJson<{

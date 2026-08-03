@@ -47,6 +47,10 @@ async function createTypedAgent(typeId: string, workspaceId: string | undefined,
   return json(agent, 201);
 }
 
+// POST provisions, then writes the profile and context into the instance from `after()` —
+// work that outlives the response but still counts against this function's duration.
+export const maxDuration = 300;
+
 export const GET = route(async (request: Request) => {
   const { supabase, user } = await requireUser();
   const workspaceId = new URL(request.url).searchParams.get("workspace");

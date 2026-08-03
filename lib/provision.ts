@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
 import { DEFAULT_AGENT } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
+import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
 import { usdToMicros } from "@/lib/format";
@@ -30,6 +31,10 @@ export interface ProvisionInput {
    *  OpenClaw template + persona injection instead of failing — the customer has already
    *  paid, so "wrong image" beats "no agent". */
   allowTemplateFallback?: boolean;
+  /** The caller will write BUSINESS-CONTEXT.md itself once this returns, from a richer source
+   *  than the stored answers (the in-memory uploads). Suppresses our own enrichment pass so
+   *  the two don't race on the same file. */
+  callerWritesContext?: boolean;
 }
 
 // Where the agent keeps the files it reads about itself and its owner. This is NOT one
@@ -55,6 +60,16 @@ const CANDIDATE_DIRS =
   // back to the OpenClaw layout, which is what every instance before this used.
   '[ -n "$DIRS" ] || { D="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; mkdir -p "$D"; DIRS="$D"; }; ';
 
+// The long-form source material from the customer's uploads and website (lib/enrichment.ts).
+// It sits BESIDE USER.md rather than inside it: USER.md is injected into the system prompt
+// every session, and thirty thousand characters of price list would be paid for on every turn
+// for the sake of the one conversation a month that needs it. The profile names this file; the
+// agent opens it when the question calls for it.
+//
+// Unfenced and wholly ours — unlike USER.md, nothing else writes here, so each setup
+// submission replaces it outright.
+export const CONTEXT_FILENAME = "BUSINESS-CONTEXT.md";
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Best-effort write of a markdown file into every workspace the instance recognises. The
@@ -65,7 +80,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // useful last time.
 export async function injectAgentFile(
   agentId: string,
-  filename: "SOUL.md",
+  filename: "SOUL.md" | typeof CONTEXT_FILENAME,
   content: string
 ): Promise<boolean> {
   const b64 = Buffer.from(content, "utf8").toString("base64");
@@ -270,7 +285,14 @@ console.log("POINTER_SET:" + file);
 // Render questionnaire answers as the USER.md the agent reads. Labels come from the
 // shared onboarding section builder (the same one behind the free /onboard lead form and
 // its PDF/email) so the file reads like notes, not a form dump.
-export function buildUserMd(typeLabel: string, answers: Record<string, unknown>): string {
+export function buildUserMd(
+  typeLabel: string,
+  answers: Record<string, unknown>,
+  /** One line describing what landed in BUSINESS-CONTEXT.md ("2 pages from their website and
+   *  3 uploaded documents"). Omitted when enrichment found nothing — an agent told to read a
+   *  file that isn't there is worse than one that was never told about it. */
+  contextSummary?: string
+): string {
   const sections = buildIntakeSections({ ...answers, trackType: "business" });
   return [
     `# About the business you work for`,
@@ -279,13 +301,31 @@ export function buildUserMd(typeLabel: string, answers: Record<string, unknown>)
     `about who you work for — and update it as you learn more.`,
     ``,
     sectionsToMarkdown(sections),
+    ...(contextSummary
+      ? [
+          ``,
+          `## Source material`,
+          ``,
+          `There is a file called \`${CONTEXT_FILENAME}\` in this same directory holding`,
+          `${contextSummary}, captured during setup. It is too long to keep here, so read it`,
+          `when you need the detail — what they sell, how they describe themselves, their own`,
+          `words. Prefer it over guessing, and treat anything in it as a snapshot from setup`,
+          `rather than as today's truth.`,
+        ]
+      : []),
   ].join("\n");
 }
 
 // Post-create injection for a paid agent: persona (fallback template only — dedicated
 // templates carry their own) and USER.md from any setup answers already submitted for
 // this workspace + type. Marks agent_setup.injected_at when the USER.md write lands.
-async function injectAfterProvision(agentId: string, type: AgentType, workspaceId: string, fellBack: boolean): Promise<void> {
+async function injectAfterProvision(
+  agentId: string,
+  type: AgentType,
+  workspaceId: string,
+  fellBack: boolean,
+  skipContext: boolean
+): Promise<void> {
   if (fellBack) {
     const persona = personaForAgentType(type.id);
     if (persona) await injectAgentFile(agentId, "SOUL.md", persona);
@@ -313,8 +353,29 @@ async function injectAfterProvision(agentId: string, type: AgentType, workspaceI
   }
 
   if (!setup.answers) return;
-  const ok = await injectOwnerProfile(agentId, buildUserMd(type.label, setup.answers as Record<string, unknown>));
+  const answers = setup.answers as Record<string, unknown>;
+
+  // Website enrichment only. The uploaded files are NOT available here: their bytes live in
+  // memory for exactly one request (the questionnaire submission) and are never persisted, so
+  // by the time provisioning runs there is nothing to extract. The website is a stored answer,
+  // so it can still be read.
+  //
+  // Skipped entirely when the caller is doing its own pass — /api/onboard/complete provisions
+  // and then enriches with the uploads in hand, and two writers racing on one file would leave
+  // whichever finished last, not whichever knew more.
+  const context = skipContext
+    ? null
+    : await buildOwnerContext({
+        website: typeof answers.website === "string" ? answers.website : undefined,
+        businessName: typeof answers.companyName === "string" ? answers.companyName : undefined,
+      }).catch((err) => {
+        console.error("[provision] enrichment failed:", err);
+        return null;
+      });
+
+  const ok = await injectOwnerProfile(agentId, buildUserMd(type.label, answers, context?.summary));
   if (ok) await ensureUserMdPointer(agentId);
+  if (ok && context) await injectAgentFile(agentId, CONTEXT_FILENAME, context.markdown);
   if (ok) {
     await db
       .from("agent_setup")
@@ -453,7 +514,7 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
   // Persona (fallback template only) + any already-submitted setup answers get written
   // into the instance after the response, so neither the API caller nor Stripe's webhook
   // delivery waits on the instance booting.
-  after(() => injectAfterProvision(agent.id, type, workspaceId, fellBack));
+  after(() => injectAfterProvision(agent.id, type, workspaceId, fellBack, !!input.callerWritesContext));
 
   return agent;
 }
