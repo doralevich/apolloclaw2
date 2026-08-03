@@ -3,7 +3,7 @@ import { agent37 } from "@/lib/agent37";
 import {
   buildUserMd,
   ensureUserMdPointer,
-  injectAgentFile,
+  injectOwnerProfile,
   USER_MD_POINTER,
   USER_MD_POINTER_MARKER,
 } from "@/lib/provision";
@@ -62,14 +62,14 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
     // Both files, because which one is populated is the whole diagnosis: OWNER.md is ours
     // (the questionnaire), USER.md is the agent's own memory. Confusing them cost a customer
     // their profile once already.
-    'for D in $DIRS; do for N in OWNER.md USER.md; do F="$D/$N"; ' +
+    'for D in $DIRS; do for N in USER.md MEMORY.md; do F="$D/$N"; ' +
     '[ -f "$F" ] && echo "FILE:$F:$(wc -c < "$F" | tr -d " ")" || echo "FILE:$F:missing"; done; done; ' +
     'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || continue; ' +
     `grep -qF '${USER_MD_POINTER_MARKER}' "$F" && echo "POINTER:$F" || echo "NOPOINTER:$F"; done; ` +
     // Headings and bullet LABELS only — everything after the colon on a bullet is dropped, so
     // "- Email: someone@example.com" comes back as "- Email". Enough to tell a populated
     // profile from an empty one, and to tell whose it is, without lifting the contents.
-    'for D in $DIRS; do F="$D/OWNER.md"; [ -s "$F" ] || continue; ' +
+    'for D in $DIRS; do F="$D/USER.md"; [ -s "$F" ] || continue; ' +
     `grep -E '^#|^- ' "$F" | sed 's/:.*$/:/' | head -14 | sed 's/^/PREVIEW:/'; break; done; ` +
     'echo INSPECT_OK';
 
@@ -249,9 +249,9 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       }
 
       const md = buildUserMd(type?.label ?? "Apollo Agent", setup.answers as Record<string, unknown>);
-      const wrote = await injectAgentFile(id, "OWNER.md", md);
+      const wrote = await injectOwnerProfile(id, md);
       if (!wrote) {
-        results.push({ id, name, outcome: "failed", detail: "could not write OWNER.md to the instance" });
+        results.push({ id, name, outcome: "failed", detail: "could not write the profile into USER.md on the instance" });
         continue;
       }
 
@@ -264,8 +264,8 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
         name,
         outcome: pointed ? "repaired" : "failed",
         detail: pointed
-          ? "wrote OWNER.md from the questionnaire, pointer set to current version"
-          : "OWNER.md written but the pointer could not be set — the agent will not know to read it",
+          ? "wrote the profile into USER.md from the questionnaire, pointer set to current version"
+          : "profile written but the pointer could not be set",
       });
     } catch (err) {
       results.push({ id, name, outcome: "failed", detail: err instanceof Error ? err.message : String(err) });

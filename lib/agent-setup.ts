@@ -5,7 +5,7 @@ import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError } from "@/lib/http";
 import { buildIntakeSections, escapeHtml, sectionsToHtml } from "@/lib/onboardingSections";
 import { renderSectionsPdf } from "@/lib/pdf";
-import { buildUserMd, ensureUserMdPointer, injectAgentFile, provisionTypedAgent } from "@/lib/provision";
+import { buildUserMd, ensureUserMdPointer, injectOwnerProfile, provisionTypedAgent } from "@/lib/provision";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadAgentAvatar } from "@/lib/supabase/avatar-storage";
 import { sendTelegram } from "@/lib/telegram";
@@ -202,7 +202,7 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
     const ws = workspaceId;
     const id = agentId;
     after(async () => {
-      const ok = await injectAgentFile(id, "OWNER.md", buildUserMd(type.label, answers));
+      const ok = await injectOwnerProfile(id, buildUserMd(type.label, answers));
       // The file alone doesn't reach the agent — SOUL.md has to point at it.
       if (ok) await ensureUserMdPointer(id);
       if (ok) {
