@@ -49,6 +49,12 @@ const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 
 
 export const AGENT_TYPES: AgentType[] = [
   {
+    // Sold and provisioned on thecollegeagent.ai; the card here is a hand-off, so nothing in
+    // this app ever creates one. The template name still matters, though: that site
+    // provisions from `college-agent` on the SAME Agent37 account we use, so the name has to
+    // keep existing there. It does — as its own template alongside `apollo-agent`, both
+    // pointing at the same image, after renaming ours broke theirs for exactly as long as it
+    // took to notice.
     id: "college",
     label: "The College Agent",
     description:
@@ -61,86 +67,19 @@ export const AGENT_TYPES: AgentType[] = [
     externalUrl: "https://thecollegeagent.ai/build",
     priceLabel: "$599 one-time + hosting",
   },
-  {
-    id: "ceo",
-    label: "CEO Agent",
-    description: "An AI chief of staff that runs your inbox, calendar, and follow-ups.",
-    template: "ceo-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "Briefcase",
-    planKey: "ceo_plan",
-  },
-  {
-    id: "cfo",
-    label: "CFO Agent",
-    description: "An AI finance lead for budgets, cash-flow forecasts, models, and board-ready numbers.",
-    template: "cfo-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "Calculator",
-    planKey: "cfo_plan",
-  },
-  {
-    id: "legal",
-    label: "Legal Agent",
-    description: "Drafts and reviews common contracts, explains clauses in plain English, tracks obligations.",
-    template: "legal-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "Scale",
-    planKey: "legal_plan",
-  },
-  {
-    id: "medical",
-    label: "Medical Agent",
-    description: "Administrative support for clinicians — literature summaries, patient comms, billing prep.",
-    template: "medical-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "Stethoscope",
-    planKey: "medical_plan",
-  },
-  {
-    id: "insurance",
-    label: "Insurance Agent",
-    description: "Compares policies, explains coverage, preps quotes, and tracks renewals and claims.",
-    template: "insurance-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "ShieldCheck",
-    planKey: "insurance_plan",
-  },
-  {
-    id: "realestate",
-    label: "Real Estate Agent",
-    description: "Listings, comps research, transaction checklists, follow-ups, and investment math.",
-    template: "realestate-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "Home",
-    planKey: "realestate_plan",
-  },
-  {
-    id: "sales",
-    label: "Sales Agent",
-    description: "Prospect research, personalized outreach, call prep, follow-up cadences, and pipeline notes.",
-    template: "sales-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "TrendingUp",
-    planKey: "sales_plan",
-  },
-  {
-    id: "recruiting",
-    label: "Recruiting Agent",
-    description: "Resume screening, interview scheduling, candidate follow-up, and ATS hygiene.",
-    template: "recruiting-agent",
-    ...PAID_AGENT,
-    available: true,
-    icon: "UserSearch",
-    planKey: "recruiting_plan",
-  },
+  // ─── Retired: the eight per-role types ──────────────────────────────────────
+  //
+  // CEO, CFO, Legal, Medical, Insurance, Real Estate, Sales and Recruiting used to live
+  // here, sold at $4,500 each through /agents and the create-agent modal. Both entry points
+  // are gone and AGENT_PLANS is empty, so nothing could buy them - but they stayed listed,
+  // which meant the modal rendered eight cards that dead-ended at "isn't sold through
+  // checkout", and /api/admin/templates reported eight types whose templates don't exist.
+  //
+  // None of ceo-agent, cfo-agent, legal-agent, medical-agent, insurance-agent,
+  // realestate-agent, sales-agent or recruiting-agent was ever registered in Agent37.
+  // Restoring one means an entry here, a template there, and a plan in the catalog - three
+  // deliberate steps, which is the right number for putting a product back on sale.
+  //
   // The license build. Every /onboard purchase provisions this one type; the customization
   // comes from the buyer's onboarding answers (written in as USER.md), not from the SKU.
   //
