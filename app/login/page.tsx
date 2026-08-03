@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { branding } from "@/config/branding";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { toast } from "sonner";
-
-const MIN_PASSWORD = 8;
 
 // Only allow internal redirects — mirrors the open-redirect guard in /auth/callback.
 function safeNext(raw: string | null): string {
@@ -31,11 +29,6 @@ export default function LoginPage() {
   const [signinPassword, setSigninPassword] = useState("");
   const [signinLoading, setSigninLoading] = useState(false);
 
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [signupLoading, setSignupLoading] = useState(false);
-  const [signupSent, setSignupSent] = useState(false);
-  const [signupSentEmail, setSignupSentEmail] = useState("");
 
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
@@ -69,44 +62,6 @@ export default function LoginPage() {
     window.location.href = next;
   }
 
-  async function onSignUp(e: React.FormEvent) {
-    e.preventDefault();
-    const mail = signupEmail.trim();
-    if (!mail || !signupPassword) return;
-    if (signupPassword.length < MIN_PASSWORD) {
-      return toast.error(`Password must be at least ${MIN_PASSWORD} characters.`);
-    }
-
-    const supabase = createClient();
-    const next = safeNext(new URLSearchParams(window.location.search).get("next"));
-
-    setSignupLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: mail,
-      password: signupPassword,
-      options: { emailRedirectTo: callbackUrl(next) },
-    });
-    setSignupLoading(false);
-    if (error) {
-      // Email confirmation is off, so signing up an existing email errors here
-      // (rather than sending a useless link) — steer them to log in instead.
-      if (error.code === "user_already_exists") {
-        toast.error("That email already has an account. Log in instead.");
-        return;
-      }
-      return toast.error(error.message);
-    }
-    // Email confirmation is disabled: signUp returns a session immediately, so we
-    // register-and-go with no inbox round-trip.
-    if (data.session) {
-      window.location.href = next;
-      return;
-    }
-    // Fallback only reached if "Confirm email" is re-enabled on the project — then
-    // there's no session until the user verifies via the emailed link.
-    setSignupSentEmail(mail);
-    setSignupSent(true);
-  }
 
   async function onReset(e: React.FormEvent) {
     e.preventDefault();
@@ -185,105 +140,71 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
-      <div className="w-full max-w-3xl space-y-8">
+      {/* Single column since the Create Account card was removed — a lone card inside a
+          two-column grid sat off to one side of an empty half. */}
+      <div className="w-full max-w-md space-y-8">
         <div className="space-y-3 text-center">
           <ApolloClawLogo className="mx-auto" height={36} />
-          <p className="text-sm text-muted-foreground">Log in or create an account to continue.</p>
+          <p className="text-sm text-muted-foreground">Log in to continue.</p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="space-y-4 rounded-xl border bg-card p-6">
-            <div className="space-y-1">
-              <h2 className="font-semibold">Log In</h2>
-              <p className="text-sm text-muted-foreground">Welcome back.</p>
-            </div>
-            <form onSubmit={onSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={signinEmail}
-                  onChange={(e) => setSigninEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <button
-                    type="button"
-                    onClick={() => setShowReset(true)}
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-                <Input
-                  id="signin-password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="Your password"
-                  value={signinPassword}
-                  onChange={(e) => setSigninPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={signinLoading}>
-                {signinLoading ? "Signing in..." : "Log In"}
-              </Button>
-            </form>
+        <div className="space-y-4 rounded-xl border bg-card p-6">
+          <div className="space-y-1">
+            <h2 className="font-semibold">Log In</h2>
+            <p className="text-sm text-muted-foreground">Welcome back.</p>
           </div>
-
-          <div className="space-y-4 rounded-xl border bg-card p-6">
-            <div className="space-y-1">
-              <h2 className="font-semibold">Create Account</h2>
-              <p className="text-sm text-muted-foreground">Get started with {branding.appName}.</p>
+          <form onSubmit={onSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="signin-email">Email</Label>
+              <Input
+                id="signin-email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={signinEmail}
+                onChange={(e) => setSigninEmail(e.target.value)}
+                required
+              />
             </div>
-            {signupSent ? (
-              <div className="rounded-lg border bg-muted/40 p-4 text-center text-sm">
-                <p className="font-medium">Check your email</p>
-                <p className="mt-1 text-muted-foreground">
-                  We sent a confirmation link to{" "}
-                  <span className="font-medium text-foreground">{signupSentEmail}</span>.
-                </p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="signin-password">Password</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowReset(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Forgot password?
+                </button>
               </div>
-            ) : (
-              <form onSubmit={onSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    autoComplete="new-password"
-                    placeholder="At least 8 characters"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    minLength={MIN_PASSWORD}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={signupLoading}>
-                  {signupLoading ? "Creating account..." : "Create Account"}
-                </Button>
-              </form>
-            )}
-          </div>
+              <Input
+                id="signin-password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Your password"
+                value={signinPassword}
+                onChange={(e) => setSigninPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={signinLoading}>
+              {signinLoading ? "Signing in..." : "Log In"}
+            </Button>
+          </form>
         </div>
+
+        {/* The Create Account card that used to sit beside this one is deliberately gone.
+            Accounts are now created as part of purchasing (David's call): /onboard captures the
+            lead, takes payment, and provisions the account from the completed checkout. A
+            self-serve signup here would let someone create an unpaid account that lands on the
+            no-access screen, which is a dead end rather than a funnel. The link below replaces
+            it so someone without an account still has somewhere to go. */}
+        <p className="text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link href="/onboard" className="font-medium text-foreground underline underline-offset-4">
+            Get started
+          </Link>
+        </p>
       </div>
     </main>
   );

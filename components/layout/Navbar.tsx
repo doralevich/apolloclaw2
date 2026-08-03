@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import AuthNavLink from "@/components/layout/AuthNavLink";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
@@ -267,11 +268,7 @@ export default function Navbar() {
             >
               {CONTACT_EMAIL}
             </a>
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-[12px] font-semibold" style={{ color: "#ffffff" }}>
-                Log in
-              </Link>
-            </div>
+            <AuthNavLink variant="utility" />
           </div>
         </div>
 
@@ -361,9 +358,7 @@ export default function Navbar() {
               </div>
               )
             )}
-            <Link href="/login" className="py-4 text-lg font-semibold" style={{ color: PAPER }}>
-              Log in
-            </Link>
+            <AuthNavLink variant="drawer" onNavigate={() => setMobileOpen(false)} />
             <div className="mt-2 flex flex-col gap-3">
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-center text-sm" style={{ color: PAPER_MUTED }}>
                 {CONTACT_EMAIL}

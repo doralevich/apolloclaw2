@@ -5,16 +5,28 @@ import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { apiFetch } from "@/lib/api";
 
-// The single business-onboarding questionnaire, shared by two entry points:
-//   - /onboard            (mode="lead")     - no login, no payment. Submits to /api/intake
-//                                              as a sales lead (CRM + email, no agent).
-//   - /onboard/[agent]     (mode="customer") - requires login + a paid agent type. Submits
-//                                              to /api/agent-setup, which is what actually
-//                                              configures and provisions the paying
-//                                              customer's live agent.
-// Same fields, same design, same "path of questions leading into an agent" in both places
-// — only the gating and what happens on submit differ. If you change a field, change it
-// here once; both flows pick it up automatically.
+// The single business-onboarding questionnaire, shared by three entry points:
+//   - /onboard                 (mode="lead")       - no login. Submits to /api/intake as a
+//                                                     sales lead (CRM + email, no agent).
+//                                                     This is the cloud-hosted (VPS) path and
+//                                                     is where the licensing paywall goes,
+//                                                     between the gate and the questionnaire.
+//   - /white-glove-onboarding  (mode="whiteglove") - the same questionnaire with NO paywall,
+//                                                     ever. Unlisted; David hands the link out
+//                                                     directly for self-hosted (Mac Mini)
+//                                                     builds and custom engagements, where the
+//                                                     commercial terms are agreed offline.
+//                                                     Submits to /api/intake like the lead
+//                                                     form, tagged so it is obvious which
+//                                                     submissions came in this way, and hands
+//                                                     off to /setup at the end.
+//   - /onboard/[agent]         (mode="customer")   - requires login + a paid agent type.
+//                                                     Submits to /api/agent-setup, which is
+//                                                     what actually configures and provisions
+//                                                     the paying customer's live agent.
+// Same fields, same design, same "path of questions leading into an agent" in all three —
+// only the gating and what happens on submit differ. If you change a field, change it here
+// once; every flow picks it up automatically.
 
 // ════════════════════════════════════════════════════════════
 // DESIGN TOKENS
@@ -192,7 +204,10 @@ function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; to
 // GATEKEEPER
 // ════════════════════════════════════════════════════════════
 interface GateData { first: string; last: string; email: string; personalEmail: string; phone: string; linkedin: string; company: string }
-function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
+// `heading`/`intro` are overridable so the white-glove entry point can say plainly that this
+// is an invited flow, rather than reusing self-serve copy that would read as a sales page to
+// someone David has already spoken to.
+function Gatekeeper({ onPass, heading, intro }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string }) {
   const [d, setD] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", linkedin: "", company: "" });
 
   const [err, setErr] = useState("");
@@ -206,9 +221,9 @@ function Gatekeeper({ onPass }: { onPass: (d: GateData) => void }) {
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
         <h1 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
-          Let&apos;s Create Your <span style={{ color: R }}>Agent!</span>
+          {heading ?? <>Let&apos;s Create Your <span style={{ color: R }}>Agent!</span></>}
         </h1>
-        <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto" }}>Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result.</p>
+        <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto" }}>{intro ?? "Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result."}</p>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 700, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "hidden" }}>
@@ -360,7 +375,10 @@ function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast, submit
 // ════════════════════════════════════════════════════════════
 // SUCCESS (lead mode only — customer mode goes to BuildScreen instead)
 // ════════════════════════════════════════════════════════════
-function Success() {
+// `nextStep` continues the white-glove journey into the technical setup form at /setup.
+// The plain lead form has no such next step — nobody has bought anything yet — so it keeps
+// the "return to the site" ending.
+function Success({ nextStep }: { nextStep?: boolean }) {
   const message = "This is one of the most comprehensive applications we receive. That tells us you're serious - and we take that seriously.";
   return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
@@ -368,9 +386,23 @@ function Success() {
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>
       <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>Application Submitted</h2>
-      <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 10px" }}>{message}</p>
-
-      <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
+      {nextStep ? (
+        <>
+          <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto 6px" }}>
+            We have everything we need about your business. One step left: the technical setup, where
+            you tell us about the machine your agent will run on and connect the accounts it needs.
+          </p>
+          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 26px" }}>
+            It takes about five minutes. You can also come back to it later at apolloclaw.ai/setup.
+          </p>
+          <a href="/setup" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Continue to Technical Setup →</a>
+        </>
+      ) : (
+        <>
+          <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 26px" }}>{message}</p>
+          <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
+        </>
+      )}
     </div>
   );
 }
@@ -677,7 +709,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
 // ════════════════════════════════════════════════════════════
 // ROOT
 // ════════════════════════════════════════════════════════════
-export type OnboardingFormMode = "lead" | "customer";
+export type OnboardingFormMode = "lead" | "customer" | "whiteglove";
 
 export interface OnboardingFormProps {
   mode: OnboardingFormMode;
@@ -690,6 +722,13 @@ export interface OnboardingFormProps {
 
 export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, justPaid }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
+  // White glove submits down the same unauthenticated /api/intake path as the plain lead
+  // form. The difference is what it means: these people have already been sold, offline, so
+  // the copy addresses them as clients and the submission is tagged so David can tell the two
+  // apart in his inbox and CRM. When the licensing paywall lands on /onboard it goes between
+  // the gate and the questionnaire, keyed on mode === "lead" — this mode is exempt by design,
+  // which is the entire reason it exists.
+  const isWhiteGlove = mode === "whiteglove";
   const [phase, setPhase] = useState<"splash" | "gate" | "personalize" | "form" | "submitting" | "done" | "building">(
     isCustomer && justPaid ? "splash" : "gate"
   );
@@ -726,7 +765,11 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         setPhase("building");
         return;
       }
-      const res = await fetch("/api/intake", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, trackType }) });
+      const res = await fetch("/api/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, trackType, leadSource: isWhiteGlove ? "white-glove" : "self-serve" }),
+      });
       if (!res.ok) throw new Error("Submission failed");
       setPhase("done");
     } catch (err) {
@@ -736,7 +779,13 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     }
   };
   if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase("gate")} />;
-  if (phase === "gate") return <Gatekeeper onPass={handleGate} />;
+  if (phase === "gate") return (
+    <Gatekeeper
+      onPass={handleGate}
+      heading={isWhiteGlove ? <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></> : undefined}
+      intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
+    />
+  );
   if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
   if (phase === "submitting") return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
@@ -747,7 +796,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     </div>
   );
   if (phase === "building") return <BuildScreen agentTypeId={agentTypeId || ""} agentLabel={agentLabel || "Agent"} workspaceId={buildingWorkspaceId} />;
-  if (phase === "done") return <Success />;
+  if (phase === "done") return <Success nextStep={isWhiteGlove} />;
   if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} />;
   return null;
 }
