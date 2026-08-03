@@ -6,7 +6,7 @@
  * e.g. against production with the LIVE key). The deployed app exposes the same sync at
  * POST /api/admin/stripe/sync for platform admins.
  *
- *   STRIPE_SECRET_KEY=sk_test_... node scripts/seed-stripe-catalog.mjs [--dry-run]
+ *   STRIPE_SECRET_KEY=sk_test_... node scripts/seed-stripe-catalog.mjs [--dry-run] [--credits]
  *
  * Reads STRIPE_SECRET_KEY from the environment or .env.local. Idempotent:
  *   - products matched by metadata.catalog_key (rename updates in place)
@@ -32,6 +32,16 @@ const CATALOG = [
   { catalogKey: "apollo_hosting", name: "ApolloClaw Agent Hosting", amountCents: 18900, interval: "month" },
 ];
 
+// API credit packs. HELD BACK from the default seed on purpose: the amounts below are
+// placeholders awaiting real numbers, and seeding a placeholder price into live Stripe means
+// selling at it. Pass --credits once the figures are final here AND in lib/pricing/catalog.ts
+// (both files, same numbers - the app reads the catalog, this script writes to Stripe).
+const CREDIT_PACKS = [
+  { catalogKey: "apollo_credits_small", name: "ApolloClaw API Credits - Small", amountCents: 2500 },
+  { catalogKey: "apollo_credits_medium", name: "ApolloClaw API Credits - Medium", amountCents: 10000 },
+  { catalogKey: "apollo_credits_large", name: "ApolloClaw API Credits - Large", amountCents: 25000 },
+];
+
 // ── Load .env.local (same pattern as apollo-setup-followup.mjs) ────────────────
 const __dirname = dirname(fileURLToPath(import.meta.url));
 try {
@@ -55,8 +65,11 @@ if (!key) {
   process.exit(1);
 }
 const dryRun = process.argv.includes("--dry-run");
+const withCredits = process.argv.includes("--credits");
+const entries = withCredits ? [...CATALOG, ...CREDIT_PACKS] : CATALOG;
 const mode = key.startsWith("sk_live") ? "LIVE" : "test";
-console.log(`Syncing ApolloClaw catalog (${CATALOG.length} entries) in ${mode} mode${dryRun ? " [dry-run]" : ""}…`);
+console.log(`Syncing ApolloClaw catalog (${entries.length} entries) in ${mode} mode${dryRun ? " [dry-run]" : ""}…`);
+if (!withCredits) console.log("  (credit packs skipped — pass --credits once their prices are final)");
 
 const stripe = new Stripe(key);
 
@@ -127,7 +140,7 @@ async function seedEntry(entry) {
 }
 
 let failed = false;
-for (const entry of CATALOG) {
+for (const entry of entries) {
   try {
     const r = await seedEntry(entry);
     const amount = `$${(entry.amountCents / 100).toLocaleString("en-US")}${entry.interval ? `/${entry.interval}` : " one-time"}`;

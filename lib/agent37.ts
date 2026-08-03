@@ -186,6 +186,24 @@ export const agent37 = {
     ),
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
+
+  // Add one-time credit to a running instance, in micros (1 USD = 1_000_000).
+  //
+  // UNVERIFIED CONTRACT. createAgent takes `budget: { monthly_cap_micros, topup_micros }`, so
+  // the budget resource is known to speak `topup_micros` — but nothing in this codebase has
+  // ever mutated the budget of an instance that already exists, and the Agent37 API reference
+  // isn't in this repo. This is the shape that follows from create; confirm it before the
+  // first real sale. If it turns out to be PATCH, or /budget/credit, or `credit_micros`, this
+  // one function is the only thing that changes.
+  //
+  // Callers must treat a throw as "not delivered, retry later" rather than "money lost" —
+  // lib/credits.ts records the purchase before this runs, precisely so a wrong guess here is
+  // recoverable (see deliverPendingCredits).
+  addCredit: (id: string, micros: number) =>
+    call<Budget>(`/instances/${id}/budget`, {
+      method: "POST",
+      body: JSON.stringify({ topup_micros: micros }),
+    }),
   getUsage: (id: string, month?: string) =>
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 

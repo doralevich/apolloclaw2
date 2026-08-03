@@ -7,7 +7,6 @@ import { Blocks, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, S
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { Button } from "@/components/ui/button";
@@ -33,9 +32,10 @@ function SidebarContent({
   userEmail: string;
   onNavigate?: () => void;
 }) {
-  const { agents } = useActiveAgent();
-  // "Start Here" is the active agent's greeting — nothing to greet until one exists.
-  const nav = NAV.filter((item) => item.href !== "/dashboard/start-here" || agents.length > 0);
+  // "Start Here" is where every session lands, agents or not: with one it greets the
+  // active agent, without one it prompts them to create the first. Hiding it used to
+  // leave a freshly-signed-in customer on a page missing from their own sidebar.
+  const nav = NAV;
 
   return (
     <>

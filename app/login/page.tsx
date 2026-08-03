@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { publicSiteOrigin } from "@/lib/site-url";
+import { POST_AUTH_LANDING } from "@/lib/routes";
 import { toast } from "sonner";
 
 // Only allow internal redirects — mirrors the open-redirect guard in /auth/callback.
 function safeNext(raw: string | null): string {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
+  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : POST_AUTH_LANDING;
 }
 
 // /auth/callback exchanges the email link for a session, then redirects to `next`.

@@ -52,6 +52,60 @@ export const BUNDLE_PRICE_LABEL = "$2,500 license + $189/mo hosting";
 /** What the $189 covers. Stated plainly because it is the first thing people ask. */
 export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";
 
+// ─── API credit packs ─────────────────────────────────────────────────────────
+//
+// Hosting includes $25/mo of usage; a customer who works their agent harder than that buys
+// credit here rather than being cut off. One-time purchases, delivered to the instance's
+// runtime balance and recorded in wallet_transactions.
+//
+// PLACEHOLDER AMOUNTS — every `amountCents` and `creditUsd` below is a stand-in awaiting
+// David's numbers. Nothing is seeded into Stripe until they are real: `amountCents` is what
+// the customer pays and `creditUsd` is the runtime credit they receive, so the gap between
+// them is the margin. They are separate fields precisely so the two can differ.
+export interface CreditPack {
+  /** Stripe product metadata.catalog_key + price lookup_key. */
+  catalogKey: string;
+  /** Stripe product display name (what the customer sees at checkout). */
+  name: string;
+  /** What the customer pays, in cents. PLACEHOLDER. */
+  amountCents: number;
+  /** Runtime credit delivered, in whole USD. PLACEHOLDER. */
+  creditUsd: number;
+  /** Rough guidance shown on the card. Rewrite once real usage data says otherwise. */
+  blurb: string;
+}
+
+export const CREDIT_PACKS: CreditPack[] = [
+  {
+    catalogKey: "apollo_credits_small",
+    name: "ApolloClaw API Credits - Small",
+    amountCents: 2500,
+    creditUsd: 25,
+    blurb: "A busy month on top of what hosting already covers.",
+  },
+  {
+    catalogKey: "apollo_credits_medium",
+    name: "ApolloClaw API Credits - Medium",
+    amountCents: 10000,
+    creditUsd: 100,
+    blurb: "Heavy daily use, or a few agents sharing the load.",
+  },
+  {
+    catalogKey: "apollo_credits_large",
+    name: "ApolloClaw API Credits - Large",
+    amountCents: 25000,
+    creditUsd: 250,
+    blurb: "Long-running research and document work.",
+  },
+];
+
+/** True while the packs still carry placeholder pricing. Flip by setting real amounts. */
+export const CREDIT_PACKS_ARE_PLACEHOLDER = true;
+
+export function creditPackForCatalogKey(catalogKey: string): CreditPack | undefined {
+  return CREDIT_PACKS.find((p) => p.catalogKey === catalogKey);
+}
+
 // ─── Retired: the per-agent plans ─────────────────────────────────────────────
 //
 // Eight plans at $4,500 each used to live here, one per agent type, sold through the

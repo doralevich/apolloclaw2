@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/config/branding";
+import { POST_AUTH_LANDING } from "@/lib/routes";
 import { toast } from "sonner";
 
 const MIN_PASSWORD = 8;
@@ -56,7 +57,7 @@ export default function ResetPasswordPage() {
               <p className="font-medium">Password updated</p>
               <p className="mt-1 text-muted-foreground">You&apos;re all set.</p>
             </div>
-            <Button className="w-full" onClick={() => (window.location.href = "/dashboard")}>
+            <Button className="w-full" onClick={() => (window.location.href = POST_AUTH_LANDING)}>
               Continue to dashboard
             </Button>
           </div>
