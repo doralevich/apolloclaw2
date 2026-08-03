@@ -199,11 +199,32 @@ export const agent37 = {
   // Callers must treat a throw as "not delivered, retry later" rather than "money lost" —
   // lib/credits.ts records the purchase before this runs, precisely so a wrong guess here is
   // recoverable (see deliverPendingCredits).
-  addCredit: (id: string, micros: number) =>
-    call<Budget>(`/instances/${id}/budget`, {
-      method: "POST",
-      body: JSON.stringify({ topup_micros: micros }),
-    }),
+  // Add one-time credit to a running instance, in micros (1 USD = 1_000_000).
+  //
+  // The VERB is discovered, not assumed. We knew the path was right — GET /budget is how the
+  // balance loads — but POST came back 405 Method Not Allowed on a real customer's purchase,
+  // after the money had been taken. So rather than swap one guess for another, this tries the
+  // plausible verbs in order and logs which one the API accepts. 405 means "wrong verb, keep
+  // going"; any other error is a real answer and stops the loop immediately, so a 400 about
+  // the body shape or a 402 about billing surfaces instead of being retried three times.
+  //
+  // Once the logs name a winner, collapse this back to a single call.
+  addCredit: async (id: string, micros: number): Promise<Budget> => {
+    const body = JSON.stringify({ topup_micros: micros });
+    let last: unknown;
+    for (const method of ["PATCH", "PUT", "POST"] as const) {
+      try {
+        const result = await call<Budget>(`/instances/${id}/budget`, { method, body });
+        console.log("[agent37:addCredit] accepted verb:", method);
+        return result;
+      } catch (err) {
+        last = err;
+        if (err instanceof Agent37Error && err.status === 405) continue;
+        throw err;
+      }
+    }
+    throw last;
+  },
   getUsage: (id: string, month?: string) =>
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 
