@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { upsertPipelineDeal, findOrCreateCrmEntity } from "@/lib/crm";
 import { sendTelegram } from "@/lib/telegram";
 import { findAttioDealByEmail, addAttioNote, updateAttioDealStage } from "@/lib/attio";
@@ -110,6 +111,11 @@ async function sendSummaryEmail(opts: {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit before any work: this endpoint is public and unauthenticated.
+  // Fails open if the limiter is unavailable (see lib/rate-limit.ts).
+  const limited = await enforceRateLimit(req, "submit-setup", LIMITS.form);
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const { source, email, fields } = body as {

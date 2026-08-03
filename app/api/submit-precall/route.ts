@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { findOrCreateCrmEntity } from "@/lib/crm";
 import { upsertPipelineDeal } from "@/lib/crm";
 import { sendTelegram } from "@/lib/telegram";
@@ -161,6 +162,11 @@ async function sendPrecallEmail(data: Record<string, unknown>, name: string, pdf
 
 // ── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  // Rate limit before any work: this endpoint is public and unauthenticated.
+  // Fails open if the limiter is unavailable (see lib/rate-limit.ts).
+  const limited = await enforceRateLimit(req, "submit-precall", LIMITS.form);
+  if (limited) return limited;
+
   try {
     const data = await req.json();
     const name = data.name || "Unknown";

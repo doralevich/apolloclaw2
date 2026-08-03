@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { getCrmToken, createCrmClient, createCrmTask } from "@/lib/crm";
 import { sendTelegram } from "@/lib/telegram";
 import { upsertMailchimpContact, tagMailchimpContact } from "@/lib/mailchimp";
@@ -106,6 +107,11 @@ async function sendSetupLinkEmail(email: string, firstName: string): Promise<voi
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit before any work: this endpoint is public and unauthenticated.
+  // Fails open if the limiter is unavailable (see lib/rate-limit.ts).
+  const limited = await enforceRateLimit(req, "submit-intake", LIMITS.form);
+  if (limited) return limited;
+
   try {
     const data = await req.json();
     const firstName = data.firstName || (data.name ? String(data.name).split(" ")[0] : "") || "";
