@@ -25,6 +25,8 @@ export interface Company {
   industry: string;
   industryOther: string; // written-in industry when `industry` === "Other"
   role: string;
+  roleOther: string; // written-in role when `role` === "Other"
+  ownership: string; // how much of the business is theirs, asked separately from the job
 }
 
 export interface PortfolioMeta {
@@ -35,13 +37,44 @@ export interface PortfolioMeta {
 
 // ---- Options --------------------------------------------------------------
 
+// What the person actually DOES. The previous list was six ownership positions (Owner,
+// CEO, Partner, Investor, Operator, Advisor), which told us their stake and nothing about
+// their job. That was survivable while we sold named agents, because "the CFO Agent"
+// carried the signal. Selling customization, this field IS the signal: it is the single
+// biggest determinant of what the agent should spend its day on.
+//
+// Ownership moved to its own question below, so someone can be a non-owner COO or an
+// owner who never touches operations, and we learn both instead of guessing from one word.
 const ROLE_OPTIONS = [
   "Owner / Founder",
   "CEO",
+  "President",
+  "COO / Head of Operations",
+  "CFO / Head of Finance",
+  "Managing Partner",
   "Partner",
+  "General Manager",
+  "Practice Manager",
+  "Office Manager",
+  "Head of Sales",
+  "Head of Marketing",
+  "Head of People / HR",
+  "Chief of Staff",
+  "Director / Department Head",
   "Investor / Board",
-  "Operator / GM",
-  "Advisor",
+  "Advisor / Consultant",
+  "Other",
+];
+
+// Asked separately because it changes what the agent may decide on its own. A sole owner
+// wants it to act; someone answering to partners or a board wants it to draft and wait.
+const OWNERSHIP_OPTIONS = [
+  "Sole owner",
+  "Majority owner",
+  "Equal partner",
+  "Minority owner",
+  "Investor, not in the day to day",
+  "Not an owner - I run it",
 ];
 
 const STRUCTURE_OPTIONS = [
@@ -81,6 +114,8 @@ export const emptyCompany = (): Company => ({
   industry: "",
   industryOther: "",
   role: "",
+  roleOther: "",
+  ownership: "",
 });
 
 export const emptyPortfolio = (): PortfolioMeta => ({
@@ -218,11 +253,41 @@ export default function CompanyRepeater({
               <Field label="Your role" required>
                 <Select
                   value={company.role}
-                  onChange={(v) => updateCompany(i, { role: v })}
+                  onChange={(v) =>
+                    updateCompany(i, {
+                      role: v,
+                      // keep any write-in only while "Other" stays selected
+                      roleOther: v === "Other" ? company.roleOther : "",
+                    })
+                  }
                   options={ROLE_OPTIONS}
                 />
               </Field>
             </div>
+
+            {company.role === "Other" && (
+              <Field label="Tell us your role" required>
+                <input
+                  type="text"
+                  value={company.roleOther}
+                  placeholder="e.g. Clinical Director, Head of Studio, Franchise Owner"
+                  onChange={(e) => updateCompany(i, { roleOther: e.target.value })}
+                  style={inputStyle}
+                />
+              </Field>
+            )}
+
+            <Field
+              label="Your stake"
+              required
+              hint="This tells your agent how much it can decide on its own versus draft for you."
+            >
+              <Select
+                value={company.ownership}
+                onChange={(v) => updateCompany(i, { ownership: v })}
+                options={OWNERSHIP_OPTIONS}
+              />
+            </Field>
 
             {company.industry === "Other" && (
               <Field label="Tell us your industry" required>
@@ -336,10 +401,12 @@ const inputStyle: React.CSSProperties = {
 function Field({
   label,
   required,
+  hint,
   children,
 }: {
   label: string;
   required?: boolean;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -353,11 +420,26 @@ function Field({
           letterSpacing: "0.1em",
           textTransform: "uppercase",
           color: T.grey,
-          marginBottom: 7,
+          marginBottom: hint ? 3 : 7,
         }}
       >
         {label} {required && <span style={{ color: T.red }}>*</span>}
       </span>
+      {hint && (
+        <span
+          style={{
+            display: "block",
+            fontFamily: T.body,
+            fontSize: 12,
+            color: T.grey,
+            marginBottom: 7,
+            textTransform: "none",
+            letterSpacing: 0,
+          }}
+        >
+          {hint}
+        </span>
+      )}
       {children}
     </label>
   );

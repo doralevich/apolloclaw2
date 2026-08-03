@@ -47,7 +47,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         rows: [
           ...companiesArr.map((c, i) => ({
             label: i === pi ? `Business ${i + 1} (Primary)` : `Business ${i + 1}`,
-            value: [c.name, c.industry === "Other" ? c.industryOther : c.industry, c.role].filter(Boolean).join(" | "),
+            // Role falls back to the write-in when they picked "Other", and the ownership
+            // stake rides along: "who they are here" is two facts, not one.
+            value: [
+              c.name,
+              c.industry === "Other" ? c.industryOther : c.industry,
+              c.role === "Other" ? c.roleOther : c.role,
+              c.ownership,
+            ]
+              .filter(Boolean)
+              .join(" | "),
           })),
           { label: "Portfolio Structure", value: pf.structure },
           { label: "Shared Operations", value: pf.sharedOps },
