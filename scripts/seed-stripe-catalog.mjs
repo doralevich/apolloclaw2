@@ -41,7 +41,6 @@ const CREDIT_PACKS = [
   { catalogKey: "apollo_credits_50", name: "ApolloClaw API Credits - $50", amountCents: 5000 },
   { catalogKey: "apollo_credits_100", name: "ApolloClaw API Credits - $100", amountCents: 10000 },
   { catalogKey: "apollo_credits_250", name: "ApolloClaw API Credits - $250", amountCents: 25000 },
-  { catalogKey: "apollo_credits_500", name: "ApolloClaw API Credits - $500", amountCents: 50000 },
 ];
 
 // ── Load .env.local (same pattern as apollo-setup-followup.mjs) ────────────────
