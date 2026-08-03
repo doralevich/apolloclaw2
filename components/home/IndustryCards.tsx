@@ -19,13 +19,21 @@ export function IndustryCards() {
       />
       <div className="relative z-10">
         <Section bg="transparent">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="text-center">
             <BracketLabel>By Industry</BracketLabel>
-            <H2>Built around how your business actually runs</H2>
-            <BodyLarge>
-              The work an agent takes off your plate looks different in a law firm than it does
-              in a medical practice. Start where you are.
-            </BodyLarge>
+            {/* The heading is deliberately NOT inside the max-w-3xl wrapper the body copy uses:
+                at the top of the H2 clamp it needs more than 768px to stay on one line, and a
+                narrower parent would force the wrap this is meant to prevent. nowrap only from
+                md up, so the phone still wraps normally instead of overflowing the viewport. */}
+            <div className="md:whitespace-nowrap">
+              <H2>Built around how your business runs</H2>
+            </div>
+            <div className="mx-auto max-w-3xl">
+              <BodyLarge>
+                The work an agent takes off your plate looks different in a law firm than it does
+                in a medical practice. Start where you are.
+              </BodyLarge>
+            </div>
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
