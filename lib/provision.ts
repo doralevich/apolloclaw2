@@ -65,7 +65,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // useful last time.
 export async function injectAgentFile(
   agentId: string,
-  filename: "SOUL.md" | "OWNER.md",
+  filename: "SOUL.md",
   content: string
 ): Promise<boolean> {
   const b64 = Buffer.from(content, "utf8").toString("base64");
@@ -91,28 +91,35 @@ export async function injectAgentFile(
   return false;
 }
 
-// Writing the profile is not the same as the agent reading it. A dedicated template boots
-// with its own SOUL.md persona (we deliberately don't overwrite one), and that persona has no
-// reason to know about a file we invented — so the agent sits next to a full profile of its
-// owner and still answers "I don't know who you are". This appends a pointer to SOUL.md
-// instead of replacing it, so the template's own character survives intact.
+// WHERE THE PROFILE HAS TO GO, settled by reading the Hermes source rather than guessing:
 //
-// The profile lives in OWNER.md, NOT USER.md. On Hermes, USER.md is the agent's OWN memory
-// file: it writes what it learns there between sessions. We used the same name, so on one
-// customer's box there were two different USER.md files — the questionnaire in one directory,
-// the agent's own notes in another — and a repair pass that copied "whichever has content"
-// overwrote the questionnaire with the notes. Two writers, one filename, and the customer's
-// answers lost. Different name, no collision, and the agent keeps its own memory intact.
-// The block is fenced by a START and an END marker so it can be REPLACED, not merely
-// detected. The first version had one marker and skipped the write whenever it was present —
-// so when the profile moved from USER.md to OWNER.md, every instance kept the old text
-// telling the agent to read USER.md, which by then held its own notes. "Already there" is
-// not the same as "already right", and a guard that can only add is a guard against fixing.
+//   agent/learning_mutations.py:  _MEMORY_FILES = {"memory": "MEMORY.md", "profile": "USER.md"}
+//
+// Hermes loads exactly those two files out of ~/.hermes/memories and injects them into the
+// system prompt at session start. USER.md is not "the agent's file" — it is the PROFILE file,
+// the one place the runtime looks to learn who its owner is. That is our content's home.
+//
+// We spent a day getting here the long way. First we wrote USER.md but into the OpenClaw
+// directory, which Hermes never reads. Then a repair pass copied "whichever copy has content"
+// and overwrote a customer's answers with the agent's own notes. So we renamed ours to
+// OWNER.md to stop the collision — and OWNER.md is a filename Hermes has never heard of, so
+// the agent went on not knowing anyone, now for a completely different reason.
+//
+// The collision was real; a new filename was the wrong answer to it. Both writers belong in
+// USER.md, so our content goes in a FENCED BLOCK and everything outside the fence is left
+// exactly as found. The agent keeps what it learns, we keep what the customer told us, and
+// neither erases the other.
+export const OWNER_BLOCK_START = "<!-- apollo:owner-profile:start -->";
+export const OWNER_BLOCK_END = "<!-- apollo:owner-profile:end -->";
+
+// Fenced pointer written into SOUL.md. Less load-bearing now that the profile sits in a file
+// the runtime injects on its own, but harmless, and it still carries the OpenClaw layout where
+// nothing is auto-loaded.
 export const USER_MD_POINTER_MARKER = "<!-- apollo:owner-pointer:start -->";
 export const USER_MD_POINTER_END = "<!-- apollo:owner-pointer:end -->";
 
-// The single-marker block written before the fence existed. Removed on sight, because it
-// points at the wrong file.
+// The single-marker block from before the fence existed, and the one that named OWNER.md.
+// Both are removed on sight.
 export const LEGACY_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
 
 export const USER_MD_POINTER = `
@@ -120,17 +127,78 @@ export const USER_MD_POINTER = `
 ${USER_MD_POINTER_MARKER}
 ## Who you work for
 
-There is an OWNER.md beside this file in your workspace. It holds your owner's answers from
-their setup questionnaire: who they are, their business, how it runs, and where it hurts.
+Your USER.md holds your owner's answers from their setup questionnaire — who they are, their
+business, how it runs, where it hurts — inside a block marked "apollo:owner-profile".
 
-Read it at the start of every session, before your first reply, and treat it as ground truth
-about them the way you treat this file as ground truth about yourself. Never tell your owner
-you don't know who they are — you do, it is written down, go and read it.
+Treat it as ground truth about them, the way you treat this file as ground truth about
+yourself. Never tell your owner you don't know who they are.
 
-OWNER.md is theirs, not yours: it is replaced whenever they update their answers, so anything
-you write into it will be lost. Keep what you learn in your own memory, as you normally would.
+That block is theirs, not yours: it is rewritten whenever they update their answers, so
+anything you put INSIDE it will be lost. The rest of USER.md is yours as usual.
 ${USER_MD_POINTER_END}
 `;
+
+// Merge the owner profile INTO USER.md, inside our fence, in every workspace the instance
+// recognises. Anything outside the fence — everything the agent has written about its owner
+// between sessions — is preserved exactly.
+//
+// Node, not shell, because this is a surgical replace of one region of a file that another
+// writer owns the rest of.
+export async function injectOwnerProfile(agentId: string, markdown: string): Promise<boolean> {
+  const script = `
+const fs = require("fs");
+const [file, bodyB64, startM, endM] = process.argv.slice(2);
+if (!file || !bodyB64) { console.log("BADARGS"); process.exit(1); }
+const body = Buffer.from(bodyB64, "base64").toString("utf8");
+const block = startM + "\\n" + body.replace(/\\s+$/, "") + "\\n" + endM;
+
+let text = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+const a = text.indexOf(startM);
+if (a === -1) {
+  // First write: our block goes at the TOP. A profile is what the agent should read before
+  // anything it has since written, and a file the runtime injects whole reads top-down.
+  text = block + (text.trim() ? "\\n\\n" + text.replace(/^\\s+/, "") : "\\n");
+} else {
+  const b = text.indexOf(endM, a);
+  text = b === -1
+    ? text.slice(0, a) + block
+    : text.slice(0, a) + block + text.slice(b + endM.length);
+}
+fs.writeFileSync(file, text.replace(/\\s+$/, "") + "\\n");
+console.log("PROFILE_SET:" + file);
+`;
+  const scriptB64 = Buffer.from(script, "utf8").toString("base64");
+  const bodyB64 = Buffer.from(markdown, "utf8").toString("base64");
+
+  const cmd =
+    `${CANDIDATE_DIRS}` +
+    'command -v node >/dev/null 2>&1 || { echo NO_NODE; exit 1; }; ' +
+    `printf '%s' '${scriptB64}' | base64 -d > /tmp/apollo-profile.js; ` +
+    'for D in $DIRS; do F="$D/USER.md"; touch "$F"; ' +
+    `node /tmp/apollo-profile.js "$F" '${bodyB64}' '${OWNER_BLOCK_START}' '${OWNER_BLOCK_END}' 2>&1; done; ` +
+    'rm -f /tmp/apollo-profile.js; ' +
+    'echo PROFILE_OK';
+
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      const { stdout } = await agent37.exec(agentId, cmd);
+      const landed = stdout.match(/PROFILE_SET:(\S+)/g);
+      if (landed) {
+        console.log("[provision:profile-injected]", agentId, landed.join(" "));
+        return true;
+      }
+      if (stdout.includes("PROFILE_OK")) {
+        console.error("[provision:profile-no-write]", agentId, stdout.trim().slice(0, 300));
+        return false;
+      }
+    } catch {
+      // instance still provisioning/booting — wait and retry
+    }
+    await sleep(15_000);
+  }
+  console.error("[provision:profile-inject-failed]", agentId);
+  return false;
+}
 
 // Put the CURRENT pointer block into SOUL.md in every workspace the instance recognises,
 // replacing whatever version is already there.
@@ -245,7 +313,7 @@ async function injectAfterProvision(agentId: string, type: AgentType, workspaceI
   }
 
   if (!setup.answers) return;
-  const ok = await injectAgentFile(agentId, "OWNER.md", buildUserMd(type.label, setup.answers as Record<string, unknown>));
+  const ok = await injectOwnerProfile(agentId, buildUserMd(type.label, setup.answers as Record<string, unknown>));
   if (ok) await ensureUserMdPointer(agentId);
   if (ok) {
     await db
