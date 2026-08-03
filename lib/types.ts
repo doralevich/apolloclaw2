@@ -126,6 +126,11 @@ export interface AgentModel {
   owned_by?: string;
   provider?: string;
   is_default?: boolean;
+  // Vendor to group under in the switcher, set by our own curation (config/chat-models.ts).
+  // `owned_by` stays whatever the gateway reported — it is the transport provider and gets
+  // sent back on requests — so the display grouping needs its own field rather than
+  // overwriting one the API round-trips.
+  display_provider?: string;
 }
 
 export interface ModelsResponse {
