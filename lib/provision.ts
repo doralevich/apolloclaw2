@@ -92,9 +92,9 @@ export async function injectAgentFile(
 // reason to know about a file we invented — so the agent sits next to a full profile of its
 // owner and still answers "I don't know who you are". This appends a pointer to SOUL.md
 // instead of replacing it, so the template's own character survives intact.
-const USER_MD_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
+export const USER_MD_POINTER_MARKER = "<!-- apollo:user-md-pointer -->";
 
-const USER_MD_POINTER = `
+export const USER_MD_POINTER = `
 
 ${USER_MD_POINTER_MARKER}
 ## Who you work for
