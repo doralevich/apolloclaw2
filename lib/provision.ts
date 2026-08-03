@@ -224,6 +224,16 @@ async function resolveProvisionTemplate(
   if (templates.some((t) => t.name === type.template)) {
     return { template: type.template, fellBack: false };
   }
+
+  // The registry hasn't been renamed yet (or has been rolled back). A former name for the
+  // SAME template is the right agent, not a fallback — provision it and say so, so the logs
+  // show a rename that hasn't finished rather than looking like everything is fine.
+  for (const alias of type.templateAliases ?? []) {
+    if (templates.some((t) => t.name === alias)) {
+      console.warn("[provision:template-alias]", type.template, "not in registry, using", alias);
+      return { template: alias, fellBack: false };
+    }
+  }
   if (allowFallback && templates.some((t) => t.name === DEFAULT_AGENT.template)) {
     console.warn("[provision:template-fallback]", type.id, "->", DEFAULT_AGENT.template);
     return { template: DEFAULT_AGENT.template, fellBack: true };
@@ -249,7 +259,15 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     .from("agents")
     .select("agent37_id")
     .eq("workspace_id", workspaceId)
-    .or(`agent_type.eq.${type.id},template.eq.${type.template}`)
+    // Legacy rows predate agent_type and are identified by template alone — which includes
+    // rows written under a FORMER template name, so the aliases have to be in the cap check
+    // too. Miss them and a rename quietly lets one workspace hold two of the same agent.
+    .or(
+      [
+        `agent_type.eq.${type.id}`,
+        ...[type.template, ...(type.templateAliases ?? [])].map((t) => `template.eq.${t}`),
+      ].join(",")
+    )
     .limit(1);
   if (capError) throw new ApiError(500, "db_error", capError.message);
   if (existing && existing.length > 0) {
