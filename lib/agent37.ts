@@ -187,49 +187,62 @@ export const agent37 = {
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
 
-  // Add one-time credit to a running instance, in micros (1 USD = 1_000_000).
+  // Write the budget. It is a FULL REPLACE — sending only part of it comes back
+  // "monthly_cap_micros is required" — so both fields go every time and callers decide what
+  // each one should be. Nothing here reads its own defaults; a caller that omits a field
+  // would be re-capping a customer by accident.
   //
-  // The budget endpoint is a FULL REPLACE, not a partial update: sending only the top-up came
-  // back "monthly_cap_micros is required". So the whole object goes every time, and the
-  // monthly cap is read back and passed through unchanged — omitting it would not leave it
-  // alone, it would be rejected, and guessing a value would silently re-cap a customer.
-  //
-  // Because it replaces, `topup_micros` is ABSOLUTE. Adding credit means reading the current
-  // remaining credit and writing the sum; writing just the new amount would erase whatever the
-  // customer had left. Newer builds report that balance as credit_remaining_micros and older
-  // ones as topup_remaining_micros, so both are read (same fallback the Credits tab uses).
-  //
-  // The verb is still discovered — PATCH, then PUT, then POST — because 405 was where this
-  // started and the log is the only record of which one the API takes.
-  addCredit: async (id: string, micros: number): Promise<Budget> => {
-    const current = await call<Budget & { credit_remaining_micros?: number }>(
-      `/instances/${id}/budget`
-    );
-    const existingCredit = current.credit_remaining_micros ?? current.topup_remaining_micros ?? 0;
-
-    const body = JSON.stringify({
-      monthly_cap_micros: current.monthly_cap_micros,
-      topup_micros: existingCredit + micros,
-    });
-
+  // The verb is discovered: PATCH, then PUT, then POST. 405 means wrong verb and moves on;
+  // any other status is a real answer about the request and stops the loop immediately, so a
+  // 400 about the body surfaces instead of being retried under two more verbs.
+  writeBudget: async (
+    id: string,
+    fields: { monthly_cap_micros: number; topup_micros: number }
+  ): Promise<Budget> => {
+    const body = JSON.stringify(fields);
     let last: unknown;
     for (const method of ["PATCH", "PUT", "POST"] as const) {
       try {
         const result = await call<Budget>(`/instances/${id}/budget`, { method, body });
-        console.log(
-          "[agent37:addCredit] accepted verb:", method,
-          "credit", existingCredit, "->", existingCredit + micros
-        );
+        console.log("[agent37:writeBudget] accepted verb:", method, fields);
         return result;
       } catch (err) {
         last = err;
-        // 405 is "wrong verb, keep going". Anything else is a real answer about the request
-        // itself and must surface immediately rather than being retried under two more verbs.
         if (err instanceof Agent37Error && err.status === 405) continue;
         throw err;
       }
     }
     throw last;
+  },
+
+  // Add one-time credit, in micros (1 USD = 1_000_000).
+  //
+  // Because the write replaces, `topup_micros` is ABSOLUTE: adding credit means reading the
+  // remaining balance and writing the sum. Writing just the new amount would erase whatever
+  // the customer had left — a top-up that lowers a balance. The monthly cap is read back and
+  // passed through untouched for the same reason.
+  addCredit: async (id: string, micros: number): Promise<Budget> => {
+    const current = await call<Budget & { credit_remaining_micros?: number }>(
+      `/instances/${id}/budget`
+    );
+    const existing = current.credit_remaining_micros ?? current.topup_remaining_micros ?? 0;
+    return agent37.writeBudget(id, {
+      monthly_cap_micros: current.monthly_cap_micros,
+      topup_micros: existing + micros,
+    });
+  },
+
+  // Bring an instance's monthly cap in line with what its type is sold as including. Agents
+  // provisioned before a cap change keep the old one — the cap is set at create time — so
+  // this is how an existing customer stops being held to a number we no longer charge for.
+  // Purchased credit is read back and preserved.
+  setMonthlyCap: async (id: string, capMicros: number): Promise<Budget | null> => {
+    const current = await call<Budget & { credit_remaining_micros?: number }>(
+      `/instances/${id}/budget`
+    );
+    if (current.monthly_cap_micros === capMicros) return null;
+    const existing = current.credit_remaining_micros ?? current.topup_remaining_micros ?? 0;
+    return agent37.writeBudget(id, { monthly_cap_micros: capMicros, topup_micros: existing });
   },
 
   getUsage: (id: string, month?: string) =>

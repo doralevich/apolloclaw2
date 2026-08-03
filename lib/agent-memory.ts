@@ -9,6 +9,7 @@ import {
 } from "@/lib/provision";
 import { getAgentType } from "@/config/agent-types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { usdToMicros } from "@/lib/format";
 
 // Repair pass for instances provisioned before the runtime-path fix, run from a browser by
 // an admin rather than needing a live API key on someone's laptop.
@@ -259,13 +260,28 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       // box, including the old block that named USER.md. "Already present" was the reason a
       // repaired agent still read the wrong file.
       const pointed = await ensureUserMdPointer(id);
+
+      // The monthly cap is set at CREATE time, so an agent provisioned before a cap change
+      // keeps the old number — Nova and Ember were capped at $5 while hosting was sold as
+      // including $25. Repair is the natural place to reconcile an instance with what its
+      // type is currently sold as. Purchased credit is preserved by setMonthlyCap.
+      let capNote = "";
+      if (type) {
+        try {
+          const changed = await agent37.setMonthlyCap(id, usdToMicros(type.monthlyCapUsd));
+          capNote = changed ? `, monthly cap set to $${type.monthlyCapUsd}` : "";
+        } catch (err) {
+          capNote = `, cap NOT updated (${err instanceof Error ? err.message : String(err)})`;
+        }
+      }
+
       results.push({
         id,
         name,
         outcome: pointed ? "repaired" : "failed",
         detail: pointed
-          ? "wrote the profile into USER.md from the questionnaire, pointer set to current version"
-          : "profile written but the pointer could not be set",
+          ? `wrote the profile into USER.md from the questionnaire, pointer set to current version${capNote}`
+          : `profile written but the pointer could not be set${capNote}`,
       });
     } catch (err) {
       results.push({ id, name, outcome: "failed", detail: err instanceof Error ? err.message : String(err) });
