@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findOrCreateCrmEntity } from "@/lib/crm";
 import { sendTelegram } from "@/lib/telegram";
+import { checkRateLimit, LIMITS } from "@/lib/rate-limit";
 
 // CRM writes go to the separate "Brain" Supabase project. Prefer a dedicated
 // CRM_SUPABASE_SERVICE_KEY — the shared SUPABASE_SERVICE_ROLE_KEY is the dashboard
@@ -12,20 +13,9 @@ function supaHeaders() {
   return { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
 }
 
-// Best-effort per-IP rate limit. Resets on cold start and isn't shared across
-// serverless instances, but it still blunts a single bot hammering the endpoint
-// from one warm lambda.
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const submissionsByIp = new Map<string, number[]>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const recent = (submissionsByIp.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  recent.push(now);
-  submissionsByIp.set(ip, recent);
-  return recent.length > RATE_LIMIT;
-}
+// Rate limiting now goes through the shared Postgres limiter (lib/rate-limit.ts). The previous
+// in-memory Map reset on cold start and was not shared between concurrent serverless instances,
+// so the effective limit was "5 per warm lambda" rather than 5 per IP.
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,8 +26,10 @@ export async function POST(req: NextRequest) {
     // rate-limited — all fake a normal success so bots don't learn to adapt,
     // but skip every downstream write (CRM, task, Telegram).
     const tooFast = typeof data.loadedAt === "number" && Date.now() - data.loadedAt < 2000;
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-    if (data.website || tooFast || isRateLimited(ip)) {
+    // Note this deliberately returns a fake success rather than a 429: unlike the other public
+    // endpoints, this one is a bot target, and a distinct error teaches a bot what to avoid.
+    const withinLimit = await checkRateLimit(req, "submit-contact", LIMITS.form);
+    if (data.website || tooFast || !withinLimit) {
       return NextResponse.json({ ok: true });
     }
 

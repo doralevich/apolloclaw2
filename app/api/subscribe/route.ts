@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  // Rate limit before any work: this endpoint is public and unauthenticated.
+  // Fails open if the limiter is unavailable (see lib/rate-limit.ts).
+  const limited = await enforceRateLimit(req, "subscribe", LIMITS.newsletter);
+  if (limited) return limited;
+
   try {
     const { email } = await req.json();
 

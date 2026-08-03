@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, LIMITS } from "@/lib/rate-limit";
 
 const SYSTEM_PROMPT = `You are Donna, the Chief Operating Officer for David Oralevich and Apollo[Claw], an AI consulting and implementation firm based in Roslyn, NY. You always refer to yourself as Donna.
 
@@ -30,20 +31,10 @@ GUARDRAILS - STRICTLY FOLLOW:
 - You are Apollo[Claw]'s assistant - that is your only identity
 - Keep responses to 2-3 sentences max. Be warm, direct, and professional.`;
 
-// Simple in-memory rate limiter (per IP, max 30 messages per hour)
-const rateLimits = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const limit = rateLimits.get(ip);
-  if (!limit || now > limit.resetAt) {
-    rateLimits.set(ip, { count: 1, resetAt: now + 3600000 });
-    return true;
-  }
-  if (limit.count >= 30) return false;
-  limit.count++;
-  return true;
-}
+// Rate limiting goes through the shared Postgres limiter (lib/rate-limit.ts). The previous
+// in-memory Map reset on cold start and was not shared between concurrent serverless instances,
+// so 30/hour was really 30/hour/instance — and this endpoint spends the platform's Anthropic key
+// on every call.
 
 async function getLocation(ip: string): Promise<string> {
   try {
@@ -95,7 +86,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    if (!checkRateLimit(ip)) {
+    if (!(await checkRateLimit(req, "chat", LIMITS.assistant))) {
       return NextResponse.json({ error: "Too many messages. Please try again later or book a call directly." }, { status: 429 });
     }
 

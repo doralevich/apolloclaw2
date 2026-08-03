@@ -43,6 +43,27 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: "invalid signature" }, { status: 400 });
   }
 
+  // Claim the event id BEFORE doing any work. Stripe retries until it gets a 2xx, and the
+  // one-agent-per-type cap inside provisionTypedAgent only made the provisioning step
+  // idempotent — a retry still re-sent the sale email and the Telegram alert. Claiming here
+  // makes the whole handler idempotent.
+  //
+  // Fails open: if the table is missing (migration not yet applied) or the insert errors for
+  // any reason other than a duplicate, we process the event rather than silently dropping a
+  // real purchase.
+  const db = createAdminClient();
+  const { error: claimError } = await db
+    .from("stripe_events")
+    .insert({ id: event.id, type: event.type });
+  if (claimError) {
+    // 23505 = unique_violation, i.e. we have already handled this event.
+    if (claimError.code === "23505") {
+      console.log("[stripe-webhook] duplicate delivery, already processed:", event.id);
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    console.error("[stripe-webhook] could not claim event, processing anyway:", claimError.message);
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed":
@@ -56,8 +77,11 @@ export const POST = async (request: Request) => {
         break;
     }
   } catch (err) {
-    // Non-2xx makes Stripe redeliver — exactly what we want for transient Agent37 or DB
-    // failures. The idempotent cap makes redelivery safe.
+    // Release the claim so a genuine retry can reprocess. Without this a transient Agent37 or
+    // DB failure would be permanently swallowed: Stripe would retry, we would see our own claim
+    // row, and report success for work that never happened.
+    await db.from("stripe_events").delete().eq("id", event.id);
+    // Non-2xx makes Stripe redeliver — exactly what we want for transient failures.
     console.error(`[stripe-webhook] ${event.type} failed:`, err);
     return NextResponse.json({ error: "handler failed" }, { status: 500 });
   }
