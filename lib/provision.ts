@@ -1,7 +1,7 @@
 import "server-only";
 import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
-import { DEFAULT_AGENT } from "@/config/agents";
+import { DEFAULT_AGENT, INSTANCE_RESOURCES } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
 import {
   AGENTS_FENCE,
@@ -549,7 +549,10 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
 
   const agent = await agent37.createAgent({
     template,
-    resources: { cpu: type.resources.cpu, memory: type.resources.memory, disk: type.resources.disk },
+    // Every instance, every type, both runtimes — one size, from config/agents.ts. This is
+    // the only call in the app that creates an Agent37 instance, so there is no second path
+    // a different shape could come in through.
+    resources: { ...INSTANCE_RESOURCES },
     user: userId,
     name: input.name?.trim() || pending.name?.trim() || type.label,
     metadata: { app_workspace: workspaceId, agent_type: type.id },

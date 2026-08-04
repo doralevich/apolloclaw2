@@ -1,8 +1,19 @@
+// The machine every new instance gets, whatever it is. One size across both runtimes —
+// OpenClaw and Hermes — and across every entry in the agent-type registry, because the size
+// is a hosting decision rather than a per-product one, and two agents that cost the same to
+// host should not quietly be different machines.
+//
+// This is the ONLY place a new instance's shape is decided: lib/provision.ts passes this
+// object to Agent37 directly, so an agent type cannot carry its own size and drift from it.
+// Change the numbers here and every subsequent provision follows.
+//
+// Instances that ALREADY exist keep whatever they were built with — Agent37 sizes a box at
+// create time. Resizing one is a deliberate act through /api/agents/[id]/resize.
+export const INSTANCE_RESOURCES = { cpu: 2, memory: 4, disk: 6 } as const;
+
 export const DEFAULT_AGENT = {
   template: "agent37-openclaw",
-  cpu: 2,
-  memory: 4,
-  disk: 6,
+  ...INSTANCE_RESOURCES,
   monthlyCapUsd: 5,
 } as const;
 

@@ -1,13 +1,11 @@
 // The agent-type registry — the single source of truth for what kinds of agents this
 // whitelabel can provision. The create modal renders one card per entry; the create route
-// validates the requested type against this list (template, resources, and budget cap all
-// come from here, never from the client).
-
-export interface AgentTypeResources {
-  cpu: number;
-  memory: number;
-  disk: number;
-}
+// validates the requested type against this list (template and budget cap come from here,
+// never from the client).
+//
+// MACHINE SIZE IS NOT HERE. Every instance is built at INSTANCE_RESOURCES (config/agents.ts)
+// regardless of type or runtime — the types used to carry a `resources` block each, which is
+// how the two live entries ended up asking for different disks for the same $189/mo hosting.
 
 export interface AgentType {
   id: string;
@@ -20,7 +18,6 @@ export interface AgentType {
   // the Agent37 account — and a customer who pays during that gap must still get an agent.
   // Once every environment is on the new name, deleting the alias is a one-line cleanup.
   templateAliases?: string[];
-  resources: AgentTypeResources;
   // Monthly managed-spend cap in USD (converted to micros at create time).
   monthlyCapUsd: number;
   // Only available types can be provisioned; the rest render as disabled cards.
@@ -44,13 +41,14 @@ export interface AgentType {
   internal?: boolean;
 }
 
-// Shared shape for the paid Apollo agents — one machine size and spend cap across the line.
+// Shared spend cap for the paid Apollo agents — one cap across the line. The machine they
+// run on is INSTANCE_RESOURCES (config/agents.ts), same as every other instance.
 //
 // The cap MUST match what hosting is sold as including (HOSTING_INCLUDED_TOKENS_LABEL in
 // lib/pricing/catalog.ts, "$25/mo of token usage"). It sat at $5 while the paywall promised
 // $25, so a customer using their agent normally hit a wall at a fifth of what they had paid
 // for, with credit packs the only way past it. Change one of these two and change the other.
-const PAID_AGENT = { resources: { cpu: 2, memory: 4, disk: 12 }, monthlyCapUsd: 25 };
+const PAID_AGENT = { monthlyCapUsd: 25 };
 
 export const AGENT_TYPES: AgentType[] = [
   {
@@ -71,7 +69,6 @@ export const AGENT_TYPES: AgentType[] = [
     description:
       "An AI agent that guides a student from sophomore year of high school through college graduation — classes, deadlines, applications, financial aid, and internships.",
     template: "college-agent",
-    resources: { cpu: 2, memory: 4, disk: 12 },
     monthlyCapUsd: 5,
     available: true,
     icon: "GraduationCap",
