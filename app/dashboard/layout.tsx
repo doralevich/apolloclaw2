@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { isAdminEmail } from "@/config/admins";
+import { displayFirstName } from "@/config/greetings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
 import { ActiveAgentProvider } from "@/components/ActiveAgentProvider";
@@ -57,6 +58,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <WorkspaceProvider
         initialWorkspaces={workspaces}
         userEmail={user.email ?? ""}
+        // Resolved here because auth user_metadata is only readable server-side. Null when the
+        // account has no usable name — the chat greeting has a no-name form for exactly that.
+        userFirstName={displayFirstName(user.user_metadata, user.email)}
         isPlatformAdmin={isAdminEmail(user.email)}
       >
         <ActiveAgentProvider>

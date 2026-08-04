@@ -12,6 +12,9 @@ interface WorkspaceContextValue {
   setCurrentId: (id: string) => void;
   refresh: () => Promise<WorkspaceWithRole[]>;
   userEmail: string;
+  /** The reader's first name for greetings, or null when the account hasn't got a usable one.
+   *  Derived server-side from auth user_metadata (config/greetings.ts). */
+  userFirstName: string | null;
   /** Platform admin (config/admins.ts), resolved server-side in the dashboard layout.
    *  That list is `server-only` so it can never be imported here — the answer has to be
    *  handed down rather than computed, which also keeps the admin emails out of the bundle. */
@@ -23,11 +26,13 @@ const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 export function WorkspaceProvider({
   initialWorkspaces,
   userEmail,
+  userFirstName = null,
   isPlatformAdmin,
   children,
 }: {
   initialWorkspaces: WorkspaceWithRole[];
   userEmail: string;
+  userFirstName?: string | null;
   isPlatformAdmin: boolean;
   children: React.ReactNode;
 }) {
@@ -60,7 +65,7 @@ export function WorkspaceProvider({
   );
 
   return (
-    <WorkspaceContext.Provider value={{ workspaces, current, setCurrentId, refresh, userEmail, isPlatformAdmin }}>
+    <WorkspaceContext.Provider value={{ workspaces, current, setCurrentId, refresh, userEmail, userFirstName, isPlatformAdmin }}>
       {children}
     </WorkspaceContext.Provider>
   );

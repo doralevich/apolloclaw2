@@ -31,6 +31,11 @@ function toolkit(
 // a wrong slug means a broken logo AND a failed connect. Note the inconsistent naming
 // upstream: googledrive/googlecalendar are unseparated but one_drive/microsoft_teams use
 // underscores. Verify against the docs before adding entries.
+//
+// NO CHAT APPS HERE. Slack, Discord, WhatsApp and Telegram are deliberately absent: where you
+// talk to your agent is a different question from what your agent can reach, and answering both
+// on one screen is what made this page hard to scan. Connections is for the tools an agent acts
+// on — mail, files, calendars, CRM. Don't add a messaging app back to this list.
 
 export type IntegrationCategory = { title: string; toolkits: IntegrationToolkit[] };
 
@@ -69,20 +74,11 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
     ],
   },
   {
-    title: "Meetings & chat",
+    title: "Meetings",
     toolkits: [
       toolkit("zoom", "Zoom", "Zoom for client calls, team meetings, and webinars."),
       toolkit("googlemeet", "Google Meet", "Google Meet for video calls and meetings."),
       toolkit("microsoft_teams", "Microsoft Teams", "Microsoft Teams for meetings and team chat."),
-      toolkit("slack", "Slack", "Slack is a channel-based messaging platform."),
-      toolkit("discord", "Discord", "Discord for community and team conversations."),
-      toolkit("whatsapp", "WhatsApp", "WhatsApp for messaging customers and contacts."),
-      // SLUG UNVERIFIED. Every other entry in this file was checked against
-      // docs.composio.dev/toolkits/<slug>; that host 403s from this environment, so "telegram"
-      // is inferred from the naming the other chat toolkits use (slack, discord, whatsapp are
-      // all the plain lowercase name). If it is wrong the card shows a broken logo and Connect
-      // fails — check this one card before trusting it.
-      toolkit("telegram", "Telegram", "Telegram for direct messages and channel broadcasts."),
     ],
   },
   {
@@ -136,23 +132,20 @@ export function categoryForSlug(slug: string): string | undefined {
 // above.
 //
 // This was a fifteen-item "Favorites" list, which is not a shelf — it was most of the curated
-// catalogue reprinted above itself, so it told you nothing about where to start. It is now the
-// three things that change what an agent can do at all, plus the places a business actually
-// talks. Notion, Zoom, HubSpot, LinkedIn, Sheets, Asana and Trello came off the pin and still
-// appear in their own categories: good apps, but none of them is the first connection anyone
-// should make.
+// catalogue reprinted above itself, so it told you nothing about where to start. It is now one
+// idea: mail, calendar, files. Those are the three things that change whether an agent can do
+// anything at all, and every one of them is a connection you make once and never think about.
+//
+// The messaging half of this shelf is gone with the chat apps (see the note above the catalog).
+// Microsoft Teams came off the pin with them rather than standing alone as the sole survivor of
+// a group that no longer exists; it is still in Meetings. Notion, Zoom, HubSpot, LinkedIn,
+// Sheets, Asana and Trello likewise stay in their own categories — good apps, but none of them
+// is the first connection anyone should make.
 export const ESSENTIAL_INTEGRATION_SLUGS: string[] = [
-  // Mail, calendar, files. Almost every real request touches one of these.
   "gmail",
   "outlook",
   "googlecalendar",
   "googledrive",
   "one_drive",
   "dropbox",
-  // Messaging — David's pick. Where the agent reaches people rather than documents.
-  "slack",
-  "microsoft_teams",
-  "discord",
-  "whatsapp",
-  "telegram",
 ];

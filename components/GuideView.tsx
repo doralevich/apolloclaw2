@@ -1,19 +1,17 @@
 "use client";
 
-import { BookOpen, MessagesSquare } from "lucide-react";
+import { MessagesSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ShortcutCard } from "@/components/ShortcutCard";
-import { GLOSSARY, type GlossaryTerm } from "@/config/glossary";
 import { fillShortcut, SHORTCUT_GROUPS } from "@/config/shortcuts";
 
-// The Guide: what to say, and what the words mean.
+// The Guide: what to say.
 //
-// David's framing, and it's the right one — these are the same problem. A customer who doesn't
-// know what to ask and a customer who doesn't know what "credits" means are both stuck for the
-// same reason, and splitting them across two pages means neither gets found.
-//
-// Shortcuts first. Someone arriving here is far more likely to be looking for something to do
-// than for a definition, and the definitions are what you scroll to when a word stops you.
+// This page also carried a "What the words mean" glossary. It's gone, and config/glossary.ts
+// with it. Someone opening the Guide is looking for something to do, not for a definition, and
+// a wall of vocabulary underneath the shortcuts mostly served to make the page long. Terms that
+// genuinely need explaining should be explained where they appear — Usage already says what its
+// own numbers mean — rather than collected on a page nobody visits to look one up.
 
 export function GuideView() {
   const { active } = useActiveAgent();
@@ -23,9 +21,7 @@ export function GuideView() {
     <div className="max-w-4xl space-y-10">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Guide</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Things to ask {agentName}, and what the words on these pages mean.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Things to ask {agentName}.</p>
       </div>
 
       {/* ── Shortcuts ─────────────────────────────────────────────────────── */}
@@ -61,30 +57,6 @@ export function GuideView() {
           words. The more you tell {agentName} about how you want things done, the less you have
           to explain next time.
         </p>
-      </section>
-
-      {/* ── Glossary ──────────────────────────────────────────────────────── */}
-      <section className="space-y-4">
-        <div className="flex items-start gap-3">
-          <BookOpen className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <h2 className="text-lg font-semibold" id="glossary">
-              What the words mean
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Plain English for the terms on your Credits page and around the dashboard.
-            </p>
-          </div>
-        </div>
-
-        <dl className="divide-y rounded-xl border bg-card">
-          {GLOSSARY.map((term: GlossaryTerm) => (
-            <div key={term.term} className="p-4 sm:flex sm:gap-6">
-              <dt className="text-sm font-semibold sm:w-48 sm:shrink-0">{term.term}</dt>
-              <dd className="mt-1 text-sm text-muted-foreground sm:mt-0">{term.definition}</dd>
-            </div>
-          ))}
-        </dl>
       </section>
     </div>
   );
