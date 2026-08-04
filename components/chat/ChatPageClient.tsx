@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AlertTriangle, Bot, Loader2 } from "lucide-react";
@@ -33,6 +33,15 @@ export function ChatPageClient() {
   const { active, loading, error, refresh } = useActiveAgent();
   const pathname = usePathname();
   const urlSessionId = sessionFromPath(pathname);
+
+  // A question sent here from Shortcuts or Start Here. Read once on mount rather than from a
+  // reactive hook: this page rewrites its own URL as sessions come and go (updateChatHistory
+  // above), and re-reading would re-fill the box every time that happened.
+  const [prefill] = useState(() => {
+    if (typeof window === "undefined") return undefined;
+    const q = new URLSearchParams(window.location.search).get("q");
+    return q ? q.slice(0, 2000) : undefined;
+  });
 
   const navigateToSession = useCallback((sessionId: string | null, mode: "push" | "replace" = "push") => {
     updateChatHistory(sessionId ? `${CHAT_BASE}/${encodeURIComponent(sessionId)}` : CHAT_BASE, mode);
@@ -133,7 +142,7 @@ export function ChatPageClient() {
               </span>
             </div>
           )}
-          <ChatView agentName={active.name} />
+          <ChatView agentName={active.name} prefill={prefill} />
         </div>
       </ChatProvider>
     </div>
