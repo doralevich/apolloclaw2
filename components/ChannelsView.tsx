@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Check, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
+import { Check, ExternalLink, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -308,6 +308,11 @@ function ChannelCard({
             ))}
           </ol>
 
+          {/* Step 2 is impossible without this: the Hermes dashboard sits on a credential-
+              protected port, and the credential is our platform key. The link is minted per
+              click and expires. */}
+          {def.hermesDashboard && <HermesDashboardLink agentId={agentId} />}
+
           {def.kind === "qr" ? (
             pending && shownQr ? (
               <QrPanel qr={shownQr} onCancel={() => void disconnect({ quiet: true })} busy={busy} />
@@ -353,6 +358,29 @@ function ChannelCard({
         onConfirm={() => disconnect()}
       />
     </section>
+  );
+}
+
+// Opens the agent's Hermes dashboard in a new tab on a freshly minted signed URL.
+//
+// Minted on click rather than on render: these expire, and one handed out when the page loaded
+// would be dead by the time someone finished reading the steps.
+function HermesDashboardLink({ agentId }: { agentId: string }) {
+  const [busy, setBusy] = useState(false);
+
+  const open = () => {
+    setBusy(true);
+    apiFetch<{ url: string }>(`/api/agents/${agentId}/hermes-dashboard`)
+      .then(({ url }) => window.open(url, "_blank", "noopener,noreferrer"))
+      .catch((e) => toast.error((e as Error).message))
+      .finally(() => setBusy(false));
+  };
+
+  return (
+    <Button variant="outline" size="sm" onClick={open} disabled={busy}>
+      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+      Open Hermes dashboard
+    </Button>
   );
 }
 
