@@ -44,18 +44,28 @@ function SidebarContent({
 
   const { current } = useWorkspace();
   const logoUrl = current?.logo_url || branding.logoUrl;
-  const logoLabel = current?.logo_url ? current.name : branding.appName;
+  // The logo stands alone now, so it has to carry its own name for anyone who can't see it.
+  const logoAlt = current?.logo_url ? current.name : branding.appName;
 
   return (
     <>
       {/* The customer's logo when they've uploaded one, ours otherwise. Their business, their
-          room — and the fallback is a real state, not a gap, since most will never upload. */}
-      <div className="flex items-center gap-2 px-2 py-1">
+          room — and the fallback is a real state, not a gap, since most will never upload.
+
+          Logo only, no text beside it. The label used to read `current.name` whenever a custom
+          logo was uploaded, which is the workspace name — the exact string the switcher renders
+          directly underneath. So uploading a logo guaranteed the workspace name appeared twice,
+          stacked; David hit the same thing without one, his workspace being called Apollo Claw.
+          The name belongs to the switcher; this row is the mark above it. */}
+      <div className="px-2 py-1">
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="" className="h-6 w-6 rounded object-contain" />
-        ) : null}
-        <span className="truncate font-semibold">{logoLabel}</span>
+          <img src={logoUrl} alt={logoAlt} className="h-8 w-auto max-w-[9rem] object-contain object-left" />
+        ) : (
+          // No logo anywhere means nothing would name the product at all, so the wordmark
+          // stands in. Never the workspace name — that would reintroduce the duplicate.
+          <span className="truncate font-semibold">{branding.appName}</span>
+        )}
       </div>
 
       <div className="mt-4 space-y-2">
