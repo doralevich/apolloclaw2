@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI for Medical Practices | Apollo[Claw]" },
   description:
     "The Medical Agent automates appointment reminders, patient intake, and follow-up. HIPAA-aware. Most practices see no-shows drop within 30 days.",
   openGraph: {
+    images: OG_IMAGES,
     title: "AI for Medical Practices | Reduce No-Shows & Automate Patient Follow-Up",
     description: "The Medical Agent handles scheduling, patient follow-up, documentation prep, and intake so your providers stay focused on care.",
     url: "https://apolloclaw.ai/industries/medical-practices",

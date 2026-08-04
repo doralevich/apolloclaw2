@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "About Apollo Claw | Custom AI Agents Built by an Operator" },
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/about",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "About Apollo Claw | Custom AI Agents Built by an Operator",
     description:
       "Apollo[Claw] builds custom AI agents for your business: connected to your tools, running 24/7, without a salary. Founded by an operator, not a vendor. Schedule a consultation.",

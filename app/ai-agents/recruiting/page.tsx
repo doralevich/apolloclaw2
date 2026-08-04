@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI for Recruiting & Staffing Agencies | Apollo Claw" },
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/ai-agents/recruiting",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "AI for Recruiting & Staffing Agencies | Apollo Claw",
     description: "Automate resume screening, interview scheduling, and candidate follow-up so your team fills roles faster.",
     url: "https://apolloclaw.ai/ai-agents/recruiting",

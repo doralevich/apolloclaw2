@@ -2,9 +2,7 @@ import "server-only";
 import type {
   Agent,
   Budget,
-  Channel,
-  ChannelId,
-  ChannelsResult,
+  PublicPort,
   IntegrationConnectionsResult,
   IntegrationConnectResult,
   IntegrationToolkitsResult,
@@ -395,45 +393,59 @@ export const agent37 = {
       { method: "DELETE" }
     ),
 
-  // ── Channels ──────────────────────────────────────────────────────────────────────────────
+  // ── Public ports ──────────────────────────────────────────────────────────────────────────
   //
-  // ⚠️ THE FOUR CALLS BELOW ARE THE ONLY UNVERIFIED CODE IN THE CHANNELS FEATURE. Everything
-  // else — the page, the four flows, the routes, the polling — is finished and real. These
-  // paths and payloads were written to match the shape of the integration endpoints directly
-  // above, because api.agent37.com and docs.agent37.com are both blocked from the build
-  // environment (403 on CONNECT) and there is no API spec in the repo. They have never been
-  // run against the live API.
+  // One HTTPS URL for one port of one instance, reachable with no credential and stable until
+  // deleted. This is how anything external gets a permanent address to POST to — no third party
+  // will ever attach our sk_live_ key, and signed URLs expire, so they're wrong for a webhook
+  // registration.
   //
-  // The runtime is understood to already provide this — another whitelabel on the same stack
-  // ships these exact flows. So the work here is to REPLACE the four lines below with the real
-  // paths and shapes, not to build anything further. Nothing else in the feature should need to
-  // change: the routes forward, the view renders `Channel` objects, and the wire types in
-  // lib/types.ts are the contract to correct if the runtime disagrees.
-  //
-  // Until that happens, config/channels.ts keeps the feature dark
-  // (NEXT_PUBLIC_CHANNELS_ENABLED), so no customer meets a tab that cannot work.
+  // Verified against the published docs, unlike what used to sit here. See the note below.
 
-  /** Every channel and its current state. Drives the four cards and the pairing poll. */
-  listChannels: (id: string) => call<ChannelsResult>(`/instances/${id}/channels`),
+  listPublicPorts: (id: string) =>
+    call<{ data: PublicPort[] }>(`/instances/${id}/public-ports`),
 
   /**
-   * Begin or complete a connection.
+   * Open a port to the public internet.
    *
-   * For the token flows this carries the credentials and should come back connected (or with a
-   * message saying why not). For WhatsApp there are no credentials — the call starts a pairing
-   * and returns `qr` for the customer to scan, and the state stays "pending" until their phone
-   * finishes it, which is what the poll in the view is watching for.
+   * `prefix` gives a readable, stable hostname (`{prefix}-{instanceId}.agent37.app`) that
+   * survives delete and re-create — and is guessable by design, so it's for things meant to be
+   * found. Omit it for a random 20-char slug, where the URL itself is the only credential.
+   *
+   * Platform ports are rejected with 400 (3737, 9119, 7681, 8080, 6080, 7890, 22022), and a
+   * second entry for a port that already has one returns 409 public_port_exists — rotating means
+   * delete then re-create.
    */
-  connectChannel: (id: string, channel: ChannelId, credentials: Record<string, string>) =>
-    call<Channel>(`/instances/${id}/channels/${encodeURIComponent(channel)}/connect`, {
+  createPublicPort: (id: string, body: { port: number; prefix?: string }) =>
+    call<PublicPort>(`/instances/${id}/public-ports`, {
       method: "POST",
-      body: JSON.stringify({ credentials }),
+      body: JSON.stringify(body),
     }),
 
-  /** Unlink a channel and forget its credentials. */
-  disconnectChannel: (id: string, channel: ChannelId) =>
-    call<{ channel: string; deleted: boolean }>(
-      `/instances/${id}/channels/${encodeURIComponent(channel)}`,
-      { method: "DELETE" }
-    ),
+  /** Revoke a public URL. Propagates to the edge in seconds; repeating it returns 404. */
+  deletePublicPort: (id: string, port: number) =>
+    call<{ port: number; deleted: boolean }>(`/instances/${id}/public-ports/${port}`, {
+      method: "DELETE",
+    }),
+
+  // ── Channels ──────────────────────────────────────────────────────────────────────────────
+  //
+  // THERE IS NO CHANNELS API. This is settled, not assumed: the published docs index lists every
+  // page, and nothing in it connects WhatsApp, Telegram, Discord, or Slack as a place the agent
+  // answers you. ("App integrations" does cover Slack, but as a Composio tool the agent acts on,
+  // which is the other direction.)
+  //
+  // Three invented calls used to live here — listChannels/connectChannel/disconnectChannel, at
+  // paths that mirrored the integration endpoints. They were guesses made while the docs host was
+  // unreachable, and they were wrong. They are deleted rather than left to look authoritative.
+  //
+  // The real route, per the docs, is public ports above plus a Hermes webhook subscription:
+  // Hermes receives on port 8644, you give that port a public URL, and you point the external
+  // service at it. Two things are still unknown and neither can be resolved from this codebase:
+  // the subscription is created in the Hermes dashboard on port 9119 with no documented API, and
+  // whether Hermes turns an inbound Telegram update into a reply back to Telegram is Hermes-side
+  // configuration on a host that isn't Agent37's.
+  //
+  // Until a manual end-to-end test settles that second question, building the automation would be
+  // plumbing to an unknown destination. config/channels.ts keeps the feature dark meanwhile.
 };

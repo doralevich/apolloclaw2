@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Data Security & Privacy | Apollo Claw" },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     "Your business data stays in your environment. No vendor lock-in, no data leaving your control. See exactly how Apollo Claw protects your operation.",
   alternates: { canonical: "https://apolloclaw.ai/security" },
   openGraph: {
+    images: OG_IMAGES,
     title: "AI Data Security & Privacy | Apollo Claw",
     description:
       "Your business data stays in your environment. No vendor lock-in, no data leaving your control.",

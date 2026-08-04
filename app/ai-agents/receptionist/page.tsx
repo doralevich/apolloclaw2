@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Receptionist Agent | Apollo[Claw]" },
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
     "The Receptionist Agent answers calls, routes messages, and books appointments, so the front line stays covered without adding headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/receptionist" },
   openGraph: {
+    images: OG_IMAGES,
     title: "The Receptionist Agent | AI Phone & Front Desk Coverage",
     description:
       "Answers calls, routes messages, and books appointments so the front line stays covered.",

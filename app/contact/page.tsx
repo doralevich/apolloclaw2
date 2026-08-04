@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import ContactClient from "./ContactClient";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "Contact Apollo[Claw] | Schedule a Consultation" },
   description: "Schedule a consultation with Apollo[Claw] and find out exactly which AI agent fits your business. We scope every engagement individually.",
   openGraph: {
+    images: OG_IMAGES,
     title: "Contact Apollo[Claw] | Schedule a Consultation",
     description: "Schedule a consultation and find out exactly which AI agent fits your business.",
     url: "https://apolloclaw.ai/contact",

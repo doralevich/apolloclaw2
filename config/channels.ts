@@ -50,6 +50,11 @@ export type ChannelDef = {
   fields: ChannelField[];
   /** Shown once connected, when there's something worth saying about living with it. */
   connectedNote?: string;
+  /**
+   * Offer a link into the agent's Hermes dashboard. Set for the channels whose setup needs a
+   * Hermes webhook subscription, which Hermes will only create through its own UI.
+   */
+  hermesDashboard?: boolean;
 };
 
 export const CHANNELS: ChannelDef[] = [
@@ -75,12 +80,20 @@ export const CHANNELS: ChannelDef[] = [
     logo: composioLogoUrl("telegram"),
     kind: "token",
     steps: [
-      "In Telegram, open @BotFather and send /newbot to create a bot.",
-      "Copy the bot token it gives you and paste it below.",
+      "In Telegram, open @BotFather and send /newbot to create a bot. Copy the bot token it gives you.",
+      "Open your agent's Hermes dashboard, go to Webhooks, and create a subscription. Note its name and the signing secret it shows you — the secret is shown once.",
+      "Paste all three below. We'll point your bot at your agent.",
     ],
     fields: [
-      { key: "botToken", label: "Bot token", placeholder: "Paste your bot token (e.g. 123456:ABC-DEF...)" },
+      { key: "botToken", label: "Bot token", placeholder: "Bot token from BotFather (e.g. 123456:ABC-DEF...)" },
+      // Hermes creates subscriptions only in its own dashboard, with no API to do it for the
+      // customer, so the name has to come from them. It becomes the /webhooks/<name> path.
+      { key: "subscription", label: "Subscription name", placeholder: "Webhook subscription name (e.g. telegram)" },
+      { key: "signingSecret", label: "Signing secret", placeholder: "Signing secret from that subscription" },
     ],
+    connectedNote:
+      "Message your bot in Telegram and your agent answers there. Only your own messages reach it.",
+    hermesDashboard: true,
   },
   {
     id: "slack",

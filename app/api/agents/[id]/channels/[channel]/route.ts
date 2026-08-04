@@ -1,20 +1,16 @@
-import { agent37 } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { channelDef, isChannelId } from "@/config/channels";
+import { connectTelegram, disconnectChannel } from "@/lib/channels/connect";
 
 type Ctx = { params: Promise<{ id: string; channel: string }> };
 
-// Connect a channel, or start its pairing.
+// Connect a channel.
 //
-// The body carries whatever credentials the channel's form collects — a bot token, a Slack pair
-// — and they are forwarded to the runtime and never persisted here. WhatsApp sends no
-// credentials at all: the POST starts a device pairing and comes back with a QR for the
-// customer's phone to scan.
-//
-// Only the fields the channel actually declares are forwarded, and only strings. That keeps a
-// hand-rolled request from stuffing arbitrary JSON through this route into the runtime, and
-// means the shape the runtime receives is always the shape the form shows.
+// The body carries the credentials the channel's form collects. Only the fields that channel
+// declares are read, and only strings, so a hand-rolled request can't smuggle extra JSON through
+// this route. Credentials reach the provider and the encrypted column; they are never echoed
+// back, and the response is the browser-safe Channel view.
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { id, channel } = await params;
   if (!isChannelId(channel)) {
@@ -30,22 +26,39 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   for (const field of def.fields) {
     const value = supplied[field.key];
     if (typeof value !== "string" || !value.trim()) {
-      // Named rather than generic: with two token fields on Slack, "a token is required" would
-      // leave the customer guessing which one.
+      // Named rather than generic: with three fields on the Telegram card, "a value is required"
+      // would leave the customer guessing which one.
       throw new ApiError(400, "invalid_request", `${field.label} is required`);
     }
     credentials[field.key] = value.trim();
   }
 
-  return json(await agent37.connectChannel(id, channel, credentials));
+  if (channel === "telegram") {
+    return json(
+      await connectTelegram(id, {
+        botToken: credentials.botToken,
+        subscription: credentials.subscription,
+        signingSecret: credentials.signingSecret,
+      })
+    );
+  }
+
+  // Slack, Discord and WhatsApp have cards and copy but no implementation yet. Telegram went
+  // first deliberately: it is the only one of the four that needs nothing but a webhook URL.
+  throw new ApiError(
+    501,
+    "not_implemented",
+    `${def.name} isn't connectable yet. Telegram is the only channel wired up so far.`
+  );
 });
 
-// Unlink a channel and forget its credentials. The agent stops answering there.
+// Stop delivery and forget the credential.
 export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   const { id, channel } = await params;
   if (!isChannelId(channel)) {
     throw new ApiError(404, "not_found", "Unknown channel");
   }
   await requireAgentAccess(id, "member");
-  return json(await agent37.disconnectChannel(id, channel));
+  await disconnectChannel(id, channel);
+  return json({ channel, deleted: true });
 });

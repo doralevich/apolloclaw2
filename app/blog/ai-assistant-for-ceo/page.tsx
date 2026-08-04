@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "What an AI Assistant for CEOs Actually Does (and Doesn't Do)",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/blog/ai-assistant-for-ceo",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "What an AI Assistant for CEOs Actually Does (and Doesn't Do)",
     description:
       "Learn how a CEO agent AI handles briefings, research, and follow-up, and where the CEO still makes the calls. CEO productivity AI, explained plainly.",
