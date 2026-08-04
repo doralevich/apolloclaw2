@@ -42,7 +42,10 @@ function AgentAvatar({ agent }: { agent: MergedAgent | null }) {
 export function AgentSwitcher() {
   const { agents, active, setActiveId, loading } = useActiveAgent();
 
-  if (agents.length === 0) return null;
+  // One agent is the normal case — a customer buys a licence and gets an agent. A dropdown
+  // whose menu contains the thing already on screen is furniture, so it only appears once
+  // there is genuinely something to switch between.
+  if (agents.length <= 1) return null;
 
   return (
     <DropdownMenu>

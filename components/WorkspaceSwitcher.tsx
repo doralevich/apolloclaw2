@@ -29,6 +29,7 @@ import {
 
 export function WorkspaceSwitcher() {
   const { workspaces, current, setCurrentId, refresh } = useWorkspace();
+
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const { busy, run } = useAsyncAction();
@@ -47,6 +48,18 @@ export function WorkspaceSwitcher() {
       toast.success("Workspace created");
     });
   }
+
+  // Hidden entirely when there's one workspace — which is every customer.
+  //
+  // David's call, and it's the right one: a second workspace does nothing for a customer. They
+  // buy one licence, which provisions one agent into one workspace; an extra workspace would be
+  // an empty room with no agent in it and no way to get one. So self-serve creation isn't a
+  // feature we're hiding, it's a dead end we're closing.
+  //
+  // The "New workspace" action stays INSIDE this dropdown rather than moving elsewhere, which
+  // means it's reachable exactly by the people who can already see the switcher — anyone with
+  // two or more, i.e. platform admins. A customer never meets it.
+  if (workspaces.length <= 1) return null;
 
   return (
     <>

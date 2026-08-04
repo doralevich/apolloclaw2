@@ -12,7 +12,6 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { BuyCredits } from "@/components/BuyCredits";
 import { CreditSafetyNet } from "@/components/CreditSafetyNet";
-import { CreditsGlossary } from "@/components/CreditsGlossary";
 import { Button } from "@/components/ui/button";
 
 // Read-only API Credits tab: the active agent's remaining balance, monthly allowance,
@@ -168,8 +167,6 @@ export function CreditsView() {
           a card is saved by buying a pack. Offering the switch above the thing that unlocks it
           would read as broken. */}
       {!showSkeleton && <CreditSafetyNet agentId={agentId} />}
-
-      {!showSkeleton && <CreditsGlossary />}
     </div>
   );
 }
