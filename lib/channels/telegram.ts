@@ -75,6 +75,27 @@ export async function deleteWebhook(token: string): Promise<boolean> {
   return callBot(token, "deleteWebhook", { drop_pending_updates: true });
 }
 
+/** Send the agent's answer back to the chat it came from. */
+export async function sendMessage(token: string, chatId: string | number, text: string): Promise<void> {
+  // Telegram caps a message at 4096 characters and rejects the whole thing if it's longer, so a
+  // long answer is split rather than lost. Split on the character rather than on words: a hard
+  // cut mid-sentence is ugly, a dropped answer is a bug.
+  const chunks = text.match(/[\s\S]{1,4000}/g) ?? [];
+  for (const chunk of chunks) {
+    await callBot(token, "sendMessage", { chat_id: chatId, text: chunk });
+  }
+}
+
+/**
+ * The "typing…" indicator.
+ *
+ * An agent turn can take a while, and a bot that sits silent for thirty seconds reads as broken.
+ * Telegram clears this after ~5 seconds on its own, so it's re-sent while the turn runs.
+ */
+export async function sendTyping(token: string, chatId: string | number): Promise<void> {
+  await callBot(token, "sendChatAction", { chat_id: chatId, action: "typing" }).catch(() => {});
+}
+
 /** What Telegram thinks the current wiring is — the truth to check our stored state against. */
 export async function getWebhookInfo(
   token: string

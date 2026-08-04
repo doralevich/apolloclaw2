@@ -1,73 +1,45 @@
 import "server-only";
-import { agent37, Agent37Error } from "@/lib/agent37";
+import { randomBytes } from "crypto";
 import { ApiError } from "@/lib/http";
+import { publicSiteOrigin } from "@/lib/site-url";
 import * as telegram from "@/lib/channels/telegram";
-import { deleteChannel, getChannelToken, upsertChannel } from "@/lib/channels/store";
+import { deleteChannel, getChannelToken, toChannel, upsertChannel } from "@/lib/channels/store";
 import type { Channel, ChannelId } from "@/lib/types";
-import { toChannel } from "@/lib/channels/store";
 
-// Connecting and disconnecting a channel for real.
+// Connecting and disconnecting a channel.
 //
-// The shape of it, per Agent37's docs: Hermes receives webhooks on port 8644, that port gets a
-// permanent credential-free URL via a public port, and the provider is told to deliver there.
-// Nothing about this is an Agent37 "channels" feature — there isn't one — it's public ports plus
-// each provider's own API.
+// THE SHAPE, AND WHY IT CHANGED. The first version pointed Telegram at a Hermes webhook
+// subscription running on the instance, because that is the only inbound path Agent37 documents.
+// It was built for the wrong runtime: the Apollo Agent provisions agent37-openclaw
+// (config/agent-types.ts), and an OpenClaw box has no Hermes, nothing listening on 8644, and no
+// dashboard on 9119 to create a subscription in.
+//
+// So Telegram delivers HERE instead — /api/channels/telegram/{agentId} — and that route runs a
+// turn on the instance and sends the reply back. Both ends are ours, which removes every loose
+// end the old design had: no public port to open, no subscription for the customer to create by
+// hand, and no unproven handshake between two authentication schemes. The customer pastes a bot
+// token and that is the whole setup.
 
-// Hermes's webhook receiver. Not configurable: it's where Hermes listens.
-const HERMES_WEBHOOK_PORT = 8644;
-// Readable and stable across delete/re-create, which matters because the URL is registered with
-// Telegram and we'd rather not re-register it every time something is rebuilt. Guessable by
-// design — reachability isn't the security boundary here, the signature is.
-const PUBLIC_PORT_PREFIX = "webhooks";
-
-/**
- * The instance's public webhook origin, creating it if this is the first channel.
- *
- * Creating a second entry for a port that already has one is a 409, which is not an error from
- * where we stand — it means somebody already did this — so that path reads the existing entry
- * instead of failing.
- */
-async function ensureWebhookOrigin(agentId: string): Promise<string> {
-  try {
-    const created = await agent37.createPublicPort(agentId, {
-      port: HERMES_WEBHOOK_PORT,
-      prefix: PUBLIC_PORT_PREFIX,
-    });
-    return created.url;
-  } catch (e) {
-    if (e instanceof Agent37Error && e.status === 409) {
-      const { data } = await agent37.listPublicPorts(agentId);
-      const existing = data?.find((p) => p.port === HERMES_WEBHOOK_PORT);
-      if (existing?.url) return existing.url;
-    }
-    throw e;
-  }
+/** Where Telegram posts updates for one agent. Absolute, because Telegram needs a real URL. */
+export function telegramWebhookUrl(agentId: string): string {
+  return `${publicSiteOrigin()}/api/channels/telegram/${encodeURIComponent(agentId)}`;
 }
 
 /**
- * Connect Telegram.
+ * Connect Telegram: validate the token, register our webhook, remember the credential.
  *
- * The customer supplies three things, all of which they created themselves: a bot token from
- * BotFather, and the name and signing secret of a Hermes webhook subscription. The subscription
- * is theirs to create because Hermes only offers it through its own dashboard on port 9119 —
- * there is no API for it, so there is nothing here to automate it with.
- *
- * ⚠️ THE ONE UNPROVEN LINK. Telegram authenticates its deliveries with a `secret_token` it echoes
- * in an `X-Telegram-Bot-Api-Secret-Token` header. Hermes authenticates deliveries with its own
- * subscription signature. Those are not obviously the same scheme, and if Hermes wants an HMAC
- * over the body rather than a shared secret in a header, it will reject everything Telegram
- * sends. Passing the Hermes secret as Telegram's secret_token is the closest the two APIs get
- * without something in the middle to translate. Whether it's enough can only be settled by
- * sending a real message — see the note in the PR.
+ * The URL is public and guessable — it has an agent id in it — so it is the `secret_token` that
+ * actually protects the endpoint. Telegram echoes it on every delivery in a header, and the
+ * receiver rejects anything without it. 32 random bytes, generated here and never shown to
+ * anyone, including the customer.
  */
 export async function connectTelegram(
   agentId: string,
-  credentials: { botToken: string; subscription: string; signingSecret: string }
+  credentials: { botToken: string }
 ): Promise<Channel> {
-  const { botToken, subscription, signingSecret } = credentials;
+  const { botToken } = credentials;
 
-  // Validate the token first. A bad token should fail before we've created any infrastructure,
-  // and getMe is the cheapest possible way to find out.
+  // Validate first, so a typo'd token fails before anything is stored or registered.
   let me: { username?: string; first_name?: string };
   try {
     me = await telegram.getMe(botToken);
@@ -75,13 +47,11 @@ export async function connectTelegram(
     throw new ApiError(400, "invalid_token", (e as Error).message);
   }
 
-  const origin = await ensureWebhookOrigin(agentId);
-  // Hermes serves each subscription at /webhooks/<name>; the docs are explicit that this path is
-  // Hermes's and only the origin is ours to replace.
-  const url = `${origin.replace(/\/$/, "")}/webhooks/${encodeURIComponent(subscription)}`;
+  const secret = randomBytes(32).toString("hex");
+  const url = telegramWebhookUrl(agentId);
 
   try {
-    await telegram.setWebhook(botToken, url, { secret: signingSecret });
+    await telegram.setWebhook(botToken, url, { secret });
   } catch (e) {
     throw new ApiError(400, "webhook_failed", (e as Error).message);
   }
@@ -89,9 +59,12 @@ export async function connectTelegram(
   const account = me.username ? `@${me.username}` : me.first_name || "Telegram bot";
   const row = await upsertChannel(agentId, "telegram", {
     botToken,
+    secret,
     account,
-    subscription,
-    webhookUrl: url,
+    // Cleared on every fresh connect: reconnecting with a different bot must not inherit the
+    // previous one's owner or its conversation.
+    ownerChatId: null,
+    sessionId: null,
     state: "connected",
     message: null,
   });
@@ -99,14 +72,11 @@ export async function connectTelegram(
 }
 
 /**
- * Disconnect a channel: tell the provider to stop delivering, then forget the credential.
+ * Disconnect: stop delivery, then forget the credential.
  *
- * The provider call is best-effort. If the token has already been revoked in BotFather, Telegram
- * refuses and there is nothing to undo anyway — failing the disconnect there would leave a row
- * the customer cannot get rid of, which is worse than a webhook pointed at a dead subscription.
- *
- * The public port is deliberately left alone. It is per-instance rather than per-channel, so
- * deleting it on one disconnect would break every other channel on the same instance.
+ * The Telegram call is best-effort. If the token was already revoked in BotFather, Telegram
+ * refuses and there is nothing left to undo anyway — failing here would leave a row the customer
+ * cannot get rid of, which is worse than a webhook pointed at a bot that no longer exists.
  */
 export async function disconnectChannel(agentId: string, channel: ChannelId): Promise<void> {
   if (channel === "telegram") {
@@ -125,9 +95,10 @@ export async function disconnectChannel(agentId: string, channel: ChannelId): Pr
 /**
  * Re-check a connected Telegram against what Telegram itself believes.
  *
- * Our row says "connected" because a setWebhook succeeded once. Telegram knows whether deliveries
- * are actually landing, and `last_error_message` is where a rejected delivery shows up — which is
- * exactly where the unproven link above would surface if it turns out Hermes refuses them.
+ * Our row says "connected" because a setWebhook succeeded once. Telegram knows whether
+ * deliveries are actually landing, and `last_error_message` is where a failing endpoint shows
+ * up — a deploy that changed the site URL, say, which would otherwise be invisible until someone
+ * noticed their agent had gone quiet.
  */
 export async function refreshTelegram(agentId: string): Promise<Channel | null> {
   const token = await getChannelToken(agentId, "telegram");
