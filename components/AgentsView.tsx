@@ -7,6 +7,7 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
+import { AgentKnowledge } from "@/components/AgentKnowledge";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { SetupBanner } from "@/components/SetupPrompt";
 
@@ -120,6 +121,18 @@ export function AgentsView() {
               onChanged={refresh}
             />
           ))}
+
+          {/* Only for a single agent. The questionnaire is stored per agent TYPE, so with two
+              agents of different types this would need to be per-card — and with two of the
+              same type there is only one set of answers to show. One agent is the real case;
+              rendering it once, under the card it belongs to, is honest for that. */}
+          {agents.length === 1 && (
+            <AgentKnowledge
+              workspaceId={current.id}
+              agentType={agents[0].agent_type ?? null}
+              agentName={agents[0].name?.trim() || "Your agent"}
+            />
+          )}
         </div>
       )}
     </div>
