@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { WorkspaceLogoUpload } from "@/components/WorkspaceLogoUpload";
 import { ThemePicker } from "@/components/ThemePicker";
+import { DeleteAgentSection } from "@/components/DeleteAgentSection";
 
 export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
@@ -94,15 +95,25 @@ export function SettingsView() {
       </div>
 
       {isAdmin && (
-        <div className="rounded-lg border border-destructive/40 p-4">
-          <h2 className="text-sm font-medium">Delete workspace</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Permanently deletes this workspace and all of its agents. Only the workspace owner can
-            do this.
-          </p>
-          <Button variant="destructive" className="mt-3" onClick={() => setDeleting(true)}>
-            Delete workspace
-          </Button>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Danger zone
+          </h2>
+          {/* The agent first: deleting one is the recoverable-ish mistake (buy another,
+              answer the questionnaire again), and deleting the workspace takes everything
+              including this agent with it. */}
+          <DeleteAgentSection />
+
+          <div className="rounded-lg border border-destructive/40 p-4">
+            <h2 className="text-sm font-medium">Delete workspace</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Permanently deletes this workspace and all of its agents. Only the workspace owner
+              can do this.
+            </p>
+            <Button variant="destructive" className="mt-3" onClick={() => setDeleting(true)}>
+              Delete workspace
+            </Button>
+          </div>
         </div>
       )}
 

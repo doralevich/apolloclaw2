@@ -11,7 +11,6 @@ import {
   RotateCw,
   Square,
   Terminal,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -33,7 +32,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
 // Only rendered for ports the agent's template actually serves (portsForTemplate).
@@ -73,7 +71,6 @@ export function AgentActionsMenu({
     ? PORT_ACTIONS.filter(({ name }) => ports[name] !== undefined)
     : [];
 
-  const [deleting, setDeleting] = useState(false);
   const [opening, setOpening] = useState<number | null>(null);
   const { busy, run } = useAsyncAction();
 
@@ -114,12 +111,6 @@ export function AgentActionsMenu({
     } catch (e) {
       toast.error((e as Error).message, { id: toastId });
     }
-  }
-
-  async function remove() {
-    await apiFetch(`/api/agents/${agent.agent37_id}`, { method: "DELETE" });
-    toast.success("Agent deleted");
-    onChanged();
   }
 
   return (
@@ -219,26 +210,12 @@ export function AgentActionsMenu({
                   Start agent
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => setDeleting(true)}>
-                <Trash2 />
-                Delete agent
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
       </div>
       </TooltipProvider>
 
-      <ConfirmDialog
-        open={deleting}
-        onOpenChange={setDeleting}
-        title="Delete agent?"
-        description="This permanently deletes the agent and its data. This cannot be undone."
-        confirmText="Delete"
-        destructive
-        onConfirm={remove}
-      />
     </>
   );
 }
