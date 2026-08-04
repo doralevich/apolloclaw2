@@ -121,6 +121,7 @@ export const CHANNELS: ChannelDef[] = [
       "Paste both below and press Connect.",
       "Back in Slack, under Event Subscriptions, turn events on and paste the Request URL shown here after you connect. Slack will tick it green.",
       "Still under Event Subscriptions, expand Subscribe to bot events and add message.im. Save, then reinstall the app if Slack asks.",
+      "Under App Home → Show Tabs, turn on the Messages Tab and tick \"Allow users to send Slash commands and messages from the messages tab\". Without this Slack refuses to send your message at all.",
     ],
     fields: [
       { key: "botToken", label: "Bot token", placeholder: "Bot token (xoxb-...)" },
