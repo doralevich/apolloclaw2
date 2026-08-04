@@ -1,6 +1,7 @@
 import { getWorkspaceOwner, requireAdmin, requireUser } from "@/lib/auth";
 import { agent37 } from "@/lib/agent37";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { uploadWorkspaceLogo, type ImageUpload } from "@/lib/supabase/avatar-storage";
 import type { Workspace } from "@/lib/types";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -10,13 +11,35 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
   const { supabase, user } = await requireUser();
   await requireAdmin(supabase, id, user.id);
 
-  const { name } = await readJson<{ name?: string }>(request);
-  const trimmed = (name || "").trim();
-  if (!trimmed) throw new ApiError(400, "invalid_request", "Workspace name is required");
+  // Rename and logo, both optional and applied only if present — so the logo picker can save
+  // an image without having to send the name back with it.
+  const body = await readJson<{ name?: string; logo_upload?: ImageUpload; logo_url?: null }>(request);
+  const update: { name?: string; logo_url?: string | null } = {};
+
+  if (body.name !== undefined) {
+    const trimmed = body.name.trim();
+    if (!trimmed) throw new ApiError(400, "invalid_request", "Workspace name is required");
+    update.name = trimmed.slice(0, 120);
+  }
+
+  if (body.logo_upload) {
+    const url = await uploadWorkspaceLogo(id, body.logo_upload);
+    // Null means it wasn't a real image of an allowed type, or it was too big. The storage
+    // helper never throws, so this is where that becomes a message.
+    if (!url) throw new ApiError(400, "invalid_request", "That image didn't work. Use a PNG, JPEG or WebP under 3MB.");
+    update.logo_url = url;
+  } else if (body.logo_url === null) {
+    // Explicit removal — back to the default mark.
+    update.logo_url = null;
+  }
+
+  if (Object.keys(update).length === 0) {
+    throw new ApiError(400, "invalid_request", "Nothing to update");
+  }
 
   const { data, error } = await supabase
     .from("workspaces")
-    .update({ name: trimmed })
+    .update(update)
     .eq("id", id)
     .select("*")
     .single();

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { WorkspaceLogoUpload } from "@/components/WorkspaceLogoUpload";
 
 export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
@@ -52,6 +53,8 @@ export function SettingsView() {
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">{current.name}</p>
       </div>
+
+      <WorkspaceLogoUpload />
 
       <div className="space-y-2">
         <Label htmlFor="ws-name">Workspace name</Label>

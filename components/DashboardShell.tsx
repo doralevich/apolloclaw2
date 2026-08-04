@@ -42,14 +42,20 @@ function SidebarContent({
   // leave a freshly-signed-in customer on a page missing from their own sidebar.
   const nav = NAV;
 
+  const { current } = useWorkspace();
+  const logoUrl = current?.logo_url || branding.logoUrl;
+  const logoLabel = current?.logo_url ? current.name : branding.appName;
+
   return (
     <>
+      {/* The customer's logo when they've uploaded one, ours otherwise. Their business, their
+          room — and the fallback is a real state, not a gap, since most will never upload. */}
       <div className="flex items-center gap-2 px-2 py-1">
-        {branding.logoUrl ? (
+        {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={branding.logoUrl} alt="" className="h-6 w-6 rounded" />
+          <img src={logoUrl} alt="" className="h-6 w-6 rounded object-contain" />
         ) : null}
-        <span className="truncate font-semibold">{branding.appName}</span>
+        <span className="truncate font-semibold">{logoLabel}</span>
       </div>
 
       <div className="mt-4 space-y-2">
