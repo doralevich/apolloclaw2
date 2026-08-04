@@ -298,7 +298,7 @@ export default function CeoPage() {
             ))}
           </div>
           <p className="text-center font-mono text-xs mt-8" style={{ color: "rgba(255,255,255,0.25)" }}>
-            Representative client experiences. Identifying details withheld at client request.
+            Outcomes from real client engagements. Names and identifying details changed or withheld at client request.
           </p>
         </div>
       </section>

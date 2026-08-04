@@ -170,11 +170,14 @@ export function TextureBackground() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
+        // Full-bleed, no mask. This used to be 0.1 behind a radial mask that faded the grid out
+        // by ~78% of the way to the edges, so the hero read as a plain navy block with a faint
+        // smudge in the middle — the check pattern only really showed up further down the page,
+        // in Proof. Same values as Proof now (0.04, unmasked, 40px), so the two navy sections
+        // are visibly the same treatment rather than two different ideas.
         style={{
-          backgroundImage: `linear-gradient(rgba(245,246,248,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,246,248,0.1) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)`,
           backgroundSize: "40px 40px",
-          maskImage: "radial-gradient(ellipse 75% 65% at 50% 25%, black 0%, transparent 78%)",
-          WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 25%, black 0%, transparent 78%)",
         }}
       />
       <div
