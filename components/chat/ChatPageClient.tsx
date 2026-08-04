@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AlertTriangle, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,21 @@ import { ChatView } from "./ChatView";
 export function ChatPageClient() {
   const { active, loading, error, refresh } = useActiveAgent();
 
-  // A question sent here from Shortcuts or Start Here. Read once on mount rather than from a
-  // reactive hook: the URL is rewritten as threads come and go, and re-reading would re-fill
-  // the box every time that happened.
-  const [prefill] = useState(() => {
-    if (typeof window === "undefined") return undefined;
-    const q = new URLSearchParams(window.location.search).get("q");
-    return q ? q.slice(0, 2000) : undefined;
-  });
+  // A question sent here from the Guide or Start Here (?q=).
+  //
+  // Read through useSearchParams, NOT from window.location in a useState initializer. That was
+  // the first attempt and it silently did nothing: this page is server-rendered, so the
+  // initializer ran where `window` is undefined, returned undefined, and React hydrated the
+  // client with the server's value — which it then never re-read. Every suggestion opened the
+  // chat with an empty box.
+  //
+  // Latched on first sight so it survives the URL being rewritten underneath us: the provider
+  // swaps in a session id via pushState once a thread is created, dropping ?q= from the URL,
+  // and without the latch the prefill would evaporate mid-typing.
+  const searchParams = useSearchParams();
+  const q = searchParams.get("q");
+  const [prefill, setPrefill] = useState<string | undefined>(undefined);
+  if (q && !prefill) setPrefill(q.slice(0, 2000));
 
   // Fill the dashboard main area (minus its p-4/p-6 padding) so the rail + pane get real height.
   const frame = "flex h-[calc(100vh-2rem)] overflow-hidden rounded-xl border bg-card md:h-[calc(100vh-3rem)]";

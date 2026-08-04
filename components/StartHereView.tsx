@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Blocks, Bot, MessageSquare, Sparkles } from "lucide-react";
+import { Blocks, MessageSquare, Sparkles } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { ShortcutCard } from "@/components/ShortcutCard";
 import { getAgentType } from "@/config/agent-types";
 import { FIRST_MOVES } from "@/config/shortcuts";
@@ -41,18 +42,13 @@ export function StartHereView() {
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div className="flex items-start gap-4 rounded-lg border bg-card p-6">
-        {active.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={active.avatar_url}
-            alt=""
-            className="h-14 w-14 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary">
-            <Bot className="h-6 w-6 text-muted-foreground" />
-          </div>
-        )}
+        {/* Click to change — the picture used to be a one-shot choice made during the
+            questionnaire, before anyone had spoken to their agent. */}
+        <AgentAvatarPicker
+          agentId={active.agent37_id}
+          currentUrl={active.avatar_url}
+          agentName={agentName}
+        />
         <div className="min-w-0">
           <h1 className="text-xl font-semibold tracking-tight">Hey! I&apos;m {agentName}.</h1>
           <p className="mt-1 text-sm text-muted-foreground">
