@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { pickGreeting, type Greeting } from "@/config/greetings";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { ConnectStrip } from "./ConnectStrip";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -39,7 +41,7 @@ export function ChatView({
   // A question carried in from Shortcuts or Start Here (?q=), dropped into the composer.
   prefill?: string;
 }) {
-  const { userEmail } = useWorkspace();
+  const { userEmail, userFirstName } = useWorkspace();
   const {
     sessions,
     activeSessionId,
@@ -93,7 +95,25 @@ export function ChatView({
   const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
   const userInitial = (userEmail?.[0] || "").toUpperCase();
-  const greetName = agentName?.trim() || "your agent";
+  // Null rather than a placeholder: an unnamed agent should stay out of the greeting entirely.
+  const greetName = agentName?.trim() || null;
+
+  // The empty-chat greeting, drawn fresh for each new chat rather than being one fixed line
+  // forever (config/greetings.ts). Chosen in an effect and not during render because the pick
+  // is random: doing it inline would make the server and the browser disagree on the text.
+  // Null until then, which is why the block below reserves its height.
+  const [greeting, setGreeting] = useState<Greeting | null>(null);
+  useEffect(() => {
+    if (!showWelcome) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-hydration pick: the greeting is random, so the server must not choose one, and re-rolling when a new empty chat appears is exactly this effect's job
+    setGreeting(
+      pickGreeting({
+        userName: userFirstName,
+        agentName: greetName,
+        hour: new Date().getHours(),
+      })
+    );
+  }, [showWelcome, activeSessionId, userFirstName, greetName]);
 
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
@@ -131,11 +151,22 @@ export function ChatView({
         ) : messages.length > 0 ? (
           <ChatMessages messages={messages} isStreaming={isStreaming} userInitial={userInitial} />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
-              Hi, this is {greetName}.
-            </h1>
-            <p className="text-lg text-foreground/75">What can I do for you?</p>
+          <div className="flex flex-col items-center gap-6 text-center">
+            {/* Connect prompts sit above the greeting: an agent with nothing plugged in can
+                talk but can't act, and this is where the customer actually is when they find
+                that out. Renders nothing once the essentials are connected. */}
+            <ConnectStrip agentId={agentId} />
+            {/* Height reserved so the composer doesn't jump when the greeting lands. */}
+            <div className="flex min-h-[76px] flex-col items-center gap-2">
+              {greeting && (
+                <>
+                  <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
+                    {greeting.headline}
+                  </h1>
+                  <p className="text-lg text-foreground/75">{greeting.subline}</p>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
