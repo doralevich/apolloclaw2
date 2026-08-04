@@ -377,13 +377,20 @@ async function injectAfterProvision(
   agentId: string,
   type: AgentType,
   workspaceId: string,
-  fellBack: boolean,
   skipContext: boolean
 ): Promise<void> {
-  if (fellBack) {
-    const persona = personaForAgentType(type.id);
-    if (persona) await injectAgentFile(agentId, "SOUL.md", persona);
-  }
+  // SOUL.md, always — not only when the template fell back.
+  //
+  // It used to be fallback-only because the dedicated image carried its own persona, which is
+  // precisely what tied us to a bespoke image. With the persona in config/personas.ts instead,
+  // a stock OpenClaw box plus the files we generate IS the custom agent, and the image is
+  // something we can swap without losing the product.
+  //
+  // Written FIRST, before the profile and the pointer, because ensureUserMdPointer merges a
+  // fenced block into this same file — and writing the whole file afterwards would take the
+  // pointer back out with it.
+  const persona = personaForAgentType(type.id);
+  if (persona) await injectAgentFile(agentId, "SOUL.md", persona);
 
   const db = createAdminClient();
   const { data: setup } = await db
@@ -534,7 +541,7 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     );
   }
 
-  const { template, fellBack } = await resolveProvisionTemplate(type, allowTemplateFallback);
+  const { template } = await resolveProvisionTemplate(type, allowTemplateFallback);
 
   // The customer's chosen name/avatar (Personalize step, components/onboard/OnboardingForm.tsx)
   // may already be sitting in agent_setup if they finished onboarding before this ran.
@@ -575,7 +582,10 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
   // Persona (fallback template only) + any already-submitted setup answers get written
   // into the instance after the response, so neither the API caller nor Stripe's webhook
   // delivery waits on the instance booting.
-  after(() => injectAfterProvision(agent.id, type, workspaceId, fellBack, !!input.callerWritesContext));
+  // The persona is written on every provision now, not only when the template fell back, so
+  // nothing downstream needs to know which image it got. resolveProvisionTemplate still reports
+  // and logs the fallback for the operator.
+  after(() => injectAfterProvision(agent.id, type, workspaceId, !!input.callerWritesContext));
 
   return agent;
 }
