@@ -50,11 +50,20 @@ export type ChannelDef = {
   fields: ChannelField[];
   /** Shown once connected, when there's something worth saying about living with it. */
   connectedNote?: string;
+  /**
+   * Built, or not yet.
+   *
+   * Only Telegram is implemented; the rest answer 501. Until this is set false for them, the card
+   * says so up front instead of offering a form that takes four steps of setup and then refuses —
+   * which is what it did, and what David hit trying to connect Slack.
+   */
+  comingSoon?: boolean;
 };
 
 export const CHANNELS: ChannelDef[] = [
   {
     id: "whatsapp",
+    comingSoon: true,
     name: "WhatsApp",
     tagline: "Your own account — only you can use it",
     logo: composioLogoUrl("whatsapp"),
@@ -86,6 +95,7 @@ export const CHANNELS: ChannelDef[] = [
   },
   {
     id: "slack",
+    comingSoon: true,
     name: "Slack",
     tagline: "A private app in your workspace",
     logo: composioLogoUrl("slack"),
@@ -103,6 +113,7 @@ export const CHANNELS: ChannelDef[] = [
   },
   {
     id: "discord",
+    comingSoon: true,
     name: "Discord",
     tagline: "Your own bot, direct messages only",
     logo: composioLogoUrl("discord"),

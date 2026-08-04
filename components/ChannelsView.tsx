@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Check, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
+import { Check, ChevronDown, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,9 @@ export function ChannelsView() {
 function ChannelsPanel({ agentId }: { agentId: string }) {
   const [channels, setChannels] = useState<Channel[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // One card open at a time. All four expanded is four sets of developer-console instructions
+  // stacked up, and the one you want is whichever you clicked.
+  const [openId, setOpenId] = useState<ChannelId | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const attemptsRef = useRef(0);
 
@@ -168,17 +171,24 @@ function ChannelsPanel({ agentId }: { agentId: string }) {
         </Button>
       </div>
 
-      <div className="space-y-4">
-        {CHANNELS.map((def) => (
-          <ChannelCard
-            key={def.id}
-            agentId={agentId}
-            def={def}
-            channel={byId.get(def.id) ?? null}
-            loaded={channels !== null}
-            onChanged={load}
-          />
-        ))}
+      <div className="space-y-3">
+        {CHANNELS.map((def) => {
+          const channel = byId.get(def.id) ?? null;
+          return (
+            <ChannelCard
+              key={def.id}
+              agentId={agentId}
+              def={def}
+              channel={channel}
+              loaded={channels !== null}
+              onChanged={load}
+              // A pairing in progress stays open no matter what is clicked — collapsing a QR
+              // someone is mid-scan would throw the code away.
+              open={openId === def.id || channel?.state === "pending"}
+              onToggle={() => setOpenId((current) => (current === def.id ? null : def.id))}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -190,12 +200,16 @@ function ChannelCard({
   channel,
   loaded,
   onChanged,
+  open,
+  onToggle,
 }: {
   agentId: string;
   def: ChannelDef;
   channel: Channel | null;
   loaded: boolean;
   onChanged: () => void;
+  open: boolean;
+  onToggle: () => void;
 }) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -248,8 +262,14 @@ function ChannelCard({
   const canSubmit = def.fields.every((f) => (values[f.key] ?? "").trim().length > 0);
 
   return (
-    <section className="rounded-xl border bg-card p-5">
-      <div className="flex items-start gap-3">
+    <section className="overflow-hidden rounded-xl border bg-card">
+      {/* The whole header is the toggle. A chevron alone is a small target for a row this wide. */}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 p-5 text-left transition-colors hover:bg-muted/40"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={def.logo}
@@ -261,14 +281,46 @@ function ChannelCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base font-semibold">{def.name}</h2>
-            <StateBadge state={state} loaded={loaded} />
+            {def.comingSoon ? (
+              <Badge variant="secondary" className="font-normal">
+                Coming soon
+              </Badge>
+            ) : (
+              <StateBadge state={state} loaded={loaded} />
+            )}
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">{def.tagline}</p>
+          {/* Collapsed, this line is all anyone sees — so once connected it says who it's
+              connected AS, which is the fact worth having at a glance. */}
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+            {connected && channel?.account ? `Connected as ${channel.account}` : def.tagline}
+          </p>
         </div>
-      </div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+            open && "rotate-180"
+          )}
+        />
+      </button>
 
-      {connected ? (
-        <div className="mt-4 space-y-3">
+      {!open ? null : def.comingSoon ? (
+        <div className="space-y-3 border-t px-5 pb-5 pt-4">
+          <p className="text-sm text-muted-foreground">
+            We haven&apos;t built this one yet. Telegram is the only channel live so far — this
+            card is here so you know it&apos;s coming, not so you can set it up.
+          </p>
+          {/* The steps stay, greyed: they're accurate, and anyone who wants to get their tokens
+              ready ahead of time can. They just aren't a form yet. */}
+          <ol className="space-y-1 text-sm text-muted-foreground/70">
+            {def.steps.map((step, i) => (
+              <li key={step}>
+                {i + 1}. {step}
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : connected ? (
+        <div className="space-y-3 border-t px-5 pb-5 pt-4">
           {channel?.account && (
             <p className="text-sm">
               <span className="text-muted-foreground">Connected as</span>{" "}
@@ -293,7 +345,7 @@ function ChannelCard({
           </Button>
         </div>
       ) : (
-        <div className="mt-4 space-y-3">
+        <div className="space-y-3 border-t px-5 pb-5 pt-4">
           {state === "error" && channel?.message && (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
               {channel.message}
