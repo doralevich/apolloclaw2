@@ -6,6 +6,7 @@ import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { ChannelStrip } from "./ChannelStrip";
 import { ConnectStrip } from "./ConnectStrip";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
@@ -156,6 +157,9 @@ export function ChatView({
                 talk but can't act, and this is where the customer actually is when they find
                 that out. Renders nothing once the essentials are connected. */}
             <ConnectStrip agentId={agentId} />
+            {/* Where the agent can answer you, as opposed to what it can reach. Renders nothing
+                until Channels is switched on. */}
+            <ChannelStrip agentId={agentId} />
             {/* Height reserved so the composer doesn't jump when the greeting lands. */}
             <div className="flex min-h-[76px] flex-col items-center gap-2">
               {greeting && (

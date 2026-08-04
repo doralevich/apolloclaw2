@@ -85,7 +85,7 @@ export function ConnectStrip({ agentId }: { agentId: string }) {
             rel="noopener noreferrer"
             title={`Connect ${t.name}`}
             aria-label={`Connect ${t.name}`}
-            className="group inline-flex h-11 w-11 items-center justify-center rounded-xl border bg-card transition-colors hover:border-foreground/25 hover:bg-secondary"
+            className="group inline-flex h-14 w-14 items-center justify-center rounded-xl border bg-card transition-colors hover:border-foreground/25 hover:bg-secondary"
           >
             {t.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -96,7 +96,7 @@ export function ConnectStrip({ agentId }: { agentId: string }) {
                 decoding="async"
                 // Unconnected apps sit back until you look at them, so the row reads as an offer
                 // rather than a set of alerts.
-                className="h-6 w-6 object-contain opacity-70 transition-opacity group-hover:opacity-100"
+                className="h-8 w-8 object-contain opacity-70 transition-opacity group-hover:opacity-100"
               />
             ) : (
               <span className="text-sm font-semibold text-muted-foreground">
