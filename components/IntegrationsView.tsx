@@ -21,7 +21,7 @@ import {
   categoryForSlug,
   composioLogoUrl,
   DEFAULT_INTEGRATION_TOOLKITS,
-  FAVORITE_INTEGRATION_SLUGS,
+  ESSENTIAL_INTEGRATION_SLUGS,
   INTEGRATION_CATEGORIES,
 } from "@/lib/integration-catalog";
 import { cn } from "@/lib/utils";
@@ -51,10 +51,10 @@ const SECTION_PREVIEW = 6;
 type SubTab = "browse" | "connected";
 type StatusFilter = "all" | "connected" | "available";
 
-// "all" and "favorites" are pseudo-categories; everything else is a category title from
+// "all" and "essentials" are pseudo-categories; everything else is a category title from
 // INTEGRATION_CATEGORIES.
 const ALL = "all";
-const FAVORITES = "favorites";
+const ESSENTIALS = "essentials";
 
 function toolkitKey(slug: string): string {
   return slug.toLowerCase();
@@ -87,10 +87,10 @@ function matchesQuery(t: IntegrationToolkit, q: string): boolean {
   );
 }
 
-// The pinned Favorites row, in FAVORITE_INTEGRATION_SLUGS order. Favorites also appear in
-// their category below (like an app store's featured shelf) — the row is quick access,
-// the categories are the organized catalog.
-const FAVORITE_TOOLKITS: IntegrationToolkit[] = FAVORITE_INTEGRATION_SLUGS.map((slug) =>
+// The pinned Essentials shelf, in ESSENTIAL_INTEGRATION_SLUGS order. These also appear in
+// their own category below (like an app store's featured shelf) — the shelf is where to
+// start, the categories are the organised catalogue.
+const ESSENTIAL_TOOLKITS: IntegrationToolkit[] = ESSENTIAL_INTEGRATION_SLUGS.map((slug) =>
   DEFAULT_INTEGRATION_TOOLKITS.find((t) => toolkitKey(t.slug) === toolkitKey(slug))
 ).filter((t): t is IntegrationToolkit => !!t);
 
@@ -329,11 +329,11 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     let base: IntegrationToolkit[];
     if (q) {
       const curated = category === ALL ? localMatches
-        : category === FAVORITES ? localMatches.filter((t) => FAVORITE_INTEGRATION_SLUGS.includes(t.slug))
+        : category === ESSENTIALS ? localMatches.filter((t) => ESSENTIAL_INTEGRATION_SLUGS.includes(t.slug))
         : localMatches.filter((t) => categoryForSlug(t.slug) === category);
       base = category === ALL ? [...curated, ...remoteExtras] : curated;
-    } else if (category === FAVORITES) {
-      base = FAVORITE_TOOLKITS;
+    } else if (category === ESSENTIALS) {
+      base = ESSENTIAL_TOOLKITS;
     } else if (category === ALL) {
       base = [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps];
     } else {
@@ -390,37 +390,42 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
       </div>
 
       {tab === "browse" ? (
-        <div className="space-y-5">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search 1,000+ apps (e.g. github, gmail, calendar)"
-              className="h-11 pl-9"
-            />
-          </div>
-
-          {/* Filters. Categories on the left, connection state on the right — the two
-              questions people actually arrive with ("what have I already set up?" and
-              "what's there for email?"). Both narrow the same grid. */}
-          <div className="flex flex-col gap-3 rounded-xl border bg-card/50 p-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-0.5 inline-flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
+        /* Filters live in a rail on the left rather than a bar across the top. As a bar they
+           pushed the apps below the fold and read as a row of buttons; as a rail they read as
+           what they are — a table of contents you can sit in while the grid changes beside
+           you. Below lg the rail becomes a wrapping row above the content, because a 208px
+           column on a phone is most of the screen. */
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <aside className="shrink-0 lg:w-52">
+            <div className="flex items-center justify-between gap-2 px-1 pb-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <Settings2 className="h-3.5 w-3.5" />
                 Filter
               </span>
+              {filtersActive && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="inline-flex cursor-pointer items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
               <FilterPill active={category === ALL} onClick={() => setCategory(ALL)}>
                 All apps
               </FilterPill>
-              <FilterPill active={category === FAVORITES} onClick={() => setCategory(FAVORITES)}>
+              <FilterPill active={category === ESSENTIALS} onClick={() => setCategory(ESSENTIALS)}>
                 <Star
                   className={cn(
                     "h-3 w-3",
-                    category === FAVORITES ? "fill-amber-400 text-amber-400" : "text-amber-400"
+                    category === ESSENTIALS ? "fill-amber-400 text-amber-400" : "text-amber-400"
                   )}
                 />
-                Favorites
+                Essentials
               </FilterPill>
               {INTEGRATION_CATEGORIES.map((cat) => (
                 <FilterPill
@@ -432,30 +437,32 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 </FilterPill>
               ))}
             </div>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <div className="inline-flex rounded-full border bg-background p-0.5 text-xs">
-                <StatusButton active={status === "all"} onClick={() => setStatus("all")}>
-                  All
-                </StatusButton>
-                <StatusButton active={status === "connected"} onClick={() => setStatus("connected")}>
-                  Connected
-                </StatusButton>
-                <StatusButton active={status === "available"} onClick={() => setStatus("available")}>
-                  Not connected
-                </StatusButton>
-              </div>
-              {filtersActive && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 shrink-0 px-2 text-xs text-muted-foreground"
-                  onClick={clearFilters}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  Clear
-                </Button>
-              )}
+
+            <div className="mt-5 px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Status
             </div>
+            <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
+              <FilterPill active={status === "all"} onClick={() => setStatus("all")}>
+                All
+              </FilterPill>
+              <FilterPill active={status === "connected"} onClick={() => setStatus("connected")}>
+                Connected
+              </FilterPill>
+              <FilterPill active={status === "available"} onClick={() => setStatus("available")}>
+                Not connected
+              </FilterPill>
+            </div>
+          </aside>
+
+          <div className="min-w-0 flex-1 space-y-5">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search 1,000+ apps (e.g. github, gmail, calendar)"
+              className="h-11 pl-9"
+            />
           </div>
 
           {showSections ? (
@@ -466,13 +473,16 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 Disconnect any app anytime from the Connected tab.
               </p>
 
+              {/* Shown in full, not previewed. Every other shelf caps at SECTION_PREVIEW and
+                  hands off to "View all", which is right for a category of 8 you're browsing —
+                  and wrong here. The whole point of pinning eleven apps is that you see the
+                  eleven; hiding five behind a click would undo it. */}
               <Section
-                title="Favorites"
+                title="Essentials"
                 icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
-                total={FAVORITE_TOOLKITS.length}
-                onViewAll={() => setCategory(FAVORITES)}
+                total={ESSENTIAL_TOOLKITS.length}
               >
-                {FAVORITE_TOOLKITS.slice(0, SECTION_PREVIEW).map(renderCard)}
+                {ESSENTIAL_TOOLKITS.map(renderCard)}
               </Section>
 
               {INTEGRATION_CATEGORIES.map((cat) => (
@@ -576,6 +586,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
               Waiting for you to finish connecting in the other tab…
             </p>
           )}
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -849,30 +860,6 @@ function FilterPill({
         active
           ? "border-foreground/20 bg-secondary text-secondary-foreground"
           : "border-transparent bg-background text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function StatusButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "cursor-pointer whitespace-nowrap rounded-full px-2.5 py-1 font-medium transition-colors",
-        active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >
       {children}

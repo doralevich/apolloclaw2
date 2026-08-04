@@ -77,6 +77,12 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
       toolkit("slack", "Slack", "Slack is a channel-based messaging platform."),
       toolkit("discord", "Discord", "Discord for community and team conversations."),
       toolkit("whatsapp", "WhatsApp", "WhatsApp for messaging customers and contacts."),
+      // SLUG UNVERIFIED. Every other entry in this file was checked against
+      // docs.composio.dev/toolkits/<slug>; that host 403s from this environment, so "telegram"
+      // is inferred from the naming the other chat toolkits use (slack, discord, whatsapp are
+      // all the plain lowercase name). If it is wrong the card shows a broken logo and Connect
+      // fails — check this one card before trusting it.
+      toolkit("telegram", "Telegram", "Telegram for direct messages and channel broadcasts."),
     ],
   },
   {
@@ -126,22 +132,27 @@ export function categoryForSlug(slug: string): string | undefined {
   return CATEGORY_BY_SLUG.get(slug.toLowerCase());
 }
 
-// Pinned at the top of Browse under a "Favorites" heading — the apps a business workspace
-// connects first. Order here is display order. Edit freely; slugs must exist in the catalog above.
-export const FAVORITE_INTEGRATION_SLUGS: string[] = [
+// Pinned at the top of Browse. Order here is display order; slugs must exist in the catalog
+// above.
+//
+// This was a fifteen-item "Favorites" list, which is not a shelf — it was most of the curated
+// catalogue reprinted above itself, so it told you nothing about where to start. It is now the
+// three things that change what an agent can do at all, plus the places a business actually
+// talks. Notion, Zoom, HubSpot, LinkedIn, Sheets, Asana and Trello came off the pin and still
+// appear in their own categories: good apps, but none of them is the first connection anyone
+// should make.
+export const ESSENTIAL_INTEGRATION_SLUGS: string[] = [
+  // Mail, calendar, files. Almost every real request touches one of these.
   "gmail",
-  "googlecalendar",
   "outlook",
+  "googlecalendar",
   "googledrive",
   "one_drive",
   "dropbox",
-  "notion",
+  // Messaging — David's pick. Where the agent reaches people rather than documents.
   "slack",
   "microsoft_teams",
-  "zoom",
-  "hubspot",
-  "linkedin",
-  "googlesheets",
-  "asana",
-  "trello",
+  "discord",
+  "whatsapp",
+  "telegram",
 ];
