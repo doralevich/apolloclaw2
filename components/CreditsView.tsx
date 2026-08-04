@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, Search, Sparkles, Wrench } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { usd } from "@/lib/format";
@@ -14,9 +14,9 @@ import { BuyCredits } from "@/components/BuyCredits";
 import { CreditSafetyNet } from "@/components/CreditSafetyNet";
 import { Button } from "@/components/ui/button";
 
-// Read-only API Credits tab: the active agent's remaining balance, monthly allowance,
-// and this month's managed-spend breakdown (LLM / search / tools). Raw platform values —
-// no top-ups, no markup, no ledger. Data comes from the existing budget/usage routes.
+// Billing & Credits: what the active agent has left, how to add more, and the auto-recharge
+// safety net. The per-integration breakdown moved to Settings → Usage (components/UsageView
+// .tsx); one line here points at it, because this page is where people learned to find it.
 
 // Newer Agent37 builds report the one-time-credit balance as `credit_remaining_micros`;
 // the Budget type still carries the older `topup_remaining_micros` name. Read both so the
@@ -174,11 +174,11 @@ export function CreditsView() {
 function Header({ agentName }: { agentName?: string }) {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">API Credits</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Billing & Credits</h1>
       <p className="text-sm text-muted-foreground">
         {agentName
           ? `What ${agentName} has left to spend, and where this month went.`
-          : "Balance and usage for your agent."}
+          : "Balance and top-ups for your agent."}
       </p>
     </div>
   );
@@ -222,69 +222,22 @@ function CreditsCards({ data }: { data: CreditsData }) {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-6">
-        <div className="flex items-baseline justify-between gap-3">
-          <div>
-            <h2 className="text-base font-semibold">Usage breakdown</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {monthLabel(usage.period)}
-            </p>
-          </div>
-          <span className="text-sm font-semibold tabular-nums">{usd(usage.total_micros)}</span>
+      {/* The breakdown moved to Settings → Usage. Billing answers "how much is left and how
+          do I add more"; where the month went is a different question with a different
+          urgency, and stacking both in one scroll meant the top-up controls sat below a
+          table nobody was reading at that moment. One line out to it, rather than a silent
+          removal — this page used to be where people found it. */}
+      <div className="flex items-center justify-between gap-3 rounded-xl border bg-card p-6">
+        <div>
+          <div className="text-sm font-medium">Where it went</div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {usd(usage.total_micros)} spent in {monthLabel(usage.period)}, split by what it bought.
+          </p>
         </div>
-        <div className="mt-4 overflow-hidden rounded-lg border">
-          <UsageRow
-            icon={<Sparkles />}
-            label="LLM"
-            cost={usage.by_integration.llm.cost_micros}
-            calls={usage.by_integration.llm.calls}
-          />
-          <UsageRow
-            icon={<Search />}
-            label="Search"
-            cost={usage.by_integration.brave.cost_micros}
-            calls={usage.by_integration.brave.calls}
-          />
-          <UsageRow
-            icon={<Wrench />}
-            label="Tools"
-            cost={usage.by_integration.composio.cost_micros}
-            calls={usage.by_integration.composio.calls}
-            last
-          />
-        </div>
+        <Button asChild variant="outline" size="sm" className="shrink-0">
+          <Link href="/dashboard/settings/usage">View usage</Link>
+        </Button>
       </div>
-    </div>
-  );
-}
-
-function UsageRow({
-  icon,
-  label,
-  cost,
-  calls,
-  last,
-}: {
-  icon: ReactNode;
-  label: string;
-  cost: number;
-  calls: number;
-  last?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between px-3 py-2.5 text-sm",
-        !last && "border-b"
-      )}
-    >
-      <span className="flex items-center gap-2 font-medium [&_svg]:size-4 [&_svg]:text-muted-foreground">
-        {icon}
-        {label}
-      </span>
-      <span className="tabular-nums text-muted-foreground">
-        {calls} {calls === 1 ? "call" : "calls"} · {usd(cost)}
-      </span>
     </div>
   );
 }
