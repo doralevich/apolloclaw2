@@ -5,6 +5,9 @@ export interface Workspace {
   name: string;
   owner_id: string;
   created_at: string;
+  /** The customer's uploaded logo. Null for most workspaces — the dashboard falls back to
+   *  the ApolloClaw mark, which is a first-class state rather than a gap. */
+  logo_url?: string | null;
 }
 
 export interface WorkspaceWithRole extends Workspace {
