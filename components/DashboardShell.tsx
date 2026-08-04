@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, SlidersHorizontal, Users, X } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
+import { CHANNELS_ENABLED } from "@/config/channels";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
@@ -27,6 +28,13 @@ const NAV = [
   { href: "/dashboard", label: "My Agent", icon: LayoutGrid, exact: true },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
+  // Sits next to Connections because the two answer the neighbouring questions — what the agent
+  // can reach, and where it answers you. Absent entirely until the runtime endpoints are
+  // confirmed (config/channels.ts): a rail item that leads somewhere broken is worse than one
+  // that isn't there yet.
+  ...(CHANNELS_ENABLED
+    ? [{ href: "/dashboard/channels", label: "Channels", icon: Radio, exact: false }]
+    : []),
   // Sits directly under Chat's neighbours: it is the answer to "what do I say to this thing",
   // which is a question people have while looking at the chat, not while looking for account
   // options.
