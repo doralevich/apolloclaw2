@@ -5,20 +5,16 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
-import { statusVariant } from "@/lib/format";
-import { getAgentType } from "@/config/agent-types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AgentActionsMenu } from "@/components/AgentActionsMenu";
-import { AgentNameCell } from "@/components/AgentNameCell";
+import { AgentCard } from "@/components/AgentCard";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
-import { SetupBanner, SetupCell } from "@/components/SetupPrompt";
+import { SetupBanner } from "@/components/SetupPrompt";
 
-// The Agents table reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
+// My Agent reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
 // lifecycle actions here — create/start/stop/delete/rename — immediately update Chat,
 // Integrations, and Credits too. The provider also owns the transitional-status poll.
 export function AgentsView() {
-  const { current } = useWorkspace();
+  const { current, isPlatformAdmin } = useWorkspace();
   const { agents, role, loading, error, refresh } = useActiveAgent();
 
   // Storefront deep link (/agents -> /dashboard?buy=cfo, surviving login): as soon as the
@@ -75,7 +71,7 @@ export function AgentsView() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{agents.length > 1 ? "My Agents" : "My Agent"}</h1>
           <p className="text-sm text-muted-foreground">{current.name}</p>
         </div>
         {/* Visible to every member — the server enforces entitlement + the per-type cap. */}
@@ -111,58 +107,19 @@ export function AgentsView() {
           </div>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium">Setup</th>
-                <th className="px-4 py-2 font-medium">Type</th>
-                <th className="px-4 py-2 font-medium">Resources</th>
-                <th className="px-4 py-2 text-center font-medium">Quick actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agents.map((a) => (
-                <tr key={a.agent37_id} className="border-t [&>td]:align-middle">
-                  <td className="px-4 py-3">
-                    <AgentNameCell agent={a} canEdit={role === "admin"} onRenamed={refresh} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Badge variant={statusVariant(a.live_status)}>{a.live_status ?? "unknown"}</Badge>
-                      {a.past_due && <Badge variant="warning">past due</Badge>}
-                    </div>
-                    {a.status_reason && (
-                      <div
-                        className="mt-1 max-w-[16rem] truncate text-xs text-destructive"
-                        title={a.status_reason.message}
-                      >
-                        {a.status_reason.message}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <SetupCell agent={a} />
-                  </td>
-                  {/* The product name, not the image it was built from. Every Apollo Agent
-                      provisions from the `college-agent` template (config/agent-types.ts), so
-                      showing the raw template told a paying ApolloClaw customer they had bought
-                      something called "college-agent". */}
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {(a.agent_type ? getAgentType(a.agent_type)?.label : undefined) ?? a.template ?? "-"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
-                  </td>
-                  <td className="px-4 py-3">
-                    <AgentActionsMenu agent={a} role={role} onChanged={refresh} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        /* A card each, not a table. A customer has exactly one agent, so the table rendered
+           a header row over a single row — and two of its columns (Type, Resources) answered
+           questions nobody asked. Several cards still read fine for the admin case. */
+        <div className="space-y-4">
+          {agents.map((a) => (
+            <AgentCard
+              key={a.agent37_id}
+              agent={a}
+              role={role}
+              isPlatformAdmin={isPlatformAdmin}
+              onChanged={refresh}
+            />
+          ))}
         </div>
       )}
     </div>

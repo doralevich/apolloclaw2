@@ -51,17 +51,27 @@ const PORT_ACTIONS: ReadonlyArray<{
 export function AgentActionsMenu({
   agent,
   role,
+  isPlatformAdmin,
   onChanged,
 }: {
   agent: MergedAgent;
   role: Role;
+  isPlatformAdmin: boolean;
   onChanged: () => void;
 }) {
   const isAdmin = role === "admin";
   const running = agent.live_status === "running";
   const transitional = isTransitional(agent.live_status);
   const ports = portsForTemplate(agent.template);
-  const portActions = PORT_ACTIONS.filter(({ name }) => ports[name] !== undefined);
+
+  // Control UI, file browser and terminal are root access to the box, and they used to render
+  // for any workspace member. They are indispensable to us and hazardous to a customer: the
+  // file browser is two clicks from deleting SOUL.md, after which the agent forgets who it is
+  // and its owner has no way to know why. Platform admins only — a different gate from `role`,
+  // which is the CUSTOMER's admin, and who owning the agent does not make a sysadmin.
+  const portActions = isPlatformAdmin
+    ? PORT_ACTIONS.filter(({ name }) => ports[name] !== undefined)
+    : [];
 
   const [deleting, setDeleting] = useState(false);
   const [opening, setOpening] = useState<number | null>(null);
