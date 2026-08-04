@@ -10,7 +10,7 @@ const CASES = [
   {
     title: "AI Chief of Staff Deployment",
     body:
-      "A senior executive at a PE-backed operating company was managing an overwhelming volume of daily communications, internal coordination, and strategic follow-up with no dedicated support structure. Following Apollo[Claw]'s proprietary intake and 30-day onboarding, a tailored AI Chief of Staff was deployed. Within the first month, the executive recovered an estimated 12 to 15 hours per week previously consumed by administrative tasks; that time was redirected entirely toward revenue-generating activity and strategic decision-making.",
+      "A senior executive at a PE-backed operating company was managing an overwhelming volume of daily communications, internal coordination, and strategic follow-up with no dedicated support structure. Following Apollo[Claw]'s intake and two-week onboarding, a tailored AI Chief of Staff was deployed. Within the first month, the executive recovered an estimated 12 to 15 hours per week previously consumed by administrative tasks; that time was redirected entirely toward revenue-generating activity and strategic decision-making.",
   },
   {
     title: "HIPAA-Aware Clinical AI Assistant",

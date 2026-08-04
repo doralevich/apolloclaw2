@@ -119,7 +119,7 @@ export default function CaseStudiesPage() {
             Real Businesses.<br />Real Results.
           </h1>
           <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 640, margin: "0 auto" }}>
-            These are outcomes from actual Apollo[Claw] deployments across six industries. Identifying details are withheld at client request.
+            These are outcomes from actual Apollo[Claw] deployments across six industries. Names and identifying details have been changed or withheld at client request.
           </p>
         </div>
       </section>
@@ -147,7 +147,7 @@ export default function CaseStudiesPage() {
             ))}
           </div>
           <p className="text-center font-mono text-xs mt-10" style={{ color: "rgba(11,23,41,0.3)" }}>
-            Representative client experiences. Identifying details withheld at client request.
+            Outcomes from real client engagements. Names and identifying details changed or withheld at client request.
           </p>
         </div>
       </section>

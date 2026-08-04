@@ -85,16 +85,26 @@ export function CreateAgentModal({
   const alreadyHas = (t: (typeof AGENT_TYPES)[number]) =>
     existing.has(t.id) || existing.has(t.template);
 
-  // Internal types (the license build) are provisioned by the platform after checkout, not
-  // picked from a card. Filtered out for customers rather than shown disabled: "you cannot
-  // choose this" and "this is not a thing you choose" are different messages.
+  // Two filters, for two different reasons.
   //
-  // Platform admins DO see them. Both registry entries are internal now, so filtering for
-  // everyone left the modal with nothing to show — it rendered no trigger at all, and there
-  // was no way to create an Apollo agent from the dashboard by any route. Which is fine for a
-  // customer, who gets one with their licence, and useless for us: testing a provisioning
-  // change meant having no way to provision.
-  const pickableTypes = AGENT_TYPES.filter((t) => isPlatformAdmin || !t.internal);
+  // `externalUrl` types are sold on another site — The College Agent, at thecollegeagent.ai.
+  // Nothing in this app can create one: POST /api/agents rejects them outright (app/api/agents
+  // /route.ts). So the card was never an option, only a door out to somebody else's checkout,
+  // and standing on the ApolloClaw dashboard being asked to choose between your own product
+  // and a college agent is a question with one answer. Excluded for everyone, admins included.
+  //
+  // `internal` types (the license build) are provisioned by the platform after checkout rather
+  // than picked from a card, so they're filtered out for customers — "you cannot choose this"
+  // and "this is not a thing you choose" are different messages. Platform admins DO see them,
+  // because otherwise testing a provisioning change means having no way to provision.
+  const pickableTypes = AGENT_TYPES.filter(
+    (t) => !t.externalUrl && (isPlatformAdmin || !t.internal)
+  );
+
+  // One option is not a choice. With the College Agent gone from the list this is the normal
+  // case, so the dialog states what it is about to build instead of rendering a list of one
+  // and asking you to select it first.
+  const soloType = pickableTypes.length === 1 ? pickableTypes[0] : null;
 
   const selectedType = pickableTypes.find((t) => t.id === selected) ?? null;
 
@@ -108,11 +118,6 @@ export function CreateAgentModal({
 
   function submit() {
     if (!current || !selectedType) return;
-    // Sold on a partner site (The College Agent): the CTA is a hand-off, nothing to POST.
-    if (selectedType.externalUrl) {
-      window.location.assign(selectedType.externalUrl);
-      return;
-    }
     return run(async () => {
       // Paid agents: hand off to Stripe Checkout. The webhook provisions after payment
       // and the buyer lands back on the dashboard with ?checkout=success.
@@ -147,6 +152,9 @@ export function CreateAgentModal({
   // reach this, since internal types are pickable for them.
   if (pickableTypes.length === 0) return null;
 
+  const soloAlreadyCreated = !!soloType && alreadyHas(soloType);
+  const SoloIcon = (soloType?.icon && TYPE_ICONS[soloType.icon]) || Bot;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -155,17 +163,40 @@ export function CreateAgentModal({
           Create Agent
         </Button>
       </DialogTrigger>
-      {/* Eight type cards overflow a viewport, so the dialog caps its height and the card
-          list scrolls internally — the name field and the checkout/create button must
-          always stay visible. */}
+      {/* The card list scrolls internally against a capped dialog height, so the create /
+          checkout button stays visible however many types the registry grows back to. */}
       <DialogContent className="flex max-h-[85vh] flex-col">
         <DialogHeader>
-          <DialogTitle>Create an agent</DialogTitle>
+          <DialogTitle>{soloType ? `Create your ${soloType.label}` : "Create an agent"}</DialogTitle>
           <DialogDescription>
-            Pick an agent type for {current.name}. Each workspace can have one agent per type.
+            {soloType
+              ? `A new ${soloType.label} for ${current.name}.`
+              : `Pick an agent type for ${current.name}. Each workspace can have one agent per type.`}
           </DialogDescription>
         </DialogHeader>
 
+        {soloType ? (
+          <div className="flex items-start gap-3 rounded-lg border p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+              <SoloIcon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium">{soloType.label}</span>
+                {soloAlreadyCreated && <Badge variant="muted">Already created</Badge>}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">{soloType.description}</p>
+              {soloType.planKey && !soloAlreadyCreated && (
+                <p className="mt-1 text-xs font-medium">{BUNDLE_PRICE_LABEL}</p>
+              )}
+              {soloAlreadyCreated && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {current.name} already has one. Each workspace can have one agent per type.
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
           {pickableTypes.map((t) => {
             const Icon = (t.icon && TYPE_ICONS[t.icon]) || Bot;
@@ -198,29 +229,25 @@ export function CreateAgentModal({
                   {t.planKey && !alreadyCreated && (
                     <p className="mt-1 text-xs font-medium">{BUNDLE_PRICE_LABEL}</p>
                   )}
-                  {t.externalUrl && !alreadyCreated && (
-                    <p className="mt-1 text-xs font-medium">{t.priceLabel} · at thecollegeagent.ai</p>
-                  )}
                 </div>
               </button>
             );
           })}
         </div>
+        )}
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>
             Cancel
           </Button>
           <Button onClick={submit} disabled={busy || !selectedType}>
-            {selectedType?.externalUrl
-              ? "Get it at thecollegeagent.ai"
-              : selectedType?.planKey
-                ? busy
-                  ? "Redirecting to checkout..."
-                  : "Continue to Checkout"
-                : busy
-                  ? "Creating..."
-                  : "Create Agent"}
+            {selectedType?.planKey
+              ? busy
+                ? "Redirecting to checkout..."
+                : "Continue to Checkout"
+              : busy
+                ? "Creating..."
+                : "Create Agent"}
           </Button>
         </DialogFooter>
       </DialogContent>

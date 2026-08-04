@@ -2,7 +2,6 @@
 import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
-import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { apiFetch } from "@/lib/api";
@@ -205,12 +204,12 @@ function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; to
 // ════════════════════════════════════════════════════════════
 // GATEKEEPER
 // ════════════════════════════════════════════════════════════
-interface GateData { first: string; last: string; email: string; personalEmail: string; phone: string; linkedin: string; company: string }
+interface GateData { first: string; last: string; email: string; phone: string; linkedin: string; company: string }
 // `heading`/`intro` are overridable so the white-glove entry point can say plainly that this
 // is an invited flow, rather than reusing self-serve copy that would read as a sales page to
 // someone David has already spoken to.
 function Gatekeeper({ onPass, heading, intro }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string }) {
-  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", personalEmail: "", phone: "", linkedin: "", company: "" });
+  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
 
   const [err, setErr] = useState("");
   const set = (k: keyof GateData, v: string) => setD(p => ({ ...p, [k]: v }));
@@ -239,11 +238,19 @@ function Gatekeeper({ onPass, heading, intro }: { onPass: (d: GateData) => void;
               <FF label="First Name"><TInput value={d.first} onChange={v => set("first", v)} placeholder="Jane" /></FF>
               <FF label="Last Name"><TInput value={d.last} onChange={v => set("last", v)} placeholder="Smith" /></FF>
             </Row2>
+            {/* One email. There used to be a second "Personal Email — a backup contact, not
+                used for login", which asked the very first question of the flow twice and had
+                to explain in a hint why the answer didn't matter. Nothing ever read it. */}
             <Row2>
-              <FF label="Business Email" hint="This is the email you'll use to log in."><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
-              <FF label="Personal Email" hint="A backup contact. Not used for login."><TInput type="email" value={d.personalEmail} onChange={v => set("personalEmail", v)} placeholder="jane@gmail.com" /></FF>
+              <FF label="Email" hint="This is the email you'll use to log in."><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
+              <FF label="Phone Number"><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
             </Row2>
-            <FF label="Phone Number"><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
+            {/* LinkedIn belongs here, with the rest of "who are you". It used to sit in the
+                optional Life Context step between relationship status and children — filed
+                under personal life, behind a "Skip this step" button, so the one public
+                professional record of the person we are building an agent for could disappear
+                from the answers entirely. */}
+            <FF label="LinkedIn" hint="Optional. Helps your agent understand your professional background."><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
           <button type="button" onClick={submit} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
@@ -283,17 +290,14 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [presetColor, setPresetColor] = useState<string | null>(null);
-  const [presetImage, setPresetImage] = useState<string | null>(null);
 
-  // The three ways to choose are mutually exclusive — picking any one clears the other two, so
-  // the preview always shows the thing that will actually be saved.
-  const pickPreset = (color: string) => { setPresetColor(color); setPresetImage(null); setAvatarFile(null); setAvatarPreview(null); };
-  const pickImage = (src: string) => { setPresetImage(src); setPresetColor(null); setAvatarFile(null); setAvatarPreview(null); };
+  // Upload and colour are mutually exclusive — picking either clears the other, so the preview
+  // always shows the thing that will actually be saved.
+  const pickPreset = (color: string) => { setPresetColor(color); setAvatarFile(null); setAvatarPreview(null); };
   const handleUpload = (file: File | null) => {
     if (!file) return;
     setAvatarFile(file);
     setPresetColor(null);
-    setPresetImage(null);
     const reader = new FileReader();
     reader.onload = () => setAvatarPreview(String(reader.result));
     reader.readAsDataURL(file);
@@ -304,7 +308,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
   };
 
   const previewUrl =
-    avatarPreview || presetImage || initialsAvatarDataUri(name.trim() || agentLabel, presetColor || AVATAR_COLORS[0]);
+    avatarPreview || initialsAvatarDataUri(name.trim() || agentLabel, presetColor || AVATAR_COLORS[0]);
   const chipStyle: React.CSSProperties = { background: SRF2, border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 12.5, padding: "6px 14px", borderRadius: 20, cursor: "pointer" };
 
   return (
@@ -328,26 +332,11 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
         </div>
 
         <div style={{ textAlign: "left" }}>
+          {/* The preset row (the AC Guy poses) was here and is gone at David's call. Upload
+              your own or pick a color for the initials — those are the two ways to end up with
+              a picture that means something, and a shelf of stock mascots between them was
+              mostly a way to leave every agent looking like every other agent. */}
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXM, marginBottom: 10 }}>Avatar</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-            {AVATAR_PRESETS.map((p) => {
-              const on = presetImage === p.src;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => pickImage(p.src)}
-                  aria-label={p.label}
-                  aria-pressed={on}
-                  style={{ width: 52, height: 52, borderRadius: "50%", padding: 0, background: SRF2, border: on ? `2px solid ${TX}` : `1px solid ${BDR}`, boxShadow: on ? `0 0 0 2px ${SRF}, 0 0 0 3px ${TX}` : "none", cursor: "pointer", overflow: "hidden" }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.src} alt="" width={52} height={52} style={{ display: "block", objectFit: "cover" }} />
-                </button>
-              );
-            })}
-          </div>
-          <p style={{ fontSize: 11, color: TXD, margin: "0 0 8px" }}>Or use your own</p>
           <label style={{ display: "inline-block", border: `1px dashed rgba(0,0,0,0.25)`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", background: SRF2, color: TXM, fontSize: 13, fontWeight: 700 }}>
             Upload an image
             <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { handleUpload(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
@@ -361,7 +350,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
           </div>
         </div>
 
-        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor, avatarPresetImage: presetImage })} style={{ width: "100%", marginTop: 28, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
+        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor, avatarPresetImage: null })} style={{ width: "100%", marginTop: 28, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
           Continue →
         </button>
       </div>
@@ -478,7 +467,6 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
           first: gate.first,
           last: gate.last,
           email: gate.email,
-          personalEmail: gate.personalEmail,
           phone: gate.phone,
         }),
       });
@@ -737,7 +725,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
   const [step, setStep] = useState(0);
   const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
   const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
-  const [s4, setS4] = useState({ marital: "", linkedin: "", kids: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
+  const [s4, setS4] = useState({ marital: "", kids: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
   const [s5, setS5] = useState({ decStyle: [] as string[], stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], stuckDecision: "" });
   const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
   const [s7, setS7] = useState({ goals: [] as string[], metric: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "" });
@@ -765,7 +753,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, personalEmail: gate.personalEmail, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: s4.linkedin || gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -870,7 +858,6 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
       <SHead stepNum={6} total={0} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />
       <button type="button" onClick={next} style={{ alignSelf: "flex-start", background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>Skip this step →</button>
       <FF label="Relationship status"><TSelect value={s4.marital} onChange={v => f4("marital", v)} options={MARITAL} /></FF>
-      <FF label="LinkedIn"><TInput value={s4.linkedin} onChange={v => f4("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
       <RadioGroup label="Where are you in your business journey?" options={LIFE_STAGE} value={s4.lifeStage} onChange={v => f4("lifeStage", v)} />
       <CheckGroup label="What do you want your business to do for you in 3 years?" options={TIMELINE_3YR} value={s4.timeline3yr} onChange={v => f4("timeline3yr", v)} cols={2} />
       <FF label="Your personal 3-year vision" hint="Not metrics - your actual life."><TArea value={s4.personalGoal} onChange={v => f4("personalGoal", v)} placeholder="Be honest. What are you really building toward?" rows={3} /></FF>
@@ -948,7 +935,7 @@ export interface OnboardingFormProps {
 // five contact fields they just typed, which are also on the Stripe session.
 const GATE_STORAGE_KEY = "apolloclaw.onboard.gate";
 
-const EMPTY_GATE: GateData = { first: "", last: "", email: "", personalEmail: "", phone: "", linkedin: "", company: "" };
+const EMPTY_GATE: GateData = { first: "", last: "", email: "", phone: "", linkedin: "", company: "" };
 
 // The three pieces useSyncExternalStore needs. The snapshot is the RAW string, not a parsed
 // object: React compares snapshots with Object.is, and parsing here would hand it a fresh
