@@ -1,5 +1,5 @@
 import { agent37 } from "@/lib/agent37";
-import { requireEntitled, requireMember, requireUser } from "@/lib/auth";
+import { requireAdmin, requireEntitled, requireMember, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAgentType, licenseAgentType } from "@/config/agent-types";
@@ -7,14 +7,15 @@ import { provisionTypedAgent } from "@/lib/provision";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import type { Agent, AgentRow, MergedAgent } from "@/lib/types";
 
-// Self-serve provisioning: any entitled member of the workspace can create one agent per
-// type. Everything spend-shaped (template, machine size, budget cap) comes from the
+// Self-serve provisioning: an entitled workspace ADMIN can create one agent per type.
+// Everything spend-shaped (template, machine size, budget cap) comes from the
 // agent-type registry — never from the client. Paid types never provision here: they go
 // through Checkout (/api/build/checkout) and are provisioned by the Stripe webhook.
 async function createTypedAgent(typeId: string, workspaceId: string | undefined, rawName: string | undefined) {
   const { supabase, user } = await requireUser();
   if (!workspaceId) throw new ApiError(400, "invalid_request", "workspace_id is required");
-  await requireMember(supabase, workspaceId, user.id);
+  // Admin: provisioning an agent creates a billable instance with its own spend cap.
+  await requireAdmin(supabase, workspaceId, user.id);
   await requireEntitled(supabase);
 
   const type = getAgentType(typeId);

@@ -19,7 +19,7 @@ export const POST = route(async (request: Request) => {
 
   // Same ownership gate as every other per-agent route. Credit is spent by this instance, so
   // the right to buy it is the right to use it.
-  const { user, row: agent } = await requireAgentAccess(body.agent_id, "member");
+  const { user, row: agent } = await requireAgentAccess(body.agent_id, "admin");
 
   const pack = creditPackForCatalogKey(body.pack);
   if (!pack) throw new ApiError(404, "not_found", "Unknown credit pack");

@@ -10,6 +10,7 @@ import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
+import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,9 @@ import { cn } from "@/lib/utils";
 // former.
 const NAV = [
   { href: "/dashboard/start-here", label: "Start Here", icon: Compass, exact: false },
-  { href: "/dashboard", label: "Agents", icon: LayoutGrid, exact: true },
+  // "My Agent", singular, because that is what a customer has: one, arriving with their
+  // licence. Pluralises only if a workspace somehow holds more than one.
+  { href: "/dashboard", label: "My Agent", icon: LayoutGrid, exact: true },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
   // Sits directly under Chat's neighbours: it is the answer to "what do I say to this thing",
@@ -91,8 +94,12 @@ function SidebarContent({
   // "Start Here" is where every session lands, agents or not: with one it greets the
   // active agent, without one it prompts them to create the first. Hiding it used to
   // leave a freshly-signed-in customer on a page missing from their own sidebar.
-  const nav = NAV;
   const inSettings = pathname.startsWith(SETTINGS_ROOT);
+
+  const { agents } = useActiveAgent();
+  const nav = NAV.map((item) =>
+    item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item
+  );
 
   const { current } = useWorkspace();
   const logoUrl = current?.logo_url || branding.logoUrl;
