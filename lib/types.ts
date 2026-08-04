@@ -251,3 +251,44 @@ export interface IntegrationConnectResult {
   connectedAccountId: string;
   redirectUrl: string;
 }
+
+// ── Channels ────────────────────────────────────────────────────────────────────────────────
+//
+// Where the agent can be talked to, as opposed to what it can reach (that's Integrations
+// above). A channel is the customer's OWN account or bot — their WhatsApp, their Telegram bot,
+// an app in their Slack workspace — so the agent answers them and nobody else.
+//
+// THE WIRE SHAPES BELOW ARE PROVISIONAL. See the banner over the channel methods in
+// lib/agent37.ts: they were written against the flows in the product screenshots, not against a
+// spec, because the Agent37 API host isn't reachable from the build environment. Anything the
+// runtime actually returns wins over this.
+
+export type ChannelId = "whatsapp" | "telegram" | "slack" | "discord";
+
+export type ChannelState =
+  // Live: the agent is listening and will answer here.
+  | "connected"
+  // Started but unfinished — a QR waiting to be scanned, an OAuth tab still open.
+  | "pending"
+  | "disconnected"
+  // The credential stopped working (token revoked, device unlinked). Distinct from
+  // disconnected: the customer set this up once and wants to know it broke.
+  | "error";
+
+export interface Channel {
+  channel: ChannelId;
+  state: ChannelState;
+  /** Human-readable "connected as": a phone number, @botname, or workspace name. */
+  account?: string | null;
+  /** Why it's in an error state, when the runtime says. */
+  message?: string | null;
+  /** Pairing payload for the QR flows — a data: URL or the raw string to encode. */
+  qr?: string | null;
+  /** For Discord: the "add this bot to a server" link to hand back to the customer. */
+  inviteUrl?: string | null;
+  updatedAt?: number | null;
+}
+
+export interface ChannelsResult {
+  channels: Channel[];
+}

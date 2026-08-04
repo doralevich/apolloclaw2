@@ -2,6 +2,9 @@ import "server-only";
 import type {
   Agent,
   Budget,
+  Channel,
+  ChannelId,
+  ChannelsResult,
   IntegrationConnectionsResult,
   IntegrationConnectResult,
   IntegrationToolkitsResult,
@@ -389,6 +392,48 @@ export const agent37 = {
   disconnectIntegration: (id: string, connectedAccountId: string) =>
     call<{ id: string; deleted: boolean }>(
       `/instances/${id}/integrations/connections/${encodeURIComponent(connectedAccountId)}`,
+      { method: "DELETE" }
+    ),
+
+  // ── Channels ──────────────────────────────────────────────────────────────────────────────
+  //
+  // ⚠️ THE FOUR CALLS BELOW ARE THE ONLY UNVERIFIED CODE IN THE CHANNELS FEATURE. Everything
+  // else — the page, the four flows, the routes, the polling — is finished and real. These
+  // paths and payloads were written to match the shape of the integration endpoints directly
+  // above, because api.agent37.com and docs.agent37.com are both blocked from the build
+  // environment (403 on CONNECT) and there is no API spec in the repo. They have never been
+  // run against the live API.
+  //
+  // The runtime is understood to already provide this — another whitelabel on the same stack
+  // ships these exact flows. So the work here is to REPLACE the four lines below with the real
+  // paths and shapes, not to build anything further. Nothing else in the feature should need to
+  // change: the routes forward, the view renders `Channel` objects, and the wire types in
+  // lib/types.ts are the contract to correct if the runtime disagrees.
+  //
+  // Until that happens, config/channels.ts keeps the feature dark
+  // (NEXT_PUBLIC_CHANNELS_ENABLED), so no customer meets a tab that cannot work.
+
+  /** Every channel and its current state. Drives the four cards and the pairing poll. */
+  listChannels: (id: string) => call<ChannelsResult>(`/instances/${id}/channels`),
+
+  /**
+   * Begin or complete a connection.
+   *
+   * For the token flows this carries the credentials and should come back connected (or with a
+   * message saying why not). For WhatsApp there are no credentials — the call starts a pairing
+   * and returns `qr` for the customer to scan, and the state stays "pending" until their phone
+   * finishes it, which is what the poll in the view is watching for.
+   */
+  connectChannel: (id: string, channel: ChannelId, credentials: Record<string, string>) =>
+    call<Channel>(`/instances/${id}/channels/${encodeURIComponent(channel)}/connect`, {
+      method: "POST",
+      body: JSON.stringify({ credentials }),
+    }),
+
+  /** Unlink a channel and forget its credentials. */
+  disconnectChannel: (id: string, channel: ChannelId) =>
+    call<{ channel: string; deleted: boolean }>(
+      `/instances/${id}/channels/${encodeURIComponent(channel)}`,
       { method: "DELETE" }
     ),
 };
