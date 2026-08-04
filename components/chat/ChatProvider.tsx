@@ -1,12 +1,23 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { type ChatSession } from "./types";
 
+export const CHAT_BASE = "/dashboard/chat";
+
+/** "/dashboard/chat/abc" -> "abc"; the bare chat URL (and any other page) -> null. */
+export function sessionFromPath(pathname: string): string | null {
+  if (!pathname.startsWith(`${CHAT_BASE}/`)) return null;
+  const rest = pathname.slice(CHAT_BASE.length + 1).split("/")[0];
+  return rest ? decodeURIComponent(rest) : null;
+}
+
 interface ChatContextValue {
-  agentId: string;
+  /** Null when the workspace has no agent yet — the rail renders empty rather than erroring. */
+  agentId: string | null;
   sessions: ChatSession[];
   activeSessionId: string | null;
   composerFocusToken: number;
@@ -32,30 +43,55 @@ export function useChatContext() {
   return ctx;
 }
 
-// Holds the thread rail + the active selection, shared by the rail column and the conversation
-// pane inside the chat page. The rail comes straight from the Agent37 Agents API
-// (GET /v1/sessions) — there is no local sessions table. Each row's label (server-side title,
-// else the first-message preview) is resolved by the sessions route, so the rail paints in one
-// fetch with no per-session hydration.
+// Holds the thread list + the active selection. Mounted at the DASHBOARD level, not inside the
+// chat page, so the sidebar can show your conversations from anywhere — Credits, Settings, the
+// Guide — instead of only once you've navigated to Chat.
+//
+// That placement is why this derives the URL and does its own navigating rather than taking
+// them as props: the chat page could hand those down, but the dashboard rail can't, and two
+// copies of the session list would drift the moment somebody renamed a thread.
+//
+// The list comes straight from the Agent37 Agents API (GET /v1/sessions) — there is no local
+// sessions table. Each row's label (server-side title, else the first-message preview) is
+// resolved by the sessions route, so it paints in one fetch with no per-session hydration.
 export function ChatProvider({
   agentId,
-  urlSessionId,
-  navigateToSession,
   children,
 }: {
-  agentId: string;
-  // The open thread's id, taken from the URL (/dashboard/chat/<id>) — null for a new chat. The URL
-  // is the source of truth so refresh, Back/Forward, and shared links all reopen the same thread.
-  urlSessionId: string | null;
-  // Writes the chat URL (history.pushState/replaceState). Selecting/clearing a thread navigates;
-  // activeSessionId then follows.
-  navigateToSession: (sessionId: string | null, mode?: "push" | "replace") => void;
+  /** The active agent, or null when the workspace has none yet. */
+  agentId: string | null;
   children: ReactNode;
 }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // The open thread's id comes from the URL (/dashboard/chat/<id>) — null for a new chat, and
+  // null on every page that isn't Chat. The URL stays the source of truth so refresh,
+  // Back/Forward and shared links all reopen the same thread.
+  const urlSessionId = sessionFromPath(pathname);
+  const onChatRoute = pathname.startsWith(CHAT_BASE);
+
+  // Switching threads while already on Chat uses pushState: it changes the URL without
+  // remounting the conversation pane, which is what makes the rail feel instant. From anywhere
+  // else there is no chat page mounted yet, so it has to be a real navigation.
+  const navigateToSession = useCallback(
+    (sessionId: string | null, mode: "push" | "replace" = "push") => {
+      const path = sessionId ? `${CHAT_BASE}/${encodeURIComponent(sessionId)}` : CHAT_BASE;
+      if (!onChatRoute) {
+        router.push(path);
+        return;
+      }
+      if (mode === "replace") window.history.replaceState(null, "", path);
+      else window.history.pushState(null, "", path);
+    },
+    [onChatRoute, router]
+  );
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(urlSessionId);
   const [composerFocusToken, setComposerFocusToken] = useState(0);
-  const [loadingSessions, setLoadingSessions] = useState(true);
+  // Starts false when there's no agent: nothing will ever load, so "loading..." would be a lie
+  // that never resolves.
+  const [loadingSessions, setLoadingSessions] = useState(!!agentId);
 
   // Adopt the thread from the URL whenever it changes — a rail click, Back/Forward, or a refresh.
   // Done during render (React's "adjust state when a prop changes" pattern) so there's no extra
@@ -66,8 +102,13 @@ export function ChatProvider({
     setActiveSessionId(urlSessionId);
   }
 
-  // Load the rail from upstream — labels and ordering arrive ready from the sessions route.
+  // Load the list from upstream — labels and ordering arrive ready from the sessions route.
+  //
+  // No state clearing here: DashboardChatProvider keys this component by agent, so switching
+  // agents REMOUNTS it with empty state. Clearing in the effect as well would be a second,
+  // slower path to the same place — and the one the lint rule rightly objects to.
   useEffect(() => {
+    if (!agentId) return;
     let cancelled = false;
 
     apiFetch<{ sessions: ChatSession[] }>(`/api/agents/${agentId}/chat/sessions`)
@@ -83,6 +124,18 @@ export function ChatProvider({
       cancelled = true;
     };
   }, [agentId]);
+
+  // Switching the active agent invalidates the open thread — session ids belong to one
+  // instance, so /dashboard/chat/<id> would ask the new agent for a conversation it has never
+  // heard of. Drop back to a fresh chat URL, but only while ON the chat page: doing it from
+  // Credits would yank the customer somewhere they didn't ask to go.
+  const prevAgentRef = useRef<string | null>(agentId);
+  useEffect(() => {
+    if (agentId && prevAgentRef.current && prevAgentRef.current !== agentId && onChatRoute) {
+      navigateToSession(null, "replace");
+    }
+    if (agentId) prevAgentRef.current = agentId;
+  }, [agentId, onChatRoute, navigateToSession]);
 
   const requestComposerFocus = useCallback(() => setComposerFocusToken((n) => n + 1), []);
 
@@ -118,6 +171,7 @@ export function ChatProvider({
 
   const deleteSession = useCallback(
     async (sessionId: string) => {
+      if (!agentId) return;
       const removed = sessions.find((x) => x.session_id === sessionId);
       const wasActive = activeSessionId === sessionId;
       setSessions((s) => s.filter((x) => x.session_id !== sessionId)); // optimistic, functional
@@ -138,6 +192,7 @@ export function ChatProvider({
 
   const renameSession = useCallback(
     async (sessionId: string, title: string) => {
+      if (!agentId) return;
       const next = title.trim().slice(0, 200);
       const prev = sessions.find((s) => s.session_id === sessionId)?.title ?? null;
       if (!next || next === prev) return;

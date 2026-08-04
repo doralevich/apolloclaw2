@@ -6,11 +6,24 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { useChatContext } from "./ChatProvider";
 
-// The "Chats" thread rail, rendered as its own column INSIDE the chat page (not in the shared
-// dashboard sidebar). Selecting or starting a thread navigates to its URL via pushState.
-export function ChatSidebar() {
-  const { sessions, activeSessionId, loadingSessions, selectSession, startNewChat, deleteSession, renameSession } =
-    useChatContext();
+// The "Chats" list, rendered in the SHARED dashboard sidebar under the nav — so your
+// conversations are one click away from Credits, the Guide or anywhere else, not just from the
+// chat page. Selecting a thread pushState-navigates when you're already on Chat, and does a
+// real navigation when you aren't (see ChatProvider).
+//
+// Renders nothing at all when there's no agent: an empty "Chats" heading in the sidebar of a
+// workspace that cannot chat yet is noise.
+export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const {
+    agentId,
+    sessions,
+    activeSessionId,
+    loadingSessions,
+    selectSession,
+    startNewChat,
+    deleteSession,
+    renameSession,
+  } = useChatContext();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const pendingDelete = sessions.find((s) => s.session_id === pendingDeleteId) ?? null;
 
@@ -42,14 +55,19 @@ export function ChatSidebar() {
     }
   }
 
+  if (!agentId) return null;
+
   return (
     <>
-      <div className="flex h-full min-h-0 flex-col p-3">
+      <div className="mt-6 flex min-h-0 flex-col">
         <div className="flex items-center justify-between px-3 pb-1">
           <span className="text-xs font-medium text-muted-foreground">Chats</span>
           <button
             type="button"
-            onClick={startNewChat}
+            onClick={() => {
+              startNewChat();
+              onNavigate?.();
+            }}
             aria-label="New chat"
             title="New chat"
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -58,7 +76,9 @@ export function ChatSidebar() {
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        {/* Capped rather than flex-1: this shares the rail with the nav above and the account
+            controls below, so a customer with forty threads must not push those off screen. */}
+        <div className="max-h-[40vh] min-h-0 overflow-y-auto">
           {loadingSessions ? (
             <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" /> Loading...
@@ -92,7 +112,10 @@ export function ChatSidebar() {
                       <>
                         <button
                           type="button"
-                          onClick={() => selectSession(s.session_id)}
+                          onClick={() => {
+                            selectSession(s.session_id);
+                            onNavigate?.();
+                          }}
                           onDoubleClick={() => startRename(s.session_id, s.title)}
                           className={cn(
                             "flex w-full select-none items-center gap-2 rounded-md px-3 py-1.5 pr-14 text-left text-sm transition-colors",

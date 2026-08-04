@@ -9,6 +9,7 @@ import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
+import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -76,6 +77,11 @@ function SidebarContent({
           );
         })}
       </nav>
+
+      {/* Your conversations, under the nav — reachable from any page rather than only once
+          you've opened Chat. The rail used to be a second column inside the chat page, which
+          meant two sidebars on screen there and none anywhere else. */}
+      <ChatSidebar onNavigate={onNavigate} />
 
       <div className="mt-auto space-y-2 pt-4">
         <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
