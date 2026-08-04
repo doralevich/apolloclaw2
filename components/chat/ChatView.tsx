@@ -26,9 +26,14 @@ function isOutOfCreditsError(message: string): boolean {
 }
 
 export function ChatView({
+  agentId,
   agentName,
   prefill,
 }: {
+  // Passed in rather than read from context: the provider now lives at the dashboard level,
+  // where there may be no agent at all, so its agentId is nullable. This page only renders once
+  // an agent is resolved, so it holds the non-null one.
+  agentId: string;
   // The active agent's display name — greets the user on the empty state.
   agentName?: string | null;
   // A question carried in from Shortcuts or Start Here (?q=), dropped into the composer.
@@ -36,7 +41,6 @@ export function ChatView({
 }) {
   const { userEmail } = useWorkspace();
   const {
-    agentId,
     sessions,
     activeSessionId,
     composerFocusToken,
