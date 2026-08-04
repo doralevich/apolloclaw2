@@ -2,6 +2,7 @@ import { getAgentType } from "@/config/agent-types";
 import { storeAgentSetup, type AvatarUpload } from "@/lib/agent-setup";
 import { requireMember, requireUser } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { buildIntakeSections, normalizeForHtml } from "@/lib/onboardingSections";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // POST /api/agent-setup { workspace_id?, agent_type, answers, agent_name?, avatar_upload?, avatar_preset? }
@@ -97,4 +98,58 @@ export const POST = route(async (request: Request) => {
   // workspace_id feeds the post-submit "building your agent" screen, which polls the
   // workspace's agent list until the webhook-provisioned agent shows up running.
   return json({ ok: true, agent_provisioned: result.agentProvisioned, workspace_id: result.workspaceId });
+});
+
+// GET /api/agent-setup?workspace=<id>&type=<agent_type>
+//
+// Reads the stored questionnaire back to its owner: "what your agent knows about you".
+//
+// Someone who has just paid for an agent has no way to check that it absorbed what they
+// typed — the only route was to ask it in chat and hope. The answers already exist in
+// agent_setup; nothing read them.
+//
+// Sections are assembled HERE rather than client-side for two reasons. lib/onboardingSections
+// type-imports from lib/pdf, which is server-only and pulls in @react-pdf/renderer, so the
+// client has no business near it. And the raw `answers` blob is every field ever collected —
+// sending the rendered label/value pairs means the browser receives what it displays and
+// nothing more.
+export const GET = route(async (request: Request) => {
+  const { supabase, user } = await requireUser();
+  const url = new URL(request.url);
+  const workspaceId = url.searchParams.get("workspace");
+  const agentType = url.searchParams.get("type");
+
+  if (!workspaceId) throw new ApiError(400, "invalid_request", "workspace is required");
+  if (!agentType) throw new ApiError(400, "invalid_request", "type is required");
+  await requireMember(supabase, workspaceId, user.id);
+
+  // Service-role: agent_setup is RLS-on-no-policy (server-only by design), so a user-scoped
+  // read returns nothing. Membership was just checked above.
+  const { data } = await createAdminClient()
+    .from("agent_setup")
+    .select("answers, updated_at, injected_at")
+    .eq("workspace_id", workspaceId)
+    .eq("agent_type", agentType)
+    .maybeSingle();
+
+  if (!data) return json({ sections: [], updated_at: null, injected_at: null });
+
+  const answers = (data.answers ?? {}) as Record<string, unknown>;
+  const sections = buildIntakeSections(answers)
+    .map((s) => ({
+      title: s.title,
+      // normalizeForHtml is a value -> display-string normaliser (it joins arrays, trims,
+      // and turns null into ""); the name is historical. It does no escaping — React does
+      // that at render.
+      rows: s.rows
+        .map((r) => ({ label: r.label, value: normalizeForHtml(r.value) }))
+        .filter((r) => r.value),
+    }))
+    .filter((s) => s.rows.length > 0);
+
+  return json({
+    sections,
+    updated_at: data.updated_at ?? null,
+    injected_at: data.injected_at ?? null,
+  });
 });

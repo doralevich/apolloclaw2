@@ -11,7 +11,6 @@ import {
   RotateCw,
   Square,
   Terminal,
-  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -33,7 +32,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
 // Only rendered for ports the agent's template actually serves (portsForTemplate).
@@ -51,19 +49,28 @@ const PORT_ACTIONS: ReadonlyArray<{
 export function AgentActionsMenu({
   agent,
   role,
+  isPlatformAdmin,
   onChanged,
 }: {
   agent: MergedAgent;
   role: Role;
+  isPlatformAdmin: boolean;
   onChanged: () => void;
 }) {
   const isAdmin = role === "admin";
   const running = agent.live_status === "running";
   const transitional = isTransitional(agent.live_status);
   const ports = portsForTemplate(agent.template);
-  const portActions = PORT_ACTIONS.filter(({ name }) => ports[name] !== undefined);
 
-  const [deleting, setDeleting] = useState(false);
+  // Control UI, file browser and terminal are root access to the box, and they used to render
+  // for any workspace member. They are indispensable to us and hazardous to a customer: the
+  // file browser is two clicks from deleting SOUL.md, after which the agent forgets who it is
+  // and its owner has no way to know why. Platform admins only — a different gate from `role`,
+  // which is the CUSTOMER's admin, and who owning the agent does not make a sysadmin.
+  const portActions = isPlatformAdmin
+    ? PORT_ACTIONS.filter(({ name }) => ports[name] !== undefined)
+    : [];
+
   const [opening, setOpening] = useState<number | null>(null);
   const { busy, run } = useAsyncAction();
 
@@ -104,12 +111,6 @@ export function AgentActionsMenu({
     } catch (e) {
       toast.error((e as Error).message, { id: toastId });
     }
-  }
-
-  async function remove() {
-    await apiFetch(`/api/agents/${agent.agent37_id}`, { method: "DELETE" });
-    toast.success("Agent deleted");
-    onChanged();
   }
 
   return (
@@ -209,26 +210,12 @@ export function AgentActionsMenu({
                   Start agent
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={() => setDeleting(true)}>
-                <Trash2 />
-                Delete agent
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
       </div>
       </TooltipProvider>
 
-      <ConfirmDialog
-        open={deleting}
-        onOpenChange={setDeleting}
-        title="Delete agent?"
-        description="This permanently deletes the agent and its data. This cannot be undone."
-        confirmText="Delete"
-        destructive
-        onConfirm={remove}
-      />
     </>
   );
 }
