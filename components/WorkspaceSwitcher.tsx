@@ -49,17 +49,27 @@ export function WorkspaceSwitcher() {
     });
   }
 
-  // Hidden entirely when there's one workspace — which is every customer.
+  // One workspace: the NAME, not a dropdown.
   //
-  // David's call, and it's the right one: a second workspace does nothing for a customer. They
-  // buy one licence, which provisions one agent into one workspace; an extra workspace would be
-  // an empty room with no agent in it and no way to get one. So self-serve creation isn't a
-  // feature we're hiding, it's a dead end we're closing.
+  // The switcher is still pointless with nothing to switch to — a second workspace does nothing
+  // for a customer, since one licence provisions one agent into one workspace and an extra is an
+  // empty room with no way to put an agent in it. So self-serve creation stays closed, and "New
+  // workspace" stays inside the dropdown where only people who already have two can reach it.
   //
-  // The "New workspace" action stays INSIDE this dropdown rather than moving elsewhere, which
-  // means it's reachable exactly by the people who can already see the switcher — anyone with
-  // two or more, i.e. platform admins. A customer never meets it.
-  if (workspaces.length <= 1) return null;
+  // But hiding the control entirely also removed the only place the workspace name appeared, and
+  // a customer with exactly one workspace then saw no workspace anywhere in the UI — which reads
+  // as "I don't have one" rather than "there is nothing to switch to". David hit precisely that
+  // and reasonably concluded his account was broken.
+  //
+  // So: static text at the same size and position the trigger occupied. You lose the useless
+  // menu; you keep knowing where you are.
+  if (workspaces.length <= 1) {
+    return (
+      <div className="flex h-9 w-full items-center rounded-md border border-transparent px-3 text-sm text-muted-foreground">
+        <span className="truncate">{current?.name ?? "No workspace"}</span>
+      </div>
+    );
+  }
 
   return (
     <>
