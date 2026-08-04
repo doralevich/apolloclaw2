@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI for Professional Services Firms | Apollo[Claw]" },
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
     "Consultancies, agencies, and advisory firms use Apollo[Claw] agents for intake, project admin, and client follow-up, so billable people stay billable.",
   alternates: { canonical: "https://apolloclaw.ai/industries/professional-services" },
   openGraph: {
+    images: OG_IMAGES,
     title: "AI for Professional Services Firms | Apollo[Claw]",
     description:
       "Intake, scheduling, project admin, and client follow-up handled so billable people stay billable.",

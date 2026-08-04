@@ -4,6 +4,7 @@ import { sanityClient } from "@/lib/sanity";
 import { POSTS_QUERY } from "@/lib/sanity-queries";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/blog",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "Apollo Claw Blog: AI Agent Guides for Law, Real Estate & Insurance",
     description:
       "Learn how AI agents handle client intake, follow-ups, and communication for law firms, insurance agencies, and real estate teams.",

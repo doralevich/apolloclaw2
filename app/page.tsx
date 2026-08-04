@@ -7,6 +7,7 @@ import { TrustStrip } from "@/components/home/TrustStrip";
 import { IndustryCards } from "@/components/home/IndustryCards";
 import { LatestFromBlog } from "@/components/home/LatestFromBlog";
 import { LogoStrip } from "@/components/home/LogoStrip";
+import { OG_IMAGES } from "@/lib/seo";
 
 // The blog section reads from Sanity, so the homepage is now ISR rather than fully static.
 // Hourly, matching /blog's own revalidate.
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "AI Agents for Business | Apollo[Claw]",
     description:
       "Apollo[Claw] builds AI agents for business that connect to your tools, work in Slack and WhatsApp, and ship real work with your approval. Get started today.",

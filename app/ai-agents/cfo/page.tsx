@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "The CFO Agent | AI for Finance Teams | Apollo[Claw]" },
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
     canonical: "https://thecfoagent.ai",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "The CFO Agent: AI Financial Agent for Small Business",
     description: "The CFO Agent is your AI financial advisor for small business: automated financial reporting AI that handles your close cycle so you focus on decisions.",
     url: "https://apolloclaw.ai/ai-agents/cfo",

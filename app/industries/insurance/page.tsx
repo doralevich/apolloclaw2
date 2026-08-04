@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI for Insurance Agencies | Apollo[Claw]" },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/industries/insurance",
   },
   openGraph: {
+    images: OG_IMAGES,
     title: "AI for Insurance Agencies | Apollo Claw - Quotes, Renewals & Claims Automation",
     description: "Apollo Claw builds AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team focuses on closing, not chasing.",
     url: "https://apolloclaw.ai/industries/insurance",

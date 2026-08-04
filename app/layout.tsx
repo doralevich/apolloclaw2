@@ -6,6 +6,7 @@ import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
 import PageViewTracker from "@/components/GoogleAnalytics";
 import CookieConsent from "@/components/CookieConsent";
+import { OG_IMAGES } from "@/lib/seo";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,14 +64,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://apolloclaw.ai",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Apollo[Claw] | AI Strategy & Implementation for Business",
-      },
-    ],
+    images: OG_IMAGES,
   },
   twitter: {
     card: "summary_large_image",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Consulting for Education | Apollo Claw" },
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
     "Apollo Claw partners with schools, colleges, and universities to deploy AI across admissions, student services, and campus operations, without adding headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-consulting-education" },
   openGraph: {
+    images: OG_IMAGES,
     title: "AI Consulting for Education | Apollo Claw",
     description:
       "AI for admissions, student services, and campus operations at schools, colleges, and universities.",
