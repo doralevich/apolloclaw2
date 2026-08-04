@@ -21,10 +21,24 @@ interface Props {
   // Prominent welcome-state composer (vs the compact docked composer).
   large?: boolean;
   focusToken?: number;
+  /** Text to drop into the box, from a Shortcuts or Start Here link (?q=). Deliberately not
+   *  auto-sent: the customer sees what they're about to ask, and most of these want a name or
+   *  a document swapped in first. */
+  prefill?: string;
 }
 
-export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large = false, focusToken = 0 }: Props) {
+export function ChatComposer({
+  agentId,
+  isStreaming,
+  att,
+  onSend,
+  onStop,
+  large = false,
+  focusToken = 0,
+  prefill,
+}: Props) {
   const [text, setText] = useState("");
+
   // model + provider are always chosen together (one selection); effort is independent. Group
   // them as the composer's outgoing ChatSettings so send is just `{ ...settings, files }`.
   const [settings, setSettings] = useState<ChatSettings>({ model: null, provider: null, reasoningEffort: null });
@@ -37,6 +51,29 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
     const frame = requestAnimationFrame(() => textareaRef.current?.focus());
     return () => cancelAnimationFrame(frame);
   }, [focusToken]);
+
+  // Arriving from Shortcuts or Start Here with ?q= set. Adjusted during render rather than in
+  // an effect — React's own pattern for "a prop changed, derive state from it" — so the box is
+  // never briefly empty before the text appears. Only fills an EMPTY box, so a draft already
+  // in progress is never overwritten.
+  const [appliedPrefill, setAppliedPrefill] = useState<string | undefined>(undefined);
+  if (prefill && prefill !== appliedPrefill) {
+    setAppliedPrefill(prefill);
+    if (!text) setText(prefill);
+  }
+
+  useEffect(() => {
+    if (!prefill) return;
+    const frame = requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.focus();
+      // Caret at the end: several shortcuts finish with a [placeholder] to swap out, and
+      // landing at position 0 means selecting past your own text to reach it.
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [prefill]);
 
   // The model switcher is a persistent control, shown once the instance reports at least one model
   // (the older metered gateway exposes a single "default"; current builds expose the full catalog).

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Blocks, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, Users, X } from "lucide-react";
+import { Blocks, BookOpen, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -17,6 +17,10 @@ const NAV = [
   { href: "/dashboard", label: "Agents", icon: LayoutGrid, exact: true },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Integrations", icon: Blocks, exact: false },
+  // Sits directly under Chat's neighbours rather than down by Settings: it is the answer to
+  // "what do I say to this thing", which is a question people have while looking at the chat,
+  // not while looking for account options.
+  { href: "/dashboard/guide", label: "Guide", icon: BookOpen, exact: false },
   { href: "/dashboard/credits", label: "API Credits", icon: CreditCard, exact: false },
   { href: "/dashboard/members", label: "Members", icon: Users, exact: false },
   { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },

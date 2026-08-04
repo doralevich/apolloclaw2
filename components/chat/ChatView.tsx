@@ -27,9 +27,12 @@ function isOutOfCreditsError(message: string): boolean {
 
 export function ChatView({
   agentName,
+  prefill,
 }: {
   // The active agent's display name — greets the user on the empty state.
   agentName?: string | null;
+  // A question carried in from Shortcuts or Start Here (?q=), dropped into the composer.
+  prefill?: string;
 }) {
   const { userEmail } = useWorkspace();
   const {
@@ -165,6 +168,7 @@ export function ChatView({
           onStop={stop}
           large={showWelcome}
           focusToken={composerFocusToken}
+          prefill={prefill}
         />
       </div>
 

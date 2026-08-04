@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Blocks, Bot, MessageSquare, Sparkles } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { ShortcutCard } from "@/components/ShortcutCard";
 import { getAgentType } from "@/config/agent-types";
+import { FIRST_MOVES } from "@/config/shortcuts";
 import { Button } from "@/components/ui/button";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 
@@ -36,26 +38,8 @@ export function StartHereView() {
   const type = active.agent_type ? getAgentType(active.agent_type) : undefined;
   const agentName = active.name?.trim() || type?.label || "Your agent";
 
-  const steps = [
-    {
-      icon: MessageSquare,
-      title: "Start chatting",
-      body: `Head to the Chat tab and start talking. ${agentName} already knows your business from your setup questionnaire.`,
-    },
-    {
-      icon: Blocks,
-      title: "Connect your tools",
-      body: `Link your calendar, email, and other apps from the Integrations tab so ${agentName} can act on your behalf.`,
-    },
-    {
-      icon: Sparkles,
-      title: "Ask something",
-      body: `Try asking about your business, your priorities, or anything from your setup questionnaire — ${agentName} is ready.`,
-    },
-  ];
-
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8">
       <div className="flex items-start gap-4 rounded-lg border bg-card p-6">
         {active.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -72,40 +56,72 @@ export function StartHereView() {
         <div className="min-w-0">
           <h1 className="text-xl font-semibold tracking-tight">Hey! I&apos;m {agentName}.</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {type?.description || "Your new AI agent, built for your business."}
+            I&apos;ve read your setup questionnaire, so I already know your business, what you&apos;re
+            trying to fix, and how you like things written. You don&apos;t have to explain any of
+            that first.
           </p>
         </div>
       </div>
 
+      {/* The "now what?" problem. Before this, the page said "head to the Chat tab and start
+          talking" — which is not an instruction, it's the absence of one. Almost everybody
+          opened with "hi", asked something a search engine could answer, decided it was a
+          chatbot, and never came back. These are six things to actually say, each one a click
+          that opens the chat with the question already typed. */}
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          What to do next
+          Now what?
         </h2>
-        <ol className="mt-3 divide-y rounded-lg border">
-          {steps.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <li key={step.title} className="flex items-start gap-4 p-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold">
-                  {i + 1}
-                </span>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    {step.title}
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Click any of these and it opens the chat with the question ready — edit it or send it
+          as is.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {FIRST_MOVES.map((s) => (
+            <ShortcutCard key={s.id} shortcut={s} agentName={agentName} />
+          ))}
+        </div>
       </div>
 
-      <div className="flex justify-center">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Link
+          href="/dashboard/integrations"
+          className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
+        >
+          <Blocks className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <div className="font-medium">Connect your tools</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Email, calendar, your CRM. This is what turns {agentName} from something that
+              gives advice into something that does the work.
+            </p>
+          </div>
+        </Link>
+        <Link
+          href="/dashboard/guide"
+          className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
+        >
+          <Sparkles className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+          <div>
+            <div className="font-medium">More things to ask</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              The full list, by what you&apos;re trying to get done — plus what the words around
+              here mean.
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      <div className="flex flex-col items-center gap-3">
         <Button asChild size="lg">
-          <Link href="/dashboard/chat">Open Chat</Link>
+          <Link href="/dashboard/chat">
+            <MessageSquare /> Open Chat
+          </Link>
         </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Talk to {agentName} the way you&apos;d talk to someone who works for you. The more you
+          say about how you want things done, the less you&apos;ll have to repeat yourself.
+        </p>
       </div>
     </div>
   );
