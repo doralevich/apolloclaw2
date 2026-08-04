@@ -121,7 +121,7 @@ async function warn(ctx: AgentContext, balance: number, autorechargeOffered: boo
     `Credits pay for everything your agent does: thinking, searching the web, and using your ` +
     `connected tools. When they run out your agent stops answering until you top up.</p>` +
     `<p style="font-family:sans-serif;font-size:15px">` +
-    `<a href="https://apolloclaw.ai/dashboard/credits" style="background:#0B1729;color:#fff;` +
+    `<a href="https://apolloclaw.ai/dashboard/settings/billing" style="background:#0B1729;color:#fff;` +
     `padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Add credits</a></p>` +
     (autorechargeOffered
       ? `<p style="font-family:sans-serif;font-size:13px;color:#6b7280">` +

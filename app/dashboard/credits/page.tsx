@@ -1,7 +1,7 @@
-import { CreditsView } from "@/components/CreditsView";
+import { redirect } from "next/navigation";
 
-// Read-only credits tab for the active agent (balance, monthly cap, usage breakdown).
-// All agent/workspace state is client-side context, so the page is just the view.
-export default function CreditsPage() {
-  return <CreditsView />;
+// Moved under Settings. Kept as a redirect because this URL is in the wild: Stripe's
+// success/cancel return, and the low-balance email's button.
+export default function Page() {
+  redirect("/dashboard/settings/billing");
 }

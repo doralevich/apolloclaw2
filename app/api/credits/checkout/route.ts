@@ -61,8 +61,8 @@ export const POST = route(async (request: Request) => {
     // creates one if asked.
     customer_creation: "always",
     ...(user.email ? { customer_email: user.email } : {}),
-    success_url: `${origin}/dashboard/credits?purchased=1`,
-    cancel_url: `${origin}/dashboard/credits?canceled=1`,
+    success_url: `${origin}/dashboard/settings/billing?purchased=1`,
+    cancel_url: `${origin}/dashboard/settings/billing?canceled=1`,
   });
 
   if (!session.url) throw new ApiError(502, "stripe_error", "Stripe did not return a checkout URL");

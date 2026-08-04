@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Blocks, BookOpen, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, Users, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -13,19 +14,69 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// The five things you DO with an agent. Everything you only ever configure — credits,
+// members, the workspace itself — moved behind Settings, which is its own area rather than
+// a sixth peer. Eight items in one flat list meant the daily surfaces and the once-a-quarter
+// ones competed for the same attention; a rail you scan every day should only carry the
+// former.
 const NAV = [
   { href: "/dashboard/start-here", label: "Start Here", icon: Compass, exact: false },
   { href: "/dashboard", label: "Agents", icon: LayoutGrid, exact: true },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
-  { href: "/dashboard/integrations", label: "Integrations", icon: Blocks, exact: false },
-  // Sits directly under Chat's neighbours rather than down by Settings: it is the answer to
-  // "what do I say to this thing", which is a question people have while looking at the chat,
-  // not while looking for account options.
+  { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
+  // Sits directly under Chat's neighbours: it is the answer to "what do I say to this thing",
+  // which is a question people have while looking at the chat, not while looking for account
+  // options.
   { href: "/dashboard/guide", label: "Guide", icon: BookOpen, exact: false },
-  { href: "/dashboard/credits", label: "API Credits", icon: CreditCard, exact: false },
-  { href: "/dashboard/members", label: "Members", icon: Users, exact: false },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
 ];
+
+// The settings area's own rail, grouped, shown INSTEAD of NAV while you're inside it — the
+// same trade every settings screen worth copying makes: give the section the whole sidebar
+// and put one obvious way back at the top.
+const SETTINGS_NAV = [
+  {
+    title: "Workspace",
+    items: [
+      { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
+      { href: "/dashboard/settings/billing", label: "Billing & Credits", icon: CreditCard, exact: false },
+      { href: "/dashboard/settings/members", label: "Members", icon: Users, exact: false },
+    ],
+  },
+];
+
+const SETTINGS_ROOT = "/dashboard/settings";
+
+type NavItem = { href: string; label: string; icon: LucideIcon; exact: boolean };
+
+// One row, used by the app rail, the Settings rail, and the Settings entry itself, so the
+// active treatment can't drift between them.
+function NavLink({
+  item,
+  pathname,
+  onNavigate,
+}: {
+  item: NavItem;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className={cn(
+        "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        active
+          ? "bg-secondary text-secondary-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {item.label}
+    </Link>
+  );
+}
 
 // Shared between the desktop rail and the mobile drawer so the two can never drift apart.
 function SidebarContent({
@@ -41,11 +92,53 @@ function SidebarContent({
   // active agent, without one it prompts them to create the first. Hiding it used to
   // leave a freshly-signed-in customer on a page missing from their own sidebar.
   const nav = NAV;
+  const inSettings = pathname.startsWith(SETTINGS_ROOT);
 
   const { current } = useWorkspace();
   const logoUrl = current?.logo_url || branding.logoUrl;
   // The logo stands alone now, so it has to carry its own name for anyone who can't see it.
   const logoAlt = current?.logo_url ? current.name : branding.appName;
+
+  // Inside Settings the rail belongs to Settings: no workspace/agent switchers, no chat list,
+  // no app nav — those are the things you came here to stop looking at. One way back, at the
+  // top, where the logo would otherwise be.
+  if (inSettings) {
+    return (
+      <>
+        <Link
+          href="/dashboard/start-here"
+          onClick={onNavigate}
+          className="flex items-center gap-2 px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to app
+        </Link>
+
+        <div className="mt-6 space-y-5">
+          {SETTINGS_NAV.map((group) => (
+            <div key={group.title}>
+              <div className="px-3 pb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {group.title}
+              </div>
+              <nav className="flex flex-col gap-1">
+                {group.items.map((item) => (
+                  <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+                ))}
+              </nav>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-auto space-y-2 pt-4">
+          <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
+          <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </Button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -74,24 +167,9 @@ function SidebarContent({
       </div>
 
       <nav className="mt-6 flex flex-col gap-1">
-        {nav.map((item) => {
-          const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+        {nav.map((item) => (
+          <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+        ))}
       </nav>
 
       {/* Your conversations, under the nav — reachable from any page rather than only once
@@ -99,7 +177,14 @@ function SidebarContent({
           meant two sidebars on screen there and none anywhere else. */}
       <ChatSidebar onNavigate={onNavigate} />
 
+      {/* Settings sits below the chat list with the account controls, not among the five
+          things you do daily — it is a door into another area, not a sixth destination. */}
       <div className="mt-auto space-y-2 pt-4">
+        <NavLink
+          item={{ href: SETTINGS_ROOT, label: "Settings", icon: Settings, exact: false }}
+          pathname={pathname}
+          onNavigate={onNavigate}
+        />
         <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
         <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
           <LogOut className="h-4 w-4" />

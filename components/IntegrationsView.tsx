@@ -369,7 +369,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     <div className="max-w-6xl space-y-6">
       <div className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Connections</h1>
           <div className="inline-flex rounded-full border bg-card p-0.5 text-sm">
             <SubTabButton active={tab === "browse"} onClick={() => setTab("browse")}>
               Browse
