@@ -27,9 +27,12 @@ import { usdToMicros } from "@/lib/format";
 // notes, decided those were the good copy, and wrote them over the questionnaire profile it
 // was sent to rescue. The answers survived only because they were still in the database.
 //
-// The profile now lives in OWNER.md — a name nothing else writes — and is re-rendered from
-// agent_setup rather than copied from whatever happens to be on disk. Nothing here reads a
-// file to decide what should be in it.
+// The profile is now re-rendered from agent_setup rather than copied from whatever happens to
+// be on disk, and it goes into USER.md inside a FENCED BLOCK — everything outside the markers,
+// including the agent's own notes, is left exactly as found. (It briefly lived in OWNER.md to
+// dodge the collision; that solved the overwrite by choosing a filename no runtime reads, so
+// the agent went on knowing nothing about anyone.) Nothing here reads a file to decide what
+// should be in it.
 
 export interface RepairResult {
   id: string;
@@ -41,6 +44,24 @@ export interface RepairResult {
 export interface InspectResult {
   id: string;
   files: { path: string; bytes: number; hasPointer?: boolean }[];
+  /**
+   * Which runtime is ACTUALLY running on the box — the question the directory listing can't
+   * answer. An instance can carry both layouts on disk (Ember does) while only one process is
+   * alive, and that process decides which files get read: Hermes loads SOUL/AGENTS/USER/MEMORY
+   * and ignores IDENTITY.md and TOOLS.md entirely, so two of the five files we generate are
+   * inert on a Hermes box.
+   *
+   * Asked of the instance rather than the customer. Finding this out by messaging someone's
+   * agent means bothering their owner.
+   */
+  runtime: {
+    /** Process names matched against hermes/openclaw, from `ps`. The authoritative answer. */
+    processes: string[];
+    /** Executables on PATH — what the image ships, which is weaker evidence than what runs. */
+    binaries: string[];
+    /** State-dir env vars the image sets, as a third opinion. */
+    env: string[];
+  };
   /**
    * Headings and field LABELS, values stripped — "- Email: x@y.com" comes back "- Email:".
    * Enough to see the questionnaire shape is there and populated. Deliberately NOT enough to
@@ -64,9 +85,6 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
     'for D in "${HERMES_STATE_DIR:-/home/node/.hermes}/memories" "${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/workspace"; do ' +
     '[ -d "$D" ] && DIRS="$DIRS $D"; done; ' +
     '[ -n "$DIRS" ] || { echo NO_WORKSPACE; exit 0; }; ' +
-    // Both files, because which one is populated is the whole diagnosis: OWNER.md is ours
-    // (the questionnaire), USER.md is the agent's own memory. Confusing them cost a customer
-    // their profile once already.
     // Every file this dashboard has an opinion about. USER.md and MEMORY.md are the original
     // diagnosis (ours vs the agent's own); the rest are what the repair now also writes, and
     // without them here there was no way to confirm a repair had done what it claimed — the
@@ -80,6 +98,13 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
     // profile from an empty one, and to tell whose it is, without lifting the contents.
     'for D in $DIRS; do F="$D/USER.md"; [ -s "$F" ] || continue; ' +
     `grep -E '^#|^- ' "$F" | sed 's/:.*$/:/' | head -14 | sed 's/^/PREVIEW:/'; break; done; ` +
+    // Which runtime is live. `ps` is the real answer; the binary and env checks are corroboration
+    // for the case where ps is unavailable or the gateway runs under a name we don't match.
+    "ps -eo args= 2>/dev/null | grep -iE '(^|/)(hermes|openclaw)' | grep -v grep | " +
+    "awk '{print $1}' | sed 's|.*/||' | sort -u | sed 's/^/PROC:/'; " +
+    'for B in hermes openclaw; do command -v "$B" >/dev/null 2>&1 && echo "BIN:$B"; done; ' +
+    '[ -n "${HERMES_STATE_DIR:-}" ] && echo "ENV:HERMES_STATE_DIR"; ' +
+    '[ -n "${OPENCLAW_STATE_DIR:-}" ] && echo "ENV:OPENCLAW_STATE_DIR"; ' +
     'echo INSPECT_OK';
 
   const results: InspectResult[] = [];
@@ -102,9 +127,22 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
         };
       });
       const preview = (stdout.match(/PREVIEW:(.*)/g) ?? []).map((s) => s.slice(8).trim());
-      results.push({ id, files, preview });
+      const grab = (prefix: string) =>
+        [...new Set((stdout.match(new RegExp(`${prefix}:(\\S+)`, "g")) ?? []).map((m) => m.slice(prefix.length + 1)))];
+      results.push({
+        id,
+        files,
+        preview,
+        runtime: { processes: grab("PROC"), binaries: grab("BIN"), env: grab("ENV") },
+      });
     } catch (err) {
-      results.push({ id, files: [], preview: [], error: err instanceof Error ? err.message : String(err) });
+      results.push({
+        id,
+        files: [],
+        preview: [],
+        runtime: { processes: [], binaries: [], env: [] },
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
   return results;
