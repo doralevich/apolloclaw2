@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, SlidersHorizontal, Users, X } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Settings, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -42,6 +42,7 @@ const SETTINGS_NAV = [
     items: [
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
       { href: "/dashboard/settings/billing", label: "Billing & Credits", icon: CreditCard, exact: false },
+      { href: "/dashboard/settings/usage", label: "Usage", icon: ChartNoAxesColumn, exact: false },
       { href: "/dashboard/settings/members", label: "Members", icon: Users, exact: false },
     ],
   },
