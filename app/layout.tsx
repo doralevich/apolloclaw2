@@ -223,6 +223,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Applies the saved dashboard theme BEFORE first paint. Without it the page renders
+            light, React mounts, and the effect flips it to dark a frame later — a white flash
+            on every load for anyone who chose dark. Has to be inline and synchronous in <head>
+            for that reason; it is the one thing a component cannot do.
+
+            Dashboard paths only, matching ThemeProvider's scope: the marketing pages carry
+            literal hex and have no dark styling to switch to. The key and the light/dark/system
+            values are duplicated from components/ThemeProvider.tsx — change one, change both. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(!location.pathname.startsWith("/dashboard"))return;var m=localStorage.getItem("apolloclaw-theme")||"system";if(m==="dark"||(m==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})()`,
+          }}
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
           rel="stylesheet"

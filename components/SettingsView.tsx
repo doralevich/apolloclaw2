@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { WorkspaceLogoUpload } from "@/components/WorkspaceLogoUpload";
+import { ThemePicker } from "@/components/ThemePicker";
 
 export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
@@ -50,11 +51,13 @@ export function SettingsView() {
   return (
     <div className="max-w-xl space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">General</h1>
         <p className="text-sm text-muted-foreground">{current.name}</p>
       </div>
 
       <WorkspaceLogoUpload />
+
+      <ThemePicker />
 
       <div className="space-y-2">
         <Label htmlFor="ws-name">Workspace name</Label>

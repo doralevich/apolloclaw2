@@ -135,7 +135,7 @@ export function IntegrationsView() {
   return (
     <div className="space-y-4">
       {active.live_status !== "running" && (
-        <p className="max-w-6xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        <p className="max-w-6xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
           {active.name || "This agent"} isn&apos;t running right now ({active.live_status ?? "unknown"}).
           You can still manage its app connections here, but the agent can&apos;t use them until it&apos;s
           started from the My Agents tab.
@@ -749,7 +749,7 @@ function IntegrationCard({
     <div
       className={cn(
         "flex h-full flex-col rounded-xl border bg-card p-4 transition-all hover:border-foreground/20 hover:shadow-sm",
-        connected && "border-emerald-200 bg-emerald-50/30"
+        connected && "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/25"
       )}
     >
       <div className="flex items-start justify-between gap-2">

@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
 import { ActiveAgentProvider } from "@/components/ActiveAgentProvider";
 import { DashboardShell } from "@/components/DashboardShell";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { DashboardChatProvider } from "@/components/DashboardChatProvider";
 import { PendingApproval } from "@/components/PendingApproval";
 import { mapMembershipsToWorkspaces } from "@/lib/workspaces";
@@ -52,19 +53,21 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <WorkspaceProvider
-      initialWorkspaces={workspaces}
-      userEmail={user.email ?? ""}
-      isPlatformAdmin={isAdminEmail(user.email)}
-    >
-      <ActiveAgentProvider>
-        {/* Chat threads are provided at the DASHBOARD level so the sidebar can list them from
-            every page. Inside ActiveAgentProvider because it needs the active agent, outside
-            DashboardShell because the shell renders the list. */}
-        <DashboardChatProvider>
-          <DashboardShell>{children}</DashboardShell>
-        </DashboardChatProvider>
-      </ActiveAgentProvider>
-    </WorkspaceProvider>
+    <ThemeProvider>
+      <WorkspaceProvider
+        initialWorkspaces={workspaces}
+        userEmail={user.email ?? ""}
+        isPlatformAdmin={isAdminEmail(user.email)}
+      >
+        <ActiveAgentProvider>
+          {/* Chat threads are provided at the DASHBOARD level so the sidebar can list them from
+              every page. Inside ActiveAgentProvider because it needs the active agent, outside
+              DashboardShell because the shell renders the list. */}
+          <DashboardChatProvider>
+            <DashboardShell>{children}</DashboardShell>
+          </DashboardChatProvider>
+        </ActiveAgentProvider>
+      </WorkspaceProvider>
+    </ThemeProvider>
   );
 }
