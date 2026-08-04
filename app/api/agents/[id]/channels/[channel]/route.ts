@@ -1,7 +1,7 @@
 import { requireAgentAccess } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { channelDef, isChannelId } from "@/config/channels";
-import { connectTelegram, disconnectChannel } from "@/lib/channels/connect";
+import { connectSlack, connectTelegram, disconnectChannel } from "@/lib/channels/connect";
 
 type Ctx = { params: Promise<{ id: string; channel: string }> };
 
@@ -37,12 +37,21 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     return json(await connectTelegram(id, { botToken: credentials.botToken }));
   }
 
+  if (channel === "slack") {
+    return json(
+      await connectSlack(id, {
+        botToken: credentials.botToken,
+        signingSecret: credentials.signingSecret,
+      })
+    );
+  }
+
   // Slack, Discord and WhatsApp have cards and copy but no implementation yet. Telegram went
   // first deliberately: it is the only one of the four that needs nothing but a webhook URL.
   throw new ApiError(
     501,
     "not_implemented",
-    `${def.name} isn't connectable yet. Telegram is the only channel wired up so far.`
+    `${def.name} isn't connectable yet. Telegram and Slack are the channels wired up so far.`
   );
 });
 

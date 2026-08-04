@@ -1,8 +1,8 @@
 import { after } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { agent37 } from "@/lib/agent37";
 import * as telegram from "@/lib/channels/telegram";
-import { getTelegramConfig, upsertChannel } from "@/lib/channels/store";
+import { getChannelConfig, upsertChannel } from "@/lib/channels/store";
+import { answerFrom, runTurn } from "@/lib/channels/turn";
 
 type Ctx = { params: Promise<{ agentId: string }> };
 
@@ -50,25 +50,6 @@ function readUpdate(body: unknown): { chatId: string; text: string } | null {
   return { chatId: String(chat.id), text: text.trim() };
 }
 
-/** Run one turn on the instance and return its answer. */
-async function runTurn(agentId: string, input: string, sessionId: string | null) {
-  const res = await agent37.createResponse(agentId, {
-    input,
-    ...(sessionId ? { session_id: sessionId } : {}),
-    stream: false,
-  });
-  const text = await res.text();
-  if (!res.ok) throw new Error(`agent responded ${res.status}: ${text.slice(0, 200)}`);
-  // A non-streaming turn arrives prefixed with the gateway's keep-alive whitespace. Leading
-  // whitespace is valid JSON, so this parses unchanged.
-  return JSON.parse(text) as {
-    session_id?: string;
-    status?: string;
-    output_text?: string;
-    error?: { message?: string } | null;
-  };
-}
-
 export async function POST(request: Request, { params }: Ctx) {
   const { agentId } = await params;
 
@@ -83,7 +64,7 @@ export async function POST(request: Request, { params }: Ctx) {
     return ok();
   }
 
-  const config = await getTelegramConfig(agentId).catch(() => null);
+  const config = await getChannelConfig(agentId, "telegram").catch(() => null);
   if (!config) return ok();
 
   if (!secretMatches(request.headers.get("x-telegram-bot-api-secret-token"), config.secret)) {
@@ -125,15 +106,7 @@ export async function POST(request: Request, { params }: Ctx) {
         });
       }
 
-      // A failed turn still returns 200 with status: "failed" — branch on status, not on HTTP.
-      const answer =
-        result.status === "completed" && result.output_text?.trim()
-          ? result.output_text
-          : result.error?.message
-            ? `Sorry — that didn't work: ${result.error.message}`
-            : "Sorry, I couldn't finish that one. Try again?";
-
-      await telegram.sendMessage(config.token, update.chatId, answer);
+      await telegram.sendMessage(config.token, update.chatId, answerFrom(result));
     } catch (e) {
       const message = (e as Error).message;
       console.error("[channels:telegram] turn failed", { agentId, message });

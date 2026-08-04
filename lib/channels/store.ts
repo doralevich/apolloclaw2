@@ -65,19 +65,25 @@ export async function getChannelToken(agentId: string, channel: ChannelId): Prom
 }
 
 /**
- * Everything the Telegram webhook receiver needs, decrypted, in one read.
+ * Everything a webhook receiver needs, decrypted, in one read.
  *
- * Separate from getChannelToken because the receiver runs on every inbound message and wants the
+ * Separate from getChannelToken because a receiver runs on every inbound message and wants the
  * secret, the session and the bound owner as well — three more round trips otherwise, on the one
  * path where latency is a person waiting for a reply.
+ *
+ * `secret` means whatever authenticates that channel's deliveries: Telegram's secret_token, which
+ * we generate, or Slack's signing secret, which the customer pastes.
  */
-export async function getTelegramConfig(agentId: string): Promise<{
+export async function getChannelConfig(
+  agentId: string,
+  channel: ChannelId
+): Promise<{
   token: string;
   secret: string | null;
   sessionId: string | null;
   ownerChatId: string | null;
 } | null> {
-  const row = await getChannelRow(agentId, "telegram");
+  const row = await getChannelRow(agentId, channel);
   const token = decryptSecret(row?.bot_token ?? null);
   if (!row || !token) return null;
   return {

@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import { ApiError } from "@/lib/http";
 import { publicSiteOrigin } from "@/lib/site-url";
 import * as telegram from "@/lib/channels/telegram";
+import * as slack from "@/lib/channels/slack";
 import { deleteChannel, getChannelToken, toChannel, upsertChannel } from "@/lib/channels/store";
 import type { Channel, ChannelId } from "@/lib/types";
 
@@ -72,11 +73,52 @@ export async function connectTelegram(
 }
 
 /**
+ * Connect Slack: validate the bot token, store it with the signing secret.
+ *
+ * Nothing is registered with Slack here, and that is the asymmetry with Telegram. Slack has no
+ * "point yourself at this URL" API — the customer pastes the Request URL into Event Subscriptions
+ * themselves, and Slack verifies it on the spot with a challenge the receiver answers. So this
+ * call is only the credential half; the card shows the URL for the other half.
+ *
+ * The signing secret goes in the same column Telegram's secret_token uses. Both are the thing
+ * that authenticates an inbound delivery — one we generate, one the customer pastes.
+ */
+export async function connectSlack(
+  agentId: string,
+  credentials: { botToken: string; signingSecret: string }
+): Promise<Channel> {
+  const { botToken, signingSecret } = credentials;
+
+  let me: { team?: string; user?: string };
+  try {
+    me = await slack.authTest(botToken);
+  } catch (e) {
+    throw new ApiError(400, "invalid_token", (e as Error).message);
+  }
+
+  const account = me.team && me.user ? `${me.user} in ${me.team}` : me.user || "Slack app";
+  const row = await upsertChannel(agentId, "slack", {
+    botToken,
+    secret: signingSecret,
+    account,
+    ownerChatId: null,
+    sessionId: null,
+    state: "connected",
+    message: null,
+  });
+  return toChannel(row);
+}
+
+/**
  * Disconnect: stop delivery, then forget the credential.
  *
  * The Telegram call is best-effort. If the token was already revoked in BotFather, Telegram
  * refuses and there is nothing left to undo anyway — failing here would leave a row the customer
  * cannot get rid of, which is worse than a webhook pointed at a bot that no longer exists.
+ *
+ * Slack has no branch here on purpose: nothing was ever registered with Slack, so there is nothing
+ * to undo. Deleting the row is enough — the receiver stops recognising deliveries the moment the
+ * signing secret is gone.
  */
 export async function disconnectChannel(agentId: string, channel: ChannelId): Promise<void> {
   if (channel === "telegram") {
