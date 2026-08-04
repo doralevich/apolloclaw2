@@ -154,7 +154,7 @@ export function ChatView({
                 <p className="font-semibold">Your agent is out of AI credits.</p>
                 <p className="mt-0.5">Check your usage and budget on the API Credits tab.</p>
                 <Link
-                  href="/dashboard/credits"
+                  href="/dashboard/settings/billing"
                   className="mt-1.5 inline-block font-semibold underline underline-offset-2"
                 >
                   View API credits

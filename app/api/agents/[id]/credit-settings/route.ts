@@ -12,6 +12,8 @@ type Params = { params: Promise<{ id: string }> };
 
 export const GET = route(async (_request: Request, { params }: Params) => {
   const { id } = await params;
+  // Readable by any member — the credits page shows these. Only CHANGING them spends money,
+  // so the write below is the one that needs admin.
   const { row: agent } = await requireAgentAccess(id, "member");
   const settings = await getCreditSettings(agent.agent37_id, agent.workspace_id);
   return json({
@@ -25,7 +27,7 @@ export const GET = route(async (_request: Request, { params }: Params) => {
 
 export const PUT = route(async (request: Request, { params }: Params) => {
   const { id } = await params;
-  const { row: agent } = await requireAgentAccess(id, "member");
+  const { row: agent } = await requireAgentAccess(id, "admin");
 
   const body = await readJson<{
     warn_enabled?: boolean;

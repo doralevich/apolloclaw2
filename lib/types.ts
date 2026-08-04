@@ -1,4 +1,6 @@
-export type Role = "admin";
+// admin = full control: workspace settings, billing, invites, agent lifecycle.
+// member = day-to-day use: chat, connections, reading usage.
+export type Role = "admin" | "member";
 
 export interface Workspace {
   id: string;

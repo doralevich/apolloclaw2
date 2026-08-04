@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Copy, Trash2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -20,6 +21,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+// Shown in the invite dialog. Worded around what the person can DO, because "admin" and
+// "member" mean nothing to someone inviting their office manager. Member is listed first
+// because it is the right answer almost every time.
+const ROLE_CHOICES: { value: Role; label: string; description: string }[] = [
+  {
+    value: "member",
+    label: "Member",
+    description:
+      "Can chat with your agents, connect apps, and see usage. Can't buy credits, change workspace settings, or invite anyone.",
+  },
+  {
+    value: "admin",
+    label: "Admin",
+    description:
+      "Full control: billing, workspace settings, invites, and creating or deleting agents. An admin can remove you.",
+  },
+];
+
 export function MembersView() {
   const { current } = useWorkspace();
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
@@ -27,6 +46,7 @@ export function MembersView() {
   const [role, setRole] = useState<Role>("admin");
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteRole, setInviteRole] = useState<Role>("member");
   const { busy, run } = useAsyncAction();
 
   const load = useCallback(async () => {
@@ -57,6 +77,7 @@ export function MembersView() {
     return run(async () => {
       const { url } = await apiFetch<{ url: string }>(`/api/workspaces/${current.id}/members`, {
         method: "POST",
+        body: JSON.stringify({ role: inviteRole }),
       });
       await navigator.clipboard.writeText(url).catch(() => {});
       toast.success("Invite link created and copied");
@@ -107,10 +128,31 @@ export function MembersView() {
               <DialogHeader>
                 <DialogTitle>Invite member</DialogTitle>
                 <DialogDescription>
-                  Create an invite link and share it. Anyone who opens it joins this workspace as an
-                  admin.
+                  Create an invite link and share it. Anyone who opens it joins this workspace with
+                  the access you pick below.
                 </DialogDescription>
               </DialogHeader>
+
+              {/* Member is the default and deliberately listed first. Admin used to be the only
+                  option — inviting anyone handed them the workspace. */}
+              <div className="space-y-2">
+                {ROLE_CHOICES.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setInviteRole(c.value)}
+                    aria-pressed={inviteRole === c.value}
+                    className={cn(
+                      "w-full cursor-pointer rounded-lg border p-3 text-left transition-colors",
+                      inviteRole === c.value ? "border-primary ring-1 ring-primary" : "hover:bg-secondary/50"
+                    )}
+                  >
+                    <div className="text-sm font-medium">{c.label}</div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{c.description}</p>
+                  </button>
+                ))}
+              </div>
+
               <DialogFooter>
                 <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={busy}>
                   Cancel
@@ -143,7 +185,11 @@ export function MembersView() {
                   <tr key={m.user_id} className="border-t">
                     <td className="px-4 py-3 font-medium">{m.email}</td>
                     <td className="px-4 py-3">
-                      <Badge>Admin</Badge>
+                      {/* Was hardcoded to "Admin", which was accurate only because admin was
+                          the sole role the schema allowed. It reads the row now. */}
+                      <Badge variant={m.role === "admin" ? "default" : "muted"}>
+                        {m.role === "admin" ? "Admin" : "Member"}
+                      </Badge>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDate(m.created_at)}</td>
                     <td className="px-4 py-3 text-right">
@@ -172,6 +218,7 @@ export function MembersView() {
                   <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
                     <tr>
                       <th className="px-4 py-2.5 font-medium">Invite link</th>
+                      <th className="px-4 py-2.5 font-medium">Joins as</th>
                       <th className="px-4 py-2.5 font-medium">Created</th>
                       <th className="px-4 py-2.5" />
                     </tr>
@@ -181,6 +228,13 @@ export function MembersView() {
                       <tr key={inv.token} className="border-t">
                         <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                           …/invite/{inv.token.slice(0, 8)}
+                        </td>
+                        {/* A link already out in the world carries a role decided when it was
+                            made, so it has to be visible before someone opens it. */}
+                        <td className="px-4 py-3">
+                          <Badge variant={inv.role === "admin" ? "default" : "muted"}>
+                            {inv.role === "admin" ? "Admin" : "Member"}
+                          </Badge>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.created_at)}</td>
                         <td className="px-4 py-3 text-right">

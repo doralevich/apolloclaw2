@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Registers `dark:` utilities against the .dark class ThemeProvider toggles, for the few
+   places that carry a literal colour rather than a token. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Colors */
   --color-background: hsl(45 20% 97%);
@@ -77,6 +81,57 @@
   --animate-fade-up-delay-1: fade-up 0.6s ease-out 0.3s forwards;
   --animate-fade-up-delay-2: fade-up 0.6s ease-out 0.5s forwards;
   --animate-marquee: marquee 28s linear infinite;
+}
+
+/* ─── Dark theme ──────────────────────────────────────────────────────────────
+   Overrides for the semantic tokens above. Only the dashboard opts in: it is built
+   entirely on these tokens (bg-card, text-muted-foreground, border), so it re-skins
+   for free. The marketing pages are not — they carry literal hex in inline styles
+   (NAVY, PAPER, CREAM2), so flipping this class on them would recolour the shared
+   Button and Input while every surface around them stayed put. ThemeProvider mounts
+   in the dashboard layout only, and strips the class on the way out.
+
+   Built on the brand navy (#0B1729 ≈ hsl(215 58% 10%)) rather than neutral grey, so
+   dark mode reads as the same product with the lights off. Red stays the accent. */
+.dark {
+  --color-background: hsl(215 58% 8%);
+  --color-foreground: hsl(210 20% 96%);
+
+  --color-surface-alt: hsl(215 45% 12%);
+  --color-surface-purple: hsl(215 45% 12%);
+  --color-surface-teal: hsl(215 45% 12%);
+
+  --color-card: hsl(215 48% 11%);
+  --color-card-foreground: hsl(210 20% 96%);
+  --color-card-elevated: hsl(215 42% 15%);
+
+  --color-popover: hsl(215 48% 11%);
+  --color-popover-foreground: hsl(210 20% 96%);
+
+  /* Lifted a touch: the light-mode red is tuned against cream and goes muddy on navy. */
+  --color-primary: hsl(0 72% 58%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(215 36% 18%);
+  --color-secondary-foreground: hsl(210 20% 96%);
+
+  --color-muted: hsl(215 36% 18%);
+  --color-muted-foreground: hsl(212 16% 68%);
+  --color-muted-subtle: hsl(212 14% 55%);
+
+  --color-accent: hsl(215 36% 20%);
+  --color-accent-foreground: hsl(210 20% 96%);
+
+  --color-destructive: hsl(0 72% 58%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-border: hsl(215 30% 21%);
+  --color-input: hsl(215 30% 21%);
+  --color-ring: hsl(0 72% 58%);
+
+  --color-accent-blue: hsl(217 91% 62%);
+
+  color-scheme: dark;
 }
 
 /* Keyframes */

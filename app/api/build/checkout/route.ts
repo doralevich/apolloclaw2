@@ -1,5 +1,5 @@
 import { getAgentType } from "@/config/agent-types";
-import { requireMember, requireUser } from "@/lib/auth";
+import { requireAdmin, requireUser } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { HOSTING_PLAN, planForAgentType } from "@/lib/pricing/catalog";
 import { publicSiteOrigin } from "@/lib/site-url";
@@ -19,7 +19,9 @@ export const POST = route(async (request: Request) => {
 
   if (!body.workspace_id) throw new ApiError(400, "invalid_request", "workspace_id is required");
   if (!body.type) throw new ApiError(400, "invalid_request", "type is required");
-  await requireMember(supabase, body.workspace_id, user.id);
+  // Admin: this starts a $4,500 Stripe Checkout. A member using the agent day to day has no
+  // business buying another one on the owner's card.
+  await requireAdmin(supabase, body.workspace_id, user.id);
 
   const type = getAgentType(body.type);
   if (!type) throw new ApiError(404, "not_found", "Unknown agent type");

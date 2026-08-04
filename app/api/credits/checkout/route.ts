@@ -19,7 +19,7 @@ export const POST = route(async (request: Request) => {
 
   // Same ownership gate as every other per-agent route. Credit is spent by this instance, so
   // the right to buy it is the right to use it.
-  const { user, row: agent } = await requireAgentAccess(body.agent_id, "member");
+  const { user, row: agent } = await requireAgentAccess(body.agent_id, "admin");
 
   const pack = creditPackForCatalogKey(body.pack);
   if (!pack) throw new ApiError(404, "not_found", "Unknown credit pack");
@@ -61,8 +61,8 @@ export const POST = route(async (request: Request) => {
     // creates one if asked.
     customer_creation: "always",
     ...(user.email ? { customer_email: user.email } : {}),
-    success_url: `${origin}/dashboard/credits?purchased=1`,
-    cancel_url: `${origin}/dashboard/credits?canceled=1`,
+    success_url: `${origin}/dashboard/settings/billing?purchased=1`,
+    cancel_url: `${origin}/dashboard/settings/billing?canceled=1`,
   });
 
   if (!session.url) throw new ApiError(502, "stripe_error", "Stripe did not return a checkout URL");
