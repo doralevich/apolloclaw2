@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Check, ChevronDown, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
+import { Check, ChevronDown, Copy, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -328,6 +328,9 @@ function ChannelCard({
             </p>
           )}
           {def.connectedNote && <p className="text-sm text-muted-foreground">{def.connectedNote}</p>}
+          {/* Still shown once connected — for Slack this is the step AFTER connecting, and hiding
+              it the moment the credentials land would strand the setup half-done. */}
+          {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
           {channel?.inviteUrl && (
             <p className="text-sm">
               <a
@@ -359,6 +362,8 @@ function ChannelCard({
               </li>
             ))}
           </ol>
+
+          {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
 
           {def.kind === "qr" ? (
             pending && shownQr ? (
@@ -405,6 +410,50 @@ function ChannelCard({
         onConfirm={() => disconnect()}
       />
     </section>
+  );
+}
+
+// The inbound URL for this agent, with a copy button.
+//
+// Built from window.location.origin rather than a server value, so it is always the host the
+// customer is actually looking at — pasting a production URL into Slack from a preview deploy
+// would send their messages somewhere they didn't expect.
+function WebhookUrl({ agentId, channel }: { agentId: string; channel: ChannelId }) {
+  const [copied, setCopied] = useState(false);
+
+  // window doesn't exist during the server render, so the origin is read through
+  // useSyncExternalStore: empty on the server, real after hydration, and no state written from an
+  // effect to get there.
+  const origin = useSyncExternalStore(
+    () => () => {},
+    () => window.location.origin,
+    () => ""
+  );
+  const url = origin ? `${origin}/api/channels/${channel}/${agentId}` : "";
+
+  const copy = () => {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => toast.error("Couldn't copy — select the URL and copy it manually."));
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium text-muted-foreground">Request URL</p>
+      <div className="flex items-center gap-2">
+        <code className="min-w-0 flex-1 truncate rounded-lg border bg-muted/50 px-3 py-2 text-xs">
+          {url || "…"}
+        </code>
+        <Button variant="outline" size="sm" onClick={copy} disabled={!url}>
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+      </div>
+    </div>
   );
 }
 
