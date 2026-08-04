@@ -115,6 +115,17 @@ export const DEFAULT_INTEGRATION_TOOLKITS: IntegrationToolkit[] = INTEGRATION_CA
   (c) => c.toolkits
 );
 
+// slug -> category title, so a card can name its own category when it turns up outside its
+// section (search results, the flat "all apps" grid). Undefined for anything that came from
+// the remote catalog rather than the curated list above.
+const CATEGORY_BY_SLUG = new Map<string, string>(
+  INTEGRATION_CATEGORIES.flatMap((c) => c.toolkits.map((t) => [t.slug.toLowerCase(), c.title] as const))
+);
+
+export function categoryForSlug(slug: string): string | undefined {
+  return CATEGORY_BY_SLUG.get(slug.toLowerCase());
+}
+
 // Pinned at the top of Browse under a "Favorites" heading — the apps a business workspace
 // connects first. Order here is display order. Edit freely; slugs must exist in the catalog above.
 export const FAVORITE_INTEGRATION_SLUGS: string[] = [

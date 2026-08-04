@@ -2,10 +2,24 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Check, ExternalLink, Loader2, Plug, Plus, Search, Star, Unplug } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  ExternalLink,
+  Loader2,
+  Plug,
+  Plus,
+  Search,
+  Settings2,
+  Star,
+  Unplug,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import {
+  categoryForSlug,
+  composioLogoUrl,
   DEFAULT_INTEGRATION_TOOLKITS,
   FAVORITE_INTEGRATION_SLUGS,
   INTEGRATION_CATEGORIES,
@@ -29,7 +43,18 @@ const BROWSE_LIMIT = 24; // the v1 route clamps to 24; ask for a full page so Br
 const POLL_INTERVAL_MS = 2000;
 const POLL_MAX_ATTEMPTS = 22; // give up polling for the connect to land after ~45s
 
+// How many apps a category shows on the landing view before it hands off to "View all".
+// Two rows at the widest breakpoint: enough to see what a category is about, few enough
+// that the whole page stays scannable instead of being one long wall of cards.
+const SECTION_PREVIEW = 6;
+
 type SubTab = "browse" | "connected";
+type StatusFilter = "all" | "connected" | "available";
+
+// "all" and "favorites" are pseudo-categories; everything else is a category title from
+// INTEGRATION_CATEGORIES.
+const ALL = "all";
+const FAVORITES = "favorites";
 
 function toolkitKey(slug: string): string {
   return slug.toLowerCase();
@@ -110,7 +135,7 @@ export function IntegrationsView() {
   return (
     <div className="space-y-4">
       {active.live_status !== "running" && (
-        <p className="max-w-5xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        <p className="max-w-6xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
           {active.name || "This agent"} isn&apos;t running right now ({active.live_status ?? "unknown"}).
           You can still manage its app connections here, but the agent can&apos;t use them until it&apos;s
           started from the My Agents tab.
@@ -127,6 +152,8 @@ export function IntegrationsView() {
 function IntegrationsPanel({ agentId }: { agentId: string }) {
   const [tab, setTab] = useState<SubTab>("browse");
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string>(ALL);
+  const [status, setStatus] = useState<StatusFilter>("all");
   const [toolkits, setToolkits] = useState<IntegrationToolkit[]>([]);
   const [loadingToolkits, setLoadingToolkits] = useState(false);
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
@@ -270,6 +297,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
 
   const activeConnections = connections.filter((c) => !c.isDisabled);
   const q = search.trim();
+  const connectedCount = activeConnections.length;
 
   // Filtering is instant and local over the curated catalog from the first character; a 3+ char
   // query ALSO searches the full remote catalog (1,000+ apps) and appends whatever the curated
@@ -283,55 +311,62 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     const shown = new Set(localMatches.map((t) => toolkitKey(t.slug)));
     return toolkits.filter((t) => !shown.has(toolkitKey(t.slug)));
   }, [q, localMatches, toolkits, loadingToolkits]);
-  const searchResults = [...localMatches, ...remoteExtras];
   const searchingRemote = q.length >= MIN_SEARCH && loadingToolkits;
 
-  // One card, used by the Favorites row, the All-apps grid, and search results.
-  const renderCard = (t: IntegrationToolkit) => {
-    const connected = isToolkitConnected(connections, t.slug);
-    const key = toolkitKey(t.slug);
-    const isPending = pendingSlug === key;
-    return (
-      <div
-        key={t.slug}
-        className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-secondary/40"
-      >
-        <ToolkitLogo logo={t.logo} name={t.name} />
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium">{t.name}</div>
-          {t.description && (
-            <div className="truncate text-xs text-muted-foreground">{t.description}</div>
-          )}
-        </div>
-        {connected ? (
-          <Badge variant="success" className="shrink-0 gap-1">
-            <Check className="h-3 w-3" />
-            Added
-          </Badge>
-        ) : isPending ? (
-          <Button size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs" disabled>
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Waiting
-          </Button>
-        ) : (
-          <Button asChild size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs">
-            <a
-              href={connectRedirectHref(agentId, t.slug)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => startPolling(t.slug)}
-            >
-              Connect
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </Button>
-        )}
-      </div>
-    );
-  };
+  const byStatus = useCallback(
+    (list: IntegrationToolkit[]) => {
+      if (status === "all") return list;
+      const want = status === "connected";
+      return list.filter((t) => isToolkitConnected(connections, t.slug) === want);
+    },
+    [status, connections]
+  );
+
+  // The set of cards a narrowed view shows. Search wins over the category pills for anything
+  // the remote catalog turned up, because those apps have no curated category to filter by —
+  // picking "Files & docs" and typing "notion" should still find Notion.
+  const filtered = useMemo(() => {
+    let base: IntegrationToolkit[];
+    if (q) {
+      const curated = category === ALL ? localMatches
+        : category === FAVORITES ? localMatches.filter((t) => FAVORITE_INTEGRATION_SLUGS.includes(t.slug))
+        : localMatches.filter((t) => categoryForSlug(t.slug) === category);
+      base = category === ALL ? [...curated, ...remoteExtras] : curated;
+    } else if (category === FAVORITES) {
+      base = FAVORITE_TOOLKITS;
+    } else if (category === ALL) {
+      base = [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps];
+    } else {
+      base = INTEGRATION_CATEGORIES.find((c) => c.title === category)?.toolkits ?? [];
+    }
+    return byStatus(base);
+  }, [q, category, localMatches, remoteExtras, extraApps, byStatus]);
+
+  // The landing view: every category as its own shelf. Any filter or query at all collapses
+  // it into a single flat grid, so there is only ever one place to look for results.
+  const showSections = !q && category === ALL && status === "all";
+  const filtersActive = category !== ALL || status !== "all" || q.length > 0;
+
+  function clearFilters() {
+    setCategory(ALL);
+    setStatus("all");
+    setSearch("");
+  }
+
+  const renderCard = (t: IntegrationToolkit) => (
+    <IntegrationCard
+      key={t.slug}
+      toolkit={t}
+      agentId={agentId}
+      connected={isToolkitConnected(connections, t.slug)}
+      pending={pendingSlug === toolkitKey(t.slug)}
+      onConnect={() => startPolling(t.slug)}
+      onManage={() => setTab("connected")}
+    />
+  );
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-6xl space-y-6">
       <div className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
@@ -341,8 +376,8 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             </SubTabButton>
             <SubTabButton active={tab === "connected"} onClick={() => setTab("connected")}>
               Connected
-              {activeConnections.length > 0 && (
-                <span className="ml-1.5 text-xs text-muted-foreground">{activeConnections.length}</span>
+              {connectedCount > 0 && (
+                <span className="ml-1.5 text-xs text-muted-foreground">{connectedCount}</span>
               )}
             </SubTabButton>
           </div>
@@ -355,7 +390,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
       </div>
 
       {tab === "browse" ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -366,75 +401,172 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             />
           </div>
 
-          {q.length === 0 ? (
-            <div className="space-y-6">
+          {/* Filters. Categories on the left, connection state on the right — the two
+              questions people actually arrive with ("what have I already set up?" and
+              "what's there for email?"). Both narrow the same grid. */}
+          <div className="flex flex-col gap-3 rounded-xl border bg-card/50 p-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-0.5 inline-flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
+                <Settings2 className="h-3.5 w-3.5" />
+                Filter
+              </span>
+              <FilterPill active={category === ALL} onClick={() => setCategory(ALL)}>
+                All apps
+              </FilterPill>
+              <FilterPill active={category === FAVORITES} onClick={() => setCategory(FAVORITES)}>
+                <Star
+                  className={cn(
+                    "h-3 w-3",
+                    category === FAVORITES ? "fill-amber-400 text-amber-400" : "text-amber-400"
+                  )}
+                />
+                Favorites
+              </FilterPill>
+              {INTEGRATION_CATEGORIES.map((cat) => (
+                <FilterPill
+                  key={cat.title}
+                  active={category === cat.title}
+                  onClick={() => setCategory(cat.title)}
+                >
+                  {cat.title}
+                </FilterPill>
+              ))}
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <div className="inline-flex rounded-full border bg-background p-0.5 text-xs">
+                <StatusButton active={status === "all"} onClick={() => setStatus("all")}>
+                  All
+                </StatusButton>
+                <StatusButton active={status === "connected"} onClick={() => setStatus("connected")}>
+                  Connected
+                </StatusButton>
+                <StatusButton active={status === "available"} onClick={() => setStatus("available")}>
+                  Not connected
+                </StatusButton>
+              </div>
+              {filtersActive && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 shrink-0 px-2 text-xs text-muted-foreground"
+                  onClick={clearFilters}
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {showSections ? (
+            <div className="space-y-7">
               <p className="rounded-lg border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
                 Connecting takes about 30 seconds: click Connect, sign in to the app in the tab
                 that opens, and you&apos;re done. Your agent can then use that app on your behalf.
                 Disconnect any app anytime from the Connected tab.
               </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
-                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  Favorites
-                </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {FAVORITE_TOOLKITS.map(renderCard)}
-                </div>
-              </div>
+
+              <Section
+                title="Favorites"
+                icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
+                total={FAVORITE_TOOLKITS.length}
+                onViewAll={() => setCategory(FAVORITES)}
+              >
+                {FAVORITE_TOOLKITS.slice(0, SECTION_PREVIEW).map(renderCard)}
+              </Section>
+
               {INTEGRATION_CATEGORIES.map((cat) => (
-                <div key={cat.title} className="space-y-2">
-                  <div className="px-1 text-xs font-medium text-muted-foreground">{cat.title}</div>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {cat.toolkits.map(renderCard)}
-                  </div>
-                </div>
+                <Section
+                  key={cat.title}
+                  title={cat.title}
+                  total={cat.toolkits.length}
+                  onViewAll={() => setCategory(cat.title)}
+                >
+                  {cat.toolkits.slice(0, SECTION_PREVIEW).map(renderCard)}
+                </Section>
               ))}
-              <div className="space-y-2">
+
+              <div className="space-y-3">
                 {extraApps.length > 0 && (
-                  <>
-                    <div className="px-1 text-xs font-medium text-muted-foreground">
-                      More from the app store
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {extraApps.map(renderCard)}
-                    </div>
-                  </>
+                  <Section title="More from the app store" total={extraApps.length}>
+                    {extraApps.map(renderCard)}
+                  </Section>
                 )}
-                {!extraLoaded || extraCursor ? (
-                  <Button variant="outline" className="w-full" disabled={loadingExtra} onClick={loadMoreApps}>
-                    {loadingExtra ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                    {extraLoaded ? "Load more apps" : "Show more apps"}
-                  </Button>
-                ) : (
-                  <p className="px-1 pt-1 text-center text-xs text-muted-foreground">
-                    That&apos;s everything we can list here. Search above to find any of 1,000+ apps.
-                  </p>
-                )}
+                <LoadMore
+                  exhausted={extraLoaded && !extraCursor}
+                  loading={loadingExtra}
+                  loaded={extraLoaded}
+                  onClick={loadMoreApps}
+                />
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="px-1 text-xs font-medium text-muted-foreground">Search results</div>
-              {searchResults.length === 0 && !searchingRemote ? (
-                <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-                  No apps found for &ldquo;{q}&rdquo;.
-                  {q.length < MIN_SEARCH && " Keep typing to search the full catalog."}
-                </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3 px-1">
+                <div className="text-xs font-medium text-muted-foreground">
+                  {q ? `Results for “${q}”` : category === ALL ? "All apps" : category}
+                  {status !== "all" && (
+                    <span className="ml-1.5 font-normal">
+                      · {status === "connected" ? "connected only" : "not connected"}
+                    </span>
+                  )}
+                  <span className="ml-1.5 font-normal">
+                    ({filtered.length}
+                    {searchingRemote ? "+" : ""})
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-muted-foreground"
+                  onClick={clearFilters}
+                >
+                  Back to all categories
+                </Button>
+              </div>
+
+              {filtered.length === 0 && !searchingRemote ? (
+                <div className="rounded-xl border border-dashed px-6 py-12 text-center">
+                  <Search className="mx-auto h-5 w-5 text-muted-foreground" />
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {q ? (
+                      <>
+                        No apps found for &ldquo;{q}&rdquo;.
+                        {q.length < MIN_SEARCH && " Keep typing to search the full catalog."}
+                      </>
+                    ) : status === "connected" ? (
+                      "Nothing connected in this category yet."
+                    ) : (
+                      "Nothing left to connect in this category — you've got them all."
+                    )}
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {searchResults.map(renderCard)}
+                  {filtered.map(renderCard)}
                 </div>
               )}
+
               {searchingRemote && (
                 <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Searching the full catalog…
                 </p>
+              )}
+
+              {/* The full catalog is only pageable when nothing narrows it — the remote list
+                  is popularity-ranked, not category-tagged, so paging it inside a category
+                  would append apps that don't belong to that category. */}
+              {!q && category === ALL && (
+                <LoadMore
+                  exhausted={extraLoaded && !extraCursor}
+                  loading={loadingExtra}
+                  loaded={extraLoaded}
+                  onClick={loadMoreApps}
+                />
               )}
             </div>
           )}
@@ -461,8 +593,9 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             <div className="overflow-hidden rounded-xl border bg-card">
               {activeConnections.map((c, i) => {
                 const slug = connToolkitSlug(c);
-                const key = toolkitKey(slug);
-                const isPending = pendingSlug === key;
+                const isPending = pendingSlug === slug;
+                const name = c.toolkitName || c.toolkitSlug || slug || "Unknown app";
+                const connCategory = slug ? categoryForSlug(slug) : undefined;
 
                 return (
                   <div
@@ -472,15 +605,21 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                       i === activeConnections.length - 1 ? "" : "border-b"
                     )}
                   >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="truncate font-medium">
-                        {c.toolkitName || c.toolkitSlug || slug || "Unknown app"}
-                      </span>
-                      {isActive(c) ? (
-                        <Badge variant="success">Connected</Badge>
-                      ) : (
-                        <Badge variant="warning">{c.status || "Pending"}</Badge>
-                      )}
+                    <div className="flex min-w-0 items-center gap-3">
+                      <ToolkitLogo logo={slug ? composioLogoUrl(slug) : null} name={name} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate font-medium">{name}</span>
+                          {isActive(c) ? (
+                            <Badge variant="success">Connected</Badge>
+                          ) : (
+                            <Badge variant="warning">{c.status || "Pending"}</Badge>
+                          )}
+                        </div>
+                        {connCategory && (
+                          <div className="truncate text-xs text-muted-foreground">{connCategory}</div>
+                        )}
+                      </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       {isPending ? (
@@ -488,28 +627,24 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           Waiting
                         </Button>
+                      ) : slug ? (
+                        <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs">
+                          <a
+                            href={connectRedirectHref(agentId, slug)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => startPolling(slug)}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Add another
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </Button>
                       ) : (
-                        <>
-                          {slug ? (
-                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs">
-                              <a
-                                href={connectRedirectHref(agentId, slug)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => startPolling(slug)}
-                              >
-                                <Plus className="h-3.5 w-3.5" />
-                                Add another
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
-                            </Button>
-                          ) : (
-                            <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs" disabled>
-                              <Plus className="h-3.5 w-3.5" />
-                              Add another
-                            </Button>
-                          )}
-                        </>
+                        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs" disabled>
+                          <Plus className="h-3.5 w-3.5" />
+                          Add another
+                        </Button>
                       )}
                       <Button
                         variant="ghost"
@@ -551,6 +686,200 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   );
 }
 
+// One shelf on the landing view: a heading, up to SECTION_PREVIEW cards, and a "View all"
+// that hands off to the category filter rather than expanding in place — so there is only
+// ever one grid on screen showing one thing.
+function Section({
+  title,
+  icon,
+  total,
+  onViewAll,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  total: number;
+  onViewAll?: () => void;
+  children: React.ReactNode;
+}) {
+  const hidden = total - SECTION_PREVIEW;
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {icon}
+          {title}
+          <span className="font-normal normal-case tracking-normal">({total})</span>
+        </div>
+        {onViewAll && hidden > 0 && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="inline-flex cursor-pointer items-center gap-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View all {total}
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+    </div>
+  );
+}
+
+// The box. Logo, name, what the app is, and exactly one action — sized so a row of three
+// reads as three things rather than a striped list.
+function IntegrationCard({
+  toolkit: t,
+  agentId,
+  connected,
+  pending,
+  onConnect,
+  onManage,
+}: {
+  toolkit: IntegrationToolkit;
+  agentId: string;
+  connected: boolean;
+  pending: boolean;
+  onConnect: () => void;
+  onManage: () => void;
+}) {
+  const category = categoryForSlug(t.slug);
+  return (
+    <div
+      className={cn(
+        "flex h-full flex-col rounded-xl border bg-card p-4 transition-all hover:border-foreground/20 hover:shadow-sm",
+        connected && "border-emerald-200 bg-emerald-50/30"
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <ToolkitLogo logo={t.logo} name={t.name} size="lg" />
+        {connected && (
+          <Badge variant="success" className="shrink-0 gap-1">
+            <Check className="h-3 w-3" />
+            Added
+          </Badge>
+        )}
+      </div>
+
+      <div className="mt-3 min-w-0 flex-1">
+        <div className="truncate text-sm font-semibold">{t.name}</div>
+        {category && (
+          <div className="mt-0.5 truncate text-[11px] uppercase tracking-wide text-muted-foreground">
+            {category}
+          </div>
+        )}
+        {t.description && (
+          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+            {t.description}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4">
+        {connected ? (
+          <Button variant="outline" size="sm" className="h-8 w-full text-xs" onClick={onManage}>
+            Manage
+          </Button>
+        ) : pending ? (
+          <Button size="sm" variant="outline" className="h-8 w-full text-xs" disabled>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Waiting
+          </Button>
+        ) : (
+          <Button asChild size="sm" variant="outline" className="h-8 w-full text-xs">
+            <a
+              href={connectRedirectHref(agentId, t.slug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onConnect}
+            >
+              Connect
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadMore({
+  exhausted,
+  loading,
+  loaded,
+  onClick,
+}: {
+  exhausted: boolean;
+  loading: boolean;
+  loaded: boolean;
+  onClick: () => void;
+}) {
+  if (exhausted) {
+    return (
+      <p className="px-1 pt-1 text-center text-xs text-muted-foreground">
+        That&apos;s everything we can list here. Search above to find any of 1,000+ apps.
+      </p>
+    );
+  }
+  return (
+    <Button variant="outline" className="w-full" disabled={loading} onClick={onClick}>
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+      {loaded ? "Load more apps" : "Show more apps"}
+    </Button>
+  );
+}
+
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+        active
+          ? "border-foreground/20 bg-secondary text-secondary-foreground"
+          : "border-transparent bg-background text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatusButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "cursor-pointer whitespace-nowrap rounded-full px-2.5 py-1 font-medium transition-colors",
+        active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 function SubTabButton({
   active,
   onClick,
@@ -575,13 +904,35 @@ function SubTabButton({
   );
 }
 
-function ToolkitLogo({ logo, name }: { logo: string | null; name: string }) {
+function ToolkitLogo({
+  logo,
+  name,
+  size = "sm",
+}: {
+  logo: string | null;
+  name: string;
+  size?: "sm" | "lg";
+}) {
+  const box = size === "lg" ? "h-10 w-10" : "h-8 w-8";
   if (logo) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={logo} alt="" loading="lazy" decoding="async" className="h-8 w-8 shrink-0 rounded-md object-contain" />;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logo}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className={cn(box, "shrink-0 rounded-lg object-contain")}
+      />
+    );
   }
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
+    <div
+      className={cn(
+        box,
+        "flex shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold text-muted-foreground"
+      )}
+    >
       {name.charAt(0).toUpperCase()}
     </div>
   );
