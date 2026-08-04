@@ -1,6 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
-import { CONTEXT_FILENAME } from "@/config/agent-workspace";
+import { CONTEXT_FILENAME, GENERATED_FILES } from "@/config/agent-workspace";
 import { buildOwnerContext } from "@/lib/enrichment";
 import {
   buildUserMd,
@@ -67,7 +67,11 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
     // Both files, because which one is populated is the whole diagnosis: OWNER.md is ours
     // (the questionnaire), USER.md is the agent's own memory. Confusing them cost a customer
     // their profile once already.
-    'for D in $DIRS; do for N in USER.md MEMORY.md; do F="$D/$N"; ' +
+    // Every file this dashboard has an opinion about. USER.md and MEMORY.md are the original
+    // diagnosis (ours vs the agent's own); the rest are what the repair now also writes, and
+    // without them here there was no way to confirm a repair had done what it claimed — the
+    // success message said "wrote the profile" whether or not the other four landed.
+    `for D in $DIRS; do for N in USER.md MEMORY.md ${Object.values(GENERATED_FILES).join(" ")} ${CONTEXT_FILENAME}; do F="$D/$N"; ` +
     '[ -f "$F" ] && echo "FILE:$F:$(wc -c < "$F" | tr -d " ")" || echo "FILE:$F:missing"; done; done; ' +
     'for D in $DIRS; do F="$D/SOUL.md"; [ -f "$F" ] || continue; ' +
     `grep -qF '${USER_MD_POINTER_MARKER}' "$F" && echo "POINTER:$F" || echo "NOPOINTER:$F"; done; ` +
@@ -91,7 +95,10 @@ export async function inspectAgentMemory(instanceIds: string[]): Promise<Inspect
         return {
           path,
           bytes: size === "missing" ? -1 : Number(size),
-          hasPointer: pointers.has(path.replace(/(OWNER|USER)\.md$/, "SOUL.md")),
+          // "Does the SOUL.md in THIS directory carry our pointer block?" — a property of the
+          // workspace, reported on each file in it. Swapping the whole basename rather than a
+          // known set of names, so a file added later doesn't silently report false.
+          hasPointer: pointers.has(path.replace(/[^/]+$/, "SOUL.md")),
         };
       });
       const preview = (stdout.match(/PREVIEW:(.*)/g) ?? []).map((s) => s.slice(8).trim());
@@ -277,7 +284,7 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       // The rest of what OpenClaw loads at session start. An agent provisioned before these
       // existed has generic template text where its owner's priorities, voice and stack
       // should be — this is how it catches up without them re-doing the questionnaire.
-      await writeGeneratedFiles(id, {
+      const generated = await writeGeneratedFiles(id, {
         answers,
         agentName: row.name || undefined,
         contextSummary: context?.summary,
@@ -302,13 +309,24 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
         }
       }
 
+      // Name every file that actually landed. The old line said only "wrote the profile into
+      // USER.md", which stayed true and stayed silent after this pass grew to write four more
+      // files — a success message that can't distinguish "all five written" from "one written
+      // and four silently skipped" is not a verification, and inspect couldn't see them either.
+      const filesWritten = ["USER.md", ...(context ? [CONTEXT_FILENAME] : []), ...generated];
+      const missing = Object.values(GENERATED_FILES).filter((f) => !generated.includes(f));
+
       results.push({
         id,
         name,
         outcome: pointed ? "repaired" : "failed",
-        detail: pointed
-          ? `wrote the profile into USER.md from the questionnaire, pointer set to current version${capNote}`
-          : `profile written but the pointer could not be set${capNote}`,
+        detail:
+          (pointed
+            ? `wrote ${filesWritten.join(", ")}; pointer set to current version`
+            : `wrote ${filesWritten.join(", ")} but the pointer could not be set`) +
+          (missing.length ? `; FAILED to write ${missing.join(", ")}` : "") +
+          (context ? "" : "; no website content to enrich with") +
+          capNote,
       });
     } catch (err) {
       results.push({ id, name, outcome: "failed", detail: err instanceof Error ? err.message : String(err) });
