@@ -292,3 +292,20 @@ export interface Channel {
 export interface ChannelsResult {
   channels: Channel[];
 }
+
+// A public port: one HTTPS URL for one port of one instance, reachable with no credential, that
+// keeps working until deleted. The way an external service (Telegram, a payment processor) gets
+// a permanent address to POST to, since none of them will ever send our sk_live_ key.
+//
+// Verified against docs.agent37.com/docs/agents-api/public-ports.
+export interface PublicPort {
+  port: number;
+  /** With no prefix this is a 20-char random slug, and the URL itself is the only credential. */
+  url: string;
+  /** The same URL mirrored under each active custom domain; empty until one is active. */
+  domain_urls: string[];
+  /** Echoes the requested prefix, or null for a slug URL. */
+  prefix: string | null;
+  /** Unix SECONDS (not ms, unlike the gateway's response timestamps). */
+  created: number;
+}
