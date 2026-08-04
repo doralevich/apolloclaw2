@@ -34,13 +34,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   }
 
   if (channel === "telegram") {
-    return json(
-      await connectTelegram(id, {
-        botToken: credentials.botToken,
-        subscription: credentials.subscription,
-        signingSecret: credentials.signingSecret,
-      })
-    );
+    return json(await connectTelegram(id, { botToken: credentials.botToken }));
   }
 
   // Slack, Discord and WhatsApp have cards and copy but no implementation yet. Telegram went
