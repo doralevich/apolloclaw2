@@ -65,7 +65,7 @@ export function CreateAgentModal({
   triggerVariant?: ButtonProps["variant"];
   triggerSize?: ButtonProps["size"];
 }) {
-  const { current } = useWorkspace();
+  const { current, isPlatformAdmin } = useWorkspace();
   const { agents, refresh, setActiveId } = useActiveAgent();
   const { busy, run } = useAsyncAction();
 
@@ -86,9 +86,15 @@ export function CreateAgentModal({
     existing.has(t.id) || existing.has(t.template);
 
   // Internal types (the license build) are provisioned by the platform after checkout, not
-  // picked from a card. Filtered out rather than shown disabled: "you cannot choose this"
-  // and "this is not a thing you choose" are different messages.
-  const pickableTypes = AGENT_TYPES.filter((t) => !t.internal);
+  // picked from a card. Filtered out for customers rather than shown disabled: "you cannot
+  // choose this" and "this is not a thing you choose" are different messages.
+  //
+  // Platform admins DO see them. Both registry entries are internal now, so filtering for
+  // everyone left the modal with nothing to show — it rendered no trigger at all, and there
+  // was no way to create an Apollo agent from the dashboard by any route. Which is fine for a
+  // customer, who gets one with their licence, and useless for us: testing a provisioning
+  // change meant having no way to provision.
+  const pickableTypes = AGENT_TYPES.filter((t) => isPlatformAdmin || !t.internal);
 
   const selectedType = pickableTypes.find((t) => t.id === selected) ?? null;
 
@@ -135,10 +141,10 @@ export function CreateAgentModal({
 
   if (!current) return null;
 
-  // Nothing left to pick: both registry entries are internal — the Apollo Agent arrives with
-  // the license, and the College Agent is another product on another site. Render no trigger
-  // at all rather than a button that opens an empty dialog. When there is a self-serve type
-  // again, the button comes back on its own.
+  // Nothing left to pick — for a customer, both registry entries are internal: the Apollo
+  // Agent arrives with the licence and the College Agent is another product on another site.
+  // Render no trigger at all rather than a button that opens an empty dialog. Admins never
+  // reach this, since internal types are pickable for them.
   if (pickableTypes.length === 0) return null;
 
   return (

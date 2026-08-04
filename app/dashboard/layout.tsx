@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { isAdminEmail } from "@/config/admins";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WorkspaceProvider } from "@/components/WorkspaceProvider";
 import { ActiveAgentProvider } from "@/components/ActiveAgentProvider";
@@ -51,7 +52,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <WorkspaceProvider initialWorkspaces={workspaces} userEmail={user.email ?? ""}>
+    <WorkspaceProvider
+      initialWorkspaces={workspaces}
+      userEmail={user.email ?? ""}
+      isPlatformAdmin={isAdminEmail(user.email)}
+    >
       <ActiveAgentProvider>
         {/* Chat threads are provided at the DASHBOARD level so the sidebar can list them from
             every page. Inside ActiveAgentProvider because it needs the active agent, outside
