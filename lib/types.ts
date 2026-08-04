@@ -283,9 +283,16 @@ export interface Channel {
   /** Why it's in an error state, when the runtime says. */
   message?: string | null;
   /** Pairing payload for the QR flows — a data: URL or the raw string to encode. */
-  qr?: string | null;
   /** For Discord: the "add this bot to a server" link to hand back to the customer. */
   inviteUrl?: string | null;
+  /**
+   * For WhatsApp: the token Meta echoes when the customer saves the callback URL.
+   *
+   * The one value here that IS shown to the browser, because the setup cannot be completed
+   * without pasting it into Meta's console. It authenticates a one-time handshake and grants
+   * nothing else — unlike the access token and app secret, which never leave the server.
+   */
+  verifyToken?: string | null;
   updatedAt?: number | null;
 }
 

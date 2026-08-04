@@ -9,8 +9,10 @@ import type { Channel, ChannelId, ChannelState } from "@/lib/types";
 // already passed requireAgentAccess, and RLS on this table has no policies precisely so that a
 // leaked anon key reaches nothing.
 //
-// The one rule this file exists to enforce: bot_token goes out to the browser NEVER. `toChannel`
-// is the only thing routes should return, and it has no token field to forget to strip.
+// The one rule this file exists to enforce: bot_token and secret go out to the browser NEVER.
+// `toChannel` is the only thing routes should return, and it has no field for either to forget to
+// strip. The single deliberate exception is WhatsApp's verify token, which the customer has to
+// paste into Meta's console — see below.
 
 export interface ChannelRow {
   agent37_id: string;
@@ -23,6 +25,10 @@ export interface ChannelRow {
   session_id: string | null;
   /** Bound on the first message. Anyone else talking to the bot is ignored. */
   owner_chat_id: string | null;
+  /** Provider-side id a reply must be addressed through. WhatsApp's Phone Number ID. */
+  external_id: string | null;
+  /** Echoed back once, when the provider verifies our callback URL. WhatsApp only. */
+  verify_token: string | null;
   state: string;
   message: string | null;
   updated_at: string | null;
@@ -35,6 +41,10 @@ export function toChannel(row: ChannelRow): Channel {
     state: (row.state as ChannelState) || "disconnected",
     account: row.account,
     message: row.message,
+    // Deliberately exposed, and only this one: Meta's webhook form asks the customer for it, so a
+    // verify token they cannot read is a setup they cannot finish. It proves a callback URL is
+    // ours during a one-time handshake and unlocks nothing else.
+    verifyToken: decryptSecret(row.verify_token),
     updatedAt: row.updated_at ? Date.parse(row.updated_at) : null,
   };
 }
@@ -82,6 +92,8 @@ export async function getChannelConfig(
   secret: string | null;
   sessionId: string | null;
   ownerChatId: string | null;
+  externalId: string | null;
+  verifyToken: string | null;
 } | null> {
   const row = await getChannelRow(agentId, channel);
   const token = decryptSecret(row?.bot_token ?? null);
@@ -91,6 +103,8 @@ export async function getChannelConfig(
     secret: decryptSecret(row.secret),
     sessionId: row.session_id,
     ownerChatId: row.owner_chat_id,
+    externalId: row.external_id,
+    verifyToken: decryptSecret(row.verify_token),
   };
 }
 
@@ -103,6 +117,8 @@ export async function upsertChannel(
     secret?: string | null;
     sessionId?: string | null;
     ownerChatId?: string | null;
+    externalId?: string | null;
+    verifyToken?: string | null;
     state: ChannelState;
     message?: string | null;
   }
@@ -124,6 +140,10 @@ export async function upsertChannel(
   if (fields.secret !== undefined) payload.secret = encryptForStorage(fields.secret);
   if (fields.sessionId !== undefined) payload.session_id = fields.sessionId;
   if (fields.ownerChatId !== undefined) payload.owner_chat_id = fields.ownerChatId;
+  if (fields.externalId !== undefined) payload.external_id = fields.externalId;
+  // Encrypted too: anyone holding it could pass Meta's verification for this agent and point the
+  // callback URL at themselves.
+  if (fields.verifyToken !== undefined) payload.verify_token = encryptForStorage(fields.verifyToken);
 
   const { data, error } = await db
     .from("agent_channels")
