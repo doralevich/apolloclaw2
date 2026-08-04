@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
+import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { apiFetch } from "@/lib/api";
@@ -269,19 +270,30 @@ function initialsAvatarDataUri(label: string, color: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-export interface PersonalizeData { agentName: string; avatarFile: File | null; avatarPresetColor: string | null }
+export interface PersonalizeData {
+  agentName: string;
+  avatarFile: File | null;
+  avatarPresetColor: string | null;
+  /** One of the shipped mascot avatars (config/avatar-presets.ts), by path. */
+  avatarPresetImage: string | null;
+}
 
 function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: PersonalizeData) => void }) {
   const [name, setName] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [presetColor, setPresetColor] = useState<string | null>(null);
+  const [presetImage, setPresetImage] = useState<string | null>(null);
 
-  const pickPreset = (color: string) => { setPresetColor(color); setAvatarFile(null); setAvatarPreview(null); };
+  // The three ways to choose are mutually exclusive — picking any one clears the other two, so
+  // the preview always shows the thing that will actually be saved.
+  const pickPreset = (color: string) => { setPresetColor(color); setPresetImage(null); setAvatarFile(null); setAvatarPreview(null); };
+  const pickImage = (src: string) => { setPresetImage(src); setPresetColor(null); setAvatarFile(null); setAvatarPreview(null); };
   const handleUpload = (file: File | null) => {
     if (!file) return;
     setAvatarFile(file);
     setPresetColor(null);
+    setPresetImage(null);
     const reader = new FileReader();
     reader.onload = () => setAvatarPreview(String(reader.result));
     reader.readAsDataURL(file);
@@ -291,7 +303,8 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
     setName(pool[Math.floor(Math.random() * pool.length)]);
   };
 
-  const previewUrl = avatarPreview || initialsAvatarDataUri(name.trim() || agentLabel, presetColor || AVATAR_COLORS[0]);
+  const previewUrl =
+    avatarPreview || presetImage || initialsAvatarDataUri(name.trim() || agentLabel, presetColor || AVATAR_COLORS[0]);
   const chipStyle: React.CSSProperties = { background: SRF2, border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 12.5, padding: "6px 14px", borderRadius: 20, cursor: "pointer" };
 
   return (
@@ -316,11 +329,30 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
 
         <div style={{ textAlign: "left" }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXM, marginBottom: 10 }}>Avatar</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+            {AVATAR_PRESETS.map((p) => {
+              const on = presetImage === p.src;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => pickImage(p.src)}
+                  aria-label={p.label}
+                  aria-pressed={on}
+                  style={{ width: 52, height: 52, borderRadius: "50%", padding: 0, background: SRF2, border: on ? `2px solid ${TX}` : `1px solid ${BDR}`, boxShadow: on ? `0 0 0 2px ${SRF}, 0 0 0 3px ${TX}` : "none", cursor: "pointer", overflow: "hidden" }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.src} alt="" width={52} height={52} style={{ display: "block", objectFit: "cover" }} />
+                </button>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: 11, color: TXD, margin: "0 0 8px" }}>Or use your own</p>
           <label style={{ display: "inline-block", border: `1px dashed rgba(0,0,0,0.25)`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", background: SRF2, color: TXM, fontSize: 13, fontWeight: 700 }}>
             Upload an image
             <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { handleUpload(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
           </label>
-          <p style={{ fontSize: 11, color: TXD, margin: "10px 0 8px" }}>Or pick a color</p>
+          <p style={{ fontSize: 11, color: TXD, margin: "10px 0 8px" }}>Or pick a color and we&apos;ll use your agent&apos;s initials</p>
           <div style={{ display: "flex", gap: 10 }}>
             {AVATAR_COLORS.map((c) => {
               const on = presetColor === c && !avatarFile;
@@ -329,7 +361,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
           </div>
         </div>
 
-        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor })} style={{ width: "100%", marginTop: 28, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
+        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor, avatarPresetImage: presetImage })} style={{ width: "100%", marginTop: 28, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
           Continue →
         </button>
       </div>
@@ -1013,7 +1045,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
 
   const [enteredGate, setGate] = useState<GateData | null>(null);
   const gate = enteredGate ?? restored ?? EMPTY_GATE;
-  const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: "", avatarFile: null, avatarPresetColor: null });
+  const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: "", avatarFile: null, avatarPresetColor: null, avatarPresetImage: null });
   const [buildingWorkspaceId, setBuildingWorkspaceId] = useState<string | undefined>(workspaceId);
   // Naming/avatar is a paid-customer thing (matches The College Agent: personalization
   // happens post-payment, never on the free lead form).
@@ -1039,6 +1071,8 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         let avatar_preset: string | undefined;
         if (personalize.avatarFile) {
           try { avatar_upload = await readFileAsBase64(personalize.avatarFile); } catch { avatar_upload = undefined; }
+        } else if (personalize.avatarPresetImage) {
+          avatar_preset = personalize.avatarPresetImage;
         } else if (personalize.avatarPresetColor) {
           avatar_preset = initialsAvatarDataUri(personalize.agentName || agentLabel || "Agent", personalize.avatarPresetColor);
         }
@@ -1070,6 +1104,8 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         let avatar_preset: string | undefined;
         if (personalize.avatarFile) {
           try { avatar_upload = await readFileAsBase64(personalize.avatarFile); } catch { avatar_upload = undefined; }
+        } else if (personalize.avatarPresetImage) {
+          avatar_preset = personalize.avatarPresetImage;
         } else if (personalize.avatarPresetColor) {
           avatar_preset = initialsAvatarDataUri(personalize.agentName || "Agent", personalize.avatarPresetColor);
         }

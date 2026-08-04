@@ -5,6 +5,7 @@ import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { ApiError } from "@/lib/http";
 import { buildIntakeSections, escapeHtml, sectionsToHtml } from "@/lib/onboardingSections";
 import { renderSectionsPdf } from "@/lib/pdf";
+import { isAvatarPresetPath } from "@/config/avatar-presets";
 import { CONTEXT_FILENAME } from "@/config/agent-workspace";
 import { buildOwnerContext } from "@/lib/enrichment";
 import {
@@ -117,13 +118,20 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
   const answers = sanitizeAnswers(input.answers);
 
   const agentName = input.agentName?.trim().slice(0, 80) || undefined;
-  // A preset is already a small inline data: URI generated client-side (see AVATAR_PRESETS
-  // in OnboardingForm.tsx) — cap its length so nothing but a real preset/upload URL lands
-  // in this column.
+  // A preset is one of two things, and nothing else is allowed into this column:
+  //
+  //   * a path to one of our shipped mascot avatars (config/avatar-presets.ts), matched against
+  //     the exact list rather than a "/avatars/..." prefix — a prefix test would quietly promote
+  //     any future file in that folder into a valid avatar;
+  //   * a small inline data: URI for the generated initials avatar, length-capped so a client
+  //     can't push an arbitrarily large blob into the row.
+  const preset = input.avatarPreset;
   const presetUrl =
-    input.avatarPreset && input.avatarPreset.startsWith("data:image/") && input.avatarPreset.length <= 20_000
-      ? input.avatarPreset
-      : undefined;
+    preset && isAvatarPresetPath(preset)
+      ? preset
+      : preset && preset.startsWith("data:image/") && preset.length <= 20_000
+        ? preset
+        : undefined;
   const avatarUrl = input.avatarUpload
     ? (await uploadAgentAvatar(workspaceId, type.id, input.avatarUpload)) ?? undefined
     : presetUrl;
