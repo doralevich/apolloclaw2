@@ -112,8 +112,24 @@ export const AGENT_TYPES: AgentType[] = [
     label: "Apollo Agent",
     description:
       "A private AI agent built around one business — its people, its stack, its bottlenecks — from the answers given at onboarding.",
-    template: "apollo-agent",
-    templateAliases: ["college-agent"],
+    // OpenClaw, from the stock image — David's call, and the reason it can be the STOCK one is
+    // that nothing about the product lives in the image any more. SOUL.md now comes from
+    // config/personas.ts and the other five files are generated from the questionnaire
+    // (lib/agent-files.ts), so a plain OpenClaw box plus six files IS the custom agent.
+    //
+    // What this buys, beyond preference: `apollo-agent` is a Hermes image, and Hermes loads
+    // only SOUL/AGENTS/USER/MEMORY — it ignores IDENTITY.md and TOOLS.md entirely. Two of the
+    // five files we generate were inert on every agent we have ever shipped, which is why Nova
+    // introduces herself as "Hermes, built by Nous Research" rather than by the name her owner
+    // chose. Confirmed by reading the running processes on both live instances.
+    //
+    // It also exposes the Control UI, terminal and file browser (config/agents.ts), which the
+    // old template served on remapped ports and so offered none of.
+    //
+    // The aliases keep the old images provisionable if the registry loses the OpenClaw one — a
+    // customer mid-purchase gets a working agent either way, just a Hermes-shaped one.
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
     ...PAID_AGENT,
     available: true,
     internal: true,

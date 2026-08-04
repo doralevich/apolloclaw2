@@ -22,6 +22,8 @@ export type PortName = keyof typeof PORTS;
 // templates fall back to the OpenClaw set.
 const TEMPLATE_PORTS: Record<string, readonly PortName[]> = {
   "agent37-openclaw": ["dashboard", "terminal", "files"],
+  // The Apollo build's OWN template names, kept as fallbacks in config/agent-types.ts. Both
+  // remap their internal surfaces and enable none of the standard ports.
   // Same image under both names while the Agent37 registry is renamed from college-agent to
   // apollo-agent. Dropping either one would fall through to the OpenClaw set and offer port
   // actions that instance doesn't serve.
