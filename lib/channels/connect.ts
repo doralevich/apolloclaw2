@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/http";
 import { publicSiteOrigin } from "@/lib/site-url";
 import * as telegram from "@/lib/channels/telegram";
 import * as slack from "@/lib/channels/slack";
+import * as whatsapp from "@/lib/channels/whatsapp";
 import { deleteChannel, getChannelToken, toChannel, upsertChannel } from "@/lib/channels/store";
 import type { Channel, ChannelId } from "@/lib/types";
 
@@ -100,6 +101,51 @@ export async function connectSlack(
   const row = await upsertChannel(agentId, "slack", {
     botToken,
     secret: signingSecret,
+    account,
+    ownerChatId: null,
+    sessionId: null,
+    state: "connected",
+    message: null,
+  });
+  return toChannel(row);
+}
+
+/**
+ * Connect WhatsApp, through Meta's Cloud API.
+ *
+ * Three things from the customer's Meta app — the access token, the Phone Number ID that replies
+ * get addressed through, and the app secret that signs deliveries — and one we generate: the
+ * verify token Meta echoes when the callback URL is saved. That one is ours to invent precisely
+ * so the customer cannot pick something guessable for it.
+ *
+ * Like Slack and unlike Telegram, nothing is registered with the provider here. Meta has no
+ * "deliver to this URL" API; the customer pastes the callback URL and the verify token into their
+ * own app, and the card shows both.
+ */
+export async function connectWhatsApp(
+  agentId: string,
+  credentials: { accessToken: string; phoneNumberId: string; appSecret: string }
+): Promise<Channel> {
+  const { accessToken, phoneNumberId, appSecret } = credentials;
+
+  // Validates the token and the phone number id together — they fail differently and both have to
+  // be right, so catching it here beats finding out at the first message.
+  let number: { display_phone_number?: string; verified_name?: string };
+  try {
+    number = await whatsapp.getPhoneNumber(phoneNumberId, accessToken);
+  } catch (e) {
+    throw new ApiError(400, "invalid_token", (e as Error).message);
+  }
+
+  const account = number.display_phone_number
+    ? `${number.display_phone_number}${number.verified_name ? ` (${number.verified_name})` : ""}`
+    : "WhatsApp business number";
+
+  const row = await upsertChannel(agentId, "whatsapp", {
+    botToken: accessToken,
+    secret: appSecret,
+    externalId: phoneNumberId,
+    verifyToken: randomBytes(24).toString("hex"),
     account,
     ownerChatId: null,
     sessionId: null,
