@@ -12,6 +12,20 @@ import type { ChannelId } from "@/lib/types";
 // The setup copy is deliberately literal. Every one of these flows sends someone off to another
 // product's developer settings, and vague instructions there cost far more than the two lines
 // they save here.
+//
+// THESE ARE THE ONLY WAYS IN. David's call, and it is a product decision rather than a technical
+// one: Slack, Telegram and Discord connect by pasting a credential the customer created in their
+// own account, and nothing else. No "Sign in with Slack", no OAuth redirect, no hosted app the
+// customer joins. The reason is the same reason each tagline says "your own" — a token minted in
+// the customer's own workspace is a thing they can see, audit, and revoke without asking us, and
+// an OAuth app in the middle would quietly make us the owner of that access instead.
+//
+// The route enforces this without needing to know about it: it forwards only the fields declared
+// below, so adding a redirect flow is not something a caller can improvise — it would take
+// editing this file, which is where the decision should be argued with anyway.
+//
+// (WhatsApp is the exception, and not a contradiction: device linking by QR is what WhatsApp
+// gives you, and it is still the customer's own account with no third party in between.)
 
 export type ChannelField = {
   key: string;
