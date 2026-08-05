@@ -153,6 +153,39 @@ export async function installAgentSkills(agentId: string): Promise<string[]> {
   return installed;
 }
 
+/**
+ * What our skills directory actually contains on a given instance.
+ *
+ * The check that matters after installing: a SKILL.md can be written successfully and still be
+ * ignored by the runtime, so "did the file land" and "does the agent see it" are different
+ * questions. This answers the first one honestly, which is what lets you stop guessing about the
+ * second.
+ *
+ * Names only. The bodies are ours and already in the repo; nothing here should be reading around
+ * a customer's instance for more than it needs.
+ */
+export async function listAgentSkills(agentId: string): Promise<string[]> {
+  const cmd =
+    'ROOT="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}"; ' +
+    'D="$ROOT/plugin-skills"; ' +
+    '[ -d "$D" ] || { echo NONE; exit 0; }; ' +
+    // A skill is a directory holding SKILL.md. Anything else in there isn't one, and listing it
+    // would make an empty directory look installed.
+    'for S in "$D"/*/; do [ -f "$S/SKILL.md" ] && basename "$S"; done';
+
+  try {
+    const { stdout } = await agent37.exec(agentId, cmd);
+    if (stdout.includes("NONE")) return [];
+    return stdout
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l && !l.includes(" "));
+  } catch (err) {
+    console.error("[provision:skills-list-failed]", agentId, (err as Error).message);
+    return [];
+  }
+}
+
 // WHERE THE PROFILE HAS TO GO, settled by reading the Hermes source rather than guessing:
 //
 //   agent/learning_mutations.py:  _MEMORY_FILES = {"memory": "MEMORY.md", "profile": "USER.md"}
