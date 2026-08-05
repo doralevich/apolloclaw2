@@ -28,7 +28,7 @@ type TileBase = {
 export type SetupTile = TileBase &
   (
     /** A chat channel — status comes from /api/agents/{id}/channels. */
-    | { kind: "channel"; id: ChannelId; soon?: boolean }
+    | { kind: "channel"; id: ChannelId }
     /** A Composio toolkit — status comes from /api/agents/{id}/integrations/connections. */
     | { kind: "toolkit"; slug: string }
   );
@@ -41,15 +41,14 @@ export type SetupRow = {
   tiles: SetupTile[];
 };
 
-// Built from CHANNELS rather than retyped, so a channel added, renamed or finished there shows up
-// here with the right logo and never drifts out of sync.
+// Built from CHANNELS rather than retyped, so a channel added or renamed there shows up here with
+// the right logo and never drifts out of sync.
 const CHAT_TILES: SetupTile[] = CHANNELS.map((c) => ({
   kind: "channel",
   key: c.id,
   id: c.id,
   name: c.name,
   logo: c.logo,
-  soon: c.comingSoon,
 }));
 
 function toolkitTile(key: string, name: string, slug: string): SetupTile {

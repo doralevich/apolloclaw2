@@ -6,8 +6,7 @@ import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { ChannelStrip } from "./ChannelStrip";
-import { ConnectStrip } from "./ConnectStrip";
+import { SetupGrid } from "@/components/SetupGrid";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -152,14 +151,17 @@ export function ChatView({
         ) : messages.length > 0 ? (
           <ChatMessages messages={messages} isStreaming={isStreaming} userInitial={userInitial} />
         ) : (
-          <div className="flex flex-col items-center gap-6 text-center">
-            {/* Connect prompts sit above the greeting: an agent with nothing plugged in can
-                talk but can't act, and this is where the customer actually is when they find
-                that out. Renders nothing once the essentials are connected. */}
-            <ConnectStrip agentId={agentId} />
-            {/* Where the agent can answer you, as opposed to what it can reach. Renders nothing
-                until Channels is switched on. */}
-            <ChannelStrip agentId={agentId} />
+          <div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
+            {/* The connect shelves, above the greeting: an agent with nothing plugged in can talk
+                but can't act, and the chat is where the customer actually is when they find that
+                out. This replaced two separate strips — one for apps, one for chat channels —
+                which showed a bare row of logos with no names and no way to tell what was already
+                connected. Same idea, named and stateful.
+                Left-aligned inside the centred column: shelf headings that centre themselves over
+                a four-column grid read as decoration. */}
+            <div className="w-full text-left">
+              <SetupGrid agentId={agentId} compact />
+            </div>
             {/* Height reserved so the composer doesn't jump when the greeting lands. */}
             <div className="flex min-h-[76px] flex-col items-center gap-2">
               {greeting && (

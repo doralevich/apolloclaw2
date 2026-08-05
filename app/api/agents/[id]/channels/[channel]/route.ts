@@ -61,8 +61,9 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     );
   }
 
-  // Discord is the last one, and it is the odd one out: it delivers direct messages over a
-  // gateway socket rather than a webhook, so it is not more of this same work.
+  // Unreachable while every channel in CHANNELS is built — the branches above cover all of them.
+  // Kept as the backstop for the next channel added to config before its connect path exists, so
+  // that gap is a clear 501 rather than a silent success.
   throw new ApiError(
     501,
     "not_implemented",

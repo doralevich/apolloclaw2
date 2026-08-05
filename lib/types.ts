@@ -263,7 +263,10 @@ export interface IntegrationConnectResult {
 // spec, because the Agent37 API host isn't reachable from the build environment. Anything the
 // runtime actually returns wins over this.
 
-export type ChannelId = "whatsapp" | "telegram" | "slack" | "discord";
+// Discord was here as a fourth, permanently "coming soon" — it delivers direct messages over a
+// gateway socket rather than a webhook, and there is nothing on Vercel to hold a socket open. A
+// card that has advertised a thing we aren't building is worse than a shorter list, so it's gone.
+export type ChannelId = "whatsapp" | "telegram" | "slack";
 
 export type ChannelState =
   // Live: the agent is listening and will answer here.
@@ -282,9 +285,6 @@ export interface Channel {
   account?: string | null;
   /** Why it's in an error state, when the runtime says. */
   message?: string | null;
-  /** Pairing payload for the QR flows — a data: URL or the raw string to encode. */
-  /** For Discord: the "add this bot to a server" link to hand back to the customer. */
-  inviteUrl?: string | null;
   /**
    * For WhatsApp: the token Meta echoes when the customer saves the callback URL.
    *

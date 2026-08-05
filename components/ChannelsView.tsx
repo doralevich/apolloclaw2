@@ -255,13 +255,7 @@ function ChannelCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base font-semibold">{def.name}</h2>
-            {def.comingSoon ? (
-              <Badge variant="secondary" className="font-normal">
-                Coming soon
-              </Badge>
-            ) : (
-              <StateBadge state={state} loaded={loaded} />
-            )}
+            <StateBadge state={state} loaded={loaded} />
           </div>
           {/* Collapsed, this line is all anyone sees — so once connected it says who it's
               connected AS, which is the fact worth having at a glance. */}
@@ -277,23 +271,7 @@ function ChannelCard({
         />
       </button>
 
-      {!open ? null : def.comingSoon ? (
-        <div className="space-y-3 border-t px-5 pb-5 pt-4">
-          <p className="text-sm text-muted-foreground">
-            We haven&apos;t built this one yet. Telegram is the only channel live so far — this
-            card is here so you know it&apos;s coming, not so you can set it up.
-          </p>
-          {/* The steps stay, greyed: they're accurate, and anyone who wants to get their tokens
-              ready ahead of time can. They just aren't a form yet. */}
-          <ol className="space-y-1 text-sm text-muted-foreground/70">
-            {def.steps.map((step, i) => (
-              <li key={step}>
-                {i + 1}. {step}
-              </li>
-            ))}
-          </ol>
-        </div>
-      ) : connected ? (
+      {!open ? null : connected ? (
         <div className="space-y-3 border-t px-5 pb-5 pt-4">
           {channel?.account && (
             <p className="text-sm">
@@ -308,18 +286,6 @@ function ChannelCard({
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
           {channel?.verifyToken && (
             <CopyableValue label="Verify token" value={channel.verifyToken} />
-          )}
-          {channel?.inviteUrl && (
-            <p className="text-sm">
-              <a
-                href={channel.inviteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium underline underline-offset-2"
-              >
-                Add the bot to a server
-              </a>
-            </p>
           )}
           <Button variant="outline" size="sm" onClick={() => setConfirmOpen(true)} disabled={busy}>
             Disconnect
