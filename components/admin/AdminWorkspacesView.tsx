@@ -9,6 +9,7 @@ import { getAgentType } from "@/config/agent-types";
 import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
@@ -189,6 +190,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
             <th className="px-3 py-2 font-medium">Budget (spent / cap)</th>
             <th className="px-3 py-2 font-medium">Usage (period)</th>
             <th className="px-3 py-2 font-medium">Created</th>
+            <th className="px-3 py-2 font-medium">Skills</th>
           </tr>
         </thead>
         <tbody>
@@ -236,10 +238,69 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
                 {a.usage ? `${usd(a.usage.total_micros)} (${a.usage.period})` : "-"}
               </td>
               <td className="px-3 py-2 text-muted-foreground">{formatDate(a.created_at)}</td>
+              <td className="px-3 py-2">
+                <SkillsCell agentId={a.agent37_id} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// Per-agent skills: what's installed, and a button to push the current set.
+//
+// Skills install at provision, so an agent created before a skill was written never gets it and
+// an agent created before a skill was IMPROVED keeps the old text. This is how an edit to
+// config/skills.ts reaches agents that already exist.
+//
+// Checked on demand rather than on render. The check is an exec inside the instance, and doing
+// that for every agent every time an admin expands a workspace would turn a page load into a
+// fleet-wide sweep.
+function SkillsCell({ agentId }: { agentId: string }) {
+  const [state, setState] = useState<{ busy: boolean; installed: string[] | null }>({
+    busy: false,
+    installed: null,
+  });
+
+  const run = (mode: "inspect" | "install") => {
+    setState((s) => ({ ...s, busy: true }));
+    const q = `id=${encodeURIComponent(agentId)}${mode === "inspect" ? "&inspect=1" : ""}`;
+    apiFetch<{ results: Array<{ skills?: string[]; installed?: string[] }> }>(
+      `/api/admin/agents/install-skills?${q}`,
+      { method: "POST" }
+    )
+      .then((res) => {
+        const row = res.results?.[0];
+        const skills = row?.skills ?? row?.installed ?? [];
+        setState({ busy: false, installed: skills });
+        if (mode === "install") {
+          toast.success(
+            skills.length ? `Installed: ${skills.join(", ")}` : "Nothing installed — not an OpenClaw instance?"
+          );
+        }
+      })
+      .catch((e) => {
+        setState((s) => ({ ...s, busy: false }));
+        toast.error((e as Error).message);
+      });
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {state.installed === null ? (
+        <Button variant="ghost" size="sm" onClick={() => run("inspect")} disabled={state.busy}>
+          {state.busy ? "Checking..." : "Check"}
+        </Button>
+      ) : (
+        <span className="text-[11px] text-muted-foreground" title={state.installed.join(", ")}>
+          {state.installed.length || "none"}
+        </span>
+      )}
+      <Button variant="outline" size="sm" onClick={() => run("install")} disabled={state.busy}>
+        {state.busy ? "Working..." : "Install"}
+      </Button>
     </div>
   );
 }
