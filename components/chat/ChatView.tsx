@@ -128,7 +128,7 @@ export function ChatView({
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
       {att.dragOver && <DropOverlay />}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background/80 px-6 backdrop-blur-sm md:px-8">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card/80 px-6 backdrop-blur-sm md:px-8">
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>

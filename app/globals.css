@@ -161,6 +161,34 @@
   --color-accent: hsl(0 0% 9%);
   --color-accent-foreground: hsl(0 0% 100%);
   --color-ring: hsl(0 0% 20%);
+
+}
+
+/* The surfaces underneath it.
+   The site's palette is warm — hue 45, a cream — which is right for a landing page and wrong
+   here: against it, white panels look yellow-adjacent and the whole dashboard reads as paper
+   rather than as software. The mockups are cool neutral throughout, so this is one hue family
+   (220) across every surface token, and nothing drifts warm in one corner.
+
+   :not(.dark) is load-bearing, not tidiness. .app-accent and .dark have the same specificity, so
+   whichever is written later wins — and this rule is later, which meant these light greys were
+   overriding the navy dark theme and the sidebar stayed white with the lights off. The dark
+   palette is already cool; it needs neutralising by nobody. */
+.app-accent:not(.dark) {
+  --color-background: hsl(220 20% 97%);
+  --color-surface-alt: hsl(220 16% 94%);
+  --color-surface-purple: hsl(220 14% 96%);
+  --color-surface-teal: hsl(220 15% 93%);
+  --color-card-elevated: hsl(220 20% 97%);
+
+  --color-secondary: hsl(220 15% 93%);
+  --color-secondary-foreground: hsl(220 12% 18%);
+  --color-muted: hsl(220 15% 93%);
+  --color-muted-foreground: hsl(220 9% 42%);
+  --color-muted-subtle: hsl(220 8% 56%);
+
+  --color-border: hsl(220 14% 90%);
+  --color-input: hsl(220 14% 90%);
 }
 
 .app-accent.dark {

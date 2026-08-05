@@ -247,8 +247,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Desktop rail */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-card p-4 md:flex">
+      {/* Desktop rail.
+          bg-background, not bg-card: the rail and the content pane were both pure white,
+          separated by a hairline and a beige gutter — so the navigation advanced and the page
+          around it receded, which is backwards. The rail is the recessive surface now and the
+          content card is the white one, the way the mockups have it. Reads the same either
+          way round in dark mode, where background is the deeper navy. */}
+      <aside className="hidden w-60 shrink-0 flex-col border-r bg-background p-4 md:flex">
         <SidebarContent pathname={pathname} userEmail={userEmail} />
       </aside>
 

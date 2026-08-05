@@ -91,7 +91,7 @@ export function ChatPageClient() {
           sidebar (ChatProvider is mounted in DashboardShell), so conversations are reachable
           from every page rather than only this one — and there is one rail on screen instead
           of two stacked side by side. */}
-      <div className="flex min-w-0 flex-1 flex-col bg-background">
+      <div className="flex min-w-0 flex-1 flex-col bg-card">
         {!running && (
           <div className="flex shrink-0 items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs text-amber-800">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
