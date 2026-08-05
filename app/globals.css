@@ -156,24 +156,27 @@
    red once the accent isn't — a black "Delete agent" reads as just another button,
    and this is the one place colour is carrying meaning rather than style. */
 .app-accent {
-  /* Ink, not violet. Violet shipped, and David's read of it was that the product looked like it
-     was selling something other than software — which is the correct thing to listen to about a
-     colour, and it is why this is a token and not a hundred class names.
+  /* The navy from the rail, not black — so the one strong colour on a page appears twice and
+     means the same thing both times. Black next to a navy sidebar was two darks that didn't
+     match, which reads as an oversight rather than a choice.
 
-     What survives from that pass is the METHOD, not the hue: the gradient, the accent carried at
-     rest rather than on hover, tinted selected states. Those were the parts that answered
-     "boring"; the purple was the part that answered nothing. */
-  --color-primary: hsl(0 0% 9%);
+     Violet came before black, and black before this. What survived all three is the METHOD, not
+     the hue: the gradient, the accent carried at rest rather than on hover, tinted selected
+     states. Those were the parts that answered "boring".
+
+     The button sits a step LIFTED from the rail rather than exactly on it — a control on a white
+     page needs a little more weight than a surface behind everything does, and matching the two
+     precisely made the button look like a hole. */
+  --color-primary: hsl(216 45% 15%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-accent: hsl(0 0% 9%);
+  --color-accent: hsl(216 45% 15%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-ring: hsl(0 0% 25%);
+  --color-ring: hsl(215 32% 35%);
 
-  /* The two ends of the gradient. Still a gradient — a flat black button is the flat purple
-     button with the colour removed, and flat was half of what was wrong. Charcoal to ink, so it
-     has depth without having a hue. */
-  --brand-from: hsl(0 0% 22%);
-  --brand-to: hsl(0 0% 7%);
+  /* The two ends of the gradient: lifted navy down to the rail's own. Still a gradient — a flat
+     button is the flat purple one with the colour removed, and flat was half of what was wrong. */
+  --brand-from: hsl(214 38% 24%);
+  --brand-to: hsl(216 52% 11%);
 }
 
 /* The surfaces underneath it.
