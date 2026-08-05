@@ -69,7 +69,9 @@ export function WorkspaceSwitcher() {
     const name = current?.name ?? "No workspace";
     return (
       <div className="flex w-full items-center gap-2.5 rounded-lg border bg-card p-2">
-        <span className="brand-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-primary-foreground">
+        {/* text-white, not text-primary-foreground: this tile only ever renders inside the navy
+            rail, where primary-foreground IS the navy — the initial would be dark on dark. */}
+        <span className="brand-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white">
           {(name[0] || "?").toUpperCase()}
         </span>
         <span className="min-w-0 flex-1 truncate text-sm font-medium">{name}</span>

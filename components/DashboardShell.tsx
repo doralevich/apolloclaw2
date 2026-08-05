@@ -275,13 +275,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <div className="relative flex h-full w-72 max-w-[85vw] flex-col border-r bg-card p-4 shadow-xl">
+          <div className="rail-dark relative flex h-full w-72 max-w-[85vw] flex-col border-r border-transparent bg-background p-4 shadow-xl">
             <div className="flex justify-end">
               <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} aria-label="Close menu">
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <SidebarContent pathname={pathname} userEmail={userEmail} onNavigate={() => setMobileOpen(false)} />
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              <SidebarContent pathname={pathname} userEmail={userEmail} onNavigate={() => setMobileOpen(false)} />
+            </div>
           </div>
         </div>
       )}
@@ -292,8 +294,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           around it receded, which is backwards. The rail is the recessive surface now and the
           content card is the white one, the way the mockups have it. Reads the same either
           way round in dark mode, where background is the deeper navy. */}
-      <aside className="hidden w-[17rem] shrink-0 flex-col border-r bg-background p-4 md:flex">
-        <SidebarContent pathname={pathname} userEmail={userEmail} />
+      <aside className="rail-dark relative hidden w-[17rem] shrink-0 flex-col border-r border-transparent bg-background p-4 md:flex">
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <SidebarContent pathname={pathname} userEmail={userEmail} />
+        </div>
       </aside>
 
       <main className="min-w-0 flex-1 overflow-y-auto">
