@@ -18,6 +18,7 @@
 import { PROCEDURE_SKILLS } from "@/config/skills/procedures";
 import { REASONING_SKILLS } from "@/config/skills/reasoning";
 import { MENTAL_MODEL_SKILLS } from "@/config/skills/mental-models";
+import { EXECUTIVE_SKILLS } from "@/config/skills/executive";
 
 export type AgentSkill = {
   /** Directory name under plugin-skills, and the name the runtime lists it under. */
@@ -69,6 +70,7 @@ export const AGENT_SKILLS: AgentSkill[] = [
   ...PROCEDURE_SKILLS,
   ...REASONING_SKILLS,
   ...MENTAL_MODEL_SKILLS,
+  ...EXECUTIVE_SKILLS,
 ];
 
 // Two skills sharing a slug would silently overwrite each other on the box — same directory, last
