@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Check, FileText, Image as ImageIcon, Loader2, User, Wrench } from "lucide-react";
+import { Bot, Check, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
@@ -16,16 +16,6 @@ function AgentBadge() {
 
 // The user's marker beside their messages: first initial in a brand-tinted circle
 // (a neutral person glyph if we somehow have no email to take a letter from).
-function UserBadge({ initial }: { initial: string }) {
-  return (
-    <span
-      aria-hidden
-      className="mt-0.5 flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
-    >
-      {initial || <User className="h-3.5 w-3.5" />}
-    </span>
-  );
-}
 
 // Files that rode along with a user turn, shown as compact chips above the message bubble.
 function MessageAttachments({ attachments }: { attachments: MessageAttachment[] }) {
@@ -86,12 +76,10 @@ function TypingDots() {
 export function ChatMessages({
   messages,
   isStreaming,
-  userInitial = "",
 }: {
   messages: ChatMessage[];
   isStreaming: boolean;
   // User's first initial for their message marker.
-  userInitial?: string;
 }) {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 px-5 py-6">
@@ -99,16 +87,19 @@ export function ChatMessages({
         if (m.role === "user") {
           const attachments = m.attachments ?? [];
           return (
-            <div key={m.id} className="flex items-start justify-end gap-2">
-              <div className="flex min-w-0 max-w-[85%] flex-col items-end gap-1.5">
+            // No avatar on your own messages. Right alignment already says who spoke, and a
+            // 28px initial hanging off the side of every bubble was the fussiest thing in the
+            // transcript. The corner nearest the sender is tightened instead — the same cue,
+            // carried by the shape.
+            <div key={m.id} className="flex items-start justify-end">
+              <div className="flex min-w-0 max-w-[80%] flex-col items-end gap-1.5">
                 {attachments.length > 0 && <MessageAttachments attachments={attachments} />}
                 {m.content && (
-                  <div className="whitespace-pre-wrap break-words rounded-[18px] bg-secondary px-3.5 py-2 text-sm text-foreground">
+                  <div className="whitespace-pre-wrap break-words rounded-[20px] rounded-br-md border bg-secondary/70 px-4 py-2.5 text-sm leading-relaxed text-foreground">
                     {m.content}
                   </div>
                 )}
               </div>
-              <UserBadge initial={userInitial} />
             </div>
           );
         }

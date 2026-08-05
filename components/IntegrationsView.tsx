@@ -10,7 +10,6 @@ import {
   Plug,
   Plus,
   Search,
-  Settings2,
   Star,
   Unplug,
   X,
@@ -295,6 +294,20 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     }
   }
 
+  // Counts for the filter rail. The mockup shows "1,024" against All Apps — that is Composio's
+  // whole catalogue, which we only ever reach through search, so it isn't a number we can stand
+  // behind on a resting page. These are the curated catalogue and the customer's real
+  // connections; the search box is where the other thousand live, and it says so.
+  const categoryCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const cat of INTEGRATION_CATEGORIES) map.set(cat.title, cat.toolkits.length);
+    return map;
+  }, []);
+  const connectedInCatalog = useMemo(
+    () => DEFAULT_INTEGRATION_TOOLKITS.filter((t) => isToolkitConnected(connections, t.slug)).length,
+    [connections]
+  );
+
   const activeConnections = connections.filter((c) => !c.isDisabled);
   const q = search.trim();
   const connectedCount = activeConnections.length;
@@ -396,61 +409,99 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
            you. Below lg the rail becomes a wrapping row above the content, because a 208px
            column on a phone is most of the screen. */
         <div className="flex flex-col gap-6 lg:flex-row">
-          <aside className="shrink-0 lg:w-52">
-            <div className="flex items-center justify-between gap-2 px-1 pb-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <Settings2 className="h-3.5 w-3.5" />
-                Filter
-              </span>
-              {filtersActive && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="inline-flex cursor-pointer items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          <aside className="shrink-0 space-y-3 lg:w-64">
+            {/* Panels rather than a bare column of pills. The rail carries two different
+                questions — what kind of app, and whether it's on — and without the frames they
+                read as one long list of eleven equal things. */}
+            <div className="rounded-xl border bg-card p-2">
+              <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+                <span className="text-sm font-semibold">Categories</span>
+                {filtersActive && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="inline-flex cursor-pointer items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
+                <FilterRow
+                  active={category === ALL}
+                  onClick={() => setCategory(ALL)}
+                  count={DEFAULT_INTEGRATION_TOOLKITS.length}
                 >
-                  <X className="h-3 w-3" />
-                  Clear
-                </button>
-              )}
+                  All apps
+                </FilterRow>
+                <FilterRow
+                  active={category === ESSENTIALS}
+                  onClick={() => setCategory(ESSENTIALS)}
+                  count={ESSENTIAL_TOOLKITS.length}
+                >
+                  <Star
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      category === ESSENTIALS ? "fill-amber-400 text-amber-400" : "text-amber-400"
+                    )}
+                  />
+                  Essentials
+                </FilterRow>
+                {INTEGRATION_CATEGORIES.map((cat) => (
+                  <FilterRow
+                    key={cat.title}
+                    active={category === cat.title}
+                    onClick={() => setCategory(cat.title)}
+                    count={categoryCounts.get(cat.title) ?? 0}
+                  >
+                    {cat.title}
+                  </FilterRow>
+                ))}
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
-              <FilterPill active={category === ALL} onClick={() => setCategory(ALL)}>
-                All apps
-              </FilterPill>
-              <FilterPill active={category === ESSENTIALS} onClick={() => setCategory(ESSENTIALS)}>
-                <Star
-                  className={cn(
-                    "h-3 w-3",
-                    category === ESSENTIALS ? "fill-amber-400 text-amber-400" : "text-amber-400"
-                  )}
-                />
-                Essentials
-              </FilterPill>
-              {INTEGRATION_CATEGORIES.map((cat) => (
-                <FilterPill
-                  key={cat.title}
-                  active={category === cat.title}
-                  onClick={() => setCategory(cat.title)}
+            <div className="rounded-xl border bg-card p-2">
+              <div className="px-2 py-1.5 text-sm font-semibold">Status</div>
+              <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
+                <FilterRow
+                  active={status === "all"}
+                  onClick={() => setStatus("all")}
+                  count={DEFAULT_INTEGRATION_TOOLKITS.length}
                 >
-                  {cat.title}
-                </FilterPill>
-              ))}
+                  All
+                </FilterRow>
+                <FilterRow
+                  active={status === "connected"}
+                  onClick={() => setStatus("connected")}
+                  count={connectedInCatalog}
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                  Connected
+                </FilterRow>
+                <FilterRow
+                  active={status === "available"}
+                  onClick={() => setStatus("available")}
+                  count={DEFAULT_INTEGRATION_TOOLKITS.length - connectedInCatalog}
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-hidden />
+                  Not connected
+                </FilterRow>
+              </div>
             </div>
 
-            <div className="mt-5 px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Status
-            </div>
-            <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
-              <FilterPill active={status === "all"} onClick={() => setStatus("all")}>
-                All
-              </FilterPill>
-              <FilterPill active={status === "connected"} onClick={() => setStatus("connected")}>
-                Connected
-              </FilterPill>
-              <FilterPill active={status === "available"} onClick={() => setStatus("available")}>
-                Not connected
-              </FilterPill>
+            {/* From the mockup, and it earns its place: the catalogue is long enough that "it
+                isn't here" is a real outcome, and without this the page just ends. */}
+            <div className="rounded-xl border bg-card p-4">
+              <p className="text-sm font-medium">Can&apos;t find an app?</p>
+              <Link
+                href="/contact"
+                className="mt-1 inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+              >
+                Request an integration
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
             </div>
           </aside>
 
@@ -841,13 +892,20 @@ function LoadMore({
   );
 }
 
-function FilterPill({
+// One row in the filter rail: label on the left, how many on the right.
+//
+// A row rather than a pill, because the count needs somewhere to sit that isn't inside the
+// label — and because eleven pills wrapping in a narrow column is a shape nobody can scan. On
+// small screens they still wrap into a row, where the count rides along inside each one.
+function FilterRow({
   active,
   onClick,
+  count,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  count: number;
   children: React.ReactNode;
 }) {
   return (
@@ -856,13 +914,14 @@ function FilterPill({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+        "inline-flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors",
         active
-          ? "border-foreground/20 bg-secondary text-secondary-foreground"
-          : "border-transparent bg-background text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+          ? "bg-secondary font-medium text-secondary-foreground"
+          : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
       )}
     >
-      {children}
+      <span className="inline-flex min-w-0 flex-1 items-center gap-1.5 truncate">{children}</span>
+      <span className="shrink-0 text-xs tabular-nums text-muted-foreground/80">{count}</span>
     </button>
   );
 }

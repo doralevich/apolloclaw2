@@ -63,10 +63,18 @@ export function WorkspaceSwitcher() {
   //
   // So: static text at the same size and position the trigger occupied. You lose the useless
   // menu; you keep knowing where you are.
+  // Styled as the card the mockup puts at the top of the rail rather than a line of grey text:
+  // this is the answer to "whose account am I in", and it was reading as a disabled field.
   if (workspaces.length <= 1) {
+    const name = current?.name ?? "No workspace";
     return (
-      <div className="flex h-9 w-full items-center rounded-md border border-transparent px-3 text-sm text-muted-foreground">
-        <span className="truncate">{current?.name ?? "No workspace"}</span>
+      <div className="flex w-full items-center gap-2.5 rounded-lg border bg-card p-2">
+        {/* text-white, not text-primary-foreground: this tile only ever renders inside the navy
+            rail, where primary-foreground IS the navy — the initial would be dark on dark. */}
+        <span className="brand-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white">
+          {(name[0] || "?").toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium">{name}</span>
       </div>
     );
   }
