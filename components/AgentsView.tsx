@@ -8,6 +8,7 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { AgentKnowledge } from "@/components/AgentKnowledge";
+import { AgentSkills } from "@/components/AgentSkills";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { SetupBanner } from "@/components/SetupPrompt";
 
@@ -121,6 +122,14 @@ export function AgentsView() {
               onChanged={refresh}
             />
           ))}
+
+          {/* Above the questionnaire, because it answers the earlier question. What the agent
+              knows ABOUT YOU is worth reading second; what it knows how to DO is what somebody
+              opening this page after paying for it came to find out, and until now the product
+              never said. */}
+          {agents.length === 1 && (
+            <AgentSkills agentName={agents[0].name?.trim() || "your agent"} />
+          )}
 
           {/* Only for a single agent. The questionnaire is stored per agent TYPE, so with two
               agents of different types this would need to be per-card — and with two of the

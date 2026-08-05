@@ -68,14 +68,52 @@ function yamlQuote(value: string): string {
   return JSON.stringify(value);
 }
 
-export const AGENT_SKILLS: AgentSkill[] = [
-  ...PROCEDURE_SKILLS,
-  ...REASONING_SKILLS,
-  ...MENTAL_MODEL_SKILLS,
-  ...EXECUTIVE_SKILLS,
-  ...SALES_SKILLS,
-  ...WRITING_SKILLS,
+/**
+ * The same skills, kept in their families — for showing a customer what their agent can do.
+ *
+ * The flat list below is what gets installed; this is what gets read. They come from one place
+ * so a skill can never be installed and missing from the list, or listed and never installed.
+ *
+ * The blurbs answer "why would I care", which is a different question from the `description`
+ * field on each skill — that one is written for the runtime deciding whether a skill applies,
+ * and reads like a trigger because that is its job.
+ */
+export type SkillFamily = { title: string; blurb: string; skills: AgentSkill[] };
+
+export const SKILL_FAMILIES: SkillFamily[] = [
+  {
+    title: "Running the business",
+    blurb: "The jobs that come round every week, done the same way each time.",
+    skills: PROCEDURE_SKILLS,
+  },
+  {
+    title: "How it thinks",
+    blurb: "Method, not knowledge. This is what makes an answer feel like a colleague's.",
+    skills: REASONING_SKILLS,
+  },
+  {
+    title: "Mental models",
+    blurb: "Frames worth reaching for when a decision is genuinely hard.",
+    skills: MENTAL_MODEL_SKILLS,
+  },
+  {
+    title: "The C-suite you don't have",
+    blurb: "Finance, operations, people — the questions a bigger company has someone for.",
+    skills: EXECUTIVE_SKILLS,
+  },
+  {
+    title: "Winning work",
+    blurb: "Proposals, pricing, follow-up. Every one of these ends with you deciding.",
+    skills: SALES_SKILLS,
+  },
+  {
+    title: "Writing as you",
+    blurb: "Your voice, from what you told us at setup.",
+    skills: WRITING_SKILLS,
+  },
 ];
+
+export const AGENT_SKILLS: AgentSkill[] = SKILL_FAMILIES.flatMap((f) => f.skills);
 
 // Two skills sharing a slug would silently overwrite each other on the box — same directory, last
 // write wins — and the loss would show up as "why does the agent never use X". Cheap to catch at
