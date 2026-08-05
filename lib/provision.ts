@@ -14,6 +14,7 @@ import { buildAgentsMd, buildIdentityMd, buildToolsMd } from "@/lib/agent-files"
 import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
+import { AGENT_SKILLS, skillFile } from "@/config/skills";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -102,6 +103,54 @@ export async function injectAgentFile(
   }
   console.error("[provision:file-inject-failed]", agentId, filename);
   return false;
+}
+
+/**
+ * Install our procedure skills into the instance.
+ *
+ * OpenClaw discovers skills by itself out of $OPENCLAW_STATE_DIR/plugin-skills — a directory per
+ * skill, each holding a SKILL.md — and lists what it finds in the session's available_skills.
+ * There is nothing to register and no index to keep: writing the files IS installing them.
+ * (Confirmed by asking a live instance what it could see, not from docs.)
+ *
+ * OpenClaw only. Hermes has no equivalent path, so on a Hermes image this writes nothing rather
+ * than creating a directory the runtime will never look in — a silent no-op is the honest outcome
+ * there, and the log line says which happened.
+ *
+ * Rewritten on every provision. The content is ours, the customer never edits it, and a skill
+ * whose text we have improved should improve everywhere rather than only on agents created after
+ * the change.
+ */
+export async function installAgentSkills(agentId: string): Promise<string[]> {
+  const installed: string[] = [];
+
+  for (const skill of AGENT_SKILLS) {
+    const b64 = Buffer.from(skillFile(skill), "utf8").toString("base64");
+    const cmd =
+      'ROOT="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}"; ' +
+      // The state dir itself is the test for "is this an OpenClaw box". plugin-skills may not
+      // exist yet on a fresh instance, so it is created; the state dir is not.
+      '[ -d "$ROOT" ] || { echo NOT_OPENCLAW; exit 0; }; ' +
+      `D="$ROOT/plugin-skills/${skill.slug}"; mkdir -p "$D"; ` +
+      `printf '%s' '${b64}' | base64 -d > "$D/SKILL.md" && echo "SKILL_WROTE:${skill.slug}"; `;
+
+    try {
+      const { stdout } = await agent37.exec(agentId, cmd);
+      if (stdout.includes(`SKILL_WROTE:${skill.slug}`)) {
+        installed.push(skill.slug);
+      } else if (stdout.includes("NOT_OPENCLAW")) {
+        console.log("[provision:skills-skipped]", agentId, "not an OpenClaw image");
+        return [];
+      }
+    } catch (err) {
+      // One skill failing is not a reason to skip the rest, and none of them is load-bearing
+      // enough to fail provisioning over — the agent works without them, just less well.
+      console.error("[provision:skill-failed]", agentId, skill.slug, (err as Error).message);
+    }
+  }
+
+  console.log("[provision:skills-installed]", agentId, installed.join(" ") || "(none)");
+  return installed;
 }
 
 // WHERE THE PROFILE HAS TO GO, settled by reading the Hermes source rather than guessing:
@@ -391,6 +440,10 @@ async function injectAfterProvision(
   // pointer back out with it.
   const persona = personaForAgentType(type.id);
   if (persona) await injectAgentFile(agentId, "SOUL.md", persona);
+
+  // Alongside the persona, and for the same reason: both are ours, neither depends on the
+  // questionnaire, and an agent whose answers never arrive should still know how to work.
+  await installAgentSkills(agentId);
 
   const db = createAdminClient();
   const { data: setup } = await db
