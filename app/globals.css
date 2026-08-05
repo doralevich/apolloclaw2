@@ -135,11 +135,16 @@
 }
 
 /* ─── Dashboard accent ────────────────────────────────────────────────────────
-   Violet, where the marketing site is red.
+   Monochrome, where the marketing site is red.
 
-   David's call, from the chat mockups: the product surface reads as a tool, and the
-   red that carries the brand on a landing page is a loud thing to put on a Send
-   button you press forty times a day. The logo stays red; the interface doesn't.
+   David's call, arrived at in two steps: violet first, from the mockups, then black.
+   The reasoning holds either way — the red that carries the brand on a landing page
+   is a loud thing to put on a Send button somebody presses forty times a day. The
+   logo stays red; the interface is quiet.
+
+   It INVERTS rather than staying black, because a black button on a navy dark mode
+   is a hole in the page. Light mode: black surface, white text. Dark mode: white
+   surface, black text. Same idea — maximum contrast, no hue — in both.
 
    Scoped by the .app-accent class ThemeProvider stamps on <html>, for the same
    reason .dark is scoped: marketing pages carry literal brand hex in inline styles,
@@ -148,20 +153,51 @@
    portals menus and toasts to the end of <body>.
 
    --color-destructive is deliberately NOT changed. Delete and Disconnect must stay
-   red once the accent isn't — a violet "Delete agent" reads as the safe option. */
+   red once the accent isn't — a black "Delete agent" reads as just another button,
+   and this is the one place colour is carrying meaning rather than style. */
 .app-accent {
-  --color-primary: hsl(263 83% 58%);
+  --color-primary: hsl(0 0% 9%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-accent: hsl(263 83% 58%);
+  --color-accent: hsl(0 0% 9%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-ring: hsl(263 83% 58%);
+  --color-ring: hsl(0 0% 20%);
 }
 
-/* Lifted against navy, the same adjustment the red needed. */
 .app-accent.dark {
-  --color-primary: hsl(258 90% 68%);
-  --color-accent: hsl(258 90% 68%);
-  --color-ring: hsl(258 90% 68%);
+  --color-primary: hsl(0 0% 97%);
+  --color-primary-foreground: hsl(215 58% 8%);
+  --color-accent: hsl(0 0% 97%);
+  --color-accent-foreground: hsl(215 58% 8%);
+  --color-ring: hsl(0 0% 75%);
+}
+
+/* ─── The chat's background wash ──────────────────────────────────────────────
+   The mockup's page isn't flat white — there's a soft bloom low on the screen, and
+   it is most of why it reads as designed rather than as a form on a sheet of paper.
+
+   Literal colours rather than the accent token, because these are decoration and the
+   accent is now black: tinting this with --color-primary would put a grey smudge at
+   the bottom of the page. Two overlapping radials, lavender left and warm pink right,
+   the way the mockup blends them.
+
+   Barely there on purpose — 11% and 8%. It should be felt before it is noticed, and
+   anything stronger competes with the composer sitting on top of it. */
+.chat-wash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 44% at 22% 100%, rgba(139, 92, 246, 0.11), transparent 72%),
+    radial-gradient(52% 40% at 82% 100%, rgba(236, 72, 153, 0.08), transparent 72%);
+}
+
+/* Muted on navy: the same wash at light-mode strength turns the bottom of a dark pane
+   milky, which reads as a rendering fault rather than a gradient. */
+.dark .chat-wash::before {
+  background:
+    radial-gradient(58% 44% at 22% 100%, rgba(139, 92, 246, 0.12), transparent 72%),
+    radial-gradient(52% 40% at 82% 100%, rgba(236, 72, 153, 0.07), transparent 72%);
 }
 
 /* Keyframes */

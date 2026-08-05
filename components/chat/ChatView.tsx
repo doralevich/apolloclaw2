@@ -8,6 +8,7 @@ import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { HeaderClock } from "./HeaderClock";
 import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
@@ -131,7 +132,10 @@ export function ChatView({
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-3">
+        {/* Date and time, from the mockup. The weather it also shows isn't here — see HeaderClock. */}
+        <HeaderClock />
+        <span className="hidden h-5 w-px bg-border lg:block" aria-hidden />
         {/* Light/dark at the top of the screen, where you are when you decide you want it. The
             three-way preference (including "follow my device") stays in Settings. */}
         <ThemeToggle />
@@ -156,13 +160,13 @@ export function ChatView({
           Gone once a conversation starts. A 340px rail beside a live transcript is 340px of
           reading width spent on something nobody is looking at. */}
       <div className="flex min-h-0 flex-1">
-        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-          {showWelcome && (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/[0.06] to-transparent"
-            />
+        <div
+          className={cn(
+            "relative flex min-h-0 min-w-0 flex-1 flex-col",
+            // Decoration only, and only where there's nothing to read yet — see .chat-wash.
+            showWelcome && "chat-wash"
           )}
+        >
       {/* Top: scrolling transcript when there are messages; the centered welcome panel when
           empty (justify-end seats it just above the composer). */}
       <div
