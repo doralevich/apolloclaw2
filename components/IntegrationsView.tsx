@@ -158,6 +158,9 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [loadingConns, setLoadingConns] = useState(true);
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  // How many apps exist upstream. Null until the first page lands, and the rail falls back to
+  // the curated count rather than showing a zero or a guess.
+  const [catalogTotal, setCatalogTotal] = useState<number | null>(null);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [confirmDisconnect, setConfirmDisconnect] = useState<IntegrationConnection | null>(null);
 
@@ -204,6 +207,23 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
       stopPolling();
     };
   }, [agentId, stopPolling]);
+
+  // One call on mount for the catalogue's size. Deliberately not blocking anything: the curated
+  // shelf paints immediately, and this only replaces a number in the rail once it lands.
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<IntegrationToolkitsResult>(`/api/agents/${agentId}/integrations/toolkits?limit=1`)
+      .then((res) => {
+        if (!cancelled && Number.isFinite(res.totalItems)) setCatalogTotal(res.totalItems);
+      })
+      .catch(() => {
+        // The rail keeps the curated count. A missing total is not worth a toast on a page the
+        // customer opened to connect something.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId]);
 
   // Debounced live search. Empty query uses the static default catalog above so Browse does not
   // wait on Agent37/Composio; a query of 3+ chars searches live; 1-2 chars wait (the server 400s).
@@ -303,11 +323,6 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     for (const cat of INTEGRATION_CATEGORIES) map.set(cat.title, cat.toolkits.length);
     return map;
   }, []);
-  const connectedInCatalog = useMemo(
-    () => DEFAULT_INTEGRATION_TOOLKITS.filter((t) => isToolkitConnected(connections, t.slug)).length,
-    [connections]
-  );
-
   const activeConnections = connections.filter((c) => !c.isDisabled);
   const q = search.trim();
   const connectedCount = activeConnections.length;
@@ -395,10 +410,9 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             </SubTabButton>
           </div>
         </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Integrations connect your agent to the apps you already use. Once an app is connected,
-          your agent can work in it for you: draft Gmail replies, add events to your calendar,
-          open a GitHub issue, or pull a file from Drive when you ask.
+        <p className="max-w-xl text-sm text-muted-foreground">
+          Connect an app and your agent can work in it for you — reading your mail, adding to
+          your calendar, finding a file.
         </p>
       </div>
 
@@ -408,6 +422,20 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
            what they are — a table of contents you can sit in while the grid changes beside
            you. Below lg the rail becomes a wrapping row above the content, because a 208px
            column on a phone is most of the screen. */
+        <div className="space-y-5">
+          {/* Full width, above the split. It searches everything, so scoping it to the column
+              beside the filters said otherwise — and it left the rail starting level with a
+              search box rather than with the cards it filters. */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search 1,000+ apps (e.g. github, gmail, calendar)"
+              className="h-11 pl-9"
+            />
+          </div>
+
         <div className="flex flex-col gap-6 lg:flex-row">
           <aside className="shrink-0 space-y-3 lg:w-64">
             {/* Panels rather than a bare column of pills. The rail carries two different
@@ -432,7 +460,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 <FilterRow
                   active={category === ALL}
                   onClick={() => setCategory(ALL)}
-                  count={DEFAULT_INTEGRATION_TOOLKITS.length}
+                  count={catalogTotal ?? DEFAULT_INTEGRATION_TOOLKITS.length}
                 >
                   All apps
                 </FilterRow>
@@ -468,14 +496,14 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 <FilterRow
                   active={status === "all"}
                   onClick={() => setStatus("all")}
-                  count={DEFAULT_INTEGRATION_TOOLKITS.length}
+                  count={catalogTotal ?? DEFAULT_INTEGRATION_TOOLKITS.length}
                 >
                   All
                 </FilterRow>
                 <FilterRow
                   active={status === "connected"}
                   onClick={() => setStatus("connected")}
-                  count={connectedInCatalog}
+                  count={connectedCount}
                 >
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
                   Connected
@@ -483,7 +511,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 <FilterRow
                   active={status === "available"}
                   onClick={() => setStatus("available")}
-                  count={DEFAULT_INTEGRATION_TOOLKITS.length - connectedInCatalog}
+                  count={(catalogTotal ?? DEFAULT_INTEGRATION_TOOLKITS.length) - connectedCount}
                 >
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-hidden />
                   Not connected
@@ -506,24 +534,8 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
           </aside>
 
           <div className="min-w-0 flex-1 space-y-5">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search 1,000+ apps (e.g. github, gmail, calendar)"
-              className="h-11 pl-9"
-            />
-          </div>
-
           {showSections ? (
             <div className="space-y-7">
-              <p className="rounded-lg border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
-                Connecting takes about 30 seconds: click Connect, sign in to the app in the tab
-                that opens, and you&apos;re done. Your agent can then use that app on your behalf.
-                Disconnect any app anytime from the Connected tab.
-              </p>
-
               {/* Shown in full, not previewed. Every other shelf caps at SECTION_PREVIEW and
                   hands off to "View all", which is right for a category of 8 you're browsing —
                   and wrong here. The whole point of pinning eleven apps is that you see the
@@ -638,6 +650,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             </p>
           )}
           </div>
+        </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -810,12 +823,12 @@ function IntegrationCard({
   return (
     <div
       className={cn(
-        "flex h-full flex-col rounded-xl border bg-card p-4 transition-all hover:border-foreground/20 hover:shadow-sm",
+        "flex h-full flex-col rounded-xl border bg-card p-3 transition-all hover:border-foreground/20 hover:shadow-sm",
         connected && "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/25"
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <ToolkitLogo logo={t.logo} name={t.name} size="lg" />
+        <ToolkitLogo logo={t.logo} name={t.name} />
         {connected && (
           <Badge variant="success" className="shrink-0 gap-1">
             <Check className="h-3 w-3" />
@@ -824,21 +837,21 @@ function IntegrationCard({
         )}
       </div>
 
-      <div className="mt-3 min-w-0 flex-1">
+      <div className="mt-2 min-w-0 flex-1">
         <div className="truncate text-sm font-semibold">{t.name}</div>
         {category && (
           <div className="mt-0.5 truncate text-[11px] uppercase tracking-wide text-muted-foreground">
             {category}
           </div>
         )}
+        {/* One line, not two. The description is a nicety; the name and the button are the
+            card, and two clamped lines were adding 20px to every tile in a grid of a thousand. */}
         {t.description && (
-          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-            {t.description}
-          </p>
+          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{t.description}</p>
         )}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3">
         {connected ? (
           <Button variant="outline" size="sm" className="h-8 w-full text-xs" onClick={onManage}>
             Manage
