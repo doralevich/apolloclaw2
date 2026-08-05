@@ -22,29 +22,46 @@ export type AgentSkill = {
   slug: string;
   /** One line. This is what the agent sees when deciding whether the skill applies. */
   description: string;
+  /** Shown beside the skill in OpenClaw's own listings. */
+  emoji: string;
   /** The body of SKILL.md, below the frontmatter. */
   body: string;
 };
 
 /**
- * SKILL.md as the runtime expects it: YAML frontmatter carrying the name and description, then
- * the procedure.
+ * SKILL.md as the runtime expects it, copied from a real installed skill rather than guessed:
  *
- * Generated in one place on purpose. The exact frontmatter is the one thing about skills we
- * haven't verified against a real built-in, and a file with the wrong shape is ignored silently
- * rather than rejected loudly — so when the format is confirmed, this is the only function that
- * changes.
+ *   ---
+ *   name: slack
+ *   description: "Slack tool actions: send/read/edit/delete messages, react, pin/unpin, …"
+ *   metadata: { "openclaw": { "emoji": "💬" } }
+ *   ---
+ *
+ *   # Slack
+ *   …
+ *
+ * THE DESCRIPTION IS QUOTED, and that is not cosmetic. Two of ours contain a colon, and a colon
+ * in an unquoted YAML scalar either fails the parse or truncates the value at that point — either
+ * way the file lands looking fine and the runtime sees a skill with half a description or none.
+ * That is the silent failure this whole detour was about, so it is enforced here rather than left
+ * to whoever writes the next skill to remember.
  */
 export function skillFile(skill: AgentSkill): string {
   return [
     `---`,
     `name: ${skill.slug}`,
-    `description: ${skill.description}`,
+    `description: ${yamlQuote(skill.description)}`,
+    `metadata: { "openclaw": { "emoji": ${JSON.stringify(skill.emoji)} } }`,
     `---`,
     ``,
     skill.body.trim(),
     ``,
   ].join("\n");
+}
+
+/** A double-quoted YAML scalar. JSON string escaping is a valid subset, so this is exact. */
+function yamlQuote(value: string): string {
+  return JSON.stringify(value);
 }
 
 const MISSING_CONNECTION_RULE = `
@@ -59,6 +76,7 @@ calendar looks like a day with no meetings.
 export const AGENT_SKILLS: AgentSkill[] = [
   {
     slug: "daily-brief",
+    emoji: "☀️",
     description:
       "Assemble the owner's morning brief: today's schedule, what needs a reply, what moved yesterday. Use when asked for a brief, a rundown, or what the day looks like.",
     body: `
@@ -98,6 +116,7 @@ ${MISSING_CONNECTION_RULE}
   },
   {
     slug: "follow-up-chaser",
+    emoji: "📌",
     description:
       "Find sent messages that never got a reply and draft the nudges. Use when asked what's gone quiet, what needs chasing, or to follow up on something.",
     body: `
@@ -142,6 +161,7 @@ ${MISSING_CONNECTION_RULE}
   },
   {
     slug: "meeting-prep",
+    emoji: "🗂️",
     description:
       "Prepare a one-page brief for an upcoming meeting: who's coming, the history, what's open. Use before a call, or when asked to prep for a meeting.",
     body: `
