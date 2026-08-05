@@ -1,9 +1,14 @@
 import { composioLogoUrl } from "@/lib/integration-catalog";
 import type { ChannelId } from "@/lib/types";
 
-// The four chat channels, and what the customer has to do to set each one up.
+// The chat channels, and what the customer has to do to set each one up.
 //
-// These are the same four apps that just came out of Connections, and that is the point: where
+// Discord was a fourth. It never worked and was never going to on this architecture: it delivers
+// direct messages over a gateway socket, and there is nothing on Vercel to hold a socket open. It
+// sat here marked "coming soon" — which is a promise, and one nobody intended to keep. Removed
+// rather than left advertising itself.
+//
+// These are the same apps that came out of Connections, and that is the point: where
 // you TALK to your agent and what your agent can REACH are different questions. Connections is
 // a catalogue of tools an agent acts on. This is a short, fixed list of places it can answer
 // you — your own bot, an app in your own workspace, a business number of your own. Nobody else
@@ -46,15 +51,6 @@ export type ChannelDef = {
   fields: ChannelField[];
   /** Shown once connected, when there's something worth saying about living with it. */
   connectedNote?: string;
-  /**
-   * Built, or not yet.
-   *
-   * Discord is the only one left, and it is not more of this same work: it delivers direct
-   * messages over a gateway socket rather than a webhook. Until that is solved the card says so up
-   * front, instead of offering a form that takes four steps of setup and then refuses — which is
-   * what it did, and what David hit trying to connect Slack.
-   */
-  comingSoon?: boolean;
   /**
    * Show this agent's inbound webhook URL on the card, with a copy button.
    *
@@ -132,19 +128,6 @@ export const CHANNELS: ChannelDef[] = [
     showWebhookUrl: true,
     connectedNote:
       "Direct-message the app in Slack and your agent answers there. The first person to DM it becomes its owner — anyone else in the workspace gets nothing back.",
-  },
-  {
-    id: "discord",
-    comingSoon: true,
-    name: "Discord",
-    tagline: "Your own bot, direct messages only",
-    logo: composioLogoUrl("discord"),
-    steps: [
-      "Create an application at discord.com/developers.",
-      "Open its Bot page, choose Reset Token, and copy the token.",
-      "Paste it below — we'll give you a link to add the bot to one of your servers.",
-    ],
-    fields: [{ key: "botToken", label: "Bot token", placeholder: "Paste your bot token" }],
   },
 ];
 

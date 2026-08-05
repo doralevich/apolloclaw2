@@ -7,7 +7,6 @@ const ICON_CARDS = [
   { slug: "gmail",          alt: "Gmail",             size: "lg", left: "1%",   top: "30%" },
   { slug: "slack",          alt: "Slack",             size: "md", left: "3%",   top: "55%" },
   { slug: "twitter",        alt: "Twitter/X",         size: "xs", left: "6%",   top: "15%" },
-  { slug: "discord",        alt: "Discord",           size: "sm", left: "5%",   top: "78%" },
   // LEFT mid
   { slug: "github",         alt: "GitHub",            size: "md", left: "14%",  top: "20%" },
   { slug: "notion",         alt: "Notion",            size: "sm", left: "16%",  top: "65%" },

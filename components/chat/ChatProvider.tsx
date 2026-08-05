@@ -153,20 +153,36 @@ export function ChatProvider({
   }, [navigateToSession, requestComposerFocus]);
 
   // A brand-new conversation just minted its session id mid-stream. We already have its first
-  // message (the label), so add the rail row locally and promote it — no write-back: the session
-  // already exists upstream and will reappear from GET /v1/sessions on the next load.
+  // message (the label), so add the rail row locally and promote it.
   const onSessionCreated = useCallback(
     (sessionId: string, title: string) => {
       // Give the freshly-minted thread its own URL (replace, so Back doesn't return to the blank
       // new-chat URL).
       navigateToSession(sessionId, "replace");
+      const label = title.trim().slice(0, 80) || null;
       setSessions((prev) =>
         prev.some((s) => s.session_id === sessionId)
           ? prev
-          : [{ session_id: sessionId, title: title.trim().slice(0, 80) || null }, ...prev]
+          : [{ session_id: sessionId, title: label }, ...prev]
       );
+
+      // Write the label upstream too. Without this the name is only in this tab's memory: the
+      // next load re-reads the list from the instance, which on OpenClaw carries no title, and
+      // every thread came back as "New chat" — the whole rail identical. The sessions route can
+      // recover a label by opening the thread, but that costs a call per row, and a title stored
+      // where the rename button already stores one costs nothing on every load after this.
+      //
+      // Silent by design. It's a nicety on top of a message that has already been sent, the build
+      // may not support PATCH at all, and a toast about a failed write nobody asked for would be
+      // noise mid-conversation.
+      if (agentId && label) {
+        apiFetch(`/api/agents/${agentId}/chat/sessions/${sessionId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ title: label }),
+        }).catch(() => {});
+      }
     },
-    [navigateToSession]
+    [agentId, navigateToSession]
   );
 
   const deleteSession = useCallback(
