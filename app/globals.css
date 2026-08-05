@@ -134,6 +134,36 @@
   color-scheme: dark;
 }
 
+/* ─── Dashboard accent ────────────────────────────────────────────────────────
+   Violet, where the marketing site is red.
+
+   David's call, from the chat mockups: the product surface reads as a tool, and the
+   red that carries the brand on a landing page is a loud thing to put on a Send
+   button you press forty times a day. The logo stays red; the interface doesn't.
+
+   Scoped by the .app-accent class ThemeProvider stamps on <html>, for the same
+   reason .dark is scoped: marketing pages carry literal brand hex in inline styles,
+   so re-pointing --color-primary globally would recolour the shared Button while
+   every surface around it stayed red. On <html> rather than a wrapper because Radix
+   portals menus and toasts to the end of <body>.
+
+   --color-destructive is deliberately NOT changed. Delete and Disconnect must stay
+   red once the accent isn't — a violet "Delete agent" reads as the safe option. */
+.app-accent {
+  --color-primary: hsl(263 83% 58%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-accent: hsl(263 83% 58%);
+  --color-accent-foreground: hsl(0 0% 100%);
+  --color-ring: hsl(263 83% 58%);
+}
+
+/* Lifted against navy, the same adjustment the red needed. */
+.app-accent.dark {
+  --color-primary: hsl(258 90% 68%);
+  --color-accent: hsl(258 90% 68%);
+  --color-ring: hsl(258 90% 68%);
+}
+
 /* Keyframes */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }

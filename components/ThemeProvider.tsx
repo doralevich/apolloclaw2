@@ -80,6 +80,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", apply);
   }, [mode]);
 
+  // The dashboard's accent, which is violet where the marketing site's is red.
+  //
+  // Stamped on <html> rather than a wrapper because Radix renders menus, dialogs and toasts in
+  // a portal at the end of <body> — outside any wrapper, and they'd keep the red. On the root
+  // element, everything inherits it.
+  //
+  // Scoped to the dashboard for the same reason the dark class is: the marketing pages carry
+  // literal brand hex in inline styles, so re-pointing --color-primary there would recolour the
+  // shared Button while every surface around it stayed red.
+  useEffect(() => {
+    document.documentElement.classList.add("app-accent");
+    return () => document.documentElement.classList.remove("app-accent");
+  }, []);
+
   // Leaving the dashboard for a marketing page is a client-side navigation, which unmounts
   // this provider without reloading. Without the cleanup the class would survive onto pages
   // that have no dark styling.
