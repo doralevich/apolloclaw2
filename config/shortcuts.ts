@@ -252,6 +252,35 @@ export const FIRST_MOVES: Shortcut[] = FIRST_MOVE_IDS.map((id) => {
   return found;
 });
 
+// The four chips under the chat composer.
+//
+// Same content again, drawn from the same catalogue — but these carry a SHORT LABEL as well as
+// the prompt, because a chip is read at a glance while hovering over a text box. "Summarize my
+// emails" is four words on a button; the prompt it sends is the full, careful sentence from
+// above, which is the one the agent actually needs.
+//
+// Four, and no more. This sits directly under the composer, and a wall of suggestions there
+// competes with the thing it is meant to be encouraging.
+export interface ChatChip {
+  id: string;
+  label: string;
+  prompt: string;
+}
+
+const CHAT_CHIP_LABELS: Array<[string, string]> = [
+  ["triage", "Summarize my emails"],
+  ["week-ahead", "What's on my calendar?"],
+  ["summarise", "Find recent documents"],
+  ["reply", "Draft a response"],
+];
+
+export const CHAT_CHIPS: ChatChip[] = CHAT_CHIP_LABELS.map(([id, label]) => {
+  const found = SHORTCUT_GROUPS.flatMap((g) => g.shortcuts).find((s) => s.id === id);
+  // Same reasoning as FIRST_MOVES: throwing at import beats a chat page with a blank chip on it.
+  if (!found) throw new Error(`CHAT_CHIP_LABELS names a shortcut that doesn't exist: ${id}`);
+  return { id, label, prompt: found.prompt };
+});
+
 /** Swap `{agent}` and `{company}` for the real thing. Falls back to wording that still reads
  *  as a sentence when we don't know the company — "your business" beats an empty gap. */
 export function fillShortcut(text: string, agentName: string, companyName?: string): string {

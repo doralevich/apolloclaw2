@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
+import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { SetupGrid } from "@/components/SetupGrid";
+import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -102,6 +103,10 @@ export function ChatView({
   // forever (config/greetings.ts). Chosen in an effect and not during render because the pick
   // is random: doing it inline would make the server and the browser disagree on the text.
   // Null until then, which is why the block below reserves its height.
+  // A chip the customer clicked, and how many times one has been clicked. The counter is what
+  // makes picking the SAME chip twice work — see the note in ChatComposer.
+  const [picked, setPicked] = useState<{ text: string; n: number } | null>(null);
+
   const [greeting, setGreeting] = useState<Greeting | null>(null);
   useEffect(() => {
     if (!showWelcome) return;
@@ -132,6 +137,17 @@ export function ChatView({
           <Plus className="h-4 w-4" />
         </button>
       </header>
+
+      {/* Everything below the header is a row: the conversation, and — only on the empty state —
+          the integrations rail beside it.
+          The rail is a SIBLING of the conversation column rather than something inside it, so its
+          appearing and disappearing never moves the composer within its parent. That matters: the
+          composer holds the draft, the model and the effort setting, and a change of tree position
+          would remount it and lose all three mid-sentence.
+          Gone once a conversation starts. A 340px rail beside a live transcript is 340px of
+          reading width spent on something nobody is looking at. */}
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {/* Top: scrolling transcript when there are messages; the centered welcome panel when
           empty (justify-end seats it just above the composer). */}
       <div
@@ -152,16 +168,6 @@ export function ChatView({
           <ChatMessages messages={messages} isStreaming={isStreaming} userInitial={userInitial} />
         ) : (
           <div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
-            {/* The connect shelves, above the greeting: an agent with nothing plugged in can talk
-                but can't act, and the chat is where the customer actually is when they find that
-                out. This replaced two separate strips — one for apps, one for chat channels —
-                which showed a bare row of logos with no names and no way to tell what was already
-                connected. Same idea, named and stateful.
-                Left-aligned inside the centred column: shelf headings that centre themselves over
-                a four-column grid read as decoration. */}
-            <div className="w-full text-left">
-              <SetupGrid agentId={agentId} compact />
-            </div>
             {/* Height reserved so the composer doesn't jump when the greeting lands. */}
             <div className="flex min-h-[76px] flex-col items-center gap-2">
               {greeting && (
@@ -173,6 +179,13 @@ export function ChatView({
                 </>
               )}
             </div>
+            {/* The rail's stand-in below lg. One line rather than a squeezed copy of it. */}
+            <Link
+              href="/dashboard/integrations"
+              className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground lg:hidden"
+            >
+              Connect your apps
+            </Link>
           </div>
         )}
       </div>
@@ -209,18 +222,44 @@ export function ChatView({
           onStop={stop}
           large={showWelcome}
           focusToken={composerFocusToken}
-          prefill={prefill}
+          prefill={picked?.text ?? prefill}
+          prefillToken={picked?.n}
         />
       </div>
 
       {/* Bottom: balances the vertical spacing on the welcome state. */}
       {showWelcome && (
-        <div className="flex flex-1 flex-col items-center px-4 pt-3">
+        <div className="flex flex-1 flex-col items-center gap-4 px-4 pt-4">
+          {/* Four things to say, under the box you'd say them in. They fill the composer rather
+              than sending: several want a name or a document swapped in first, and firing one off
+              unedited produces exactly the weak first answer this is meant to prevent. */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {CHAT_CHIPS.map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setPicked((p) => ({ text: chip.prompt, n: (p?.n ?? 0) + 1 }))}
+                className="inline-flex items-center gap-2 rounded-xl border bg-card px-3.5 py-2.5 text-sm text-foreground transition-colors hover:border-foreground/25 hover:bg-secondary/60"
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
           <p className="text-sm text-muted-foreground">
             The more context you give, the better your agent can help.
           </p>
         </div>
       )}
+        </div>
+
+        {/* Hidden below lg — a 340px rail on a phone would be the whole screen. Mobile gets the
+            one-line link under the greeting instead, so Connections is still reachable from here. */}
+        {showWelcome && (
+          <div className="hidden shrink-0 overflow-y-auto p-4 lg:block">
+            <IntegrationsRail agentId={agentId} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
