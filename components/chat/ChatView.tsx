@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Loader2, Plus } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Mail, PenLine, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
+import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { SetupGrid } from "@/components/SetupGrid";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { HeaderClock } from "./HeaderClock";
+import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -23,6 +26,9 @@ import { useChatAttachments } from "./useChatAttachments";
 // Heuristic: does a send failure look like the agent's AI budget ran dry? The gateway's
 // wording isn't under our control, so match the family of phrasings rather than one string.
 // A false positive still shows a helpful card with the real path to fixing most outages.
+// Chip id -> icon. Lives here rather than in config/shortcuts so that file stays JSX-free.
+const CHIP_ICONS = { mail: Mail, calendar: CalendarDays, file: FileText, pen: PenLine } as const;
+
 function isOutOfCreditsError(message: string): boolean {
   return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
 }
@@ -94,6 +100,10 @@ export function ChatView({
   );
   const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
+  // A chip the customer clicked, and how many have been clicked. The counter is what makes
+  // picking the SAME chip twice work — see the note in ChatComposer.
+  const [picked, setPicked] = useState<{ text: string; n: number } | null>(null);
+
   const userInitial = (userEmail?.[0] || "").toUpperCase();
   // Null rather than a placeholder: an unnamed agent should stay out of the greeting entirely.
   const greetName = agentName?.trim() || null;
@@ -122,16 +132,41 @@ export function ChatView({
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>
+        <div className="flex shrink-0 items-center gap-3">
+        {/* Date and time, from the mockup. The weather it also shows isn't here — see HeaderClock. */}
+        <HeaderClock />
+        <span className="hidden h-5 w-px bg-border lg:block" aria-hidden />
+        {/* Light/dark at the top of the screen, where you are when you decide you want it. The
+            three-way preference (including "follow my device") stays in Settings. */}
+        <ThemeToggle />
         <button
           type="button"
           onClick={startNewChat}
-          aria-label="New chat"
           title="New chat"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
+          New Chat
         </button>
+        </div>
       </header>
+
+      {/* Everything below the header is a row: the conversation, and — only on the empty state —
+          the integrations rail beside it.
+          The rail is a SIBLING of the conversation column rather than something inside it, so its
+          appearing and disappearing never moves the composer within its parent. That matters: the
+          composer holds the draft, the model and the effort setting, and a change of tree position
+          would remount it and lose all three mid-sentence.
+          Gone once a conversation starts. A 340px rail beside a live transcript is 340px of
+          reading width spent on something nobody is looking at. */}
+      <div className="flex min-h-0 flex-1">
+        <div
+          className={cn(
+            "relative flex min-h-0 min-w-0 flex-1 flex-col",
+            // Decoration only, and only where there's nothing to read yet — see .chat-wash.
+            showWelcome && "chat-wash"
+          )}
+        >
       {/* Top: scrolling transcript when there are messages; the centered welcome panel when
           empty (justify-end seats it just above the composer). */}
       <div
@@ -140,7 +175,7 @@ export function ChatView({
         className={cn(
           "min-h-0",
           showWelcome
-            ? "flex flex-1 flex-col items-center justify-end gap-6 overflow-y-auto px-4 pb-6 pt-5"
+            ? "flex shrink-0 flex-col items-center gap-5 px-4 pb-2 pt-[9vh]"
             : "flex-1 overflow-y-auto overflow-x-hidden"
         )}
       >
@@ -152,16 +187,6 @@ export function ChatView({
           <ChatMessages messages={messages} isStreaming={isStreaming} userInitial={userInitial} />
         ) : (
           <div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
-            {/* The connect shelves, above the greeting: an agent with nothing plugged in can talk
-                but can't act, and the chat is where the customer actually is when they find that
-                out. This replaced two separate strips — one for apps, one for chat channels —
-                which showed a bare row of logos with no names and no way to tell what was already
-                connected. Same idea, named and stateful.
-                Left-aligned inside the centred column: shelf headings that centre themselves over
-                a four-column grid read as decoration. */}
-            <div className="w-full text-left">
-              <SetupGrid agentId={agentId} compact />
-            </div>
             {/* Height reserved so the composer doesn't jump when the greeting lands. */}
             <div className="flex min-h-[76px] flex-col items-center gap-2">
               {greeting && (
@@ -173,6 +198,13 @@ export function ChatView({
                 </>
               )}
             </div>
+            {/* The rail's stand-in below lg. One line rather than a squeezed copy of it. */}
+            <Link
+              href="/dashboard/integrations"
+              className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground lg:hidden"
+            >
+              Connect your apps
+            </Link>
           </div>
         )}
       </div>
@@ -209,18 +241,48 @@ export function ChatView({
           onStop={stop}
           large={showWelcome}
           focusToken={composerFocusToken}
-          prefill={prefill}
+          prefill={picked?.text ?? prefill}
+          prefillToken={picked?.n}
         />
       </div>
 
       {/* Bottom: balances the vertical spacing on the welcome state. */}
       {showWelcome && (
-        <div className="flex flex-1 flex-col items-center px-4 pt-3">
+        <div className="flex flex-1 flex-col items-center gap-4 px-4 pt-4">
+          {/* Four things to say, under the box you'd say them in. They fill the composer rather
+              than sending: several want a name or a document swapped in first, and firing one off
+              unedited produces exactly the weak first answer this is meant to prevent. */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {CHAT_CHIPS.map((chip) => {
+              const Icon = CHIP_ICONS[chip.icon];
+              return (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setPicked((p) => ({ text: chip.prompt, n: (p?.n ?? 0) + 1 }))}
+                  className="inline-flex items-center gap-2 rounded-xl border bg-card px-3.5 py-2.5 text-sm text-foreground shadow-sm transition-colors hover:border-foreground/25 hover:bg-secondary/60"
+                >
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
           <p className="text-sm text-muted-foreground">
             The more context you give, the better your agent can help.
           </p>
         </div>
       )}
+        </div>
+
+        {/* Hidden below lg — a 340px rail on a phone would be the whole screen. Mobile gets the
+            one-line link under the greeting instead, so Connections is still reachable from here. */}
+        {showWelcome && (
+          <div className="hidden shrink-0 p-4 pl-0 lg:block">
+            <IntegrationsRail agentId={agentId} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

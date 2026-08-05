@@ -25,6 +25,8 @@ interface Props {
    *  auto-sent: the customer sees what they're about to ask, and most of these want a name or
    *  a document swapped in first. */
   prefill?: string;
+  /** Bumped when the same prefill is picked again — see the note where it's applied. */
+  prefillToken?: number;
 }
 
 export function ChatComposer({
@@ -36,6 +38,7 @@ export function ChatComposer({
   large = false,
   focusToken = 0,
   prefill,
+  prefillToken,
 }: Props) {
   const [text, setText] = useState("");
 
@@ -56,10 +59,15 @@ export function ChatComposer({
   // an effect — React's own pattern for "a prop changed, derive state from it" — so the box is
   // never briefly empty before the text appears. Only fills an EMPTY box, so a draft already
   // in progress is never overwritten.
+  //
+  // The token exists for the chips under the composer: two clicks of the SAME chip are two
+  // separate requests to fill the box, and comparing on the text alone would treat the second as
+  // already applied. Keyed on both, so re-picking after clearing the box works.
   const [appliedPrefill, setAppliedPrefill] = useState<string | undefined>(undefined);
-  if (prefill && prefill !== appliedPrefill) {
-    setAppliedPrefill(prefill);
-    if (!text) setText(prefill);
+  const prefillKey = prefill ? `${prefillToken ?? 0}:${prefill}` : undefined;
+  if (prefillKey && prefillKey !== appliedPrefill) {
+    setAppliedPrefill(prefillKey);
+    if (!text) setText(prefill!);
   }
 
   useEffect(() => {
