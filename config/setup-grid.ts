@@ -68,14 +68,17 @@ export const SETUP_ROWS: SetupRow[] = [
     title: "Google",
     blurb: "Your mail, your files, your diary. This is what turns advice into work done.",
     href: "/dashboard/integrations",
+    // NO CONTACTS TILE — yet.
+    //
+    // It shipped as `googlecontacts`, guessed from the pattern of Composio's other Google slugs
+    // (googledrive, googlecalendar, googledocs, googletasks) because the machine it was written
+    // on can't reach Composio to check. The guess was wrong, and once tiles started connecting
+    // directly that stopped costing a missing icon and started costing an error page.
+    //
+    // Every slug below is one the Connections catalogue already proves. Put Contacts back the
+    // moment there's a verified slug for it — from a Connections search, not another guess.
     tiles: [
       toolkitTile("drive", "Drive", "googledrive"),
-      // UNVERIFIED SLUG. Composio's Google toolkits are unseparated (googledrive, googlecalendar,
-      // googledocs, googletasks), so this follows the same pattern — but it is the one slug here
-      // not already proven by the Connections catalogue, and the network policy on the machine
-      // this was written on blocks Composio. If this tile's connect ends on "Could not connect
-      // app", the slug is what's wrong.
-      toolkitTile("contacts", "Contacts", "googlecontacts"),
       toolkitTile("email", "Email", "gmail"),
       toolkitTile("calendar", "Calendar", "googlecalendar"),
     ],
