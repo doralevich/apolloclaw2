@@ -140,7 +140,11 @@ function Tile({
           know yet is the one wrong thing this line can say, and it's the line a returning
           customer looks at to check their setup survived. */}
       <span className="text-[11px] text-muted-foreground">
-        {!loaded ? (
+        {/* Discord. The tile is worth showing — it says what's coming — but it must not say
+            "Connect", which invites four steps of setup that then refuse. */}
+        {tile.kind === "channel" && tile.soon ? (
+          "Soon"
+        ) : !loaded ? (
           " "
         ) : connected ? (
           <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400">

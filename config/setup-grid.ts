@@ -15,7 +15,7 @@ import type { ChannelId } from "@/lib/types";
 
 export type SetupTile =
   /** A chat channel — status comes from /api/agents/{id}/channels. */
-  | { kind: "channel"; id: ChannelId; name: string; logo: string }
+  | { kind: "channel"; id: ChannelId; name: string; logo: string; soon?: boolean }
   /** A Composio toolkit — status comes from /api/agents/{id}/integrations/connections. */
   | { kind: "toolkit"; slug: string; name: string; logo: string };
 
@@ -34,6 +34,7 @@ const CHAT_TILES: SetupTile[] = CHANNELS.map((c) => ({
   id: c.id,
   name: c.name,
   logo: c.logo,
+  soon: c.comingSoon,
 }));
 
 function toolkitTile(slug: string, name: string): SetupTile {
