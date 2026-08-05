@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { AgentKnowledge } from "@/components/AgentKnowledge";
 import { AgentSkills } from "@/components/AgentSkills";
+import { AgentVitals } from "@/components/AgentVitals";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { SetupBanner } from "@/components/SetupPrompt";
 
@@ -122,6 +123,11 @@ export function AgentsView() {
               onChanged={refresh}
             />
           ))}
+
+          {/* Under the card, because both answer follow-ups to what the card says. The badge
+              says the container is running; these say whether it is about to run out of credit
+              and whether anybody is actually talking to it. */}
+          {agents.length === 1 && <AgentVitals agentId={agents[0].agent37_id} />}
 
           {/* Above the questionnaire, because it answers the earlier question. What the agent
               knows ABOUT YOU is worth reading second; what it knows how to DO is what somebody
