@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { SchedulePanel } from "@/components/SchedulePanel";
 
 // Channels — where the agent can be talked to.
 //
@@ -69,6 +70,9 @@ export function ChannelsView() {
         </p>
       )}
       <ChannelsPanel key={active.agent37_id} agentId={active.agent37_id} />
+      {/* Below the channels, because it depends on them: a scheduled brief is delivered through
+          whichever chat app is connected above. */}
+      <SchedulePanel key={`sched-${active.agent37_id}`} agentId={active.agent37_id} />
     </div>
   );
 }
