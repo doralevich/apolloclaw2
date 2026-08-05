@@ -239,8 +239,11 @@
    the bottom of the page. Two overlapping radials, lavender left and warm pink right,
    the way the mockup blends them.
 
-   Slate rather than lavender-and-rose: the wash is depth, and it does not need a hue to
-   provide it. Barely there on purpose. It should be felt before it is noticed, and
+   Lavender low-left, warm rose low-right — the tint is back after a round in slate, because
+   slate on a cool grey page is not a wash, it is a slightly dirtier grey. The hue is what makes
+   it read as texture rather than as a gradient artefact, and it can be a warm bloom in the
+   background without the buttons being purple. Barely there on purpose. It should be felt
+   before it is noticed, and
    anything stronger competes with the composer sitting on top of it. */
 .chat-wash::before {
   content: "";
@@ -248,16 +251,16 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(58% 44% at 22% 100%, rgba(100, 116, 139, 0.10), transparent 72%),
-    radial-gradient(52% 40% at 82% 100%, rgba(71, 85, 105, 0.07), transparent 72%);
+    radial-gradient(58% 44% at 22% 100%, rgba(139, 92, 246, 0.11), transparent 72%),
+    radial-gradient(52% 40% at 82% 100%, rgba(236, 72, 153, 0.08), transparent 72%);
 }
 
 /* Muted on navy: the same wash at light-mode strength turns the bottom of a dark pane
    milky, which reads as a rendering fault rather than a gradient. */
 .dark .chat-wash::before {
   background:
-    radial-gradient(58% 44% at 22% 100%, rgba(148, 163, 184, 0.10), transparent 72%),
-    radial-gradient(52% 40% at 82% 100%, rgba(148, 163, 184, 0.06), transparent 72%);
+    radial-gradient(58% 44% at 22% 100%, rgba(139, 92, 246, 0.14), transparent 72%),
+    radial-gradient(52% 40% at 82% 100%, rgba(236, 72, 153, 0.08), transparent 72%);
 }
 
 /* Keyframes */
