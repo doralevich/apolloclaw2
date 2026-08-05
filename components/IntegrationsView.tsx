@@ -125,7 +125,7 @@ export function IntegrationsView() {
           You don&apos;t have an agent yet. Create one to start connecting apps.
         </p>
         <Button asChild variant="outline" size="sm" className="mt-4">
-          <Link href="/dashboard">Go to My Agents</Link>
+          <Link href="/dashboard/settings/agent">Go to My Agent</Link>
         </Button>
       </div>
     );
@@ -137,7 +137,7 @@ export function IntegrationsView() {
         <p className="max-w-6xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
           {active.name || "This agent"} isn&apos;t running right now ({active.live_status ?? "unknown"}).
           You can still manage its app connections here, but the agent can&apos;t use them until it&apos;s
-          started from the My Agents tab.
+          started from Settings → My Agent.
         </p>
       )}
       <IntegrationsPanel key={active.agent37_id} agentId={active.agent37_id} />

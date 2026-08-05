@@ -76,7 +76,7 @@ export function ChatPageClient() {
             </p>
           </div>
           <Button asChild className="rounded-full">
-            <Link href="/dashboard">Create an agent</Link>
+            <Link href="/dashboard/settings/agent">Create an agent</Link>
           </Button>
         </div>
       </div>
@@ -98,7 +98,7 @@ export function ChatPageClient() {
             <span>
               {active.name || "This agent"} is {active.live_status || "not running"} — messages will fail until
               it&apos;s running.{" "}
-              <Link href="/dashboard" className="font-semibold underline underline-offset-2">
+              <Link href="/dashboard/settings/agent" className="font-semibold underline underline-offset-2">
                 Manage agent
               </Link>
             </span>
