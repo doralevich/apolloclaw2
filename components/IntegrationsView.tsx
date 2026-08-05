@@ -618,7 +618,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                   {filtered.map(renderCard)}
                 </div>
               )}
@@ -799,7 +799,7 @@ function Section({
           </button>
         )}
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">{children}</div>
     </div>
   );
 }
@@ -821,50 +821,43 @@ function IntegrationCard({
   onConnect: () => void;
   onManage: () => void;
 }) {
-  const category = categoryForSlug(t.slug);
   return (
+    // One row, not a stacked card.
+    //
+    // It was logo, name, category, description and a full-width button — five things to say
+    // "Gmail, connect it", stacked to 130px, in a grid of a thousand. The logo and the name
+    // identify the app. The category is the filter you arrived through. The description is a
+    // sentence nobody reads about software they already use every day. The button is the only
+    // thing anybody came to press, so it is the only other thing left.
     <div
       className={cn(
-        "flex h-full flex-col rounded-xl border bg-card p-3 transition-all hover:border-foreground/20 hover:shadow-sm",
+        "flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5 transition-colors hover:border-foreground/20",
         connected && "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/25"
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <ToolkitLogo logo={t.logo} name={t.name} />
-        {connected && (
-          <Badge variant="success" className="shrink-0 gap-1">
-            <Check className="h-3 w-3" />
-            Added
-          </Badge>
-        )}
+      <ToolkitLogo logo={t.logo} name={t.name} />
+
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-medium">{t.name}</div>
       </div>
 
-      <div className="mt-2 min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold">{t.name}</div>
-        {category && (
-          <div className="mt-0.5 truncate text-[11px] uppercase tracking-wide text-muted-foreground">
-            {category}
-          </div>
-        )}
-        {/* One line, not two. The description is a nicety; the name and the button are the
-            card, and two clamped lines were adding 20px to every tile in a grid of a thousand. */}
-        {t.description && (
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{t.description}</p>
-        )}
-      </div>
-
-      <div className="mt-3">
+      <div className="shrink-0">
         {connected ? (
-          <Button variant="outline" size="sm" className="h-8 w-full text-xs" onClick={onManage}>
-            Manage
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs text-emerald-700 hover:text-emerald-700 dark:text-emerald-400"
+            onClick={onManage}
+          >
+            <Check className="h-3.5 w-3.5" />
+            Added
           </Button>
         ) : pending ? (
-          <Button size="sm" variant="outline" className="h-8 w-full text-xs" disabled>
+          <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs" disabled>
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            Waiting
           </Button>
         ) : (
-          <Button asChild size="sm" variant="outline" className="h-8 w-full text-xs">
+          <Button asChild size="sm" variant="outline" className="h-8 px-3 text-xs">
             <a
               href={connectRedirectHref(agentId, t.slug)}
               target="_blank"
