@@ -14,7 +14,7 @@ import { buildAgentsMd, buildIdentityMd, buildToolsMd } from "@/lib/agent-files"
 import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
-import { AGENT_SKILLS, skillFile } from "@/config/skills";
+import { AGENT_SKILLS, skillFile, type AgentSkill } from "@/config/skills";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -106,12 +106,18 @@ export async function injectAgentFile(
 }
 
 /**
- * Install our procedure skills into the instance.
+ * Install our skills into the instance.
  *
  * OpenClaw discovers skills by itself out of $OPENCLAW_STATE_DIR/plugin-skills — a directory per
  * skill, each holding a SKILL.md — and lists what it finds in the session's available_skills.
  * There is nothing to register and no index to keep: writing the files IS installing them.
  * (Confirmed by asking a live instance what it could see, not from docs.)
+ *
+ * BATCHED, because this started at three skills and is now fifty-eight. One exec per skill meant
+ * fifty-eight sequential round trips into the container — minutes of waiting, and close enough to
+ * the route's 300-second cap to be a real risk of a half-finished install. Each exec now carries
+ * as many skills as fit comfortably in a command line, so it is a handful of calls rather than
+ * one per file.
  *
  * OpenClaw only. Hermes has no equivalent path, so on a Hermes image this writes nothing rather
  * than creating a directory the runtime will never look in — a silent no-op is the honest outcome
@@ -124,33 +130,82 @@ export async function injectAgentFile(
 export async function installAgentSkills(agentId: string): Promise<string[]> {
   const installed: string[] = [];
 
-  for (const skill of AGENT_SKILLS) {
-    const b64 = Buffer.from(skillFile(skill), "utf8").toString("base64");
+  for (const batch of batchSkills()) {
+    // One JSON blob of { slug: fileContents }, base64'd so no quoting in any skill body can
+    // escape the shell. Node does the writing because mkdir -p plus a heredoc per file is
+    // exactly the fiddly shell this replaces.
+    const payload = JSON.stringify(Object.fromEntries(batch.map((s) => [s.slug, skillFile(s)])));
+    const b64 = Buffer.from(payload, "utf8").toString("base64");
+
+    const script =
+      'const fs=require("fs");' +
+      'const root=process.env.OPENCLAW_STATE_DIR||"/home/node/.openclaw";' +
+      'const p=JSON.parse(fs.readFileSync("/tmp/apollo-skills.json","utf8"));' +
+      'for(const [slug,body] of Object.entries(p)){' +
+      'const d=root+"/plugin-skills/"+slug;' +
+      'fs.mkdirSync(d,{recursive:true});' +
+      'fs.writeFileSync(d+"/SKILL.md",body);' +
+      'console.log("SKILL_WROTE:"+slug);}';
+
     const cmd =
       'ROOT="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}"; ' +
-      // The state dir itself is the test for "is this an OpenClaw box". plugin-skills may not
-      // exist yet on a fresh instance, so it is created; the state dir is not.
+      // The state dir is the test for "is this an OpenClaw box". plugin-skills may not exist yet
+      // on a fresh instance, so node creates it; the state dir is not ours to invent.
       '[ -d "$ROOT" ] || { echo NOT_OPENCLAW; exit 0; }; ' +
-      `D="$ROOT/plugin-skills/${skill.slug}"; mkdir -p "$D"; ` +
-      `printf '%s' '${b64}' | base64 -d > "$D/SKILL.md" && echo "SKILL_WROTE:${skill.slug}"; `;
+      'command -v node >/dev/null 2>&1 || { echo NO_NODE; exit 1; }; ' +
+      `printf '%s' '${b64}' | base64 -d > /tmp/apollo-skills.json; ` +
+      `node -e '${script}'; ` +
+      'rm -f /tmp/apollo-skills.json';
 
     try {
       const { stdout } = await agent37.exec(agentId, cmd);
-      if (stdout.includes(`SKILL_WROTE:${skill.slug}`)) {
-        installed.push(skill.slug);
-      } else if (stdout.includes("NOT_OPENCLAW")) {
+      if (stdout.includes("NOT_OPENCLAW")) {
         console.log("[provision:skills-skipped]", agentId, "not an OpenClaw image");
         return [];
       }
+      for (const m of stdout.matchAll(/SKILL_WROTE:(\S+)/g)) installed.push(m[1]);
     } catch (err) {
-      // One skill failing is not a reason to skip the rest, and none of them is load-bearing
-      // enough to fail provisioning over — the agent works without them, just less well.
-      console.error("[provision:skill-failed]", agentId, skill.slug, (err as Error).message);
+      // A failed batch is not a reason to abandon the rest, and none of these is load-bearing
+      // enough to fail provisioning over — the agent works without them, just less well. The
+      // write is idempotent, so re-running fills whatever a bad batch missed.
+      console.error("[provision:skill-batch-failed]", agentId, (err as Error).message);
     }
   }
 
-  console.log("[provision:skills-installed]", agentId, installed.join(" ") || "(none)");
+  console.log(
+    "[provision:skills-installed]",
+    agentId,
+    `${installed.length}/${AGENT_SKILLS.length}`
+  );
   return installed;
+}
+
+/**
+ * Split the skills into batches small enough to pass on a command line.
+ *
+ * Sized by the base64 payload rather than by count, because skill bodies differ by several times
+ * and a fixed count would make batch size a lottery. 48 KB leaves generous room under the usual
+ * ~2 MB ARG_MAX and under whatever the exec API will accept.
+ */
+function batchSkills(): AgentSkill[][] {
+  const MAX_ENCODED = 48 * 1024;
+  const batches: AgentSkill[][] = [];
+  let current: AgentSkill[] = [];
+  let size = 0;
+
+  for (const skill of AGENT_SKILLS) {
+    // base64 is 4 bytes per 3, plus JSON escaping overhead — approximated generously.
+    const encoded = Math.ceil((skillFile(skill).length * 4) / 3) + skill.slug.length + 16;
+    if (current.length && size + encoded > MAX_ENCODED) {
+      batches.push(current);
+      current = [];
+      size = 0;
+    }
+    current.push(skill);
+    size += encoded;
+  }
+  if (current.length) batches.push(current);
+  return batches;
 }
 
 /**

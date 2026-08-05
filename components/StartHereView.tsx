@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Blocks, MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare, Sparkles } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
+import { SetupGrid } from "@/components/SetupGrid";
 import { ShortcutCard } from "@/components/ShortcutCard";
 import { getAgentType } from "@/config/agent-types";
 import { FIRST_MOVES } from "@/config/shortcuts";
@@ -59,6 +60,11 @@ export function StartHereView() {
         </div>
       </div>
 
+      {/* Connect first, ask second. The greeting is the introduction; this is the first thing
+          there is to DO, and it goes above "Now what?" because most of the good answers to
+          "now what" are worth more once the agent can see a calendar and a mailbox. */}
+      <SetupGrid agentId={active.agent37_id} />
+
       {/* The "now what?" problem. Before this, the page said "head to the Chat tab and start
           talking" — which is not an instruction, it's the absence of one. Almost everybody
           opened with "hi", asked something a search engine could answer, decided it was a
@@ -79,34 +85,22 @@ export function StartHereView() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Link
-          href="/dashboard/integrations"
-          className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
-        >
-          <Blocks className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <div className="font-medium">Connect your tools</div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Email, calendar, your CRM. This is what turns {agentName} from something that
-              gives advice into something that does the work.
-            </p>
-          </div>
-        </Link>
-        <Link
-          href="/dashboard/guide"
-          className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
-        >
-          <Sparkles className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <div className="font-medium">More things to ask</div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              The full list, by what you&apos;re trying to get done — plus what the words around
-              here mean.
-            </p>
-          </div>
-        </Link>
-      </div>
+      {/* "Connect your tools" used to sit alongside this, pointing at the same page the shelves
+          above now point at by name. One generic card competing with twelve specific ones is a
+          worse version of the same link, so it went. */}
+      <Link
+        href="/dashboard/guide"
+        className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
+      >
+        <Sparkles className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+        <div>
+          <div className="font-medium">More things to ask</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The full list, by what you&apos;re trying to get done — plus what the words around here
+            mean.
+          </p>
+        </div>
+      </Link>
 
       <div className="flex flex-col items-center gap-3">
         <Button asChild size="lg">
