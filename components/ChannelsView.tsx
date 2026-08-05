@@ -6,7 +6,7 @@ import { Check, ChevronDown, Copy, Loader2, MessageCircle, RefreshCw, TriangleAl
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { CHANNELS, type ChannelDef } from "@/config/channels";
+import { CHANNELS, isChannelId, type ChannelDef } from "@/config/channels";
 import type { Channel, ChannelId, ChannelsResult } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,25 @@ function ChannelsPanel({ agentId }: { agentId: string }) {
   const [refreshing, setRefreshing] = useState(false);
   // One card open at a time. All four expanded is four sets of developer-console instructions
   // stacked up, and the one you want is whichever you clicked.
-  const [openId, setOpenId] = useState<ChannelId | null>(null);
+  //
+  // ?open=telegram arrives from the shelves on Start Here, so a tile there lands on the setup
+  // steps rather than on a page of four collapsed cards to hunt through. Read through
+  // useSyncExternalStore rather than useSearchParams (which would make this page dynamic) and
+  // rather than an effect (which would be a state write on mount); a click then overrides it, and
+  // closing that card is an override to null rather than a fall back to the URL.
+  const linked = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("open"),
+    () => null
+  );
+  const [override, setOverride] = useState<{ id: ChannelId | null } | null>(null);
+  const openId = override
+    ? override.id
+    : linked && isChannelId(linked)
+      ? linked
+      : null;
+  const setOpenId = (next: (current: ChannelId | null) => ChannelId | null) =>
+    setOverride({ id: next(openId) });
 
   // Every setState lands in a promise callback rather than the effect body, the same way the
   // Connections tab loads its endpoint.

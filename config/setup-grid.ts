@@ -4,41 +4,56 @@ import type { ChannelId } from "@/lib/types";
 
 // The three shelves on Start Here: where the agent answers you, and what it can reach.
 //
-// This is a SHORTCUT SURFACE, not a second setup screen. Every tile links to the page that
-// actually does the work — Channels for the chat apps, Connections for the toolkits — and shows
-// nothing but a logo, a name, and whether it's on. The point is that the first screen after
-// provisioning names the specific apps a small business already has, instead of saying "connect
-// your tools" and leaving the customer to guess which ones matter.
+// This is a SHORTCUT SURFACE, not a second setup screen. Nothing here holds credentials or owns
+// any state — a tile either starts the same OAuth flow Connections starts, or hands off to the
+// page that does the setup. The point is that the first screen after provisioning names the
+// specific apps a small business already has, instead of saying "connect your tools" and leaving
+// the customer to guess which ones matter.
 //
-// Deliberately short. These twelve are the ones that change what an agent can do on day one;
-// the full catalogue of eighty is one click away and belongs there, not here.
+// Deliberately short. These twelve are the ones that change what an agent can do on day one; the
+// full catalogue of eighty is one click away and belongs there, not here.
 
-export type SetupTile =
-  /** A chat channel — status comes from /api/agents/{id}/channels. */
-  | { kind: "channel"; id: ChannelId; name: string; logo: string; soon?: boolean }
-  /** A Composio toolkit — status comes from /api/agents/{id}/integrations/connections. */
-  | { kind: "toolkit"; slug: string; name: string; logo: string };
+type TileBase = {
+  /**
+   * Unique within its row, and the React key.
+   *
+   * Not the slug, because Microsoft's mail, calendar and contacts tiles are all one Outlook
+   * connection — see the row below.
+   */
+  key: string;
+  name: string;
+  logo: string;
+};
+
+export type SetupTile = TileBase &
+  (
+    /** A chat channel — status comes from /api/agents/{id}/channels. */
+    | { kind: "channel"; id: ChannelId; soon?: boolean }
+    /** A Composio toolkit — status comes from /api/agents/{id}/integrations/connections. */
+    | { kind: "toolkit"; slug: string }
+  );
 
 export type SetupRow = {
   title: string;
   blurb: string;
-  /** Where a tile in this row takes you. */
+  /** Where the row's "Set up" link goes, and where a connected tile goes to be managed. */
   href: string;
   tiles: SetupTile[];
 };
 
-// Built from CHANNELS rather than retyped, so a channel added or renamed there shows up here
-// with the right logo and never drifts out of sync.
+// Built from CHANNELS rather than retyped, so a channel added, renamed or finished there shows up
+// here with the right logo and never drifts out of sync.
 const CHAT_TILES: SetupTile[] = CHANNELS.map((c) => ({
   kind: "channel",
+  key: c.id,
   id: c.id,
   name: c.name,
   logo: c.logo,
   soon: c.comingSoon,
 }));
 
-function toolkitTile(slug: string, name: string): SetupTile {
-  return { kind: "toolkit", slug, name, logo: composioLogoUrl(slug) };
+function toolkitTile(key: string, name: string, slug: string): SetupTile {
+  return { kind: "toolkit", key, name, slug, logo: composioLogoUrl(slug) };
 }
 
 export const CHAT_ROW: SetupRow = {
@@ -54,27 +69,37 @@ export const SETUP_ROWS: SetupRow[] = [
     blurb: "Your mail, your files, your diary. This is what turns advice into work done.",
     href: "/dashboard/integrations",
     tiles: [
-      toolkitTile("googledrive", "Drive"),
+      toolkitTile("drive", "Drive", "googledrive"),
       // UNVERIFIED SLUG. Composio's Google toolkits are unseparated (googledrive, googlecalendar,
-      // googledocs, googletasks), so this follows the same pattern — but it is the one tile here
-      // not already proven by the Connections catalogue. Because tiles only LINK to Connections
-      // and never connect anything themselves, the cost of being wrong is a fallback initial
-      // where the logo should be, not a setup that fails. If that letter shows up, fix the slug.
-      toolkitTile("googlecontacts", "Contacts"),
-      toolkitTile("gmail", "Email"),
-      toolkitTile("googlecalendar", "Calendar"),
+      // googledocs, googletasks), so this follows the same pattern — but it is the one slug here
+      // not already proven by the Connections catalogue, and the network policy on the machine
+      // this was written on blocks Composio. If this tile's connect ends on "Could not connect
+      // app", the slug is what's wrong.
+      toolkitTile("contacts", "Contacts", "googlecontacts"),
+      toolkitTile("email", "Email", "gmail"),
+      toolkitTile("calendar", "Calendar", "googlecalendar"),
     ],
   },
   {
-    // Three, not four. Microsoft puts mail, calendar and contacts behind one Outlook connection,
-    // so a fourth tile would either be the same toolkit twice or a slug guessed to fill a gap.
+    // Four tiles, three of them the same connection.
+    //
+    // Microsoft doesn't split mail, calendar and contacts the way Google does — they all arrive
+    // with one Outlook connection. The shelf could have said that in one tile, and did; the
+    // trouble is that somebody looking for their calendar looks for the word "Calendar", and a
+    // row that doesn't contain it reads as a row that can't do it.
+    //
+    // So all three are here and all three connect Outlook. They go green together, which is the
+    // honest picture: connect any one of them and you have all three. Teams came off the shelf
+    // rather than making this a row of five — it's a chat app, this row is about the work, and
+    // it's still in Connections under Meetings.
     title: "Microsoft",
-    blurb: "Outlook covers mail, calendar and contacts in a single connection.",
+    blurb: "Contacts, mail and calendar all arrive together with one Outlook connection.",
     href: "/dashboard/integrations",
     tiles: [
-      toolkitTile("one_drive", "OneDrive"),
-      toolkitTile("outlook", "Outlook"),
-      toolkitTile("microsoft_teams", "Teams"),
+      toolkitTile("onedrive", "OneDrive", "one_drive"),
+      toolkitTile("contacts", "Contacts", "outlook"),
+      toolkitTile("email", "Outlook", "outlook"),
+      toolkitTile("calendar", "Calendar", "outlook"),
     ],
   },
 ];
