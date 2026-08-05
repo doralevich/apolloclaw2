@@ -1,68 +1,12 @@
-// The procedures we install on every agent at provision time.
+// The three procedures: what to do, in what order, for the jobs this product is sold on.
 //
-// WHY THESE EXIST. A stock OpenClaw box already ships 50+ skills — diagram-maker, notion,
-// debuggers, taskflow, the rest. It is not short of capability. What it has no opinion about is
-// how to do the specific jobs this product is sold on: the morning brief, the follow-up that
-// never came back, the meeting nobody prepped for. Those are in the marketing and the demo, and
-// until now they lived nowhere in the agent.
-//
-// HOW THEY GET THERE. OpenClaw discovers skills on its own from $OPENCLAW_STATE_DIR/plugin-skills
-// — a directory per skill, each holding a SKILL.md — and lists them in the session's
-// available_skills. There is no index to maintain: lib/provision.ts writes the files and the
-// runtime finds them. (Confirmed by asking a live instance what it could see.)
-//
-// WHAT MAKES A GOOD ONE HERE. Every skill below is a METHOD, not a capability: it assumes the
-// tools already exist through Connections and says what order to do things in, what to check, and
-// when to stop and ask. A skill that needs an integration the customer hasn't connected should
-// say so and stop, rather than inventing an answer — each one carries that instruction, because a
-// confidently empty daily brief is worse than "your calendar isn't connected yet".
+// Every one is a METHOD, not a capability. It assumes the tools already exist through Connections
+// and says what order to do things in, what to check, and when to stop and ask. A skill that
+// needs an integration the customer hasn't connected should say so and stop rather than inventing
+// an answer — each carries that rule, because a confidently empty daily brief is worse than "your
+// calendar isn't connected yet".
 
-export type AgentSkill = {
-  /** Directory name under plugin-skills, and the name the runtime lists it under. */
-  slug: string;
-  /** One line. This is what the agent sees when deciding whether the skill applies. */
-  description: string;
-  /** Shown beside the skill in OpenClaw's own listings. */
-  emoji: string;
-  /** The body of SKILL.md, below the frontmatter. */
-  body: string;
-};
-
-/**
- * SKILL.md as the runtime expects it, copied from a real installed skill rather than guessed:
- *
- *   ---
- *   name: slack
- *   description: "Slack tool actions: send/read/edit/delete messages, react, pin/unpin, …"
- *   metadata: { "openclaw": { "emoji": "💬" } }
- *   ---
- *
- *   # Slack
- *   …
- *
- * THE DESCRIPTION IS QUOTED, and that is not cosmetic. Two of ours contain a colon, and a colon
- * in an unquoted YAML scalar either fails the parse or truncates the value at that point — either
- * way the file lands looking fine and the runtime sees a skill with half a description or none.
- * That is the silent failure this whole detour was about, so it is enforced here rather than left
- * to whoever writes the next skill to remember.
- */
-export function skillFile(skill: AgentSkill): string {
-  return [
-    `---`,
-    `name: ${skill.slug}`,
-    `description: ${yamlQuote(skill.description)}`,
-    `metadata: { "openclaw": { "emoji": ${JSON.stringify(skill.emoji)} } }`,
-    `---`,
-    ``,
-    skill.body.trim(),
-    ``,
-  ].join("\n");
-}
-
-/** A double-quoted YAML scalar. JSON string escaping is a valid subset, so this is exact. */
-function yamlQuote(value: string): string {
-  return JSON.stringify(value);
-}
+import type { AgentSkill } from "@/config/skills";
 
 const MISSING_CONNECTION_RULE = `
 ## When something isn't connected
@@ -73,7 +17,7 @@ empty brief that says "your calendar isn't connected" is useful. A brief that qu
 calendar looks like a day with no meetings.
 `.trim();
 
-export const AGENT_SKILLS: AgentSkill[] = [
+export const PROCEDURE_SKILLS: AgentSkill[] = [
   {
     slug: "daily-brief",
     emoji: "☀️",
