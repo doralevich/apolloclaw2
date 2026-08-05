@@ -17,8 +17,11 @@ import { CONTEXT_FILENAME } from "@/config/agent-workspace";
 //   TOOLS.md     the stack they actually run
 //   IDENTITY.md  who this agent is and who it serves
 //
-// The other five stay the runtime's or the template's:
-//   SOUL.md      persona, from the template (we add only a pointer block)
+// SOUL.md is ours too, but it doesn't come from the questionnaire so it isn't built here:
+// lib/provision.ts writes the persona from config/personas.ts, then merges a pointer block
+// into the same file. Five of the eight are ours in total.
+//
+// The remaining three stay the runtime's or the template's:
 //   MEMORY.md    what the agent learns — never ours to write
 //   HEARTBEAT.md, BOOTSTRAP.md  runtime mechanics, nothing to do with the customer
 //
