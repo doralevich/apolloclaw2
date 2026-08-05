@@ -29,9 +29,6 @@ import { cn } from "@/lib/utils";
 // former.
 const NAV = [
   { href: "/dashboard/start-here", label: "Start Here", icon: Compass, exact: false },
-  // "My Agent", singular, because that is what a customer has: one, arriving with their
-  // licence. Pluralises only if a workspace somehow holds more than one.
-  { href: "/dashboard", label: "My Agent", icon: LayoutGrid, exact: true },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
   // Sits next to Connections because the two answer the neighbouring questions — what the agent
@@ -45,6 +42,13 @@ const NAV = [
   // which is a question people have while looking at the chat, not while looking for account
   // options.
   { href: "/dashboard/guide", label: "Guide", icon: BookOpen, exact: false },
+  // Below Guide, David's call, and it reads right: the four above are things you do with the
+  // agent every day. This is where you go to look at the agent itself — its state, what it
+  // knows, what it's called — which is a weekly question at most.
+  //
+  // "My Agent", singular, because that is what a customer has: one, arriving with their
+  // licence. Pluralises only if a workspace somehow holds more than one.
+  { href: "/dashboard", label: "My Agent", icon: LayoutGrid, exact: true },
 ];
 
 // The settings area's own rail, grouped, shown INSTEAD of NAV while you're inside it — the
