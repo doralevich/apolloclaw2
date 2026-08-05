@@ -28,7 +28,7 @@ export const EXECUTIVE_SKILLS: AgentSkill[] = [
     slug: "vision-mission",
     emoji: "🧭",
     description:
-      "Build or sharpen the company's mission, vision and values so they are usable rather than decorative. Use when positioning is vague or the team pulls in different directions.",
+      "Mission, vision and values that can settle an argument. Use when positioning is vague.",
     body: `
 # Vision and mission
 
@@ -63,7 +63,7 @@ If not, they are not finished.
     slug: "strategic-planning",
     emoji: "🗺️",
     description:
-      "Set objectives and key results for a quarter or year, and decide what gets resourced. Use for annual and quarterly planning, and when priorities have multiplied.",
+      "Objectives and key results for the period. Use for annual and quarterly planning.",
     body: `
 # Strategic planning and OKRs
 
@@ -107,7 +107,7 @@ list.
     slug: "gtm-planning",
     emoji: "🎬",
     description:
-      "Plan a launch: positioning, pricing, sequence, and how it will actually be sold. Use for new products, services, or entering a new market.",
+      "Positioning, pricing, sequence and sales motion. Use for launches and new markets.",
     body: `
 # Go-to-market planning
 
@@ -154,7 +154,7 @@ both now, while it is still cheap to be honest.
     slug: "board-comms",
     emoji: "📄",
     description:
-      "Write board decks, investor updates and shareholder communications. Use for any regular update to people who have money or governance in the business.",
+      "Board decks and investor updates. Use for any update to people with money in it.",
     body: `
 # Board and investor communications
 
@@ -194,7 +194,7 @@ actually happened? If not, the number that would embarrass them is the one to st
     slug: "ma-evaluation",
     emoji: "🤝",
     description:
-      "Evaluate an acquisition, merger or major partnership — financial, strategic and operational fit. Use before serious conversations, not after.",
+      "Strategic, financial and operational fit. Use before serious acquisition talks.",
     body: `
 # M&A and partnership evaluation
 
@@ -239,7 +239,7 @@ ${NOT_ADVICE}
     slug: "budget-forecasting",
     emoji: "📈",
     description:
-      "Build a revenue and expense forecast, and check it against what actually happened. Use for annual budgets, re-forecasts, and when the numbers stopped matching the plan.",
+      "Revenue and expense forecast, plus variance. Use for budgets and re-forecasts.",
     body: `
 # Budget forecasting
 
@@ -282,7 +282,7 @@ ${NOT_ADVICE}
     slug: "pl-analysis",
     emoji: "🧾",
     description:
-      "Read a P&L and say what it actually means — margin, cost drivers, trends worth acting on. Use monthly, or when profit and revenue have stopped moving together.",
+      "What the P&L actually means: margin, cost drivers, trends. Use monthly.",
     body: `
 # P&L analysis
 
@@ -320,7 +320,7 @@ ${NOT_ADVICE}
     slug: "cash-flow",
     emoji: "💧",
     description:
-      "Build a rolling 13-week cash flow and flag gaps before they arrive. Use when cash is tight, growth is fast, or payment terms are long.",
+      "Rolling 13-week cash model with gap dates. Use when cash is tight or growth fast.",
     body: `
 # Cash flow modelling
 
@@ -364,7 +364,7 @@ ${NOT_ADVICE}
     slug: "scenario-planning",
     emoji: "🔀",
     description:
-      "Model what a major decision does to the numbers and the operation — hiring, pricing, expansion, downturn. Use before committing to anything expensive.",
+      "Model a big decision three ways. Use before hiring, pricing or expanding.",
     body: `
 # Scenario planning
 
@@ -408,7 +408,7 @@ ${NOT_ADVICE}
     slug: "unit-economics",
     emoji: "🧮",
     description:
-      "Work out what it costs to win a customer and what they are worth — CAC, LTV, payback, margin by line. Use to find which parts of the business actually make money.",
+      "CAC, LTV, payback, margin by line. Use to find what actually makes money.",
     body: `
 # Unit economics
 
@@ -453,7 +453,7 @@ ${NOT_ADVICE}
     slug: "vendor-contract-review",
     emoji: "📋",
     description:
-      "Review a vendor contract for unfavourable terms, auto-renewals and negotiation room. Use before signing anything, and before any renewal date.",
+      "Unfavourable terms, auto-renewals, leverage. Use before signing or renewing.",
     body: `
 # Vendor contract review
 
@@ -491,7 +491,7 @@ ${NOT_ADVICE}
     slug: "kpi-dashboard",
     emoji: "📟",
     description:
-      "Choose the handful of metrics a business should actually watch, and where the data comes from. Use when reporting is either absent or overwhelming.",
+      "Pick the five to seven metrics worth watching. Use when reporting overwhelms.",
     body: `
 # KPI dashboard design
 
@@ -536,7 +536,7 @@ the ritual with the dashboard or it will not survive its first busy month.
     slug: "ops-audit",
     emoji: "🔧",
     description:
-      "Review how the business actually runs and find what is redundant, fragile or missing. Use when things feel busy but slow, or before scaling anything.",
+      "Find what's redundant, fragile or missing. Use when things feel busy but slow.",
     body: `
 # Operations audit
 
@@ -578,7 +578,7 @@ and three things to do first with who does them.
     slug: "capacity-planning",
     emoji: "⚖️",
     description:
-      "Map what the team can actually deliver against what is coming, and flag hires or overload early. Use when the pipeline is growing or people are stretched.",
+      "Team capacity against pipeline. Use when stretched or weighing a hire.",
     body: `
 # Capacity planning
 
@@ -617,7 +617,7 @@ date by which the decision must be made for it to help.
     slug: "qc-frameworks",
     emoji: "✅",
     description:
-      "Build the quality check for a deliverable or service so consistency doesn't depend on who does it. Use when output varies, or before delegating work.",
+      "Make quality repeatable without you checking. Use before delegating work.",
     body: `
 # Quality control frameworks
 
@@ -658,7 +658,7 @@ Add it. A framework that does not grow from its own failures is a document rathe
     slug: "crisis-ops",
     emoji: "🚨",
     description:
-      "Work through an operational emergency — a client blow-up, a failure, a reputational problem. Use when something has gone badly wrong and needs handling now.",
+      "Work through an operational emergency. Use when something has gone badly wrong.",
     body: `
 # Crisis operations
 

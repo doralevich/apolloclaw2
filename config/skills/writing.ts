@@ -40,7 +40,7 @@ export const WRITING_SKILLS: AgentSkill[] = [
     slug: "email-writing",
     emoji: "✉️",
     description:
-      "Draft an email in the owner's voice — proposals, follow-ups, introductions, difficult conversations. Use when the deliverable is an email specifically.",
+      "Draft an email in the owner's voice. Use when the deliverable is an email.",
     body: `
 # Email writing
 
@@ -84,7 +84,7 @@ ${DRAFT_RULE}
     slug: "business-writing",
     emoji: "📝",
     description:
-      "Write memos, letters, executive summaries and formal correspondence. Use for internal or formal documents — not emails, not public content.",
+      "Memos, letters, executive summaries. Use for internal or formal documents.",
     body: `
 # Business writing
 
@@ -126,7 +126,7 @@ ${DRAFT_RULE}
     slug: "content-writing",
     emoji: "🌐",
     description:
-      "Write public-facing content — blog posts, service pages, landing copy, case studies. Use when it's going on the website or out to an audience.",
+      "Blog posts, service pages, landing copy. Use when it's going on the website.",
     body: `
 # Content writing
 
@@ -172,7 +172,7 @@ ${DRAFT_RULE}
     slug: "thought-leadership",
     emoji: "💡",
     description:
-      "Build the owner's authority in their field — LinkedIn articles, op-eds, positioning, podcast angles. Use when the goal is credibility rather than a sale.",
+      "Authority positioning and articles. Use when the goal is credibility, not a sale.",
     body: `
 # Thought leadership
 
@@ -219,7 +219,7 @@ ${DRAFT_RULE}
     slug: "newsletter-writing",
     emoji: "📬",
     description:
-      "Research, write and format a recurring newsletter. Use for the regular send to a list, not one-off emails or blog posts.",
+      "The recurring send to a list. Use for newsletters, not one-off emails.",
     body: `
 # Newsletter writing
 
@@ -263,7 +263,7 @@ ${DRAFT_RULE}
     slug: "speech-writing",
     emoji: "🎤",
     description:
-      "Write for spoken delivery — keynotes, presentations, panel points, toasts. Use when it will be heard rather than read.",
+      "Keynotes, panels, talking points. Use when it will be heard rather than read.",
     body: `
 # Speech writing
 
@@ -308,7 +308,7 @@ ${DRAFT_RULE}
     slug: "document-formatting",
     emoji: "📐",
     description:
-      "Apply consistent structure and brand standards to an existing document. Use when the content is written and it needs to look right.",
+      "Apply structure and brand standards. Use when written content needs to look right.",
     body: `
 # Document formatting
 

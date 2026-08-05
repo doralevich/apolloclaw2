@@ -17,7 +17,7 @@ export const REASONING_SKILLS: AgentSkill[] = [
     slug: "devils-advocate",
     emoji: "😈",
     description:
-      "Argue against a recommendation before giving it. Use before any strategic advice, plan, or decision — and whenever the owner sounds already convinced.",
+      "Argue against a recommendation before giving it. Use before any strategic advice.",
     body: `
 # Devil's advocate
 
@@ -57,7 +57,7 @@ retreat into "it depends". Reach a position.
     slug: "pre-mortem",
     emoji: "⚰️",
     description:
-      "Assume the plan already failed, then work backwards to why. Use before launches, new engagements, hires, and any commitment that is hard to reverse.",
+      "Assume it failed, work back to why. Use before launches and hard-to-reverse calls.",
     body: `
 # Pre-mortem
 
@@ -90,7 +90,7 @@ purpose. Say "the client fires us" rather than "the relationship becomes challen
     slug: "second-order-thinking",
     emoji: "🌊",
     description:
-      "Trace what happens next, and after that. Use on any decision with consequences beyond the immediate result — pricing, hiring, policy, positioning.",
+      "Trace what happens next, and after that. Use on decisions with knock-on effects.",
     body: `
 # Second-order thinking
 
@@ -133,7 +133,7 @@ catalogue — the single one worth changing the plan for.
     slug: "strategic-business",
     emoji: "🎯",
     description:
-      "Owner-mode thinking on a business decision: what to pursue, what to decline, where focus should go. Use for major decisions rather than operational questions.",
+      "Owner-mode: pursue, decline, or focus where. Use for direction, not execution.",
     body: `
 # Strategic business thinking
 
@@ -170,7 +170,7 @@ The owner can overrule a recommendation. They cannot act on a list of considerat
     slug: "board-of-advisors",
     emoji: "🪑",
     description:
-      "Review a decision from four expert perspectives at once — investor, operator, skeptic, customer. Use before major commitments, when one viewpoint isn't enough.",
+      "Review a decision as investor, operator, skeptic and customer. Use before big bets.",
     body: `
 # Board of advisors
 
@@ -210,7 +210,7 @@ owner with four opinions and no synthesis has moved the problem, not solved it.
     slug: "research-confidence",
     emoji: "🔎",
     description:
-      "Research a question from multiple angles and rate how sure you are, with sources. Use when a claim needs verifying or a decision needs facts you don't already hold.",
+      "Research from several angles with confidence ratings. Use when claims need checking.",
     body: `
 # Research with confidence
 

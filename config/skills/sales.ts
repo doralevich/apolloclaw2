@@ -26,7 +26,7 @@ export const SALES_SKILLS: AgentSkill[] = [
     slug: "proposals-sows",
     emoji: "📑",
     description:
-      "Draft a proposal or statement of work — scope, deliverables, timeline, price, terms. Use when someone has asked what it would take and what it would cost.",
+      "Scope, deliverables, timeline, price, terms. Use when asked what it would take.",
     body: `
 # Proposals and SOWs
 
@@ -67,7 +67,7 @@ ${OWNER_DECIDES}
     slug: "pricing-strategy",
     emoji: "🏷️",
     description:
-      "Work out what to charge and how to package it — anchoring, structure, profitability. Use before a proposal goes out, or when reviewing rates.",
+      "What to charge and how to package it. Use before a proposal or a rate review.",
     body: `
 # Pricing strategy
 
@@ -113,7 +113,7 @@ ${OWNER_DECIDES}
     slug: "objection-handling",
     emoji: "🛡️",
     description:
-      "Prepare for price pushback, scope resistance and timing objections. Use before a sales conversation, or when a deal has stalled on a specific concern.",
+      "Find the real objection and answer it. Use before a sales call or stalled deal.",
     body: `
 # Objection handling
 
@@ -158,7 +158,7 @@ is worth more than a bad-fit client. Say so when that is the read.
     slug: "negotiation",
     emoji: "⚔️",
     description:
-      "Prepare for a negotiation — scope creep, vendor terms, late payment, partnership deals. Use after the yes, when terms are being pushed.",
+      "Protect margin after the yes. Use for scope creep, terms and late payment.",
     body: `
 # Negotiation
 
@@ -203,7 +203,7 @@ ${OWNER_DECIDES}
     slug: "cold-outreach",
     emoji: "🎯",
     description:
-      "Build a researched multi-touch outreach sequence for a prospect list. Use for new business development, not for warm or existing contacts.",
+      "Researched multi-touch sequence. Use for new prospects, not warm contacts.",
     body: `
 # Cold outreach sequences
 
@@ -253,7 +253,7 @@ ${OWNER_DECIDES}
     slug: "case-studies",
     emoji: "🏆",
     description:
-      "Turn a finished engagement into a case study — problem, approach, result, quote. Use after delivering work worth showing.",
+      "Problem, approach, result, quote. Use after delivering work worth showing.",
     body: `
 # Case study development
 
@@ -295,7 +295,7 @@ the relationship is good — especially then.
     slug: "partnership-dev",
     emoji: "🔗",
     description:
-      "Evaluate and structure a referral or joint-venture relationship. Use when considering a partnership, or when an existing one isn't producing.",
+      "Qualify and structure a referral or JV. Use before agreeing a partnership.",
     body: `
 # Partnership development
 
