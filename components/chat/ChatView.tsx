@@ -192,21 +192,9 @@ export function ChatView({
               {greeting && (
                 <>
                   <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">
-                    {/* "Good morning," in the accent, the name in ink — the mockup's one piece of
-                        colour in the type, and the thing that stops the empty state reading as a
-                        settings page. Split on the first comma because that is where every
-                        greeting in config/greetings turns from address to name; no comma means no
-                        split rather than a guess at where the clause ends. */}
-                    {(() => {
-                      const i = greeting.headline.indexOf(",");
-                      if (i < 0) return greeting.headline;
-                      return (
-                        <>
-                          <span className="text-primary">{greeting.headline.slice(0, i + 1)}</span>
-                          {greeting.headline.slice(i + 1)}
-                        </>
-                      );
-                    })()}
+                    {/* Was split, with the address in the accent — that was the loudest part of
+                        the violet pass and it went with it. Weight carries the line instead. */}
+                    {greeting.headline}
                   </h1>
                   <p className="text-lg text-foreground/75">{greeting.subline}</p>
                 </>
