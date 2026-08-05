@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Loader2, Plus } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Mail, PenLine, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
@@ -24,6 +25,9 @@ import { useChatAttachments } from "./useChatAttachments";
 // Heuristic: does a send failure look like the agent's AI budget ran dry? The gateway's
 // wording isn't under our control, so match the family of phrasings rather than one string.
 // A false positive still shows a helpful card with the real path to fixing most outages.
+// Chip id -> icon. Lives here rather than in config/shortcuts so that file stays JSX-free.
+const CHIP_ICONS = { mail: Mail, calendar: CalendarDays, file: FileText, pen: PenLine } as const;
+
 function isOutOfCreditsError(message: string): boolean {
   return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
 }
@@ -95,6 +99,10 @@ export function ChatView({
   );
   const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
+  // A chip the customer clicked, and how many have been clicked. The counter is what makes
+  // picking the SAME chip twice work — see the note in ChatComposer.
+  const [picked, setPicked] = useState<{ text: string; n: number } | null>(null);
+
   const userInitial = (userEmail?.[0] || "").toUpperCase();
   // Null rather than a placeholder: an unnamed agent should stay out of the greeting entirely.
   const greetName = agentName?.trim() || null;
@@ -103,10 +111,6 @@ export function ChatView({
   // forever (config/greetings.ts). Chosen in an effect and not during render because the pick
   // is random: doing it inline would make the server and the browser disagree on the text.
   // Null until then, which is why the block below reserves its height.
-  // A chip the customer clicked, and how many times one has been clicked. The counter is what
-  // makes picking the SAME chip twice work — see the note in ChatComposer.
-  const [picked, setPicked] = useState<{ text: string; n: number } | null>(null);
-
   const [greeting, setGreeting] = useState<Greeting | null>(null);
   useEffect(() => {
     if (!showWelcome) return;
@@ -127,15 +131,20 @@ export function ChatView({
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>
+        <div className="flex shrink-0 items-center gap-1">
+        {/* Light/dark at the top of the screen, where you are when you decide you want it. The
+            three-way preference (including "follow my device") stays in Settings. */}
+        <ThemeToggle />
         <button
           type="button"
           onClick={startNewChat}
-          aria-label="New chat"
           title="New chat"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
+          New Chat
         </button>
+        </div>
       </header>
 
       {/* Everything below the header is a row: the conversation, and — only on the empty state —
@@ -147,7 +156,13 @@ export function ChatView({
           Gone once a conversation starts. A 340px rail beside a live transcript is 340px of
           reading width spent on something nobody is looking at. */}
       <div className="flex min-h-0 flex-1">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+          {showWelcome && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-primary/[0.06] to-transparent"
+            />
+          )}
       {/* Top: scrolling transcript when there are messages; the centered welcome panel when
           empty (justify-end seats it just above the composer). */}
       <div
@@ -156,7 +171,7 @@ export function ChatView({
         className={cn(
           "min-h-0",
           showWelcome
-            ? "flex flex-1 flex-col items-center justify-end gap-6 overflow-y-auto px-4 pb-6 pt-5"
+            ? "flex shrink-0 flex-col items-center gap-5 px-4 pb-2 pt-[9vh]"
             : "flex-1 overflow-y-auto overflow-x-hidden"
         )}
       >
@@ -234,16 +249,20 @@ export function ChatView({
               than sending: several want a name or a document swapped in first, and firing one off
               unedited produces exactly the weak first answer this is meant to prevent. */}
           <div className="flex flex-wrap items-center justify-center gap-2">
-            {CHAT_CHIPS.map((chip) => (
-              <button
-                key={chip.id}
-                type="button"
-                onClick={() => setPicked((p) => ({ text: chip.prompt, n: (p?.n ?? 0) + 1 }))}
-                className="inline-flex items-center gap-2 rounded-xl border bg-card px-3.5 py-2.5 text-sm text-foreground transition-colors hover:border-foreground/25 hover:bg-secondary/60"
-              >
-                {chip.label}
-              </button>
-            ))}
+            {CHAT_CHIPS.map((chip) => {
+              const Icon = CHIP_ICONS[chip.icon];
+              return (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setPicked((p) => ({ text: chip.prompt, n: (p?.n ?? 0) + 1 }))}
+                  className="inline-flex items-center gap-2 rounded-xl border bg-card px-3.5 py-2.5 text-sm text-foreground shadow-sm transition-colors hover:border-foreground/25 hover:bg-secondary/60"
+                >
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  {chip.label}
+                </button>
+              );
+            })}
           </div>
           <p className="text-sm text-muted-foreground">
             The more context you give, the better your agent can help.
@@ -255,7 +274,7 @@ export function ChatView({
         {/* Hidden below lg — a 340px rail on a phone would be the whole screen. Mobile gets the
             one-line link under the greeting instead, so Connections is still reachable from here. */}
         {showWelcome && (
-          <div className="hidden shrink-0 overflow-y-auto p-4 lg:block">
+          <div className="hidden shrink-0 p-4 pl-0 lg:block">
             <IntegrationsRail agentId={agentId} />
           </div>
         )}

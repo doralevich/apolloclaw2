@@ -265,20 +265,22 @@ export interface ChatChip {
   id: string;
   label: string;
   prompt: string;
+  /** Lucide icon name, resolved in ChatView. Kept as a string so this file stays free of JSX. */
+  icon: "mail" | "calendar" | "file" | "pen";
 }
 
-const CHAT_CHIP_LABELS: Array<[string, string]> = [
-  ["triage", "Summarize my emails"],
-  ["week-ahead", "What's on my calendar?"],
-  ["summarise", "Find recent documents"],
-  ["reply", "Draft a response"],
+const CHAT_CHIP_LABELS: Array<[string, string, ChatChip["icon"]]> = [
+  ["triage", "Summarize my emails", "mail"],
+  ["week-ahead", "What's on my calendar?", "calendar"],
+  ["summarise", "Find recent documents", "file"],
+  ["reply", "Draft a response", "pen"],
 ];
 
-export const CHAT_CHIPS: ChatChip[] = CHAT_CHIP_LABELS.map(([id, label]) => {
+export const CHAT_CHIPS: ChatChip[] = CHAT_CHIP_LABELS.map(([id, label, icon]) => {
   const found = SHORTCUT_GROUPS.flatMap((g) => g.shortcuts).find((s) => s.id === id);
   // Same reasoning as FIRST_MOVES: throwing at import beats a chat page with a blank chip on it.
   if (!found) throw new Error(`CHAT_CHIP_LABELS names a shortcut that doesn't exist: ${id}`);
-  return { id, label, prompt: found.prompt };
+  return { id, label, prompt: found.prompt, icon };
 });
 
 /** Swap `{agent}` and `{company}` for the real thing. Falls back to wording that still reads

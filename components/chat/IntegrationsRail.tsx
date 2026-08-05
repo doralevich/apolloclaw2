@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ChevronDown, Plus, Search, Settings2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Search, Settings2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { CHANNELS_ENABLED } from "@/config/channels";
@@ -146,8 +146,8 @@ export function IntegrationsRail({ agentId }: { agentId: string }) {
   }, [query, groups]);
 
   return (
-    <aside className="w-full shrink-0 rounded-2xl border bg-card/60 lg:w-[340px]">
-      <div className="flex items-center justify-between gap-2 px-4 pt-4">
+    <aside className="flex h-full w-full shrink-0 flex-col rounded-2xl border bg-card/60 lg:w-[340px]">
+      <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-4">
         <h2 className="text-lg font-semibold tracking-tight">Integrations</h2>
         <button
           type="button"
@@ -162,7 +162,7 @@ export function IntegrationsRail({ agentId }: { agentId: string }) {
 
       {hidden ? null : (
         <>
-          <div className="relative px-4 pt-3">
+          <div className="relative shrink-0 px-4 pt-3">
             <Search className="pointer-events-none absolute left-7 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="search"
@@ -174,7 +174,7 @@ export function IntegrationsRail({ agentId }: { agentId: string }) {
             />
           </div>
 
-          <div className="max-h-[60vh] space-y-4 overflow-y-auto px-4 pb-4 pt-4">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 pb-4 pt-4">
             {results ? (
               results.length === 0 ? (
                 <p className="py-6 text-center text-sm text-muted-foreground">
@@ -211,7 +211,7 @@ export function IntegrationsRail({ agentId }: { agentId: string }) {
             )}
           </div>
 
-          <div className="border-t px-4 py-3">
+          <div className="shrink-0 border-t px-4 py-3">
             <Link
               href="/dashboard/integrations"
               className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -244,7 +244,13 @@ function Group({
       <div className="flex items-baseline justify-between gap-2 pb-2">
         <h3 className="text-sm font-semibold">{group.title}</h3>
         {countReady && (
-          <span className="text-[11px] text-muted-foreground">{count} connected</span>
+          <Link
+            href={group.href}
+            className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {count} connected
+            <ChevronRight className="h-3 w-3" />
+          </Link>
         )}
       </div>
       <div className="grid grid-cols-4 gap-2">
@@ -258,10 +264,10 @@ function Group({
         ))}
         <Link
           href={group.href}
-          className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed px-1 py-2.5 text-center text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground"
+          className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-1 text-center text-muted-foreground transition-colors hover:border-foreground/25 hover:text-foreground"
         >
-          <Plus className="h-5 w-5" />
-          <span className="text-[10px] leading-tight">Add more</span>
+          <Plus className="h-6 w-6" />
+          <span className="text-[11px] leading-tight">Add more</span>
         </Link>
       </div>
     </div>
@@ -278,7 +284,7 @@ function Tile({
   connected: boolean;
 }) {
   const className = cn(
-    "group relative flex flex-col items-center gap-1 rounded-xl border bg-card px-1 py-2.5 text-center transition-colors hover:border-foreground/25",
+    "group relative flex aspect-square flex-col items-center justify-center gap-1.5 rounded-xl border bg-card px-1 text-center transition-colors hover:border-foreground/25 hover:bg-secondary/40",
     connected && "border-emerald-200 dark:border-emerald-900/60"
   );
 
@@ -290,9 +296,9 @@ function Tile({
         alt=""
         loading="lazy"
         decoding="async"
-        className="h-5 w-5 shrink-0 object-contain"
+        className="h-7 w-7 shrink-0 object-contain"
       />
-      <span className="w-full truncate text-[10px] leading-tight">{tile.name}</span>
+      <span className="w-full truncate px-0.5 text-[11px] leading-tight">{tile.name}</span>
       {/* A dot, not the word "Connected": at four tiles across there is no room for the word, and
           the dot is the thing anyone is actually scanning for. */}
       {connected && (
