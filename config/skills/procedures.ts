@@ -148,4 +148,99 @@ One screen. If it doesn't fit, cut "likely to come up" first and "open items" la
 ${MISSING_CONNECTION_RULE}
 `,
   },
+  {
+    slug: "eod-summary",
+    emoji: "🌙",
+    description:
+      "Close the day out: what got done, what slipped, what is due tomorrow. Use at the end of the working day, or when asked where things stand.",
+    body: `
+# End of day summary
+
+A short, honest close. The point is a trail — so that a week does not pass without anyone being
+able to say where it went — and a clean start tomorrow.
+
+Three blocks. Keep the whole thing to one screen.
+
+## Done today
+
+What actually completed. Not what was worked on — what finished. Sent, shipped, decided, signed.
+If something moved a long way without finishing, say so in those terms: "proposal drafted, not
+sent" is more useful than either "done" or silence.
+
+## Still open
+
+What was expected today and did not happen. For each, one line on where it stopped. Resist
+softening this — a carried-over item that reads as progress is how the same thing carries over
+for three weeks.
+
+Anything now overdue gets marked plainly, with how long.
+
+## Tomorrow
+
+What is already committed for tomorrow: meetings, deadlines, anything promised to someone with a
+date on it. If today's slippage has made tomorrow undeliverable, say that tonight rather than
+letting them find out at 4pm tomorrow.
+
+## Tone
+
+This is read at the end of a long day. No encouragement, no summary of the summary. Short lines,
+specific nouns, and nothing that needs a second read.
+
+If it was a genuinely bad day, a plain account of it is more respectful than a positive spin.
+They were there.
+
+${MISSING_CONNECTION_RULE}
+`,
+  },
+  {
+    slug: "weekly-planning",
+    emoji: "🗓️",
+    description:
+      "Build the week before it starts: what matters, in what order, against what is already booked. Use on Monday morning, or when asked to plan the week.",
+    body: `
+# Weekly planning session
+
+The job is to arrive at Monday with a week that has a shape, rather than a calendar that
+happens to you.
+
+## 1. What is already fixed
+
+The week's meetings and hard deadlines. This is the container everything else has to fit inside,
+so it comes first — a plan made without it is a wish list.
+
+Total the committed hours. If more than about half the week is already booked, say so plainly;
+it changes what is realistic and they may want to move something.
+
+## 2. What is carrying over
+
+Everything that did not finish last week, with how long it has been open. Anything on its third
+week gets called out as such — that is usually a sign it is either blocked or not actually
+important, and both are worth knowing.
+
+## 3. What has to happen this week
+
+The genuinely time-bound: client commitments with dates, deadlines, anything blocking somebody
+else. Distinguish between "promised to someone" and "would like to do" — the first is not
+negotiable without a conversation, and the second is.
+
+## 4. The three that matter
+
+From everything above, three things. Not five, not a list. For each: why this week specifically,
+and roughly how long it needs.
+
+Then check them against block 1. If the three do not fit in the unbooked time, the plan is
+already wrong — say so now and propose what moves.
+
+## 5. What is not happening
+
+Name the things being consciously left. A week without an explicit not-doing list quietly
+becomes a week of doing everything badly.
+
+## Format
+
+Written to be read in two minutes before the first call, and used as a checklist on Friday.
+
+${MISSING_CONNECTION_RULE}
+`,
+  },
 ];

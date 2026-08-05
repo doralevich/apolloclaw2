@@ -21,7 +21,7 @@ import { isDue, localNow } from "@/lib/schedule-timing";
 // says so in last_status. Connect Telegram and it starts working.
 
 /** Skills that make sense on a clock. The rest are things you ask for, not things that arrive. */
-export const SCHEDULABLE = new Set(["daily-brief"]);
+export const SCHEDULABLE = new Set(["daily-brief", "eod-summary", "weekly-planning"]);
 
 export interface ScheduleRow {
   id: number;

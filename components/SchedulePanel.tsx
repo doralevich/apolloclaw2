@@ -24,14 +24,29 @@ type Schedule = {
   lastStatus: string | null;
 };
 
-// Only the daily brief for now. The other clock-shaped skills from the catalogue — EOD summary,
-// weekly planning — need writing before they can be offered, and an option that does nothing is
-// worse than an absent one.
+// Each carries its own defaults, because the sensible time is part of what the thing IS. A
+// morning brief at 5pm and an end-of-day summary at 8am are both just noise.
 const SCHEDULABLE = [
   {
     skill: "daily-brief",
     label: "Morning brief",
     blurb: "Today's schedule, what needs a reply, and what moved yesterday.",
+    defaultHour: 8,
+    defaultDays: "weekdays",
+  },
+  {
+    skill: "eod-summary",
+    label: "End of day summary",
+    blurb: "What got done, what slipped, and what's due tomorrow.",
+    defaultHour: 17,
+    defaultDays: "weekdays",
+  },
+  {
+    skill: "weekly-planning",
+    label: "Weekly planning",
+    blurb: "The week ahead: what's fixed, what's carrying over, and the three that matter.",
+    defaultHour: 8,
+    defaultDays: "monday",
   },
 ] as const;
 
@@ -101,8 +116,8 @@ function ScheduleRow({
   // between changing a dropdown and the reload landing. Deriving rather than copying into state
   // means the saved values appear as soon as they load, with no effect racing to sync them.
   const [pending, setPending] = useState<{ hour?: number; days?: string }>({});
-  const hour = pending.hour ?? current?.hour ?? 8;
-  const days = pending.days ?? current?.days ?? "weekdays";
+  const hour = pending.hour ?? current?.hour ?? def.defaultHour;
+  const days = pending.days ?? current?.days ?? def.defaultDays;
 
   const save = (next: { hour?: number; days?: string; enabled?: boolean }) => {
     setBusy(true);
