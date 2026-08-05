@@ -21,7 +21,7 @@ export const MENTAL_MODEL_SKILLS: AgentSkill[] = [
     slug: "buffett-model",
     emoji: "🎩",
     description:
-      "Apply Buffett's thinking to a decision: circle of competence, margin of safety, inversion, the ten-year test. Use for investments, commitments, and anything hard to undo.",
+      "Circle of competence, margin of safety, inversion. Use for hard-to-undo commitments.",
     body: `
 # Think like Warren Buffett
 
@@ -63,7 +63,7 @@ good one is far smaller than the cost of taking a bad one you did not understand
     slug: "musk-model",
     emoji: "🚀",
     description:
-      "Apply first-principles and 10x framing to a problem. Use when the conventional approach is expensive, slow, or inherited without being examined.",
+      "First principles and 10x framing. Use when the conventional answer looks expensive.",
     body: `
 # Think like Elon Musk
 
@@ -102,7 +102,7 @@ it exists before overriding it.
     slug: "bezos-model",
     emoji: "📦",
     description:
-      "Apply Bezos's decision tools: working backwards, one-way versus two-way doors, regret minimisation. Use for launches, big bets, and decisions that are stalling.",
+      "Working backwards, one-way vs two-way doors. Use for launches and stalled decisions.",
     body: `
 # Think like Jeff Bezos
 
@@ -143,7 +143,7 @@ the specific behaviour that shows it.
     slug: "jobs-model",
     emoji: "🍎",
     description:
-      "Apply Jobs's thinking: ruthless simplicity, the power of no, obsessive focus on the user's experience. Use when something has grown complicated or unfocused.",
+      "Ruthless simplicity and the power of no. Use when something has grown complicated.",
     body: `
 # Think like Steve Jobs
 
@@ -186,7 +186,7 @@ have it, it is just stubbornness with better branding.
     slug: "munger-model",
     emoji: "🧠",
     description:
-      "Apply Munger's thinking: multiple mental models at once, incentive analysis, and looking for compounding forces. Use for puzzling situations and behaviour that seems irrational.",
+      "Incentives first, several models at once. Use when behaviour looks irrational.",
     body: `
 # Think like Charlie Munger
 
@@ -226,7 +226,7 @@ how bad decisions acquire false support.
     slug: "dalio-model",
     emoji: "⚙️",
     description:
-      "Apply Dalio's thinking: principles over cases, radical honesty, weighting opinions by track record. Use for recurring problems and disagreements between people.",
+      "Principles over cases, radical honesty. Use for recurring problems and disputes.",
     body: `
 # Think like Ray Dalio
 
@@ -267,7 +267,7 @@ for everyone and eventually surfaces anyway.
     slug: "thiel-model",
     emoji: "♟️",
     description:
-      "Apply Thiel's thinking: the contrarian question, monopoly versus competition, definite plans over vague optimism. Use for positioning and market strategy.",
+      "Contrarian question, monopoly over competition. Use for positioning and strategy.",
     body: `
 # Think like Peter Thiel
 
@@ -310,7 +310,7 @@ but "what do they believe that the evidence does not actually support?"
     slug: "grove-model",
     emoji: "🏭",
     description:
-      "Apply Grove's thinking: strategic inflection points, output-focused management, productive paranoia. Use when the ground seems to be shifting under a business.",
+      "Inflection points and productive paranoia. Use when the ground is shifting.",
     body: `
 # Think like Andy Grove
 
@@ -351,7 +351,7 @@ Ask: **if someone took over tomorrow with no loyalty to how we got here, what wo
     slug: "first-principles",
     emoji: "🔬",
     description:
-      "Strip a problem to what is actually true and rebuild from there. Use when the standard answer is expensive, inherited, or nobody can explain why it is the standard.",
+      "Strip to what's true and rebuild. Use when the standard answer is inherited.",
     body: `
 # First principles analysis
 
@@ -383,7 +383,7 @@ cannot be answered, stop and go and learn rather than proceeding.
     slug: "pareto-audit",
     emoji: "📊",
     description:
-      "Find the 20% producing 80% of results, and what to do about the rest. Use on client lists, activities, offerings, and where time actually goes.",
+      "Find the 20% driving 80%, and what to do about the rest. Use on clients and time.",
     body: `
 # 80/20 audit
 
@@ -421,7 +421,7 @@ project that opened a market, ranks badly on the obvious measure. Check before c
     slug: "zero-based",
     emoji: "🔄",
     description:
-      "Ask whether you would start this today, knowing what you now know. Use for commitments, subscriptions, clients, roles, and anything continuing on inertia.",
+      "Would you start this today? Use on anything continuing out of inertia.",
     body: `
 # Zero-based thinking
 
@@ -462,7 +462,7 @@ is a ranked list of what to change, not a bonfire.
     slug: "think-in-bets",
     emoji: "🎲",
     description:
-      "Frame a decision as a bet with odds and a payout, and judge the decision separately from the outcome. Use for uncertain calls and post-mortems on things that went wrong.",
+      "Odds, payout, decision vs outcome quality. Use for uncertain calls and reviews.",
     body: `
 # Think in bets
 
@@ -500,7 +500,7 @@ obvious in hindsight.
     slug: "jtbd",
     emoji: "🔧",
     description:
-      "Work out what job a customer is really hiring a product or service to do. Use for positioning, pricing, product decisions, and understanding why deals are lost.",
+      "What job is this really hired to do? Use for positioning, pricing, lost deals.",
     body: `
 # Jobs to be done
 
@@ -539,7 +539,7 @@ makes at least one current business decision look wrong.
     slug: "working-backwards",
     emoji: "⏪",
     description:
-      "Start from the finished outcome and work back to the first move. Use for launches, new offerings, and any project where the plan starts from what is easy to build.",
+      "Start from the finished outcome, work back. Use for launches and new offerings.",
     body: `
 # Working backwards
 
@@ -585,7 +585,7 @@ Notice it and decide, rather than quietly editing the page.
     slug: "blue-ocean",
     emoji: "🌊",
     description:
-      "Map where everyone competes and find the space nobody is contesting. Use for positioning, differentiation, and when competing on price feels inevitable.",
+      "Map where everyone competes, find what's uncontested. Use for differentiation.",
     body: `
 # Blue ocean analysis
 
@@ -625,7 +625,7 @@ marketing copy.
     slug: "mckinsey-pyramid",
     emoji: "🔺",
     description:
-      "Structure an argument conclusion-first, then reasons, then evidence. Use for proposals, board updates, recommendations, and anything that must land with a busy reader.",
+      "Conclusion first, then reasons, then evidence. Use for proposals and updates.",
     body: `
 # The McKinsey pyramid
 
@@ -667,7 +667,7 @@ a twist, and business readers do not want twists.
     slug: "five-whys",
     emoji: "❓",
     description:
-      "Drill from a symptom to its root cause by asking why five times. Use for failures, recurring problems, and anything that keeps coming back after being fixed.",
+      "Drill from symptom to root cause. Use for failures and recurring problems.",
     body: `
 # The five whys
 

@@ -22,7 +22,7 @@ export const PROCEDURE_SKILLS: AgentSkill[] = [
     slug: "daily-brief",
     emoji: "☀️",
     description:
-      "Assemble the owner's morning brief: today's schedule, what needs a reply, what moved yesterday. Use when asked for a brief, a rundown, or what the day looks like.",
+      "Today's schedule, replies needed, what moved. Use for a morning brief or day rundown.",
     body: `
 # Daily brief
 
@@ -62,7 +62,7 @@ ${MISSING_CONNECTION_RULE}
     slug: "follow-up-chaser",
     emoji: "📌",
     description:
-      "Find sent messages that never got a reply and draft the nudges. Use when asked what's gone quiet, what needs chasing, or to follow up on something.",
+      "Find unanswered sent messages and draft nudges. Use for chasing what's gone quiet.",
     body: `
 # Follow-up chaser
 
@@ -107,7 +107,7 @@ ${MISSING_CONNECTION_RULE}
     slug: "meeting-prep",
     emoji: "🗂️",
     description:
-      "Prepare a one-page brief for an upcoming meeting: who's coming, the history, what's open. Use before a call, or when asked to prep for a meeting.",
+      "One-page brief for a meeting: who, history, open items. Use before a call.",
     body: `
 # Meeting prep
 
@@ -152,7 +152,7 @@ ${MISSING_CONNECTION_RULE}
     slug: "eod-summary",
     emoji: "🌙",
     description:
-      "Close the day out: what got done, what slipped, what is due tomorrow. Use at the end of the working day, or when asked where things stand.",
+      "Close the day: what finished, what slipped, what's due tomorrow. Use at end of day.",
     body: `
 # End of day summary
 
@@ -196,7 +196,7 @@ ${MISSING_CONNECTION_RULE}
     slug: "weekly-planning",
     emoji: "🗓️",
     description:
-      "Build the week before it starts: what matters, in what order, against what is already booked. Use on Monday morning, or when asked to plan the week.",
+      "Build the week: what's fixed, carrying over, the three that matter. Use Mondays.",
     body: `
 # Weekly planning session
 
