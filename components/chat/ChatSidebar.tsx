@@ -129,7 +129,7 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
                             // gets the space the rest of the time.
                             "pr-3 group-hover:pr-14",
                             activeSessionId === s.session_id
-                              ? "bg-secondary font-medium text-foreground"
+                              ? "bg-primary/10 font-medium text-primary"
                               : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                           )}
                         >

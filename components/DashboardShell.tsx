@@ -85,9 +85,11 @@ function NavLink({
       onClick={onNavigate}
       className={cn(
         "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        // Tinted with the accent rather than plain grey: on a rail of six identical rows, a grey
+        // pill behind grey text is not a selected state, it's a slightly different grey.
         active
-          ? "bg-secondary text-secondary-foreground"
-          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
       )}
     >
       <Icon className="h-4 w-4" />

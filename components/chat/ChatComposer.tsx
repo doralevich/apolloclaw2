@@ -126,7 +126,10 @@ export function ChatComposer({
   return (
     <div
       className={cn(
-        "mx-auto w-full rounded-[20px] border border-border/80 bg-card shadow-[0_8px_30px_rgb(15_23_42_/_0.06)] transition-[border-color,box-shadow] focus-within:border-ring/50 focus-within:shadow-[0_10px_34px_rgb(15_23_42_/_0.1)]",
+        // The composer is the one control on this screen, so it carries the accent rather than
+        // waiting to be focused before it looks like anything. Focus deepens it instead of
+        // introducing it.
+        "mx-auto w-full rounded-[20px] border border-primary/30 bg-card shadow-[0_10px_34px_-12px_var(--color-primary)] transition-[border-color,box-shadow] focus-within:border-primary/60 focus-within:shadow-[0_14px_40px_-12px_var(--color-primary)]",
         large ? "max-w-2xl" : "max-w-3xl"
       )}
     >
@@ -188,7 +191,9 @@ export function ChatComposer({
               disabled={!canSend}
               aria-label="Send message"
               title="Send message"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:opacity-30"
+              // The gradient, not the flat foreground: this is the button the whole screen is
+              // arranged around, and it was the same ink as the body text.
+              className="brand-gradient inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-primary-foreground shadow-sm shadow-primary/30 transition-shadow hover:shadow-md hover:shadow-primary/40 disabled:opacity-30 disabled:shadow-none"
             >
               {att.uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </button>

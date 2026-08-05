@@ -156,12 +156,17 @@
    red once the accent isn't — a black "Delete agent" reads as just another button,
    and this is the one place colour is carrying meaning rather than style. */
 .app-accent {
-  --color-primary: hsl(0 0% 9%);
+  --color-primary: hsl(262 83% 58%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-accent: hsl(0 0% 9%);
+  --color-accent: hsl(262 83% 58%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-ring: hsl(0 0% 20%);
+  --color-ring: hsl(262 83% 58%);
 
+  /* The two ends of the brand gradient. Named separately because a gradient can't live in a
+     colour token — utilities want one value — and because the same pair drives the button, the
+     avatar tile and the composer's glow, which must not drift apart. */
+  --brand-from: hsl(258 90% 62%);
+  --brand-to: hsl(268 84% 52%);
 }
 
 /* The surfaces underneath it.
@@ -187,16 +192,31 @@
   --color-muted-foreground: hsl(220 9% 42%);
   --color-muted-subtle: hsl(220 8% 56%);
 
-  --color-border: hsl(220 14% 90%);
-  --color-input: hsl(220 14% 90%);
+  /* Darker than the site's, deliberately. The dashboard is read all day at small sizes, and the
+     old foreground/muted pair was the other half of "not enough contrast" — text that is fine in
+     a hero is thin in a sidebar row. */
+  --color-foreground: hsl(222 24% 11%);
+  --color-border: hsl(220 14% 88%);
+  --color-input: hsl(220 14% 88%);
 }
 
+/* The brand gradient, for the few surfaces that carry it: the primary button, the send control,
+   the workspace tile. Deliberately NOT applied through --color-primary — everything else that
+   uses the accent (focus rings, connected states, active nav) wants the flat colour, and a
+   gradient behind small text is where this kind of thing usually goes wrong. */
+.brand-gradient {
+  background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+}
+
+/* Lifted against navy, the same adjustment the red needed: the light-mode violet goes muddy on
+   a dark surface, and a button nobody can find is worse than one in the wrong hue. */
 .app-accent.dark {
-  --color-primary: hsl(0 0% 97%);
-  --color-primary-foreground: hsl(215 58% 8%);
-  --color-accent: hsl(0 0% 97%);
-  --color-accent-foreground: hsl(215 58% 8%);
-  --color-ring: hsl(0 0% 75%);
+  --color-primary: hsl(258 90% 68%);
+  --color-accent: hsl(258 90% 68%);
+  --color-ring: hsl(258 90% 68%);
+
+  --brand-from: hsl(255 92% 70%);
+  --brand-to: hsl(266 86% 60%);
 }
 
 /* ─── The chat's background wash ──────────────────────────────────────────────

@@ -143,7 +143,7 @@ export function ChatView({
           type="button"
           onClick={startNewChat}
           title="New chat"
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          className="brand-gradient inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/25 transition-shadow hover:shadow-md hover:shadow-primary/30"
         >
           <Plus className="h-4 w-4" />
           New Chat
@@ -191,8 +191,22 @@ export function ChatView({
             <div className="flex min-h-[76px] flex-col items-center gap-2">
               {greeting && (
                 <>
-                  <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
-                    {greeting.headline}
+                  <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">
+                    {/* "Good morning," in the accent, the name in ink — the mockup's one piece of
+                        colour in the type, and the thing that stops the empty state reading as a
+                        settings page. Split on the first comma because that is where every
+                        greeting in config/greetings turns from address to name; no comma means no
+                        split rather than a guess at where the clause ends. */}
+                    {(() => {
+                      const i = greeting.headline.indexOf(",");
+                      if (i < 0) return greeting.headline;
+                      return (
+                        <>
+                          <span className="text-primary">{greeting.headline.slice(0, i + 1)}</span>
+                          {greeting.headline.slice(i + 1)}
+                        </>
+                      );
+                    })()}
                   </h1>
                   <p className="text-lg text-foreground/75">{greeting.subline}</p>
                 </>
