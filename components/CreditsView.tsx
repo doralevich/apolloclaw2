@@ -120,7 +120,7 @@ export function CreditsView() {
             No agents in this workspace yet. Create one to see its credits and usage here.
           </p>
           <Button asChild variant="outline" size="sm" className="mt-4">
-            <Link href="/dashboard">Go to Agents</Link>
+            <Link href="/dashboard/settings/agent">Go to My Agent</Link>
           </Button>
         </div>
       </div>

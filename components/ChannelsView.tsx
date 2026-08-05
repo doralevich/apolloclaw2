@@ -54,7 +54,7 @@ export function ChannelsView() {
           You don&apos;t have an agent yet. Create one and you can reach it from your own chat apps.
         </p>
         <Button asChild variant="outline" size="sm" className="mt-4">
-          <Link href="/dashboard">Go to My Agent</Link>
+          <Link href="/dashboard/settings/agent">Go to My Agent</Link>
         </Button>
       </div>
     );
@@ -65,8 +65,8 @@ export function ChannelsView() {
       {active.live_status !== "running" && (
         <p className="max-w-4xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
           {active.name || "This agent"} isn&apos;t running right now ({active.live_status ?? "unknown"}).
-          You can set channels up here, but nothing will answer until it&apos;s started from the My
-          Agent tab.
+          You can set channels up here, but nothing will answer until it&apos;s started from
+          Settings → My Agent.
         </p>
       )}
       <ChannelsPanel key={active.agent37_id} agentId={active.agent37_id} />

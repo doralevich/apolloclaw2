@@ -42,19 +42,23 @@ const NAV = [
   // which is a question people have while looking at the chat, not while looking for account
   // options.
   { href: "/dashboard/guide", label: "Guide", icon: BookOpen, exact: false },
-  // Below Guide, David's call, and it reads right: the four above are things you do with the
-  // agent every day. This is where you go to look at the agent itself — its state, what it
-  // knows, what it's called — which is a weekly question at most.
-  //
-  // "My Agent", singular, because that is what a customer has: one, arriving with their
-  // licence. Pluralises only if a workspace somehow holds more than one.
-  { href: "/dashboard", label: "My Agent", icon: LayoutGrid, exact: true },
+  // My Agent is not here. It went below Guide first, and then into Settings entirely — the rail
+  // is things you DO with the agent, and looking at the agent itself turned out to be the same
+  // kind of question as billing or members.
 ];
 
 // The settings area's own rail, grouped, shown INSTEAD of NAV while you're inside it — the
 // same trade every settings screen worth copying makes: give the section the whole sidebar
 // and put one obvious way back at the top.
 const SETTINGS_NAV = [
+  {
+    title: "Agent",
+    items: [
+      // "My Agent", singular, because that is what a customer has: one, arriving with their
+      // licence. Pluralises only if a workspace somehow holds more than one.
+      { href: "/dashboard/settings/agent", label: "My Agent", icon: LayoutGrid, exact: false },
+    ],
+  },
   {
     title: "Workspace",
     items: [

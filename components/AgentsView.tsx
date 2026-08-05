@@ -7,8 +7,7 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
-import { AgentKnowledge } from "@/components/AgentKnowledge";
-import { AgentSkills } from "@/components/AgentSkills";
+import { AgentVitals } from "@/components/AgentVitals";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { SetupBanner } from "@/components/SetupPrompt";
 
@@ -123,25 +122,11 @@ export function AgentsView() {
             />
           ))}
 
-          {/* Above the questionnaire, because it answers the earlier question. What the agent
-              knows ABOUT YOU is worth reading second; what it knows how to DO is what somebody
-              opening this page after paying for it came to find out, and until now the product
-              never said. */}
-          {agents.length === 1 && (
-            <AgentSkills agentName={agents[0].name?.trim() || "your agent"} />
-          )}
+          {/* Under the card, because both answer follow-ups to what the card says. The badge
+              says the container is running; these say whether it is about to run out of credit
+              and whether anybody is actually talking to it. */}
+          {agents.length === 1 && <AgentVitals agentId={agents[0].agent37_id} />}
 
-          {/* Only for a single agent. The questionnaire is stored per agent TYPE, so with two
-              agents of different types this would need to be per-card — and with two of the
-              same type there is only one set of answers to show. One agent is the real case;
-              rendering it once, under the card it belongs to, is honest for that. */}
-          {agents.length === 1 && (
-            <AgentKnowledge
-              workspaceId={current.id}
-              agentType={agents[0].agent_type ?? null}
-              agentName={agents[0].name?.trim() || "Your agent"}
-            />
-          )}
         </div>
       )}
     </div>
