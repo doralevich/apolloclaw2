@@ -665,8 +665,12 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
               </Button>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border bg-card">
-              {activeConnections.map((c, i) => {
+            /* A grid, the same three columns Browse uses. This was a stacked list in one
+               bordered container, so switching tabs changed the shape of the page as well as
+               its contents — and the row form gave a connected app less presence than an
+               unconnected one two clicks away, which is backwards. */
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {activeConnections.map((c) => {
                 const slug = connToolkitSlug(c);
                 const isPending = pendingSlug === slug;
                 const name = c.toolkitName || c.toolkitSlug || slug || "Unknown app";
@@ -675,35 +679,34 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 return (
                   <div
                     key={c.id}
-                    className={cn(
-                      "flex items-center justify-between gap-3 px-4 py-3 text-sm",
-                      i === activeConnections.length - 1 ? "" : "border-b"
-                    )}
+                    className="flex h-full flex-col rounded-xl border border-emerald-200 bg-emerald-50/30 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/25"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex items-start justify-between gap-2">
                       <ToolkitLogo logo={slug ? composioLogoUrl(slug) : null} name={name} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate font-medium">{name}</span>
-                          {isActive(c) ? (
-                            <Badge variant="success">Connected</Badge>
-                          ) : (
-                            <Badge variant="warning">{c.status || "Pending"}</Badge>
-                          )}
-                        </div>
-                        {connCategory && (
-                          <div className="truncate text-xs text-muted-foreground">{connCategory}</div>
-                        )}
-                      </div>
+                      {isActive(c) ? (
+                        <Badge variant="success">Connected</Badge>
+                      ) : (
+                        <Badge variant="warning">{c.status || "Pending"}</Badge>
+                      )}
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
+
+                    <div className="mt-2 min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{name}</div>
+                      {connCategory && (
+                        <div className="mt-0.5 truncate text-[11px] uppercase tracking-wide text-muted-foreground">
+                          {connCategory}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-1">
                       {isPending ? (
-                        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs" disabled>
+                        <Button variant="ghost" size="sm" className="h-8 flex-1 gap-1 px-2 text-xs" disabled>
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           Waiting
                         </Button>
                       ) : slug ? (
-                        <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs">
+                        <Button asChild variant="ghost" size="sm" className="h-8 flex-1 gap-1 px-2 text-xs">
                           <a
                             href={connectRedirectHref(agentId, slug)}
                             target="_blank"
@@ -712,11 +715,10 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                           >
                             <Plus className="h-3.5 w-3.5" />
                             Add another
-                            <ExternalLink className="h-3.5 w-3.5" />
                           </a>
                         </Button>
                       ) : (
-                        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs" disabled>
+                        <Button variant="ghost" size="sm" className="h-8 flex-1 gap-1 px-2 text-xs" disabled>
                           <Plus className="h-3.5 w-3.5" />
                           Add another
                         </Button>
@@ -727,13 +729,13 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                         className="h-8 gap-1 px-2 text-xs text-destructive hover:text-destructive"
                         disabled={disconnecting === c.id}
                         onClick={() => setConfirmDisconnect(c)}
+                        aria-label={`Disconnect ${name}`}
                       >
                         {disconnecting === c.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
                           <Unplug className="h-3.5 w-3.5" />
                         )}
-                        Disconnect
                       </Button>
                     </div>
                   </div>
