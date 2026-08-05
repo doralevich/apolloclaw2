@@ -166,19 +166,21 @@ export function ChatProvider({
           : [{ session_id: sessionId, title: label }, ...prev]
       );
 
-      // Write the label upstream too. Without this the name is only in this tab's memory: the
-      // next load re-reads the list from the instance, which on OpenClaw carries no title, and
-      // every thread came back as "New chat" — the whole rail identical. The sessions route can
-      // recover a label by opening the thread, but that costs a call per row, and a title stored
-      // where the rename button already stores one costs nothing on every load after this.
+      // Store the label. Without this it lives only in this tab's memory, and the next load —
+      // which re-reads the list from an instance that holds no titles — brings the thread back as
+      // "New chat". The sessions route can recover a name by opening the thread and reading its
+      // first message, but that costs a call per thread; naming it here, from the message we
+      // already have in hand, means that never has to happen.
       //
-      // Silent by design. It's a nicety on top of a message that has already been sent, the build
-      // may not support PATCH at all, and a toast about a failed write nobody asked for would be
-      // noise mid-conversation.
+      // `derived` because we chose this, rather than the customer typing it: a name they type
+      // later must win, and must not be quietly replaced by the opening line of the conversation.
+      //
+      // Silent by design — a nicety on top of a message that has already been sent, so a toast
+      // about a failed background write would be noise mid-conversation.
       if (agentId && label) {
         apiFetch(`/api/agents/${agentId}/chat/sessions/${sessionId}`, {
           method: "PATCH",
-          body: JSON.stringify({ title: label }),
+          body: JSON.stringify({ title: label, derived: true }),
         }).catch(() => {});
       }
     },
