@@ -69,14 +69,13 @@ export function HeaderClock() {
   return (
     // Hidden on narrow screens: a chat header on a phone has room for the thread name and the
     // one button, and this is the part nobody came for.
-    <div className="hidden items-center gap-4 text-sm text-muted-foreground lg:flex">
+    <div className="hidden items-center gap-3 text-[13px] text-muted-foreground/80 lg:flex">
       <span className="inline-flex items-center gap-1.5">
-        <CalendarDays className="h-4 w-4" />
+        <CalendarDays className="h-3.5 w-3.5" />
         {date}
       </span>
-      <span className="h-4 w-px bg-border" aria-hidden />
       <span className="inline-flex items-center gap-1.5">
-        <Clock className="h-4 w-4" />
+        <Clock className="h-3.5 w-3.5" />
         {time}
       </span>
     </div>
