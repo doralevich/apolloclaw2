@@ -5,6 +5,7 @@ import { Loader2, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { useChatContext } from "./ChatProvider";
+import { sessionTime } from "./session-time";
 
 // The "Chats" list, rendered in the SHARED dashboard sidebar under the nav — so your
 // conversations are one click away from Credits, the Guide or anywhere else, not just from the
@@ -60,8 +61,10 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       <div className="mt-6 flex min-h-0 flex-col">
-        <div className="flex items-center justify-between px-3 pb-1">
-          <span className="text-xs font-medium text-muted-foreground">Chats</span>
+        <div className="flex items-center justify-between px-3 pb-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Chats
+          </span>
           <button
             type="button"
             onClick={() => {
@@ -89,6 +92,9 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
             <nav className="flex flex-col gap-0.5">
               {sessions.map((s) => {
                 const label = s.title || "New chat";
+                // Null when the instance sent nothing usable — see session-time.ts. The row
+                // simply has no timestamp rather than an invented one.
+                const when = sessionTime(s.last_active);
                 return (
                   <div key={s.session_id} className="group relative">
                     {editingId === s.session_id ? (
@@ -118,14 +124,22 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
                           }}
                           onDoubleClick={() => startRename(s.session_id, s.title)}
                           className={cn(
-                            "flex w-full select-none items-center gap-2 rounded-md px-3 py-1.5 pr-14 text-left text-sm transition-colors",
+                            "flex w-full select-none items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                            // Room for the hover actions only while hovering, so the timestamp
+                            // gets the space the rest of the time.
+                            "pr-3 group-hover:pr-14",
                             activeSessionId === s.session_id
-                              ? "bg-secondary text-foreground"
+                              ? "bg-secondary font-medium text-foreground"
                               : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                           )}
                         >
                           <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                          <span className="truncate">{label}</span>
+                          <span className="min-w-0 flex-1 truncate">{label}</span>
+                          {when && (
+                            <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground/80 group-hover:hidden">
+                              {when}
+                            </span>
+                          )}
                         </button>
                         <button
                           type="button"

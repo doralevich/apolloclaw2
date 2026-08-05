@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, MoreHorizontal, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { CHANNELS_ENABLED } from "@/config/channels";
@@ -14,6 +14,12 @@ import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 // The five things you DO with an agent. Everything you only ever configure — credits,
@@ -78,7 +84,7 @@ function NavLink({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         active
           ? "bg-secondary text-secondary-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -201,13 +207,44 @@ function SidebarContent({
           pathname={pathname}
           onNavigate={onNavigate}
         />
-        <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
-        <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </Button>
+        <AccountCard userEmail={userEmail} />
       </div>
     </>
+  );
+}
+
+// Who you're signed in as, at the foot of the rail.
+//
+// It was the raw email on one line and a full-width "Sign out" button under it — which gave the
+// most destructive control in the rail the most visual weight, and gave the identity none. The
+// mockup has a card: initial, address, and the action tucked behind a menu where you go looking
+// for it rather than fall onto it.
+function AccountCard({ userEmail }: { userEmail: string }) {
+  const initial = (userEmail?.[0] || "?").toUpperCase();
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg border bg-card p-2">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+        {initial}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{userEmail}</span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Account menu"
+            className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" side="top">
+          <DropdownMenuItem onClick={signOut}>
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
@@ -253,7 +290,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           around it receded, which is backwards. The rail is the recessive surface now and the
           content card is the white one, the way the mockups have it. Reads the same either
           way round in dark mode, where background is the deeper navy. */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-background p-4 md:flex">
+      <aside className="hidden w-[17rem] shrink-0 flex-col border-r bg-background p-4 md:flex">
         <SidebarContent pathname={pathname} userEmail={userEmail} />
       </aside>
 

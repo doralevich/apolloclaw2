@@ -131,4 +131,12 @@ export function uid(prefix = "c"): string {
 export interface ChatSession {
   session_id: string;
   title: string | null;
+  /**
+   * When the thread was last used, for the timestamp on the rail row.
+   *
+   * Optional because a thread created in this tab has one before the server has heard of it.
+   * The unit is whatever the instance sends — see `sessionTime` for why that is handled rather
+   * than assumed.
+   */
+  last_active?: number | null;
 }
