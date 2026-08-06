@@ -747,17 +747,15 @@ export const industryConfig: Record<string, IndustryBranch> = {
   // and the cemetery on either side of one, because those three refer work to each other
   // constantly and frequently sit under the same ownership.
   //
-  // Two things make this trade unlike anything else in this file, and both of them change
-  // what the agent should be allowed to do.
+  // What makes this trade unlike anything else in this file: the gap between a signed order
+  // and a finished memorial is months, not days. That silence is where families call to ask
+  // what is happening, and it is the single largest piece of work an agent can actually take
+  // off this business — hence the questions on lead time and bottlenecks below.
   //
-  // The customer buried someone last week. Every other branch here can treat outbound tone
-  // as a preference to be tuned later; a cheerful follow-up sent to the wrong family at the
-  // wrong hour is the kind of mistake that ends the relationship, so the question of how far
-  // the agent may speak for the business is asked here, up front, instead of inferred.
-  //
-  // And the gap between a signed order and a finished memorial is months, not days. That
-  // silence is where families call to ask what is happening, and it is the single largest
-  // piece of work an agent can actually take off this business.
+  // The customer also buried someone last week, so how far the agent may speak for the
+  // business matters more here than anywhere else. That is deliberately NOT asked on this
+  // form: it is a conversation to have once, in person, not a radio button a grieving
+  // owner picks between questions about foundations and lettering.
   "Funeral & Memorial Services": {
     stepTitle: "Your Memorial Business",
     stepSubtitle: "How you serve families so the agent handles the wait, not just the sale.",
@@ -892,19 +890,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         label: "What you run orders and family records on",
         type: "text",
         placeholder: "Software by name, spreadsheets, paper files, or a mix of all three",
-      },
-      {
-        key: "family_contact_comfort",
-        label: "How much should the agent say to families directly?",
-        type: "radio",
-        required: true,
-        helper: "Nothing here is permanent. We start where you are comfortable and move later.",
-        options: [
-          "Nothing outward - draft it for me and I send it",
-          "Logistics only - appointment times, proof ready, installation dates",
-          "Most correspondence, as long as I see anything sensitive first",
-          "Comfortable with it handling family email start to finish",
-        ],
       },
     ],
   },
