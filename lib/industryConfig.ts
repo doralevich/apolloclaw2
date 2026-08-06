@@ -780,6 +780,35 @@ export const industryConfig: Record<string, IndustryBranch> = {
         ],
       },
       {
+        // What they actually make and sell, which the type dropdown above does not capture.
+        // Two businesses can both answer "monument retailer" and share almost no work: one
+        // sets uprights in twenty cemeteries, the other does bronze and cremation product out
+        // of a showroom. Cleaning, added dates, and commercial stone are on the list because
+        // each one is a separate line of work with its own rhythm, and a shop that does them
+        // has repeat contact with families and trades the agent should know about.
+        key: "product_mix",
+        label: "What you make and sell",
+        type: "multiselect",
+        required: true,
+        options: [
+          "Upright monuments and headstones",
+          "Flat and grass markers",
+          "Slant markers",
+          "Bronze plaques and markers",
+          "Mausoleums and private estates",
+          "Columbarium niches",
+          "Memorial benches",
+          "Cremation urns and keepsakes",
+          "Pet memorials",
+          "Veteran and civic markers",
+          "Lettering and dates on existing memorials",
+          "Cleaning and restoration",
+          "Custom etching and portraits",
+          "Signage, countertops, or other stone work",
+          "Other",
+        ],
+      },
+      {
         key: "annual_volume",
         label: "Families served in a year",
         type: "dropdown",
