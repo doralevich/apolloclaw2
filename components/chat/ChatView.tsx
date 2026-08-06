@@ -9,6 +9,7 @@ import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HeaderClock } from "./HeaderClock";
+import { HeaderCredit } from "./HeaderCredit";
 import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
@@ -161,6 +162,8 @@ export function ChatView({
         <div className="flex shrink-0 items-center gap-3">
         {/* Date and time, from the mockup. The weather it also shows isn't here — see HeaderClock. */}
         <HeaderClock />
+        {/* What this conversation has left to spend, and a way to top it up from here. */}
+        <HeaderCredit agentId={agentId} />
         {/* Light/dark at the top of the screen, where you are when you decide you want it. The
             three-way preference (including "follow my device") stays in Settings. */}
         <ThemeToggle />

@@ -109,10 +109,10 @@ function TSelect({ value, onChange, options }: { value: string; onChange: (v: st
     </div>
   );
 }
-function CheckGroup({ label, hint, options, value = [], onChange, cols = 2, split = false }: { label?: string; hint?: string; options: string[]; value: string[]; onChange: (v: string[]) => void; cols?: number; split?: boolean }) {
+function CheckGroup({ label, required, hint, options, value = [], onChange, cols = 2, split = false }: { label?: string; required?: boolean; hint?: string; options: string[]; value: string[]; onChange: (v: string[]) => void; cols?: number; split?: boolean }) {
   const toggle = (opt: string) => onChange(value.includes(opt) ? value.filter(v => v !== opt) : [...value, opt]);
   return (
-    <FF label={label} hint={hint}>
+    <FF label={label} required={required} hint={hint}>
       <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${cols >= 3 ? 150 : 220}px), 1fr))`, gap: 8, marginTop: 4 }}>
         {options.map(opt => {
           const on = value.includes(opt);
@@ -208,8 +208,11 @@ interface GateData { first: string; last: string; email: string; phone: string; 
 // `heading`/`intro` are overridable so the white-glove entry point can say plainly that this
 // is an invited flow, rather than reusing self-serve copy that would read as a sales page to
 // someone David has already spoken to.
-function Gatekeeper({ onPass, heading, intro }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string }) {
-  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
+// `initial` re-seeds the five fields when someone steps BACK here from the questionnaire.
+// Without it the screen would remount empty and the trip back to fix one typo would cost
+// them all five.
+function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData }) {
+  const [d, setD] = useState<GateData>(initial ?? { first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
 
   const [err, setErr] = useState("");
   const set = (k: keyof GateData, v: string) => setD(p => ({ ...p, [k]: v }));
@@ -360,7 +363,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
 // ════════════════════════════════════════════════════════════
 // SHELL
 // ════════════════════════════════════════════════════════════
-function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast, submitLabel }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string }) {
+function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLast, submitLabel }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; canBack: boolean; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string }) {
   const pct = Math.round(((step + 1) / steps.length) * 100);
   const stepLabel = steps[step] ?? "";
   return (
@@ -378,7 +381,7 @@ function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast, submit
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px 100px" }}>
         <div key={step} style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", animation: "oc-fade 0.35s ease" }}>{children}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 20 }}>
-          {step > 0 ? <button type="button" onClick={onBack} style={{ background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "10px 20px", borderRadius: 6, cursor: "pointer" }}>← Back</button> : <div />}
+          {canBack ? <button type="button" onClick={onBack} style={{ background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "10px 20px", borderRadius: 6, cursor: "pointer" }}>← Back</button> : <div />}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 {isLast
               ? <button type="button" onClick={onSubmit} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "10px 28px", borderRadius: 6, border: "none", cursor: "pointer" }}>{submitLabel}</button>
@@ -663,7 +666,7 @@ function IndustryStep({ branch, values, onChange, otherLabel }: { branch: Indust
           const otherVal = values[otherKey];
           return (
             <Fragment key={f.key}>
-              <CheckGroup label={f.label} hint={f.helper ?? "Select all that apply"} options={f.options ?? []} value={arr} onChange={v => onChange(f.key, v)} cols={2} />
+              <CheckGroup label={f.label} required={f.required} hint={f.helper ?? "Select all that apply"} options={f.options ?? []} value={arr} onChange={v => onChange(f.key, v)} cols={2} />
               {arr.includes("Other") && (
                 <FF label="Please specify">
                   <TInput value={typeof otherVal === "string" ? otherVal : ""} onChange={v => onChange(otherKey, v)} placeholder="Tell us more" />
@@ -721,13 +724,13 @@ function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) =>
     </div>
   );
 }
-function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void }) {
+function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void; onExit?: () => void }) {
   const [step, setStep] = useState(0);
-  const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
+  const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
   const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
   const [s4, setS4] = useState({ marital: "", kids: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
-  const [s5, setS5] = useState({ decStyle: [] as string[], stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], stuckDecision: "" });
-  const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
+  const [s5, setS5] = useState({ decStyle: [] as string[], stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[] });
+  const [s6, setS6] = useState({ tone: "", writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
   const [s7, setS7] = useState({ goals: [] as string[], metric: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "" });
   const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
   const [companies, setCompanies] = useState<Company[]>([emptyCompany()]);
@@ -753,7 +756,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, mostProud: s2.proud, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, stuckDecision: s5.stuckDecision, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, children: s4.kids, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -787,7 +790,15 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
     setStep(s => Math.min(s + 1, pageKeys.length - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const back = () => { setVErr(""); setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  // Step 0 has nowhere to go WITHIN the questionnaire, so it hands off to onExit — the screen
+  // the form was entered from. Only wired where that screen can be returned to without losing
+  // what was typed on it (see the call site); elsewhere step 0 keeps no Back at all.
+  const back = () => {
+    setVErr("");
+    if (step === 0) { onExit?.(); return; }
+    setStep(s => Math.max(s - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   const submit = async () => {
     const err = validate(pageKeys[step]);
     if (err) { setVErr(err); return; }
@@ -797,6 +808,9 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
     try { uploadedFiles = await Promise.all(files.map(readFileAsBase64)); } catch { uploadedFiles = []; }
     onDone({ ...buildData(), uploadedFiles }, "business");
   };
+  // brandLike predates the switch to a multi-select and still initialises as "", so older
+  // in-flight state can be either shape. Normalised once here rather than at each use.
+  const brandLike = Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : []);
   const allPages: { key: string; label: string; node: React.ReactNode }[] = [
     { key: "biz", label: "Your Business", node: (
     <Stack key="s2a">
@@ -869,7 +883,14 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
       <CheckGroup label="Your natural tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone ? [s6.tone] : []} onChange={v => f6("tone", v[v.length-1] || "")} cols={2} />
       <CheckGroup label="Describe your ideal voice" hint="Select all that apply" options={["Confident, not arrogant","Clear and direct","Warm and personable","Professional and polished","Casual and conversational","Bold and punchy","Empathetic and supportive","Witty and clever","Never corporate or stiff"]} value={s6.voiceStyle} onChange={v => f6("voiceStyle", v)} cols={2} />
       <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={2} split />
-      <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3" split options={BRAND_LIKE} value={Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : [])} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
+      <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3" split options={BRAND_LIKE} value={brandLike} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
+      {/* The list is twelve names long and still misses most people. "Other" without somewhere
+          to type is the one answer that tells the agent nothing, so it opens a write-in. */}
+      {brandLike.includes("Other") && (
+        <FF label="Please specify" hint="A person, brand, or publication whose writing you'd want yours to read like.">
+          <TInput value={s6.brandLikeOther} onChange={v => f6("brandLikeOther", v)} placeholder="Someone whose writing sounds the way you want to sound" />
+        </FF>
+      )}
       <FF label="Share a sample of your Voice / Writing" hint="Optional. Paste an email, LinkedIn summary, or any writing that sounds like you."><TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="A long email, your LinkedIn About section, a proposal, or a Slack message that sounds like you..." rows={4} /></FF>
     </Stack>
     ) },
@@ -911,7 +932,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
   ];
   const stepLabels = allPages.map(p => p.label);
   const cur = allPages[step] || allPages[allPages.length - 1];
-  return <Shell steps={stepLabels} step={step} onBack={back} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
+  return <Shell steps={stepLabels} step={step} onBack={back} canBack={step > 0 || !!onExit} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
 }
 // ════════════════════════════════════════════════════════════
 // ROOT
@@ -1139,6 +1160,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   if (phase === "gate") return (
     <Gatekeeper
       onPass={handleGate}
+      initial={enteredGate ?? undefined}
       heading={isWhiteGlove ? <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></> : undefined}
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
@@ -1171,6 +1193,10 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     />
   );
   if (phase === "done") return <Success nextStep={isWhiteGlove} />;
-  if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} />;
+  // White glove is the only flow that reaches the questionnaire straight from the gate, so it
+  // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
+  // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
+  // sending them back there would silently drop it, so they keep no Back on step 0.
+  if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
   return null;
 }

@@ -53,6 +53,16 @@ function bullet(label: string, v: unknown): string | null {
   return value ? `- **${label}** — ${value}` : null;
 }
 
+/** Swap the literal "Other" out of a multi-select answer for the write-in it stands for.
+ *  An agent told its owner sounds like "Other" has learned nothing. */
+function withWriteIn(v: unknown, other: unknown): unknown {
+  const write = str(other);
+  if (!write) return v;
+  const list = Array.isArray(v) ? v : typeof v === "string" && v ? [v] : [];
+  if (!list.includes("Other")) return v;
+  return list.map((x) => (x === "Other" ? write : x));
+}
+
 function section(heading: string, lines: (string | null)[], lead?: string): string[] {
   const kept = lines.filter((l): l is string => !!l);
   if (!kept.length) return [];
@@ -108,7 +118,7 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
       [
         bullet("Tone", answers.writingTone),
         bullet("How they'd describe their voice", answers.voiceDescription),
-        bullet("Brands whose voice they like", answers.brandVoiceLike),
+        bullet("Brands whose voice they like", withWriteIn(answers.brandVoiceLike, answers.brandVoiceLikeOther)),
         bullet("Words and phrases they like", answers.loveWords),
         bullet("Words and styles they hate", answers.hateWords),
         bullet("Their comfort writing themselves", answers.writingComfort),

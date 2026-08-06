@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { createClient } from "@/lib/supabase/client";
 import type { MergedAgent } from "@/lib/types";
 
 // Post-submit screen for the paid onboarding flow: polls the workspace's agent list
@@ -49,9 +50,9 @@ function StepRow({ state, label }: { state: "done" | "active" | "pending"; label
 //   workspaceId — the per-agent flow. A logged-in member polls /api/agents.
 //   sessionId   — the license flow. The buyer has an account but has never signed in, so
 //                 there is no session to poll with; the paid Stripe checkout session
-//                 authorizes /api/onboard/status instead. They also cannot be dropped into
-//                 the dashboard at the end, because they still have no password — the
-//                 closing screen points them at the email that lets them set one.
+//                 authorizes /api/onboard/status instead. They have no password either, so
+//                 the closing screen asks them to choose one (/api/onboard/set-password),
+//                 signs them in with it, and walks them into the dashboard like anyone else.
 export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }: { agentTypeId: string; agentLabel: string; workspaceId?: string; sessionId?: string }) {
   const viaSession = !!sessionId && !workspaceId;
   // created: the agent row exists; running: the instance reports running.
@@ -109,7 +110,53 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
     return () => { cancelled = true; };
   }, [workspaceId, sessionId, agentTypeId, viaSession]);
 
+  // The closing step for a license buyer: choose the password their account has never had,
+  // then straight into the dashboard. Only the "already_set" case sends them to /login, and
+  // only because at that point /login is genuinely the right door.
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [pwErr, setPwErr] = useState("");
+  const [savingPw, setSavingPw] = useState(false);
+  const [useLogin, setUseLogin] = useState(false);
+
+  const submitPassword = async () => {
+    if (pw.length < 8) { setPwErr("Please choose a password of at least 8 characters."); return; }
+    if (pw !== pw2) { setPwErr("Those two passwords do not match."); return; }
+    setPwErr("");
+    setSavingPw(true);
+    try {
+      const res = await fetch("/api/onboard/set-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, password: pw }),
+      });
+      const body = (await res.json()) as { ok?: boolean; email?: string; error?: { code?: string; message?: string } };
+      if (!res.ok || !body.email) {
+        // The account already has a working password (a replayed id, a second tab, or the
+        // emailed link used first). Nothing to set — point at the door that opens.
+        if (body.error?.code === "already_set") setUseLogin(true);
+        setPwErr(body.error?.message || "Could not set your password. Please try again.");
+        return;
+      }
+      // Sign in here rather than server-side: the browser client owns the auth cookies, and
+      // signing in through it is what makes the dashboard load already logged in.
+      const { error } = await createClient().auth.signInWithPassword({ email: body.email, password: pw });
+      // The password IS set at this point, so a sign-in hiccup is not a failure of the thing
+      // they just did — /login will now accept exactly what they typed.
+      window.location.assign(error ? "/login" : "/dashboard/start-here");
+    } catch {
+      setPwErr("Could not set your password. Please try again.");
+    } finally {
+      setSavingPw(false);
+    }
+  };
+
   const provisioned = phase === "starting" || phase === "ready";
+  const askForPassword = viaSession && phase === "ready";
+  const inputStyle: React.CSSProperties = {
+    width: "100%", background: "#E8E7E3", border: `1px solid ${BDR}`, borderRadius: 6,
+    color: TX, fontSize: 14, fontFamily: "inherit", padding: "10px 14px", outline: "none", boxSizing: "border-box",
+  };
   return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
       <style>{`.ac-spin{animation:acspin 0.9s linear infinite}@keyframes acspin{to{transform:rotate(360deg)}}`}</style>
@@ -132,10 +179,33 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             <StepRow state={phase === "ready" ? "active" : "pending"} label="Entering your dashboard" />
           )}
         </div>
-        {viaSession && phase === "ready" && (
+        {askForPassword && !useLogin && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${BDR}` }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: TX, margin: "0 0 4px" }}>Your agent is live.</p>
+            <p style={{ fontSize: 13, color: TXM, margin: "0 0 14px", lineHeight: 1.6 }}>
+              Choose a password and we&apos;ll take you straight in. You&apos;ll use it with{" "}
+              the email address you paid with.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input
+                type="password" value={pw} onChange={e => setPw(e.target.value)}
+                placeholder="New password (8+ characters)" autoComplete="new-password" style={inputStyle}
+              />
+              <input
+                type="password" value={pw2} onChange={e => setPw2(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && !savingPw) void submitPassword(); }}
+                placeholder="Confirm password" autoComplete="new-password" style={inputStyle}
+              />
+            </div>
+            {pwErr && (
+              <p style={{ marginTop: 10, fontSize: 13, color: "#dc2626", lineHeight: 1.5 }}>{pwErr}</p>
+            )}
+          </div>
+        )}
+        {askForPassword && useLogin && (
           <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
-            Your agent is live. Check your email for the link to set your password — that is
-            what gets you into your dashboard for the first time.
+            Your agent is live, and this account already has a password. Log in with it — or use
+            &ldquo;Forgot password?&rdquo; if you need a new one.
           </div>
         )}
         {phase === "slow" && (
@@ -144,11 +214,21 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             automatically once it&apos;s ready.
           </div>
         )}
-        {/* A license buyer has no password yet, so "go to my dashboard" would bounce them to
-            a login they cannot pass. Point at the email that lets them set one instead. */}
-        <a href={viaSession ? "/login" : "/dashboard/start-here"} style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" || (viaSession && phase === "ready") ? R : "transparent", color: phase === "slow" || (viaSession && phase === "ready") ? "#fff" : TXM, border: phase === "slow" || (viaSession && phase === "ready") ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
-          {viaSession ? "Go to Log In →" : "Go to My Dashboard →"}
-        </a>
+        {/* The license buyer's way in is the password they are typing above, not a link — a
+            plain "go to my dashboard" would bounce them to a login they cannot pass. Every
+            other case still has somewhere useful to point. */}
+        {askForPassword && !useLogin ? (
+          <button
+            type="button" onClick={() => void submitPassword()} disabled={savingPw}
+            style={{ display: "block", width: "100%", textAlign: "center", marginTop: 20, background: R, color: "#fff", border: "none", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "12px 28px", borderRadius: 6, cursor: savingPw ? "default" : "pointer", opacity: savingPw ? 0.7 : 1 }}
+          >
+            {savingPw ? "Setting up…" : "Set Password & Continue →"}
+          </button>
+        ) : (
+          <a href={viaSession ? "/login" : "/dashboard/start-here"} style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" || useLogin ? R : "transparent", color: phase === "slow" || useLogin ? "#fff" : TXM, border: phase === "slow" || useLogin ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
+            {viaSession ? "Go to Log In →" : "Go to My Dashboard →"}
+          </a>
+        )}
       </div>
     </div>
   );
