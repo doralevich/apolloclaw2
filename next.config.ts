@@ -17,7 +17,7 @@ const USE_CASE_MAP: Record<string, string> = {
   cfo: "/ai-agents/cfo",
   sales: "/ai-agents/sales",
   recruiting: "/ai-agents/recruiting",
-  personal: "/ai-agents/personal",
+  personal: "/ai-agents/personal-assistant",
   // construction, restaurants, brokers, and college are deliberately absent. Their destination
   // pages were removed (David's call), so a mapping here would 301 an old indexed URL straight
   // into a 404 — a soft-404 to Google, and worse for a visitor than an honest 404. Dropping the
@@ -154,6 +154,11 @@ const nextConfig: NextConfig = {
       // hiring). Every old path was indexed at sitemap priority 0.9, so each one 301s to its
       // new home to carry the ranking over. Do not remove these.
       ...USE_CASE_REDIRECTS,
+      {
+        source: "/ai-agents/personal",
+        destination: "/ai-agents/personal-assistant",
+        permanent: true,
+      },
     ];
   },
 };
