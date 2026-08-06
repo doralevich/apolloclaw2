@@ -12,7 +12,9 @@ const navLinks = [
   { label: "About", to: "/about" },
   { label: "What We Do", to: "/what-we-do" },
   { label: "How It Works", to: "/how-it-works" },
-  { label: "Insights", to: "/blog" },
+  // "Blog", not "Insights". The page was always here under the old label and read as missing,
+  // because nobody scanning a footer for a blog looks for the word Insights.
+  { label: "Blog", to: "/blog" },
   { label: "Case Studies", to: "/case-studies" },
 ];
 

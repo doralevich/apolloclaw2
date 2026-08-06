@@ -34,9 +34,13 @@ export default function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
-      {/* Mobile: just the 88px main nav (utility bar is desktop-only). Desktop: utility bar
-          (36px) + main nav (88px) = 124px. */}
-      <main className="pt-[88px] md:pt-[124px]">{children}</main>
+      {/* Clears the fixed header. Measured in the browser rather than added up from the class
+          names, because both parts are a pixel taller than they look: the main nav is h-[88px]
+          plus a 1px bottom border (89px), and the utility bar is py-[10px] around an 18px line
+          (38px). Mobile hides the utility bar, so it clears the nav alone.
+          The old values (88 / 124) were under the true height and survived only on the slack
+          the shorter utility bar left behind. Raising that bar used the slack up. */}
+      <main className="pt-[89px] md:pt-[127px]">{children}</main>
       {/* Standing discovery-call + newsletter bands, identical on every marketing page. */}
       <PreFooter />
       <Footer />
