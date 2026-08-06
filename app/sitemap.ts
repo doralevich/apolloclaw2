@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/what-we-do",       priority: 0.8 },
     { path: "/ai-101",       priority: 0.7 },
     { path: "/security",       priority: 0.6 },
-    { path: "/ai-agents/personal", priority: 0.8 },
+    { path: "/ai-agents/personal-assistant", priority: 0.8 },
   ].map(({ path, priority }) => ({
     url: `https://apolloclaw.ai${path}`,
     lastModified: new Date(),

@@ -27,7 +27,7 @@ const agentLinks = [
   { label: "Marketing Agent", to: "/ai-agents/marketing" },
   { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
   { label: "Human Resources Agent", to: "/ai-agents/hr" },
-  { label: "Personal Agent", to: "/ai-agents/personal" },
+  { label: "Personal Agent", to: "/ai-agents/personal-assistant" },
 ];
 
 const industryLinks = [
