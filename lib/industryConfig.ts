@@ -45,6 +45,7 @@ export const INDUSTRY_OPTIONS: string[] = [
   "Education / Coaching",
   "Manufacturing / Logistics",
   "Construction / Trades",
+  "Funeral & Memorial Services",
   "Non-profit",
   "Consulting",
   "Media / Entertainment",
@@ -738,6 +739,143 @@ export const industryConfig: Record<string, IndustryBranch> = {
         label: "Where jobs get lost",
         type: "multiselect",
         options: ["Answering the phone", "Estimating and bidding", "Scheduling crews", "Material ordering", "Change orders", "Subcontractor coordination", "Invoicing and collections", "Permits and inspections"],
+      },
+    ],
+  },
+
+  // Deathcare. Written for a monument retailer, but wide enough to cover the funeral home
+  // and the cemetery on either side of one, because those three refer work to each other
+  // constantly and frequently sit under the same ownership.
+  //
+  // Two things make this trade unlike anything else in this file, and both of them change
+  // what the agent should be allowed to do.
+  //
+  // The customer buried someone last week. Every other branch here can treat outbound tone
+  // as a preference to be tuned later; a cheerful follow-up sent to the wrong family at the
+  // wrong hour is the kind of mistake that ends the relationship, so the question of how far
+  // the agent may speak for the business is asked here, up front, instead of inferred.
+  //
+  // And the gap between a signed order and a finished memorial is months, not days. That
+  // silence is where families call to ask what is happening, and it is the single largest
+  // piece of work an agent can actually take off this business.
+  "Funeral & Memorial Services": {
+    stepTitle: "Your Memorial Business",
+    stepSubtitle: "How you serve families so the agent handles the wait, not just the sale.",
+    fields: [
+      {
+        key: "memorial_business_type",
+        label: "Type of business",
+        type: "dropdown",
+        required: true,
+        options: [
+          "Monument / headstone retailer",
+          "Monument manufacturer or wholesaler",
+          "Cemetery lettering and restoration",
+          "Funeral home",
+          "Funeral home with cemetery",
+          "Cemetery",
+          "Crematory",
+          "Memorial products (bronze, urns, keepsakes)",
+          "Other",
+        ],
+      },
+      {
+        key: "annual_volume",
+        label: "Families served in a year",
+        type: "dropdown",
+        required: true,
+        helper: "Orders, calls, or interments, whichever number you actually track.",
+        options: ["Under 50", "50 to 200", "200 to 500", "500 to 1,500", "1,500+"],
+      },
+      {
+        key: "at_need_vs_pre_need",
+        label: "At-need and pre-need split",
+        type: "radio",
+        required: true,
+        helper: "These are two different businesses. One is a week, the other is years.",
+        options: [
+          "Almost all at-need",
+          "Mostly at-need, some pre-need",
+          "An even mix",
+          "Pre-need is a major part of what we sell",
+        ],
+      },
+      {
+        key: "memorial_bottlenecks",
+        label: "Biggest bottleneck",
+        type: "multiselect",
+        options: [
+          "Answering the first call or inquiry",
+          "Design proofs and revisions",
+          "Cemetery rules, permits, and specifications",
+          "Foundation and setting schedules",
+          "Supplier and quarry lead times",
+          "Deposits and final payment",
+          "Keeping families updated between order and installation",
+          "Added dates and lettering on existing memorials",
+          "Reviews and reputation",
+        ],
+      },
+      {
+        key: "install_lead_time",
+        label: "Weeks from signed order to memorial in place",
+        type: "dropdown",
+        helper: "The stretch where families go quiet and start wondering.",
+        options: [
+          "Under 4",
+          "4 to 8",
+          "8 to 16",
+          "16 to 26",
+          "More than 26",
+          "It varies too much to say",
+        ],
+      },
+      {
+        key: "family_sources",
+        label: "Where families come from",
+        type: "multiselect",
+        options: [
+          "Funeral home referrals",
+          "Cemetery referrals",
+          "Walk-in or showroom",
+          "Search and web",
+          "Families we have served before",
+          "Word of mouth",
+          "Clergy and community groups",
+          "Paid ads",
+          "Pre-need seminars and events",
+          "Trade or dealer referrals",
+        ],
+      },
+      {
+        key: "cemeteries_served",
+        label: "Cemeteries you work with regularly",
+        type: "dropdown",
+        helper:
+          "Each one has its own rules on size, material, and foundations. This tells the agent how many rulebooks it is holding at once.",
+        options: ["1 to 5", "6 to 20", "21 to 50", "More than 50", "We are the cemetery"],
+      },
+      {
+        // Every other branch names vendors. This one asks in plain language instead, because
+        // the software in this trade is small and regional and a list of guessed product
+        // names would put words in the customer's mouth that may not exist.
+        key: "records_system",
+        label: "What you run orders and family records on",
+        type: "text",
+        placeholder: "Software by name, spreadsheets, paper files, or a mix of all three",
+      },
+      {
+        key: "family_contact_comfort",
+        label: "How much should the agent say to families directly?",
+        type: "radio",
+        required: true,
+        helper: "Nothing here is permanent. We start where you are comfortable and move later.",
+        options: [
+          "Nothing outward - draft it for me and I send it",
+          "Logistics only - appointment times, proof ready, installation dates",
+          "Most correspondence, as long as I see anything sensitive first",
+          "Comfortable with it handling family email start to finish",
+        ],
       },
     ],
   },

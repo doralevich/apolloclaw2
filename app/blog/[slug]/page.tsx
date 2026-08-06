@@ -118,7 +118,7 @@ export default async function BlogPostPage({
   ];
 
   const serviceLinks = [
-    { label: "The Personal Agent", href: "/ai-agents/personal" },
+    { label: "The Personal Agent", href: "/ai-agents/personal-assistant" },
     { label: "The CEO Agent", href: "/ai-agents/ceo" },
     { label: "The CFO Agent", href: "/ai-agents/cfo" },
   ];

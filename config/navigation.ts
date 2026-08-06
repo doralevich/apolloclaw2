@@ -42,5 +42,5 @@ export const DEPARTMENTS: NavItem[] = [
   { label: "Marketing", Icon: Megaphone, to: "/ai-agents/marketing", description: "Draft content, run the campaign calendar, and nurture leads, keep reporting current." },
   { label: "Recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
   { label: "Human Resources", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
-  { label: "Personal", Icon: User, to: "/ai-agents/personal", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
+  { label: "Personal", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
 ];
