@@ -188,7 +188,13 @@ async function findOrCreateCrmClient(
     "Content-Type": "application/json",
     Prefer: "return=representation",
   };
-  const enc = encodeURIComponent(email);
+  // Everything below keys off this, never the raw string. The lookup is an exact match, so
+  // "Dave@Company.com" and "dave@company.com" were two different people to this code: two
+  // cards, two deals, a split history for one prospect. Every apolloclaw row already stores a
+  // lowercase address, so normalising on the way in is enough — no backfill, and Donna's dbdo
+  // rows (which do carry mixed case) are left alone.
+  const cleanEmail = email.trim().toLowerCase();
+  const enc = encodeURIComponent(cleanEmail);
   const label = trackLabel[trackType] || trackType;
   if (!SUPA_KEY) {
     console.error("[intake][crm] SUPABASE service-role key is MISSING — CRM writes skipped (email/PDF still send)");
@@ -209,18 +215,58 @@ async function findOrCreateCrmClient(
 
     if (Array.isArray(cardFound) && cardFound.length > 0) {
       cardId = cardFound[0].id;
+      // A repeat submission carries the person's LATEST answers, and the card used to ignore
+      // them completely — it found the id and returned. So a corrected phone number or a
+      // changed company name lived only inside the PDF, while the board kept showing whatever
+      // they typed the first time and looked authoritative doing it.
+      //
+      // Only non-empty values overwrite. Someone who skips the company field on a second pass
+      // is not asking us to erase the company they gave us on the first.
+      const refresh: Record<string, string> = {};
+      if (name.trim()) refresh.name = name.trim();
+      if (phone.trim()) refresh.phone = phone.trim();
+      if (company.trim()) refresh.company_text = company.trim();
+      if (Object.keys(refresh).length) {
+        const patch = await fetch(`${SUPA_URL}/rest/v1/entities?id=eq.${cardId}`, {
+          method: "PATCH",
+          headers: { ...sbHeaders, Prefer: "return=minimal" },
+          body: JSON.stringify(refresh),
+        });
+        if (!patch.ok) {
+          // Worth a line in the log, not worth failing the submission over. The intake email
+          // and PDF still carry the new details either way.
+          console.error(`[intake][crm] card refresh rejected — HTTP ${patch.status}:`, (await patch.text()).slice(0, 200));
+        }
+      }
     } else {
       // Create company entity
       const cardRes = await fetch(`${SUPA_URL}/rest/v1/entities`, {
         method: "POST", headers: sbHeaders,
         body: JSON.stringify({
-          kind: "company", name: name, email: email,
+          kind: "company", name: name, email: cleanEmail,
           phone: phone || null, company_text: company || null,
           business_id: "apolloclaw", status: "contacted", type: "apolloclaw",
           notes: `Intake form submitted — Track: ${label}`,
           referral_source: "intake_form",
         }),
       });
+      // 409 means the unique index caught a duplicate this request lost the race to: another
+      // submission for the same address created the card between our search and our insert.
+      // The right answer is the card that won, not an error — the person did nothing wrong,
+      // they double-clicked. Search again and use what is there.
+      if (cardRes.status === 409) {
+        const retry = await fetch(
+          `${SUPA_URL}/rest/v1/entities?kind=eq.company&email=eq.${enc}&business_id=eq.apolloclaw&limit=1`,
+          { headers: sbHeaders }
+        );
+        const rows = retry.ok ? (await retry.json()) as Array<{ id: string }> : [];
+        if (rows.length > 0) {
+          console.warn(`[intake][crm] duplicate create raced and lost for ${cleanEmail}; using existing card`);
+          return rows[0].id;
+        }
+        console.error(`[intake][crm] entity create hit a 409 but no existing card was found for ${cleanEmail}`);
+        return null;
+      }
       if (!cardRes.ok) {
         console.error(`[intake][crm] entity create rejected — HTTP ${cardRes.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardRes.text()).slice(0, 300));
         return null;
@@ -240,7 +286,7 @@ async function findOrCreateCrmClient(
         await fetch(`${SUPA_URL}/rest/v1/pipeline_deals`, {
           method: "POST", headers: sbHeaders,
           body: JSON.stringify({
-            client_name: name, contact_name: name, contact_email: email,
+            client_name: name, contact_name: name, contact_email: cleanEmail,
             brand: "Apollo Claw", brand_color: "#E8342A",
             stage: "contacted", onboarding_status: "awaiting_step1",
           }),
