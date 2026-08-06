@@ -5,10 +5,8 @@ import { MessageSquare, Sparkles } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
-import { ShortcutCard } from "@/components/ShortcutCard";
 import { SetupChecklist } from "@/components/SetupChecklist";
 import { getAgentType } from "@/config/agent-types";
-import { FIRST_MOVES } from "@/config/shortcuts";
 import { Button } from "@/components/ui/button";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 
@@ -64,32 +62,15 @@ export function StartHereView() {
           to type a question can act on them. That still holds — the rail is where you CONNECT.
           What was missing is anyone ASKING: a customer who never opens the rail never learns that
           an agent with no mailbox can only give advice. So the shelves stay gone and this asks
-          the question instead, in four rows rather than thirty tiles. */}
+          the question instead, by name, in the order somebody would actually do them. */}
       <SetupChecklist agentId={active.agent37_id} />
 
-      {/* The "now what?" problem. Before this, the page said "head to the Chat tab and start
-          talking" — which is not an instruction, it's the absence of one. Almost everybody
-          opened with "hi", asked something a search engine could answer, decided it was a
-          chatbot, and never came back. These are six things to actually say, each one a click
-          that opens the chat with the question already typed. */}
-      <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Now what?
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Click any of these and it opens the chat with the question ready — edit it or send it
-          as is.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {FIRST_MOVES.map((s) => (
-            <ShortcutCard key={s.id} shortcut={s} agentName={agentName} />
-          ))}
-        </div>
-      </div>
-
-      {/* A "Connect your tools" card sat beside this one. It existed because the page had no
-          route to Connections once the shelves left, and the checklist above is now four of
-          them — so it was repeating a link the reader had already been given, in weaker terms. */}
+      {/* A "Now what?" grid of six opening questions sat here, and a "Connect your tools" card
+          beside the one below. Both are gone, and for the same reason: this page now has ONE job.
+          An agent with nothing connected cannot do any of the six things that grid suggested, so
+          offering them first taught people the agent was a chatbot — which is precisely what the
+          grid was added to prevent. The questions still exist, one click away under the Guide,
+          where they are useful to somebody who has finished setting up. */}
       <div className="grid gap-3">
         <Link
           href="/dashboard/guide"
@@ -97,10 +78,12 @@ export function StartHereView() {
         >
           <Sparkles className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
           <div>
-            <div className="font-medium">More things to ask</div>
+            <div className="font-medium">Things to ask {agentName}</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              The full list, by what you&apos;re trying to get done — plus what the words around
-              here mean.
+              {/* Was "plus what the words around here mean" — the Guide's glossary was deleted
+                  along with config/glossary.ts, so this promised a section that isn't there. */}
+              A full list of openers, grouped by what you&apos;re trying to get done. Worth a look
+              once the connections above are in.
             </p>
           </div>
         </Link>
