@@ -353,22 +353,36 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   // The set of cards a narrowed view shows. Search wins over the category pills for anything
   // the remote catalog turned up, because those apps have no curated category to filter by —
   // picking "Files & docs" and typing "notion" should still find Notion.
-  const filtered = useMemo(() => {
-    let base: IntegrationToolkit[];
+  // Split in two so the Status rail can count the same set the grid is about to render.
+  // `base` is everything the category and query select; `filtered` is that after the status
+  // filter. Counting off `base` is what makes "Connected 3" mean three of the cards below.
+  const base = useMemo(() => {
     if (q) {
       const curated = category === ALL ? localMatches
         : category === ESSENTIALS ? localMatches.filter((t) => ESSENTIAL_INTEGRATION_SLUGS.includes(t.slug))
         : localMatches.filter((t) => categoryForSlug(t.slug) === category);
-      base = category === ALL ? [...curated, ...remoteExtras] : curated;
-    } else if (category === ESSENTIALS) {
-      base = ESSENTIAL_TOOLKITS;
-    } else if (category === ALL) {
-      base = [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps];
-    } else {
-      base = INTEGRATION_CATEGORIES.find((c) => c.title === category)?.toolkits ?? [];
+      return category === ALL ? [...curated, ...remoteExtras] : curated;
     }
-    return byStatus(base);
-  }, [q, category, localMatches, remoteExtras, extraApps, byStatus]);
+    if (category === ESSENTIALS) return ESSENTIAL_TOOLKITS;
+    if (category === ALL) return [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps];
+    return INTEGRATION_CATEGORIES.find((c) => c.title === category)?.toolkits ?? [];
+  }, [q, category, localMatches, remoteExtras, extraApps]);
+
+  const filtered = useMemo(() => byStatus(base), [base, byStatus]);
+
+  // Counts for the Status rail, over `base` rather than over the whole account. "Connected"
+  // here answers "how many of these" — the account-wide number already has a home on the
+  // Connected tab, and repeating it beside a filtered grid made it read as a subset of what
+  // is on screen when it wasn't.
+  const baseConnected = useMemo(
+    () => base.filter((t) => isToolkitConnected(connections, t.slug)).length,
+    [base, connections]
+  );
+
+  // What "All apps" actually yields when clicked: the curated shelf plus whatever "Show more
+  // apps" has paged in so far. It grows as you page, which is the honest behaviour — the
+  // number goes up because the list did.
+  const browsableCount = DEFAULT_INTEGRATION_TOOLKITS.length + extraApps.length;
 
   // The landing view: every category as its own shelf. Any filter or query at all collapses
   // it into a single flat grid, so there is only ever one place to look for results.
@@ -431,7 +445,15 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search 1,000+ apps (e.g. github, gmail, calendar)"
+              // The catalogue total lives here rather than on a filter row, because this is the
+              // one control that actually reaches all of it. On a filter it was a promise the
+              // click could not keep; on the search box it is a description of what typing does.
+              // Before the count lands, no number — "1,000+" was a guess that happened to be right.
+              placeholder={
+                catalogTotal
+                  ? `Search ${catalogTotal.toLocaleString()} apps (e.g. github, gmail, calendar)`
+                  : "Search the app store (e.g. github, gmail, calendar)"
+              }
               className="h-11 pl-9"
             />
           </div>
@@ -460,7 +482,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 <FilterRow
                   active={category === ALL}
                   onClick={() => setCategory(ALL)}
-                  count={catalogTotal ?? DEFAULT_INTEGRATION_TOOLKITS.length}
+                  count={browsableCount}
                 >
                   All apps
                 </FilterRow>
@@ -496,14 +518,14 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 <FilterRow
                   active={status === "all"}
                   onClick={() => setStatus("all")}
-                  count={catalogTotal ?? DEFAULT_INTEGRATION_TOOLKITS.length}
+                  count={base.length}
                 >
                   All
                 </FilterRow>
                 <FilterRow
                   active={status === "connected"}
                   onClick={() => setStatus("connected")}
-                  count={connectedCount}
+                  count={baseConnected}
                 >
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
                   Connected
@@ -511,7 +533,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 <FilterRow
                   active={status === "available"}
                   onClick={() => setStatus("available")}
-                  count={(catalogTotal ?? DEFAULT_INTEGRATION_TOOLKITS.length) - connectedCount}
+                  count={base.length - baseConnected}
                 >
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-hidden />
                   Not connected
