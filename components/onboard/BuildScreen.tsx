@@ -152,7 +152,13 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
   };
 
   const provisioned = phase === "starting" || phase === "ready";
-  const askForPassword = viaSession && phase === "ready";
+  // Deliberately NOT gated on the build being finished. Setting a password does not depend on
+  // the agent being up — the account already exists, because /api/onboard/complete resolved it
+  // before any of this rendered. Gating it on "ready" meant a build that stalled, or merely ran
+  // past the four-minute mark, put the buyer back where this whole screen started: a "Go to Log
+  // In" button they had no password for. It also makes them wait for no reason; they can set it
+  // while the build finishes and go watch it from their own dashboard.
+  const askForPassword = viaSession;
   const inputStyle: React.CSSProperties = {
     width: "100%", background: "#E8E7E3", border: `1px solid ${BDR}`, borderRadius: 6,
     color: TX, fontSize: 14, fontFamily: "inherit", padding: "10px 14px", outline: "none", boxSizing: "border-box",
@@ -181,10 +187,13 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
         </div>
         {askForPassword && !useLogin && (
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${BDR}` }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: TX, margin: "0 0 4px" }}>Your agent is live.</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: TX, margin: "0 0 4px" }}>
+              {phase === "ready" ? "Your agent is live." : "Set up your login."}
+            </p>
             <p style={{ fontSize: 13, color: TXM, margin: "0 0 14px", lineHeight: 1.6 }}>
-              Choose a password and we&apos;ll take you straight in. You&apos;ll use it with{" "}
-              the email address you paid with.
+              {phase === "ready"
+                ? "Choose a password and we'll take you straight in. You'll use it with the email address you paid with."
+                : "Choose a password while this finishes. You'll use it with the email address you paid with, and your agent will appear in your dashboard as soon as it's ready."}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <input
@@ -204,8 +213,9 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
         )}
         {askForPassword && useLogin && (
           <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
-            Your agent is live, and this account already has a password. Log in with it — or use
-            &ldquo;Forgot password?&rdquo; if you need a new one.
+            This account already has a password. Log in with it — or use &ldquo;Forgot
+            password?&rdquo; if you need a new one. Your agent
+            {phase === "ready" ? " is live and waiting." : " will be waiting once it finishes building."}
           </div>
         )}
         {phase === "slow" && (
