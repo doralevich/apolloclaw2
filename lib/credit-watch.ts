@@ -1,5 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { availableMicros } from "@/lib/budget";
 import { deliverCredit, recordCreditPurchase } from "@/lib/credits";
 import {
   listWatchedAgents,
@@ -41,22 +42,6 @@ interface AgentContext {
   settings: CreditSettings;
   agentName: string;
   ownerEmails: string[];
-}
-
-/**
- * Available to spend, right now: what's left of this month's allowance plus any purchased
- * credit. This is the number the customer sees on the Credits page, and it must be the same
- * number we decide on — warning about a "balance" that doesn't match the one on screen is
- * how a safety net loses trust.
- */
-function availableMicros(budget: {
-  monthly_remaining_micros?: number;
-  credit_remaining_micros?: number;
-  topup_remaining_micros?: number;
-}): number {
-  const monthly = budget.monthly_remaining_micros ?? 0;
-  const credit = budget.credit_remaining_micros ?? budget.topup_remaining_micros ?? 0;
-  return monthly + credit;
 }
 
 /** Who to tell. Every member of the workspace who can act on it. */
