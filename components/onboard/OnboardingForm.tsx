@@ -208,8 +208,11 @@ interface GateData { first: string; last: string; email: string; phone: string; 
 // `heading`/`intro` are overridable so the white-glove entry point can say plainly that this
 // is an invited flow, rather than reusing self-serve copy that would read as a sales page to
 // someone David has already spoken to.
-function Gatekeeper({ onPass, heading, intro }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string }) {
-  const [d, setD] = useState<GateData>({ first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
+// `initial` re-seeds the five fields when someone steps BACK here from the questionnaire.
+// Without it the screen would remount empty and the trip back to fix one typo would cost
+// them all five.
+function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData }) {
+  const [d, setD] = useState<GateData>(initial ?? { first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
 
   const [err, setErr] = useState("");
   const set = (k: keyof GateData, v: string) => setD(p => ({ ...p, [k]: v }));
@@ -360,7 +363,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
 // ════════════════════════════════════════════════════════════
 // SHELL
 // ════════════════════════════════════════════════════════════
-function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast, submitLabel }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string }) {
+function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLast, submitLabel }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; canBack: boolean; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string }) {
   const pct = Math.round(((step + 1) / steps.length) * 100);
   const stepLabel = steps[step] ?? "";
   return (
@@ -378,7 +381,7 @@ function Shell({ steps, step, children, onBack, onNext, onSubmit, isLast, submit
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px 100px" }}>
         <div key={step} style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", animation: "oc-fade 0.35s ease" }}>{children}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 20 }}>
-          {step > 0 ? <button type="button" onClick={onBack} style={{ background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "10px 20px", borderRadius: 6, cursor: "pointer" }}>← Back</button> : <div />}
+          {canBack ? <button type="button" onClick={onBack} style={{ background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "10px 20px", borderRadius: 6, cursor: "pointer" }}>← Back</button> : <div />}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 {isLast
               ? <button type="button" onClick={onSubmit} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "10px 28px", borderRadius: 6, border: "none", cursor: "pointer" }}>{submitLabel}</button>
@@ -721,7 +724,7 @@ function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) =>
     </div>
   );
 }
-function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void }) {
+function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void; onExit?: () => void }) {
   const [step, setStep] = useState(0);
   const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", proud: [] as string[], crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
   const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
@@ -787,7 +790,15 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
     setStep(s => Math.min(s + 1, pageKeys.length - 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const back = () => { setVErr(""); setStep(s => Math.max(s - 1, 0)); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  // Step 0 has nowhere to go WITHIN the questionnaire, so it hands off to onExit — the screen
+  // the form was entered from. Only wired where that screen can be returned to without losing
+  // what was typed on it (see the call site); elsewhere step 0 keeps no Back at all.
+  const back = () => {
+    setVErr("");
+    if (step === 0) { onExit?.(); return; }
+    setStep(s => Math.max(s - 1, 0));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   const submit = async () => {
     const err = validate(pageKeys[step]);
     if (err) { setVErr(err); return; }
@@ -921,7 +932,7 @@ function BizTrack({ gate, submitLabel, onDone }: { gate: GateData; submitLabel: 
   ];
   const stepLabels = allPages.map(p => p.label);
   const cur = allPages[step] || allPages[allPages.length - 1];
-  return <Shell steps={stepLabels} step={step} onBack={back} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
+  return <Shell steps={stepLabels} step={step} onBack={back} canBack={step > 0 || !!onExit} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
 }
 // ════════════════════════════════════════════════════════════
 // ROOT
@@ -1149,6 +1160,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   if (phase === "gate") return (
     <Gatekeeper
       onPass={handleGate}
+      initial={enteredGate ?? undefined}
       heading={isWhiteGlove ? <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></> : undefined}
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
@@ -1181,6 +1193,10 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     />
   );
   if (phase === "done") return <Success nextStep={isWhiteGlove} />;
-  if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} />;
+  // White glove is the only flow that reaches the questionnaire straight from the gate, so it
+  // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
+  // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
+  // sending them back there would silently drop it, so they keep no Back on step 0.
+  if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
   return null;
 }
