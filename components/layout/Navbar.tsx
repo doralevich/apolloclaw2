@@ -8,13 +8,17 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // Site IA, current top-level order per David's direct call: Company · Industries · Departments ·
-// Case Studies · Contact. Industries (which business you run) and Departments (which role you're
-// hiring) are two separate triggers, briefly merged into one two-column "Solutions" mega-menu and
-// then split back out as too dense. The two lists are now strictly non-overlapping: Legal,
-// Medical, Real Estate, and Insurance were dropped from Departments because each resolves to the
-// same page as its Industries counterpart. Company is a small dropdown (About, Security).
-// Resources (Blog, AI 101, FAQ) stays dropped from the nav, those pages stay live, just not
-// linked from here.
+// Case Studies · Blog · Contact. Industries (which business you run) and Departments (which role
+// you're hiring) are two separate triggers, briefly merged into one two-column "Solutions"
+// mega-menu and then split back out as too dense. The two lists are now strictly non-overlapping:
+// Legal, Medical, Real Estate, and Insurance were dropped from Departments because each resolves
+// to the same page as its Industries counterpart. Company is a small dropdown (About, Security).
+//
+// Blog is back as a top-level link. It had been dropped along with the rest of Resources, which
+// left /blog reachable only from a footer column where it was labelled "Insights" — so the one
+// person who most needed to find it could not, and reported the page as missing. AI 101 and FAQ
+// stay in the footer; the blog is the one that earns a slot up here, because it is the only one
+// that gets new content.
 //
 // Every destination in both dropdowns is a real page. The old /use-cases/* tree was retired and
 // split along these same two axes, with 301s from every old path (see next.config.ts).
@@ -206,9 +210,9 @@ export default function Navbar() {
   }, [pathname]);
 
   // Top-level order per David's direct call: Company (About, Security), Industries, Departments,
-  // Case Studies, Contact. Industries and Departments are two separate triggers again after a
-  // brief run as one merged "Solutions" mega-menu. Resources (Blog, AI 101, FAQ) stays dropped
-  // from the nav, those pages stay live, just not linked from here.
+  // Case Studies, Blog, Contact. Industries and Departments are two separate triggers again after
+  // a brief run as one merged "Solutions" mega-menu. Blog sits second-to-last so Contact keeps
+  // the end of the row, which is where people look for it.
   const navEntries: NavEntry[] = [
     {
       kind: "group",
@@ -243,6 +247,13 @@ export default function Navbar() {
     },
     {
       kind: "link",
+      label: "Blog",
+      to: "/blog",
+      // startsWith, not equality, so the underline stays lit while you are reading a post.
+      active: (p) => p.startsWith("/blog"),
+    },
+    {
+      kind: "link",
       label: "Contact",
       to: "/contact",
       active: (p) => p.startsWith("/contact"),
@@ -257,7 +268,8 @@ export default function Navbar() {
             with the logo and right edge underneath, instead of the ad-hoc px-5/px-8 this used
             to carry on its own. Get Started was removed from both this bar and the mobile
             drawer (David's call), leaving Schedule a Consultation as the single nav CTA. */}
-        <div className="hidden py-[5px] md:flex" style={{ background: NAVY_DEEP }}>
+        {/* py-[10px]: was 5px, David asked for 5px more top and bottom on this bar. */}
+        <div className="hidden py-[10px] md:flex" style={{ background: NAVY_DEEP }}>
           <div className="container mx-auto flex w-full items-center justify-between">
             <a
               href={`mailto:${CONTACT_EMAIL}`}
