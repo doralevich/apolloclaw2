@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Blocks, MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare, Sparkles } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { ShortcutCard } from "@/components/ShortcutCard";
+import { SetupChecklist } from "@/components/SetupChecklist";
 import { getAgentType } from "@/config/agent-types";
 import { FIRST_MOVES } from "@/config/shortcuts";
 import { Button } from "@/components/ui/button";
@@ -59,9 +60,12 @@ export function StartHereView() {
         </div>
       </div>
 
-      {/* The connect shelves were here. They're in the chat's empty state now — the same
-          invitation, but where somebody about to type a question can act on it, rather than on a
-          page they pass through once. */}
+      {/* The connect shelves that were here moved to the chat's empty state, where somebody about
+          to type a question can act on them. That still holds — the rail is where you CONNECT.
+          What was missing is anyone ASKING: a customer who never opens the rail never learns that
+          an agent with no mailbox can only give advice. So the shelves stay gone and this asks
+          the question instead, in four rows rather than thirty tiles. */}
+      <SetupChecklist agentId={active.agent37_id} />
 
       {/* The "now what?" problem. Before this, the page said "head to the Chat tab and start
           talking" — which is not an instruction, it's the absence of one. Almost everybody
@@ -83,22 +87,10 @@ export function StartHereView() {
         </div>
       </div>
 
-      {/* Back, now that the shelves have moved to the chat: without it this page has no route to
-          Connections at all. */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Link
-          href="/dashboard/integrations"
-          className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
-        >
-          <Blocks className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-          <div>
-            <div className="font-medium">Connect your tools</div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Email, calendar, your CRM. This is what turns {agentName} from something that gives
-              advice into something that does the work.
-            </p>
-          </div>
-        </Link>
+      {/* A "Connect your tools" card sat beside this one. It existed because the page had no
+          route to Connections once the shelves left, and the checklist above is now four of
+          them — so it was repeating a link the reader had already been given, in weaker terms. */}
+      <div className="grid gap-3">
         <Link
           href="/dashboard/guide"
           className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"

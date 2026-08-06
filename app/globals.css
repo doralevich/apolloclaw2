@@ -190,11 +190,17 @@
    overriding the navy dark theme and the sidebar stayed white with the lights off. The dark
    palette is already cool; it needs neutralising by nobody. */
 .app-accent:not(.dark) {
-  --color-background: hsl(220 20% 97%);
+  /* 95, not 97. Cards here are pure white, so the page behind them IS the separation — at 97
+     that was a three-point step, and three points across a 1px border is not an edge. Panels
+     read as one continuous sheet with faint lines drawn on it, which is what "not crisp" was.
+     Five points is enough to see where a panel starts without the surround going grey. */
+  --color-background: hsl(220 20% 95%);
   --color-surface-alt: hsl(220 16% 94%);
   --color-surface-purple: hsl(220 14% 96%);
   --color-surface-teal: hsl(220 15% 93%);
-  --color-card-elevated: hsl(220 20% 97%);
+  /* Was 97 — the exact value of --color-background, which made "elevated" mean nothing at all.
+     White, so a surface asking to be lifted is lifted. */
+  --color-card-elevated: hsl(0 0% 100%);
 
   --color-secondary: hsl(220 15% 93%);
   --color-secondary-foreground: hsl(220 12% 18%);
@@ -206,8 +212,11 @@
      old foreground/muted pair was the other half of "not enough contrast" — text that is fine in
      a hero is thin in a sidebar row. */
   --color-foreground: hsl(222 24% 11%);
-  --color-border: hsl(220 14% 88%);
-  --color-input: hsl(220 14% 88%);
+  /* Two points darker, for the same reason the background moved: a hairline is the only thing
+     separating a white tile from the white panel it sits in, and at 88 it was doing that job
+     on about a tenth of the available contrast. */
+  --color-border: hsl(220 14% 86%);
+  --color-input: hsl(220 14% 86%);
 }
 
 /* The brand gradient, for the few surfaces that carry it: the primary button, the send control,
@@ -254,8 +263,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(58% 44% at 22% 100%, rgba(139, 92, 246, 0.11), transparent 72%),
-    radial-gradient(52% 40% at 82% 100%, rgba(236, 72, 153, 0.08), transparent 72%);
+    radial-gradient(58% 44% at 22% 100%, rgba(139, 92, 246, 0.16), transparent 72%),
+    radial-gradient(52% 40% at 82% 100%, rgba(236, 72, 153, 0.11), transparent 72%);
 }
 
 /* Muted on navy: the same wash at light-mode strength turns the bottom of a dark pane
