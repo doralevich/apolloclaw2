@@ -77,7 +77,16 @@ export function ChannelsView() {
   );
 }
 
-function ChannelsPanel({ agentId }: { agentId: string }) {
+// Exported so Start Here can show the real cards rather than a second set that looks like them.
+// `showHeading` is the only thing that differs there: the page has its own heading, and a second
+// <h1> inside somebody else's section is both wrong to read and wrong to hear.
+export function ChannelsPanel({
+  agentId,
+  showHeading = true,
+}: {
+  agentId: string;
+  showHeading?: boolean;
+}) {
   const [channels, setChannels] = useState<Channel[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   // One card open at a time. All four expanded is four sets of developer-console instructions
@@ -130,33 +139,35 @@ function ChannelsPanel({ agentId }: { agentId: string }) {
   }, [channels]);
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-card">
-            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+    <div className={cn("space-y-6", showHeading && "max-w-4xl")}>
+      {showHeading && (
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-card">
+              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">Chat anywhere</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Connect a chat app you already use, and your agent answers there — to you and
+                nobody else.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Chat anywhere</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Connect a chat app you already use, and your agent answers there — to you and nobody
-              else.
-            </p>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setRefreshing(true);
+              load();
+            }}
+            disabled={refreshing}
+          >
+            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+            Refresh
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setRefreshing(true);
-            load();
-          }}
-          disabled={refreshing}
-        >
-          <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-          Refresh
-        </Button>
-      </div>
+      )}
 
       <div className="space-y-3">
         {CHANNELS.map((def) => {

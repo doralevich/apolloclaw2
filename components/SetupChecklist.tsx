@@ -5,28 +5,26 @@ import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { CHANNELS } from "@/config/channels";
+import { ChannelsPanel } from "@/components/ChannelsView";
 import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
-import type {
-  Channel,
-  ChannelsResult,
-  ChannelId,
-  IntegrationConnection,
-  IntegrationConnectionsResult,
-} from "@/lib/types";
+import type { IntegrationConnection, IntegrationConnectionsResult } from "@/lib/types";
 
 // Setting up, on the page people land on when the build finishes.
 //
 // WHY THE TWO HALVES ARE DIFFERENT SHAPES. They connect by genuinely different means, and
 // pretending otherwise is what makes setup screens lie. An app the agent REACHES is one OAuth
-// click: this page can start it directly, so those cards carry a real Connect link. A chat app is
-// where the agent ANSWERS you, and no OAuth exists for any of them — they need a bot token pasted
-// into somebody else's console, seven steps of it for WhatsApp. Those cards therefore hand off to
-// the Channels page that holds the steps and the form, and say so rather than offering a button
-// that only moves you somewhere else.
+// click, so those are compact cards, two to a row, tabbed by provider — a Connect button and a
+// line about what the click will do is the whole story. A chat app is where the agent ANSWERS
+// you, and no OAuth exists for any of them: they need a bot token pasted in from somebody else's
+// console, seven numbered steps of it for WhatsApp. That does not fit in half a row, so those run
+// full width and expand, one at a time, onto the steps and the form.
 //
-// That split is also the one Channels and Connections already make (reach versus answer). It was
-// made because the two were a single screen once and read as an undifferentiated pile of apps.
+// The full-width half is the Channels page's own ChannelsPanel, not a copy of it. A copy would be
+// a second thing to keep in step with config/channels.ts, and the first time the two disagreed
+// about a setup step the customer would be the one to find out.
+//
+// The split itself is the one Channels and Connections already make (reach versus answer). It
+// exists because the two were a single screen once and read as an undifferentiated pile of apps.
 //
 // CONNECT IS A LINK, NOT A HANDLER. /integrations/connect/redirect starts OAuth server-side and
 // 302s to the provider, which is what the Connections cards use. A plain anchor to it means no
@@ -91,16 +89,6 @@ const TABS: Tab[] = [
   },
 ];
 
-const CHATS: { id: ChannelId; name: string; tagline: string; logo: string }[] = (
-  ["telegram", "slack", "whatsapp"] as ChannelId[]
-).map((id) => {
-  const def = CHANNELS.find((c) => c.id === id);
-  if (!def) throw new Error(`SetupChecklist: no channel definition for "${id}".`);
-  // Name, logo and tagline come from config/channels.ts rather than being restated, so this page
-  // cannot drift from the Channels cards.
-  return { id, name: def.name, tagline: def.tagline, logo: def.logo };
-});
-
 function isActive(c: IntegrationConnection): boolean {
   return (c.status || "").toUpperCase() === "ACTIVE" && !c.isDisabled;
 }
@@ -131,7 +119,6 @@ function Badge({ connected, label }: { connected: boolean; label: string }) {
 export function SetupChecklist({ agentId }: { agentId: string }) {
   const [tab, setTab] = useState(TABS[0].id);
   const [toolkits, setToolkits] = useState<Set<string>>(new Set());
-  const [channels, setChannels] = useState<Channel[]>([]);
 
   const load = useCallback(() => {
     apiFetch<IntegrationConnectionsResult>(`/api/agents/${agentId}/integrations/connections`)
@@ -144,9 +131,6 @@ export function SetupChecklist({ agentId }: { agentId: string }) {
       // onto a flow that tells the truth, rather than claiming a connection that isn't there.
       .catch(() => {});
 
-    apiFetch<ChannelsResult>(`/api/agents/${agentId}/channels`)
-      .then((res) => setChannels(res.channels))
-      .catch(() => {});
   }, [agentId]);
 
   useEffect(() => {
@@ -160,10 +144,6 @@ export function SetupChecklist({ agentId }: { agentId: string }) {
   }, [load]);
 
   const shown = TABS.find((t) => t.id === tab) ?? TABS[0];
-  const channelAccount = (id: ChannelId): string | null => {
-    const c = channels.find((ch) => ch.channel === id && ch.state === "connected");
-    return c ? c.account || "Connected" : null;
-  };
 
   return (
     <div className="space-y-8">
@@ -252,31 +232,17 @@ export function SetupChecklist({ agentId }: { agentId: string }) {
           </Link>
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Pick one so you can talk to it without opening this dashboard. These need a bot token
-          from the app&apos;s own console, so each one opens its setup steps on Channels.
+          Pick one so you can talk to it without opening this dashboard. Each opens its setup
+          steps here — no OAuth exists for these, so they need a bot token from the app&apos;s own
+          console.
         </p>
 
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {CHATS.map((c) => {
-            const account = channelAccount(c.id);
-            return (
-              <Link
-                key={c.id}
-                href="/dashboard/channels"
-                className="flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/25"
-              >
-                <Logo src={c.logo} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{c.name}</span>
-                    <Badge connected={!!account} label={account ?? "Not connected"} />
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{c.tagline}</p>
-                  {!account && <p className="mt-2 text-xs text-muted-foreground">Setup steps →</p>}
-                </div>
-              </Link>
-            );
-          })}
+        {/* The Channels page's own cards, not a copy of them: full width, one open at a time,
+            expanding onto the numbered steps and the form that finishes the job. A copy would be
+            a second thing to keep in step with config/channels.ts, and the first time the two
+            disagreed the customer would be the one to find out. */}
+        <div className="mt-3">
+          <ChannelsPanel agentId={agentId} showHeading={false} />
         </div>
       </div>
     </div>
