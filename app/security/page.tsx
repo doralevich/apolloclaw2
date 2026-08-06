@@ -132,11 +132,27 @@ const INFRA = [
   { name: "Anthropic (Claude)", role: "The AI model layer, enterprise-grade and privacy-respecting" },
 ];
 
+const POLICIES = [
+  "Information Security Policy",
+  "Access Control Policy",
+  "Incident Management Procedure",
+  "Data Protection Policy",
+  "Data Classification Policy",
+  "Risk Assessment & Management Policy",
+  "Communications & Network Security Policy",
+  "Operations Security Policy",
+  "Compliance Policy",
+  "Vendor Management Procedure",
+  "HR Security Policy",
+  "Physical & Environmental Security Policy",
+];
+
 // Vendor-readiness checklist, the same shape IT and procurement teams see in our vendor
 // security packet, just surfaced directly on the page instead of gated behind a request.
 const READINESS: { label: string; done: boolean | "partial"; note: string }[] = [
-  { label: "Written security policies", done: true, note: "InfoSec, access control, incident response, data retention" },
+  { label: "Written security policies", done: true, note: "12 formal policies covering InfoSec, access control, incident response, data classification, risk management, and more" },
   { label: "Incident response plan", done: true, note: "Documented, with a breach-notification commitment" },
+  { label: "Data classification policy", done: true, note: "Formal data classification framework in place" },
   { label: "Data export & deletion", done: "partial", note: "Deletion on request today, self-service export in progress" },
   { label: "Encryption in transit and at rest", done: true, note: "TLS 1.3, AES-256, keys held outside the data they protect" },
   { label: "Per-user data isolation", done: true, note: "Row-level security, verified on every table" },
@@ -149,7 +165,7 @@ const READINESS: { label: string; done: boolean | "partial"; note: string }[] = 
   { label: "Published privacy policy", done: false, note: "In progress, available on request in the meantime" },
   { label: "HECVAT responses (education)", done: true, note: "Pre-filled and ready to submit" },
   { label: "FERPA data-processing agreement", done: true, note: "Available for education clients" },
-  { label: "SOC 2", done: "partial", note: "Type I complete, Type II on track for September 2026" },
+  { label: "SOC 2", done: "partial", note: "In progress, audit report available on request" },
   { label: "Third-party penetration test", done: false, note: "On our roadmap, ask for current status" },
 ];
 
@@ -236,15 +252,72 @@ export default function SecurityPage() {
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <ScrollReveal>
             <Card title="Governance & Operational Security">
-              Security is not just architecture, it is discipline. Apollo[Claw] operates under written
-              policies covering information security, access control, incident response, and data retention.
-              Every public-facing endpoint is rate-limited, and every response carries standard security
-              headers and a content-security policy. We maintain an incident-response plan with a
-              breach-notification commitment, log sensitive administrative actions, and continuously scan our
-              code for vulnerabilities and exposed secrets. Where we host or manage components, backups run
-              with point-in-time recovery and are encrypted at rest.
+              <p style={{ margin: "0 0 16px" }}>
+                The confidentiality, integrity, and availability of your data are not afterthoughts. They
+                are the foundation of every decision we make about architecture, access, and operations.
+                Apollo[Claw] operates under a formal set of written policies covering information security,
+                access control, incident response, data classification, risk management, vendor management,
+                and more.
+              </p>
+              <p style={{ margin: "0 0 16px" }}>
+                Every public-facing endpoint is rate-limited, and every response carries standard security
+                headers and a content-security policy. We maintain an incident-response plan with a
+                breach-notification commitment, log sensitive administrative actions, and continuously scan
+                our code for vulnerabilities and exposed secrets. Where we host or manage components,
+                backups run with point-in-time recovery and are encrypted at rest.
+              </p>
+              <p style={{ margin: 0 }}>
+                Written policies, our vendor security packet, and a data-processing agreement are available
+                to IT and procurement teams on request.
+              </p>
             </Card>
           </ScrollReveal>
+        </div>
+      </section>
+
+      {/* SECURITY POLICIES — white */}
+      <section style={{ background: WHITE }}>
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
+          <ScrollReveal>
+            <Kicker>[ Written Policies ]</Kicker>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
+            >
+              Formal Security Policies
+            </h2>
+            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
+              Apollo[Claw] maintains a documented security policy framework. All policies are versioned,
+              reviewed, and available to enterprise clients and procurement teams on request.
+            </p>
+          </ScrollReveal>
+          <div
+            style={{
+              display: "grid",
+              gap: 10,
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+            }}
+          >
+            {POLICIES.map((policy, i) => (
+              <ScrollReveal key={policy} delay={i * 40}>
+                <div
+                  style={{
+                    background: CREAM,
+                    border: `1px solid ${BORDER}`,
+                    borderLeft: `3px solid ${RED}`,
+                    borderRadius: 6,
+                    padding: "12px 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <span style={{ color: RED, fontWeight: 800, fontSize: 13, flexShrink: 0 }}>&#10003;</span>
+                  <span style={{ fontSize: 13.5, color: INK, fontWeight: 500 }}>{policy}</span>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </section>
 
