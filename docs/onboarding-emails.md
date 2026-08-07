@@ -9,10 +9,15 @@ move into a marketing tool.
 | Email | Sent by | Transport | Trigger |
 |---|---|---|---|
 | Your ApolloClaw account is ready | Stripe webhook | Mandrill | genuine event, at payment |
-| Here is what happens next | hourly cron | Mandrill | polled, +1h |
-| Your agent is waiting on one thing | hourly cron | Mandrill | polled, +48h, only if unfinished |
-| You have not been able to get in yet | hourly cron | Mandrill | polled, +72h, only if never signed in |
-| Three things people forget | hourly cron | Mandrill | polled, +7d, only once set up |
+| Here is what happens next | **nobody — build in Mailchimp** | — | was: polled, +1h |
+| Your agent is waiting on one thing | **nobody — build in Mailchimp** | — | was: polled, +48h, if unfinished |
+| You have not been able to get in yet | **nobody — build in Mailchimp** | — | was: polled, +72h, if never signed in |
+| Three things people forget | **nobody — build in Mailchimp** | — | was: polled, +7d, once set up |
+
+**The four nurture emails are switched off and nothing is sending them yet.** That gap is
+deliberate and it is live: `SENDS_ENABLED` now defaults off, so until the journeys are built, a
+new customer gets their password receipt and then silence. Copy for all four is preserved in the
+`STEPS` array in `lib/onboarding-series.ts`, ready to paste into Mailchimp.
 
 Mandrill **is** Mailchimp Transactional, so all of this already bills to the Mailchimp family.
 What is *not* in Mailchimp is the sequencing: no audience, no journey, no automation builder.
@@ -69,14 +74,17 @@ condition. The rule that matters:
 
 Copy for all four is in `lib/onboarding-series.ts`, in the `STEPS` array, ready to paste.
 
-### Step 3: switch the code sends off
+### Step 3: switch the code sends off (done)
 
-Set `ONBOARDING_SERIES_SENDS=off` in Vercel. The cron keeps running and keeps syncing tags —
-which the journeys now depend on — and stops sending. Nothing needs deploying, and it is
-reversible in one environment variable if a journey misbehaves.
+`SENDS_ENABLED` defaults off. The cron still runs and still syncs tags — which the journeys
+depend on — and sends nothing.
 
-Do this **the moment the first journey goes live**, not before and not after. Both systems
-running at once means somebody receives both versions of the same email.
+The default is in code rather than an environment variable on purpose. This is a permanent
+decision, and an env var holding it would be one Vercel project restore away from quietly
+mailing everybody twice.
+
+To send from here again — the escape hatch if the journeys do not work out — set
+`ONBOARDING_SERIES_SENDS=on`.
 
 ## What should NOT move
 
