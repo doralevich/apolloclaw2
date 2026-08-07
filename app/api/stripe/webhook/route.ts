@@ -12,6 +12,7 @@ import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegram } from "@/lib/telegram";
 import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
+import { escapeHtml } from "@/lib/onboardingSections";
 
 // Stripe webhook — the provisioning side of the storefront.
 //
@@ -165,7 +166,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         ? `$${(session.amount_total / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
         : "";
     const buyer = session.customer_details?.email || email || userId;
-    after(() => notifyPurchase({ label: type.label, agentId: agent.id, buyer, amount, sessionId: session.id }));
+    after(async () => {
+      // The customer's own welcome. Until this existed, buying an agent sent the buyer nothing
+      // at all: Stripe redirected them to the questionnaire, and if they closed that tab the
+      // purchase left no trace in their inbox and no way back to the page short of guessing
+      // the URL. The only mail this flow produced went to us.
+      if (email) {
+        await sendAgentWelcomeEmail({
+          email,
+          firstName: (session.customer_details?.name || "").trim().split(/\s+/)[0] || "",
+          label: type.label,
+          setupUrl: `${publicSiteOrigin()}/onboard/${encodeURIComponent(type.id)}?ws=${encodeURIComponent(workspaceId)}`,
+        });
+      }
+      await notifyPurchase({ label: type.label, agentId: agent.id, buyer, amount, sessionId: session.id });
+    });
   } catch (err) {
     if (err instanceof ApiError && err.status === 409) {
       // Duplicate delivery (or a second purchase attempt for a type the workspace already
@@ -392,6 +407,48 @@ async function notifyLicensePurchase(o: {
 
 // Team alert on a completed purchase: Telegram (same channel as the intake flows) plus an
 // email to the notify address. Best-effort — both helpers swallow their own errors.
+// The welcome email for an agent purchase, sent to the customer.
+//
+// Distinct from the licence flow's "your account is ready", which exists because that buyer had
+// no account yet and needed a password link. This buyer is already signed in and already has a
+// dashboard; what they need is confirmation the thing they paid for exists, and the one link
+// that gets them to the next step.
+//
+// Deliberately not a sequence. It says what they bought, what happens next, and where to go —
+// once, at the moment they will actually read it.
+async function sendAgentWelcomeEmail(o: {
+  email: string;
+  firstName: string;
+  label: string;
+  setupUrl: string;
+}): Promise<void> {
+  try {
+    await sendMandrillEmail({
+      to: o.email,
+      subject: `Your ${o.label} is ready`,
+      html:
+        `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
+        `<h2 style="color:#0B1729">Your ${escapeHtml(o.label)} is ready${o.firstName ? `, ${escapeHtml(o.firstName)}` : ""}.</h2>` +
+        `<p>Payment is confirmed and the agent has been created in your workspace. It is running, ` +
+        `but it does not know anything about your business yet — so right now it is a general ` +
+        `assistant rather than yours.</p>` +
+        `<p>The setup questions are what change that. They ask how you work, who you serve, and ` +
+        `what you want taken off your plate, and everything the agent does afterwards is built ` +
+        `from those answers. Twenty minutes or so, and you can leave and come back.</p>` +
+        `<p><a href="${o.setupUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Set up your ${escapeHtml(o.label)}</a></p>` +
+        // The reason this email exists at all: closing the Stripe tab used to lose the link.
+        `<p style="color:#6b7280;font-size:13px">This link keeps working, so you can come back to ` +
+        `it whenever suits. If anything in the questions does not make sense, reply to this email ` +
+        `and tell me which one — that is usually faster than guessing.</p>` +
+        `</div>`,
+    });
+  } catch (err) {
+    // Best effort, and after the response. The agent is provisioned and paid for either way, and
+    // a mail failure must not fail the webhook into a Stripe retry that re-runs provisioning.
+    console.error("[stripe-webhook] agent welcome email failed:", o.email, err);
+  }
+}
+
 async function notifyPurchase(o: {
   label: string;
   agentId: string;
