@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMandrillEmail } from "@/lib/email";
+import { setMailchimpTags, upsertMailchimpContact } from "@/lib/mailchimp";
 import { publicSiteOrigin } from "@/lib/site-url";
 
 // The onboarding email series for cloud-hosted (VPS) customers.
@@ -50,6 +51,39 @@ export const SERIES_LIVE_FROM = new Date("2026-08-06T00:00:00Z");
 
 /** Recorded by the Stripe webhook when it sends the password-setup mail. Never sent from here. */
 export const WELCOME_STEP = "welcome";
+
+/**
+ * Whether this app still sends the nurture emails itself.
+ *
+ * Set ONBOARDING_SERIES_SENDS=off in Vercel the moment a Mailchimp journey goes live, and this
+ * stops sending while carrying on with the tag sync below. That ordering matters: the tags are
+ * what a journey branches on, so they have to keep flowing after the sending moves. Turning
+ * this off does NOT touch the Stripe receipt, which is a different email on a different path.
+ *
+ * Defaults to on. A missing environment variable must never silently stop customer mail — the
+ * failure would be invisible, and "nobody got their onboarding" looks identical to "nobody was
+ * due" from the outside.
+ */
+export const SENDS_ENABLED = (process.env.ONBOARDING_SERIES_SENDS || "on").toLowerCase() !== "off";
+
+/**
+ * The onboarding state, published to Mailchimp as tags.
+ *
+ * A Customer Journey can only branch on what Mailchimp knows, and Mailchimp knows nothing about
+ * whether somebody finished a questionnaire or ever managed to log in. Without these it could
+ * only fire on elapsed time, which is precisely the behaviour worth avoiding: mailing a person
+ * to ask them to do a thing they did last Tuesday.
+ *
+ * Every one of these except ac-customer is monotonic — you cannot un-sign-in — so they are only
+ * ever added. ac-customer comes off when an entitlement lapses, otherwise a cancelled customer
+ * stays in a journey aimed at people who are still paying.
+ */
+export const TAGS = {
+  customer: "ac-customer",
+  signedIn: "ac-signed-in",
+  questionnaire: "ac-questionnaire-done",
+  agentLive: "ac-agent-live",
+} as const;
 
 const HOUR = 60 * 60 * 1000;
 
@@ -233,29 +267,44 @@ export const STEPS: Step[] = [
 
 export type SweepResult = {
   considered: number;
+  tagged: number;
+  sendsEnabled: boolean;
   sent: Array<{ email: string; step: string }>;
   skipped: Array<{ email: string; step: string }>;
   failed: Array<{ email: string; step: string; error: string }>;
 };
 
 /**
- * Send at most one due onboarding email to each active customer.
+ * Publish each customer's onboarding state to Mailchimp, and send at most one due email.
  *
- * Best-effort throughout. A customer whose lookup or send fails is logged and left for the
- * next hour rather than aborting the run — one bad row must not stop everybody else's mail.
+ * Two jobs, deliberately in one pass, because they need exactly the same expensive lookup.
+ *
+ * The tag sync runs for EVERY Stripe customer regardless of when they bought, because a
+ * Mailchimp journey should be able to target the whole book, not just people who arrived
+ * after this feature did. Sending stays behind SERIES_LIVE_FROM, because mailing a June
+ * customer a welcome sequence is a different and much worse mistake.
+ *
+ * Best-effort throughout. A customer whose lookup, tag, or send fails is logged and left for
+ * the next hour rather than aborting the run — one bad row must not stop everybody else's mail.
  */
 export async function sweepOnboardingEmails(): Promise<SweepResult> {
   const db = createAdminClient();
   const origin = publicSiteOrigin();
-  const result: SweepResult = { considered: 0, sent: [], skipped: [], failed: [] };
+  const result: SweepResult = {
+    considered: 0,
+    tagged: 0,
+    sendsEnabled: SENDS_ENABLED,
+    sent: [],
+    skipped: [],
+    failed: [],
+  };
 
-  // Paying customers only, and only those who bought since the series went live.
+  // Every Stripe customer, cancelled ones included: a lapsed entitlement has to take the
+  // ac-customer tag back off, or a journey keeps addressing somebody who has left.
   const { data: ents, error } = await db
     .from("entitlements")
     .select("email, user_id, created_at, status, source")
-    .eq("status", "active")
-    .eq("source", "stripe")
-    .gte("created_at", SERIES_LIVE_FROM.toISOString());
+    .eq("source", "stripe");
   if (error) throw new Error(`entitlement scan failed: ${error.message}`);
   if (!ents?.length) return result;
 
@@ -264,6 +313,36 @@ export async function sweepOnboardingEmails(): Promise<SweepResult> {
     if (!email) continue;
     try {
       const customer = await loadCustomer(db, email, ent.user_id, new Date(ent.created_at));
+      const active = ent.status === "active";
+
+      // 1. Publish state to Mailchimp, for everyone, every run. Tags are idempotent, so
+      //    re-asserting them hourly costs one request and keeps the audience self-healing
+      //    after any failed write.
+      //
+      //    Upsert first, always. Tagging is a POST to /members/<hash>/tags, which 404s if the
+      //    contact is not in the audience — and a Stripe buyer need never have been: the
+      //    audience is currently populated by the intake, setup, and Calendly routes, none of
+      //    which a straight licence purchase touches. Without this line the entire sync would
+      //    404 for exactly the people it exists to serve.
+      await upsertMailchimpContact(email, customer.firstName, "");
+      await setMailchimpTags(
+        email,
+        [
+          ...(active ? [TAGS.customer] : []),
+          ...(customer.hasSignedIn ? [TAGS.signedIn] : []),
+          ...(customer.hasQuestionnaire ? [TAGS.questionnaire] : []),
+          ...(customer.hasAgent ? [TAGS.agentLive] : []),
+        ],
+        active ? [] : [TAGS.customer]
+      );
+      result.tagged += 1;
+
+      // 2. Sending. Skipped entirely once Mailchimp owns the journeys, and never applies to
+      //    customers from before the cutoff or to anyone no longer paying.
+      if (!SENDS_ENABLED) continue;
+      if (!active) continue;
+      if (new Date(ent.created_at) < SERIES_LIVE_FROM) continue;
+
       result.considered += 1;
 
       const { data: doneRows } = await db
