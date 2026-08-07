@@ -49,22 +49,34 @@ import { publicSiteOrigin } from "@/lib/site-url";
  */
 export const SERIES_LIVE_FROM = new Date("2026-08-06T00:00:00Z");
 
-/** Recorded by the Stripe webhook when it sends the password-setup mail. Never sent from here. */
+/**
+ * Recorded by the Stripe webhook when it sends the password-setup mail. Never sent from here.
+ *
+ * This one email stays in code permanently, by decision, while the four nurture steps below
+ * move to Mailchimp. It carries a short-lived link that is the only way into an account
+ * somebody has just paid for, and a marketing journey would not deliver it to anyone who has
+ * ever unsubscribed — so a person who left a newsletter last year would pay and then never
+ * receive their way in. SENDS_ENABLED deliberately has no effect on it.
+ */
 export const WELCOME_STEP = "welcome";
 
 /**
- * Whether this app still sends the nurture emails itself.
+ * Whether this app still sends the nurture emails itself. It does not: David has handed the
+ * series to Mailchimp, so this now defaults OFF and the four STEPS below do not go out.
  *
- * Set ONBOARDING_SERIES_SENDS=off in Vercel the moment a Mailchimp journey goes live, and this
- * stops sending while carrying on with the tag sync below. That ordering matters: the tags are
- * what a journey branches on, so they have to keep flowing after the sending moves. Turning
- * this off does NOT touch the Stripe receipt, which is a different email on a different path.
+ * The default was deliberately "on" when the switch was introduced, on the grounds that a
+ * missing environment variable must never silently stop customer mail. That argument does not
+ * survive the decision being made — off is now the intended state, so it is the state you get
+ * when nothing is configured. An env var is a poor place to keep a decision this permanent;
+ * it would be one Vercel project restore away from quietly mailing everybody twice.
  *
- * Defaults to on. A missing environment variable must never silently stop customer mail — the
- * failure would be invisible, and "nobody got their onboarding" looks identical to "nobody was
- * due" from the outside.
+ * Set ONBOARDING_SERIES_SENDS=on to send from here again, which is the escape hatch if the
+ * Mailchimp journeys turn out not to work.
+ *
+ * This does NOT touch the Stripe receipt. That is a different email on a different path, and
+ * it stays in code by David's decision — see the note above STEPS.
  */
-export const SENDS_ENABLED = (process.env.ONBOARDING_SERIES_SENDS || "on").toLowerCase() !== "off";
+export const SENDS_ENABLED = (process.env.ONBOARDING_SERIES_SENDS || "off").toLowerCase() === "on";
 
 /**
  * The onboarding state, published to Mailchimp as tags.
