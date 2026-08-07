@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, FileText, Loader2, Mail, PanelRight, PenLine, Plus } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Mail, PenLine, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
@@ -10,7 +10,6 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HeaderClock } from "./HeaderClock";
 import { HeaderCredit } from "./HeaderCredit";
-import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -29,17 +28,6 @@ import { useChatAttachments } from "./useChatAttachments";
 // A false positive still shows a helpful card with the real path to fixing most outages.
 // Chip id -> icon. Lives here rather than in config/shortcuts so that file stays JSX-free.
 const CHIP_ICONS = { mail: Mail, calendar: CalendarDays, file: FileText, pen: PenLine } as const;
-
-// Whether the integrations panel is tucked away. Remembered, because somebody who closed it does
-// not want to close it again on every new chat — and read through useSyncExternalStore so the
-// server renders the open state and the browser corrects it, with no state written from an effect
-// to get there.
-const RAIL_HIDDEN_KEY = "apolloclaw:integrations-rail-hidden";
-
-function subscribeStorage(onChange: () => void): () => void {
-  window.addEventListener("storage", onChange);
-  return () => window.removeEventListener("storage", onChange);
-}
 
 function isOutOfCreditsError(message: string): boolean {
   return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
@@ -116,21 +104,6 @@ export function ChatView({
   // picking the SAME chip twice work — see the note in ChatComposer.
   const [picked, setPicked] = useState<{ text: string; n: number } | null>(null);
 
-  const storedRailHidden = useSyncExternalStore(
-    subscribeStorage,
-    () => window.localStorage.getItem(RAIL_HIDDEN_KEY),
-    () => null
-  );
-  const [railOverride, setRailOverride] = useState<boolean | null>(null);
-  const railHidden = railOverride ?? storedRailHidden === "1";
-  const setRailHidden = (next: boolean) => {
-    setRailOverride(next);
-    try {
-      window.localStorage.setItem(RAIL_HIDDEN_KEY, next ? "1" : "0");
-    } catch {
-      // Private browsing, or storage full. The toggle still works for this session.
-    }
-  };
 
   // Null rather than a placeholder: an unnamed agent should stay out of the greeting entirely.
   const greetName = agentName?.trim() || null;
@@ -305,47 +278,6 @@ export function ChatView({
       )}
         </div>
 
-        {/* The panel slides OUT TO THE RIGHT rather than collapsing in place, and the wrapper's
-            width goes with it — a panel that closes without giving its space back has moved, not
-            closed. Both properties are on the same transition so the chat widens at exactly the
-            rate the panel leaves.
-            overflow-hidden is what keeps the translated panel from painting over the composer on
-            its way out. The rail stays mounted so its fetched state survives a close and reopen.
-            Hidden below lg — a 340px rail on a phone would be the whole screen. Mobile gets the
-            one-line link under the greeting instead, so Connections is still reachable from here. */}
-        {showWelcome && (
-          <div
-            className={cn(
-              "hidden shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-out lg:block",
-              railHidden ? "w-0 opacity-0" : "w-[372px] opacity-100"
-            )}
-            aria-hidden={railHidden}
-          >
-            <div
-              className={cn(
-                "h-full w-[372px] p-4 pl-0 transition-transform duration-300 ease-out",
-                railHidden && "translate-x-full"
-              )}
-            >
-              <IntegrationsRail agentId={agentId} onHide={() => setRailHidden(true)} />
-            </div>
-          </div>
-        )}
-
-        {/* The way back. A tab on the edge the panel left from, so reopening is where closing
-            happened rather than somewhere in the header. */}
-        {showWelcome && railHidden && (
-          <button
-            type="button"
-            onClick={() => setRailHidden(false)}
-            aria-label="Show integrations"
-            title="Integrations"
-            className="my-4 mr-4 hidden shrink-0 items-center gap-1.5 self-start rounded-l-xl border border-r-0 bg-card px-2 py-3 text-muted-foreground transition-colors hover:text-foreground lg:flex"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <PanelRight className="h-4 w-4" />
-          </button>
-        )}
       </div>
     </div>
   );
