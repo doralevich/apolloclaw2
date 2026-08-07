@@ -7,7 +7,6 @@ import { deliverCredit, recordCreditPurchase } from "@/lib/credits";
 import { creditPackForCatalogKey } from "@/lib/pricing/catalog";
 import { ApiError } from "@/lib/http";
 import { findAuthUserIdByEmail } from "@/lib/license-session";
-import { WELCOME_STEP } from "@/lib/onboarding-series";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -333,7 +332,7 @@ async function sendPasswordSetupEmail(
 ): Promise<void> {
   const origin = publicSiteOrigin();
   // Licence buyers have no agent provisioned yet, so their questionnaire is the lead-mode
-  // form at plain /onboard — the same place Stripe returns them to. See lib/onboarding-series.
+  // form at plain /onboard — the same place Stripe returns them to.
   const questionnaireUrl = `${origin}/onboard`;
   try {
     const { data, error } = await db.auth.admin.generateLink({
@@ -358,16 +357,9 @@ async function sendPasswordSetupEmail(
         `<p style="color:#6b7280;font-size:13px">This link expires. If it does, use "Forgot password?" on the login page and we will send a fresh one.</p>` +
         // Used to say "finish the questionnaire first" and then not say where. Somebody who
         // paid and closed the tab had no way back to it short of guessing the URL.
-        `<p style="color:#6b7280;font-size:13px">Next up is the questionnaire, which is what your agent gets built from: <a href="${questionnaireUrl}" style="color:#D72B2B">start it here</a>. A fuller note about what happens next is on its way.</p>` +
+        `<p style="color:#6b7280;font-size:13px">Next up is the questionnaire, which is what your agent gets built from: <a href="${questionnaireUrl}" style="color:#D72B2B">start it here</a>.</p>` +
         `</div>`,
     });
-
-    // Tell the series this one is already out, so its own steps start from the right place.
-    // Best-effort and after the send: a bookkeeping failure must not cost the customer their
-    // password link, and the worst case is the series treating them as one step behind.
-    await db
-      .from("onboarding_emails")
-      .upsert({ email, step: WELCOME_STEP }, { onConflict: "email,step" });
   } catch (err) {
     // Best effort. The account exists either way, and "Forgot password?" on the login page
     // is a working second path, so a mail failure must not fail the webhook.
