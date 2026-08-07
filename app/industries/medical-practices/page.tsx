@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Medical & Dental Practices | Appointment Reminders & Patient Intake | Apollo[Claw]" },
+  title: { absolute: "Medical AI Agent | AI for Medical Practices & Healthcare | Apollo[Claw]" },
   description:
-    "AI appointment reminder and patient intake system for medical and dental practices. Reduce no-shows, automate follow-up, and streamline intake. HIPAA-aware. Most practices see results within 30 days.",
+    "An AI agent for medical practices. Handles patient intake, appointment reminders, follow-ups, and administrative tasks.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/medical-practices",
   },

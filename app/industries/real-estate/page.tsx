@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Follow-Up for Realtors | Client Communication & Lead Automation | Apollo[Claw]" },
+  title: { absolute: "Real Estate AI Agent | AI for Realtors & Property Managers | Apollo[Claw]" },
   description:
-    "AI follow-up for realtors that responds to leads in under 2 minutes, manages client communication, and coordinates showings automatically. Stop losing deals to slow response time.",
+    "The Real Estate Agent handles client follow-ups, listing inquiries, and tenant communication for real estate professionals.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/real-estate",
   },

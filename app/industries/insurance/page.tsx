@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Agent for Insurance Agencies | Renewals, Quotes & Claims Automation | Apollo[Claw]" },
+  title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo[Claw]" },
   description:
-    "AI agents for insurance agencies and brokers. Automate policy renewal outreach, quote follow-up, and claims status so your team closes instead of chasing. Built by Apollo[Claw].",
+    "An AI agent for insurance agencies. Handles renewals, client follow-ups, and policy communications automatically.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/insurance",
   },

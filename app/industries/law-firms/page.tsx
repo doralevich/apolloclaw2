@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Law Firms | Client Intake & Case Follow-Up Automation | Apollo[Claw]" },
+  title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo[Claw]" },
   description:
-    "AI client intake and case follow-up for law firms. The Law Agent handles intake screening, deadline tracking, billing reminders, and document summaries so attorneys focus on billable hours.",
+    "The Law Agent automates client intake, case follow-ups, and legal communications. Built for attorneys and law firms.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/law-firms",
   },

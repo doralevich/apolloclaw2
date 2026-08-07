@@ -3,9 +3,9 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Sales Agent | Automate Outreach, Follow-Up & Pipeline Management | Apollo[Claw]" },
+  title: { absolute: "Sales AI Agent | AI-Powered Sales Assistant | Apollo[Claw]" },
   description:
-    "AI agents for sales teams. Automate outreach, follow-up sequences, and pipeline hygiene so your reps spend time closing deals, not doing data entry.",
+    "An AI agent that qualifies leads, follows up with prospects, and keeps your sales pipeline moving — 24/7.",
   alternates: {
     canonical: "https://apolloclaw.ai/ai-agents/sales",
   },

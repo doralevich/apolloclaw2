@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "The CFO Agent | AI for Finance Teams | Apollo[Claw]" },
-  description: "The CFO Agent is your AI financial advisor for small business: automating financial reporting, cash forecasts, and board prep so your team drives strategy.",
+  title: { absolute: "CFO AI Agent | Financial Intelligence for Finance Leaders | Apollo[Claw]" },
+  description: "The CFO Agent handles reporting, forecasting, and financial communications. AI built specifically for finance executives.",
   alternates: {
     canonical: "https://thecfoagent.ai",
   },
