@@ -1,9 +1,22 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Accounting Firms | Apollo[Claw]" },
-  description: "AI agents for accounting firms and CPAs. Automate client communication, document collection, deadline reminders, and reporting.",
+  title: { absolute: "AI for Accounting Firms & CPAs | Document Collection & Deadline Automation | Apollo[Claw]" },
+  description:
+    "AI agents for accounting firms and CPA practices. Automate client document collection, deadline reminders, status updates, and engagement letter tracking.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/industries/accounting-firms",
+  },
+  openGraph: {
+    images: OG_IMAGES,
+    title: "AI for Accounting Firms & CPAs | Document Collection & Deadline Automation",
+    description:
+      "Apollo[Claw] AI agents for accounting firms. Automate client communication, document collection, deadline reminders, and reporting so your team handles the work, not the chase.",
+    url: "https://apolloclaw.ai/industries/accounting-firms",
+    type: "website",
+  },
 };
 
 const uc = {

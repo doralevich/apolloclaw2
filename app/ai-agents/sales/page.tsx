@@ -1,9 +1,22 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "The Sales Agent | Apollo Claw AI for Sales Teams" },
-  description: "Apollo[Claw] AI agents for sales teams and revenue leaders. Automate outreach, follow-up, and pipeline management so your reps close more deals with less busywork.",
+  title: { absolute: "AI Sales Agent | Automate Outreach, Follow-Up & Pipeline Management | Apollo[Claw]" },
+  description:
+    "AI agents for sales teams. Automate outreach, follow-up sequences, and pipeline hygiene so your reps spend time closing deals, not doing data entry.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/ai-agents/sales",
+  },
+  openGraph: {
+    images: OG_IMAGES,
+    title: "AI Sales Agent | Automate Outreach, Follow-Up & Pipeline Management",
+    description:
+      "Apollo[Claw] AI agents for sales teams. Automate outreach, follow-up sequences, and pipeline hygiene so your reps close more deals with less busywork.",
+    url: "https://apolloclaw.ai/ai-agents/sales",
+    type: "website",
+  },
 };
 
 const uc = {

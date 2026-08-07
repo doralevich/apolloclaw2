@@ -2,16 +2,17 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Insurance Agencies | Apollo[Claw]" },
+  title: { absolute: "AI Agent for Insurance Agencies | Renewals, Quotes & Claims Automation | Apollo[Claw]" },
   description:
-    "AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team closes instead of chasing.",
+    "AI agents for insurance agencies and brokers. Automate policy renewal outreach, quote follow-up, and claims status so your team closes instead of chasing. Built by Apollo[Claw].",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/insurance",
   },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI for Insurance Agencies | Apollo Claw - Quotes, Renewals & Claims Automation",
-    description: "Apollo Claw builds AI agents for insurance agencies and brokers. Automate quote requests, policy renewals, and claims status, so your team focuses on closing, not chasing.",
+    title: "AI Agent for Insurance Agencies | Renewals, Quotes & Claims Automation",
+    description:
+      "Apollo[Claw] builds AI agents for insurance agencies and brokers. Automate policy renewal outreach, quote follow-up, and claims status so your team focuses on closing, not chasing.",
     url: "https://apolloclaw.ai/industries/insurance",
     type: "website",
   },

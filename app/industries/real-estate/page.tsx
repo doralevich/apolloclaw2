@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Real Estate Agents | Apollo[Claw]" },
-  description: "The Real Estate Agent follows up with leads in under 2 minutes, manages your CRM, and coordinates showings automatically so you can focus on closing.",
+  title: { absolute: "AI Follow-Up for Realtors | Client Communication & Lead Automation | Apollo[Claw]" },
+  description:
+    "AI follow-up for realtors that responds to leads in under 2 minutes, manages client communication, and coordinates showings automatically. Stop losing deals to slow response time.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/industries/real-estate",
+  },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI for Real Estate Agents | Automate Lead Follow-Up & Listing Management",
-    description: "The Real Estate Agent handles lead follow-up, listing management, showing coordination, and CRM updates so you can focus on closing deals.",
+    title: "AI Follow-Up for Realtors | Client Communication & Lead Automation",
+    description:
+      "AI client communication and follow-up for real estate agents. Responds to leads in under 2 minutes, manages your CRM, and coordinates showings automatically.",
     url: "https://apolloclaw.ai/industries/real-estate",
     type: "website",
   },

@@ -1,9 +1,22 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
+import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "The Personal Agent | Apollo Claw AI Personal Assistant" },
-  description: "Apollo[Claw] AI personal assistant agents for executives and business owners. Manage your inbox, calendar, contacts, and tasks so you focus on what matters.",
+  title: { absolute: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation | Apollo[Claw]" },
+  description:
+    "AI personal assistant for executives and business owners. Manages your inbox, calendar, research, and tasks so you stay focused on the work only you can do.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/ai-agents/personal-assistant",
+  },
+  openGraph: {
+    images: OG_IMAGES,
+    title: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation",
+    description:
+      "Apollo[Claw] AI personal assistant for executives and business owners. Inbox, calendar, research, and task management so you focus on what matters.",
+    url: "https://apolloclaw.ai/ai-agents/personal-assistant",
+    type: "website",
+  },
 };
 
 const uc = {

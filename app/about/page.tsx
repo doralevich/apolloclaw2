@@ -3,17 +3,17 @@ import ScrollReveal from "@/components/ScrollReveal";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "About Apollo Claw | Custom AI Agents Built by an Operator" },
+  title: { absolute: "About Apollo[Claw] | AI Consulting Firm in NYC & Long Island" },
   description:
-    "Apollo[Claw] builds custom AI agents connected to your tools, running around the clock. Founded by an operator, not a vendor. Schedule a consultation.",
+    "Apollo[Claw] is an AI consultancy based in Roslyn Heights, NY, serving businesses across NYC, Long Island, and nationwide. Custom AI agents built by an operator, not a vendor.",
   alternates: {
     canonical: "https://apolloclaw.ai/about",
   },
   openGraph: {
     images: OG_IMAGES,
-    title: "About Apollo Claw | Custom AI Agents Built by an Operator",
+    title: "About Apollo[Claw] | AI Consulting Firm in NYC & Long Island",
     description:
-      "Apollo[Claw] builds custom AI agents for your business: connected to your tools, running 24/7, without a salary. Founded by an operator, not a vendor. Schedule a consultation.",
+      "Apollo[Claw] is an AI consultancy in Roslyn Heights, NY, serving businesses across NYC, Long Island, and nationwide. Custom AI agents connected to your tools, running 24/7.",
     url: "https://apolloclaw.ai/about",
   },
 };

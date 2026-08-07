@@ -3,15 +3,15 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Receptionist Agent | Apollo[Claw]" },
+  title: { absolute: "AI Receptionist & Intake Agent | Calls, Appointments & Front Desk Coverage | Apollo[Claw]" },
   description:
-    "The Receptionist Agent answers calls, routes messages, and books appointments, so the front line stays covered without adding headcount.",
+    "AI receptionist and intake agent for businesses. Answers calls, screens inquiries, books appointments, and routes messages 24/7 without adding headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/receptionist" },
   openGraph: {
     images: OG_IMAGES,
-    title: "The Receptionist Agent | AI Phone & Front Desk Coverage",
+    title: "AI Receptionist & Intake Agent | Calls, Appointments & Front Desk Coverage",
     description:
-      "Answers calls, routes messages, and books appointments so the front line stays covered.",
+      "The Receptionist Agent answers calls, screens inquiries, books appointments, and routes messages 24/7 so the front line stays covered without adding headcount.",
     url: "https://apolloclaw.ai/ai-agents/receptionist",
     type: "website",
   },

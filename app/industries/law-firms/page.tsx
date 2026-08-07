@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Law Firms | Apollo[Claw]" },
-  description: "The Law Agent handles client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable hours, not admin.",
+  title: { absolute: "AI for Law Firms | Client Intake & Case Follow-Up Automation | Apollo[Claw]" },
+  description:
+    "AI client intake and case follow-up for law firms. The Law Agent handles intake screening, deadline tracking, billing reminders, and document summaries so attorneys focus on billable hours.",
+  alternates: {
+    canonical: "https://apolloclaw.ai/industries/law-firms",
+  },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI for Law Firms | Automate Client Intake, Billing & Deadlines",
-    description: "The Law Agent handles intake, deadline tracking, document summaries, and billing so your attorneys focus on billable work.",
+    title: "AI for Law Firms | Client Intake & Case Follow-Up Automation | Apollo[Claw]",
+    description:
+      "The Law Agent automates client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable work, not admin.",
     url: "https://apolloclaw.ai/industries/law-firms",
     type: "website",
   },

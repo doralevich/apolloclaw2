@@ -18,17 +18,17 @@ export const revalidate = 3600;
 // leaves the homepage as the only page carrying the term — the title and description below
 // are now the primary target for it, not a hedge. H1 stays the brand hero line.
 export const metadata: Metadata = {
-  title: { absolute: "AI Agents for Business | Apollo[Claw]" },
+  title: { absolute: "AI Agents for Business | AI Consulting Firm | Apollo[Claw]" },
   description:
-    "Apollo[Claw] builds AI agents for business that connect to your tools, work in Slack and WhatsApp, and ship real work with your approval. Get started today.",
+    "Apollo[Claw] is an AI consulting firm serving businesses across New York, Long Island, NYC, and nationwide. We build AI agents that connect to your tools and ship real work with your approval.",
   alternates: {
     canonical: "https://apolloclaw.ai",
   },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI Agents for Business | Apollo[Claw]",
+    title: "AI Agents for Business | AI Consulting Firm | Apollo[Claw]",
     description:
-      "Apollo[Claw] builds AI agents for business that connect to your tools, work in Slack and WhatsApp, and ship real work with your approval. Get started today.",
+      "Apollo[Claw] is an AI consulting firm in Long Island, NY serving businesses nationwide. AI agents that connect to your tools, work in Slack and WhatsApp, and ship real work with your approval.",
     url: "https://apolloclaw.ai",
   },
 };
