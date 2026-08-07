@@ -295,46 +295,6 @@
    --color-primary goes light: it is near-black outside, and a near-black control on
    navy is a hole. Nothing in the rail uses it today; this is so that the first thing
    that does isn't invisible. */
-.rail-dark {
-  --color-background: hsl(216 52% 9%);
-  --color-foreground: hsl(210 20% 96%);
-  --color-card: hsl(215 44% 13%);
-  --color-card-foreground: hsl(210 20% 96%);
-  --color-secondary: hsl(215 34% 19%);
-  --color-secondary-foreground: hsl(210 20% 96%);
-  --color-muted: hsl(215 34% 19%);
-  --color-muted-foreground: hsl(212 16% 66%);
-  --color-muted-subtle: hsl(212 14% 52%);
-  --color-border: hsl(215 28% 21%);
-  --color-input: hsl(215 28% 21%);
-  --color-primary: hsl(0 0% 97%);
-  --color-primary-foreground: hsl(216 52% 9%);
-  --color-ring: hsl(212 16% 66%);
-
-  /* The gradient is charcoal-to-ink outside, which on navy is a dark tile on a dark rail — the
-     workspace avatar simply vanished. Lifted navy instead, so it reads as raised rather than as
-     a hole. */
-  --brand-from: hsl(214 30% 29%);
-  --brand-to: hsl(215 36% 19%);
-
-  color: var(--color-foreground);
-}
-
-/* The grid from David's swatch. Two hairline gradients at 3% — at this strength it
-   is texture rather than pattern, which is the difference between a surface that
-   feels made and one that looks like a spreadsheet. Sits behind the content via a
-   pseudo-element so the rail's own children keep their stacking. */
-.rail-dark::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
-  background-size: 34px 34px;
-}
-
 /* Keyframes */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }

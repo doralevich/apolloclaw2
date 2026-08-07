@@ -283,7 +283,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <div className="rail-dark relative flex h-full w-72 max-w-[85vw] flex-col border-r border-transparent bg-background p-4 shadow-xl">
+          <div className="relative flex h-full w-72 max-w-[85vw] flex-col border-r bg-background p-4 shadow-xl">
             <div className="flex justify-end">
               <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} aria-label="Close menu">
                 <X className="h-5 w-5" />
@@ -299,10 +299,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Desktop rail.
           bg-background, not bg-card: the rail and the content pane were both pure white,
           separated by a hairline and a beige gutter — so the navigation advanced and the page
-          around it receded, which is backwards. The rail is the recessive surface now and the
-          content card is the white one, the way the mockups have it. Reads the same either
-          way round in dark mode, where background is the deeper navy. */}
-      <aside className="rail-dark relative hidden w-[17rem] shrink-0 flex-col border-r border-transparent bg-background p-4 md:flex">
+          around it receded, which is backwards. The rail is the recessive surface and the
+          content cards are the white ones, the way the mockups have it.
+
+          The border is drawn rather than transparent. It could be transparent back when this
+          rail was navy, because the colour change WAS the edge. Light on light, the rail and the
+          pane it sits against resolve to the same token — without a hairline here the two merge
+          and the layout loses its left edge entirely. */}
+      <aside className="relative hidden w-[17rem] shrink-0 flex-col border-r bg-background p-4 md:flex">
         <div className="relative flex min-h-0 flex-1 flex-col">
           <SidebarContent pathname={pathname} userEmail={userEmail} />
         </div>
