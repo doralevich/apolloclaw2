@@ -7,7 +7,6 @@ import { upsertMailchimpContact, tagMailchimpContact } from "@/lib/mailchimp";
 import { createAttioDeal, findAttioDealByEmail, updateAttioDealStage } from "@/lib/attio";
 import { renderSectionsPdf, type PdfSectionInput } from "@/lib/pdf";
 import { buildIntakeSections as buildSharedSections, sectionsToHtml, escapeHtml } from "@/lib/onboardingSections";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
@@ -172,26 +171,6 @@ async function sendEmail(opts: {
   } catch (err) {
     console.error("Mandrill send failed:", err);
     return false;
-  }
-}
-
-// ─── Record "they finished the paid questionnaire" in the DASHBOARD database ────
-// Note the project: everything else in this file talks to the CRM/"Brain" project, but the
-// onboarding series reads the dashboard one, and that is where this has to land. See
-// supabase/migrations/0020 for why the series cannot work this out for itself.
-async function recordQuestionnaireMilestone(email: string): Promise<void> {
-  const clean = email.trim().toLowerCase();
-  if (!clean) return;
-  try {
-    const db = createAdminClient();
-    const { error } = await db
-      .from("onboarding_milestones")
-      .upsert({ email: clean, milestone: "questionnaire" }, { onConflict: "email,milestone" });
-    if (error) console.error("[intake] milestone write failed:", clean, error.message);
-  } catch (err) {
-    // The submission is the thing that matters and it has already succeeded by now. The worst
-    // case here is one unnecessary nudge in two days' time.
-    console.error("[intake] milestone write threw:", clean, err);
   }
 }
 
@@ -552,16 +531,6 @@ export async function POST(req: NextRequest) {
       } catch (e) {
         console.error("[intake] failed to store client upload:", origName, e);
       }
-    }
-
-    // A paid questionnaire is a milestone the onboarding series has to be able to see. This
-    // form writes to the CRM project, so without this line the dashboard database has no idea
-    // the customer ever finished, and the series would nudge them about it two days later.
-    // Only paid submissions: a cold lead filling in the public form is not a customer partway
-    // through onboarding. Best-effort, and last-ish in the flow, because a bookkeeping write
-    // must never cost somebody their submission.
-    if (isPaidIntake(data)) {
-      await recordQuestionnaireMilestone(email);
     }
 
     // 6. CRM — find or create client, log note

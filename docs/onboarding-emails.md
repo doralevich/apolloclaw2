@@ -1,110 +1,161 @@
-# Onboarding emails: where they live and how to move them to Mailchimp
+# Onboarding emails
 
-Two systems send mail to a new cloud (VPS) customer. Knowing which is which is the whole
-point of this document, because they fail in different ways and only one of them should ever
-move into a marketing tool.
+Everything except the password receipt is now Mailchimp's. This app sends no onboarding
+sequence, runs no cron for it, and writes no tags. The code that did all that was deleted —
+this document is what is left, and it has the copy in it.
 
-## What sends what, today
+## What this app still sends
 
-| Email | Sent by | Transport | Trigger |
-|---|---|---|---|
-| Your ApolloClaw account is ready | Stripe webhook | Mandrill | genuine event, at payment |
-| Here is what happens next | **nobody — build in Mailchimp** | — | was: polled, +1h |
-| Your agent is waiting on one thing | **nobody — build in Mailchimp** | — | was: polled, +48h, if unfinished |
-| You have not been able to get in yet | **nobody — build in Mailchimp** | — | was: polled, +72h, if never signed in |
-| Three things people forget | **nobody — build in Mailchimp** | — | was: polled, +7d, once set up |
+One email, from the Stripe webhook, through Mandrill, at the moment somebody pays:
 
-**The four nurture emails are switched off and nothing is sending them yet.** That gap is
-deliberate and it is live: `SENDS_ENABLED` now defaults off, so until the journeys are built, a
-new customer gets their password receipt and then silence. Copy for all four is preserved in the
-`STEPS` array in `lib/onboarding-series.ts`, ready to paste into Mailchimp.
+> **Your ApolloClaw account is ready** — carries a set-your-password link.
 
-Mandrill **is** Mailchimp Transactional, so all of this already bills to the Mailchimp family.
-What is *not* in Mailchimp is the sequencing: no audience, no journey, no automation builder.
-That logic lives in `lib/onboarding-series.ts`.
+That is the entire list.
 
-## Why the nudges are polled rather than triggered
+### Why this one did not move
 
-Their conditions are of the form *"48 hours have passed and they still have not done X"*.
+It is not a marketing email, it is the key to the account. The link is the only way into
+something the customer has just paid for.
 
-Nothing happens when somebody fails to do something. Absence emits no event, so there is
-nothing to hook a trigger to. The only way to notice is to look on a schedule, which is what
-the hourly cron is for. The receipt is different — payment is a real event — and that one is
-genuinely triggered.
+In a Mailchimp journey it would inherit marketing behaviour, and one part of that is fatal:
+**Mailchimp will not deliver to a contact who has ever unsubscribed.** Somebody who opted out
+of a newsletter last year would pay you and then never receive their way in, with no error
+anywhere — it would look like a delivery that simply did not happen. Support finds out when
+they email you, if they bother.
 
-## Moving the journeys to Mailchimp
+Moving it is a customer-lockout bug, not a preference. Leave it where it is.
 
-### Step 1: the tags (done, shipped)
+## Setting the rest up in Mailchimp
 
-A Customer Journey can only branch on what Mailchimp knows, and Mailchimp knew none of this.
-Every hour the cron now upserts each Stripe customer into the audience and sets:
+The simple version, which needs nothing from this codebase:
 
-| Tag | Means | Comes off? |
-|---|---|---|
-| `ac-customer` | active paid entitlement | yes, when it lapses |
-| `ac-signed-in` | has signed in at least once | no |
-| `ac-questionnaire-done` | finished the questionnaire, either form | no |
-| `ac-agent-live` | an agent is provisioned | no |
+1. **Connect Stripe to Mailchimp** so purchases create or update contacts. Mailchimp's Stripe
+   integration handles this; no code involved.
+2. **Build a Customer Journey** starting from the purchase, with a delay before each email.
+3. **Paste the copy below** into the four emails.
 
-Only `ac-customer` is ever removed. You cannot un-sign-in, so the rest are monotonic.
+### The tradeoff you are accepting
 
-These are re-asserted every run rather than written once, which makes the audience
-self-healing: a failed write is corrected an hour later instead of leaving a customer
-permanently mislabelled.
+Mailchimp knows that somebody paid. It does not know whether they signed in, finished the
+questionnaire, or have a working agent — that lives in Supabase, and nothing is sending it
+over any more.
 
-Note `ac-questionnaire-done` in particular. A licence buyer's questionnaire posts to
-`/api/intake` and writes to the CRM project, so nothing about finishing it reaches the
-dashboard database on its own. `onboarding_milestones` (migration 0020) exists purely so this
-tag can be true. Without it, any journey branching on "finished the questionnaire" would be
-permanently false for every cloud customer.
+So these journeys fire on elapsed time alone. Concretely: **email 2 will go to people who
+already finished the questionnaire, and email 3 will go to people who are already signed in.**
+Roughly a fifth to a half of recipients, depending on how fast customers move.
 
-### Step 2: build the journeys
+That is the price of one system instead of two, and it is a reasonable price. It is worth
+knowing in advance rather than discovering from a reply saying "I already did this."
 
-In Mailchimp, start each journey from **tag added → `ac-customer`**, then use a delay and a
-condition. The rule that matters:
+If it starts costing you goodwill, the fix is to send the state back into Mailchimp as tags —
+about eighty lines, and it is in the git history at PR #144.
 
-> **Every nudge must check the tag before it sends.** A journey that only waits will email
-> somebody asking them to finish a form they finished on Tuesday. That is worse than sending
-> nothing, because it tells a person who has just paid you that nobody is paying attention.
+## The copy
 
-- *Here is what happens next* — wait 1 hour, send. No condition.
-- *Your agent is waiting on one thing* — wait 2 days, **if `ac-questionnaire-done` is absent**, send.
-- *You have not been able to get in yet* — wait 3 days, **if `ac-signed-in` is absent**, send.
-- *Three things people forget* — wait 7 days, **if both tags present**, send.
+Send times are from purchase.
 
-Copy for all four is in `lib/onboarding-series.ts`, in the `STEPS` array, ready to paste.
+---
 
-### Step 3: switch the code sends off (done)
+### 1. After 1 hour — "Here is what happens next"
 
-`SENDS_ENABLED` defaults off. The cron still runs and still syncs tags — which the journeys
-depend on — and sends nothing.
+Deliberately an hour behind the receipt rather than alongside it. Two emails landing together
+get read as one, and the one that survives is the receipt.
 
-The default is in code rather than an environment variable on purpose. This is a permanent
-decision, and an env var holding it would be one Vercel project restore away from quietly
-mailing everybody twice.
+> **Welcome, \*|FNAME|\*.**
+>
+> Your agent is being set up. There are three things between here and it being useful, and only
+> the first one needs you today.
+>
+> **1. Tell it about your business.**
+> This is the questionnaire. It is the longest part and it is the part everything else is built
+> from, so it is worth doing properly rather than quickly. Twenty minutes, and you can leave and
+> come back.
+>
+> **2. Connect the apps it works in.**
+> Gmail, Calendar, Drive, whatever you live in. An agent with no connections can talk about your
+> work. One with connections can do it.
+>
+> **3. Ask it something real.**
+> Not a test question. Something you were going to have to do anyway. That is the fastest way to
+> find out where it helps.
+>
+> [Start the questionnaire] → `https://apolloclaw.ai/onboard`
+>
+> Stuck at any point, reply to this email.
 
-To send from here again — the escape hatch if the journeys do not work out — set
-`ONBOARDING_SERIES_SENDS=on`.
+---
 
-## What should NOT move
+### 2. After 2 days — "Your agent is waiting on one thing"
 
-**The password receipt.** It carries a short-lived link that is the only way into an account
-somebody has paid for. In a marketing journey it inherits marketing behaviour: added delay, a
-higher chance of landing in Promotions, and — the real problem — it stops entirely for anyone
-who has ever unsubscribed. A customer who unsubscribed from a newsletter last year would pay
-and then never receive their way in.
+> **One thing left, \*|FNAME|\*.**
+>
+> Your agent is provisioned and running, but it has not been told anything about your business
+> yet, so it is a general assistant rather than yours.
+>
+> The questionnaire is what changes that. It asks how you work, who you serve, how you sound in
+> writing, and what you want taken off your plate. Everything the agent does afterwards is built
+> from those answers.
+>
+> [Pick up where you left off] → `https://apolloclaw.ai/onboard`
+>
+> If something in it did not make sense, tell me which question and I will answer it directly.
+> That is usually faster than guessing.
 
-It stays on the Stripe webhook, in code, sending through Mandrill. `ONBOARDING_SERIES_SENDS`
-deliberately does not touch it.
+---
 
-## Checking it works
+### 3. After 3 days — "You have not been able to get in yet"
 
-The tag sync is silent when it succeeds. To confirm:
+Written for someone whose receipt link expired. Since Mailchimp cannot tell who has signed in,
+it now reaches everyone — so it is worded as an offer rather than an accusation. Keep it that
+way.
 
-- Open the audience in Mailchimp and look for `ac-customer` on a recent buyer.
-- Or check the function logs for `[mailchimp] setTags rejected` — a 404 there means the
-  contact was never upserted, which is the one failure that would take the whole sync down.
+> **Let us get you into your dashboard.**
+>
+> Your account is paid for and ready. If you have not signed in yet, that usually means the
+> password link in your receipt expired before you got to it — it is short-lived on purpose.
+>
+> Getting a fresh one takes a moment: go to the login page and choose **Forgot password?**. It
+> will email you a new link straight away.
+>
+> [Go to the login page] → `https://apolloclaw.ai/login`
+>
+> If that does not work, reply to this email and I will sort it out manually. You should not
+> have to fight for something you have paid for.
 
-Sends are recorded in `onboarding_emails` (migration 0019), one row per `(email, step)`, and
-that table is the record of what a customer has actually received from the code path. It says
-nothing about Mailchimp sends; Mailchimp's own reporting owns those.
+---
+
+### 4. After 7 days — "Three things people forget their agent can do"
+
+> **You are set up. Now the useful part.**
+>
+> Most people use an agent for about a third of what it can do, because the other two thirds are
+> not obvious. These are the three that surprise people most.
+>
+> **It can message you first.**
+> Scheduled skills mean it can open the conversation, not just answer. A morning brief, an
+> end-of-day summary, a weekly plan.
+>
+> **It can work where you already are.**
+> It does not have to live in the dashboard. Connect a chat channel and it answers where you
+> already spend your day.
+>
+> **It reads your actual files and mail.**
+> Once Drive and Gmail are connected, "what did we agree with them in March" stops being a search
+> and starts being a question.
+>
+> [Open the guide] → `https://apolloclaw.ai/dashboard/guide`
+>
+> If it is not earning its keep yet, reply and tell me what you were hoping it would take off
+> you. That is useful to me either way.
+
+---
+
+## Two customers are mid-sequence
+
+Both had the first email and nothing after it, because sends were switched off between:
+
+- `doralevich@gmail.com` — bought Aug 6
+- `baseline2llc@gmail.com` — bought Aug 7
+
+They will not receive the rest unless a Mailchimp journey picks them up. If you build the
+journey with a start trigger of "tag added", you can add them by hand.
