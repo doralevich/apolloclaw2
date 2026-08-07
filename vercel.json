@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/scheduled-skills",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/onboarding-series",
+      "schedule": "0 * * * *"
     }
   ]
 }
