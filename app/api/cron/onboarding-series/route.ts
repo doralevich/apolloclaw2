@@ -26,9 +26,18 @@ export const GET = route(async (request: Request) => {
   }
 
   const result = await sweepOnboardingEmails();
-  if (result.sent.length || result.failed.length) {
+
+  // Log every run that did anything at all, which now means any run that tagged somebody.
+  //
+  // This used to be gated on sent/failed alone, from when sending was the whole job. With sends
+  // handed to Mailchimp both are permanently zero, so that condition would never fire again and
+  // the hourly tag sync — now the only thing this endpoint does — would run in complete silence.
+  // The one question worth asking of these logs is "did the sync run", and it could not be
+  // answered.
+  if (result.tagged || result.sent.length || result.failed.length) {
     console.log(
-      `[cron:onboarding-series] considered=${result.considered} sent=${result.sent.length} ` +
+      `[cron:onboarding-series] tagged=${result.tagged} sends=${result.sendsEnabled ? "on" : "off"} ` +
+        `considered=${result.considered} sent=${result.sent.length} ` +
         `skipped=${result.skipped.length} failed=${result.failed.length}`
     );
   }
