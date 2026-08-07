@@ -6,6 +6,7 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { SetupChecklist } from "@/components/SetupChecklist";
+import { AddToPhoneCard } from "@/components/AddToPhoneCard";
 import { getAgentType } from "@/config/agent-types";
 import { Button } from "@/components/ui/button";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
@@ -88,6 +89,11 @@ export function StartHereView() {
           </div>
         </Link>
       </div>
+
+      {/* Below the setup checklist and the Guide link, above the call to open chat: this is a
+          convenience, not a step, and it should not sit between somebody and the thing they
+          came here to do. Hides itself once installed, or if dismissed. */}
+      <AddToPhoneCard />
 
       <div className="flex flex-col items-center gap-3">
         <Button asChild size="lg">
