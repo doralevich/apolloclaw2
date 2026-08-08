@@ -54,6 +54,7 @@ export function MembersView() {
   // sends allow_external and goes through — a confirm, not a wall. See lib/seats.ts for why
   // this warns rather than refuses.
   const [externalWarning, setExternalWarning] = useState("");
+  const [withAgent, setWithAgent] = useState(false);
   const { busy, run } = useAsyncAction();
 
   const load = useCallback(async () => {
@@ -83,21 +84,36 @@ export function MembersView() {
     if (!current) return;
     return run(async () => {
       try {
-        const { url } = await apiFetch<{ url: string }>(`/api/workspaces/${current.id}/members`, {
+        // Two endpoints, because they are two different acts. /seats charges the card and
+        // builds a VPS; /members writes an invitation row. Folding them together would make a
+        // checkbox the difference between a free action and a recurring bill inside one
+        // handler, which is exactly the kind of thing that gets refactored wrong later.
+        const path = withAgent
+          ? `/api/workspaces/${current.id}/seats`
+          : `/api/workspaces/${current.id}/members`;
+        const { url } = await apiFetch<{ url?: string }>(path, {
           method: "POST",
           body: JSON.stringify({
             role: inviteRole,
-            // Optional: an invite with no address is the old copy-a-link behaviour, which
-            // still works and is the only option when you do not know where they read mail.
+            // Optional on /members: an invite with no address is the old copy-a-link
+            // behaviour, still the only option when you do not know where they read mail.
+            // Required on /seats, which is why the checkbox is disabled without one.
             ...(inviteEmail.trim() ? { email: inviteEmail.trim() } : {}),
             allow_external: !!externalWarning,
           }),
         });
-        await navigator.clipboard.writeText(url).catch(() => {});
-        toast.success("Invite link created and copied");
+        if (url) await navigator.clipboard.writeText(url).catch(() => {});
+        toast.success(
+          withAgent
+            ? "Seat added - their agent is building now"
+            : url
+              ? "Invite link created and copied"
+              : "Invitation created"
+        );
         setInviteOpen(false);
         setInviteEmail("");
         setExternalWarning("");
+        setWithAgent(false);
         load();
       } catch (e) {
         // 409 external_domain is a question, not a failure: show what is unusual about the
@@ -189,6 +205,36 @@ export function MembersView() {
                 </div>
               )}
 
+              {/* An agent of their own, and what it costs, on the screen where the decision is
+                  made. This is the one control in the dashboard that both charges the card and
+                  creates a VPS, so the price is stated next to the checkbox rather than
+                  discovered on the invoice. */}
+              <label
+                className={cn(
+                  "flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors",
+                  withAgent ? "border-primary ring-1 ring-primary" : "hover:bg-secondary/50",
+                  !inviteEmail.trim() && "cursor-not-allowed opacity-60"
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={withAgent}
+                  disabled={!inviteEmail.trim()}
+                  onChange={(e) => setWithAgent(e.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 accent-primary"
+                />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">Give them their own agent</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                    Adds <strong className="text-foreground">$189/month</strong> to your hosting,
+                    pro-rated from today. Their agent is built now and waiting when they sign in.
+                    They answer their own questionnaire, so it is built around their work, not
+                    yours.
+                    {!inviteEmail.trim() && " Needs an email address above."}
+                  </span>
+                </span>
+              </label>
+
               {/* Member is the default and deliberately listed first. Admin used to be the only
                   option — inviting anyone handed them the workspace. */}
               <div className="space-y-2">
@@ -215,10 +261,14 @@ export function MembersView() {
                 </Button>
                 <Button onClick={createInvite} disabled={busy}>
                   {busy
-                    ? "Creating..."
+                    ? withAgent
+                      ? "Adding seat..."
+                      : "Creating..."
                     : externalWarning
                       ? "Invite anyway"
-                      : "Create invite link"}
+                      : withAgent
+                        ? "Add seat - $189/mo"
+                        : "Create invite link"}
                 </Button>
               </DialogFooter>
             </DialogContent>

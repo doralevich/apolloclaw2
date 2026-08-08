@@ -1,4 +1,5 @@
 import "server-only";
+import type { createAdminClient } from "@/lib/supabase/admin";
 
 // Seats: who an agent belongs to, and who may be invited to one.
 //
@@ -68,3 +69,61 @@ export function visibleAgentFilter(role: string, userId: string): { ownerIn: str
   if (role === "admin") return null;
   return { ownerIn: [userId] };
 }
+
+/**
+ * Hand a waiting agent to the colleague who just accepted their invitation.
+ *
+ * The seat endpoint provisions the agent when the ADMIN asks for it, parked on the admin's own
+ * user id — because provisioning on accept would let a mistyped address that happens to be a
+ * real mailbox mint a VPS, and because the agent should already exist when they first sign in.
+ * This is the handover.
+ *
+ * Matched on the invitation's `email` rather than on any id, because that address is the only
+ * thing linking "the seat David bought" to "the person who just signed in", and it is the thing
+ * he typed deliberately.
+ *
+ * Returns the agent handed over, or null when there is nothing to hand over — which is the
+ * ordinary case for a plain invitation with no seat attached.
+ */
+export async function claimSeat(
+  admin: ReturnType<typeof createAdminClient>,
+  workspaceId: string,
+  userId: string,
+  email: string
+): Promise<string | null> {
+  const address = email.trim().toLowerCase();
+  if (!address) return null;
+
+  const { data: invite } = await admin
+    .from("invitations")
+    .select("token, created_by, with_agent")
+    .eq("workspace_id", workspaceId)
+    .eq("email", address)
+    .eq("with_agent", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!invite?.created_by) return null;
+
+  // The oldest agent still parked on the buyer that nobody else has claimed. Oldest rather than
+  // newest: if an admin adds two seats before either colleague accepts, the first to accept
+  // should get the first agent built, not race the second one.
+  //
+  // This deliberately cannot take an agent already owned by another member — the filter is on
+  // the admin's id — so the worst case is that a colleague gets no agent and says so, rather
+  // than quietly being handed somebody else's.
+  const { data: parked } = await admin
+    .from("agents")
+    .select("agent37_id")
+    .eq("workspace_id", workspaceId)
+    .eq("owner_id", invite.created_by)
+    .order("created_at", { ascending: true })
+    .limit(10);
+
+  const candidate = (parked ?? [])[0]?.agent37_id;
+  if (!candidate) return null;
+
+  await admin.from("agents").update({ owner_id: userId }).eq("agent37_id", candidate);
+  return candidate;
+}
+
