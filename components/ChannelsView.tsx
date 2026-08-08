@@ -267,6 +267,13 @@ function ChannelCard({
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base font-semibold">{def.name}</h2>
             <StateBadge state={state} loaded={loaded} />
+            {/* Only on the one that is genuinely easiest to finish. A recommendation on more
+                than one is not a recommendation. */}
+            {def.recommended && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                Recommended
+              </span>
+            )}
           </div>
           {/* Collapsed, this line is all anyone sees — so once connected it says who it's
               connected AS, which is the fact worth having at a glance. */}

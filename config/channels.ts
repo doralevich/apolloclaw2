@@ -59,38 +59,24 @@ export type ChannelDef = {
    * equivalent API, so without this their setup simply cannot be completed.
    */
   showWebhookUrl?: boolean;
+
+  /**
+   * Mark this as the one to pick.
+   *
+   * Telegram, David's call, and the setup bears it out: it is the only one of the three needing
+   * nothing but a bot token from BotFather — no Meta business verification, no Slack workspace
+   * admin, and no webhook URL to paste anywhere, because setWebhook registers it for them.
+   * Somebody choosing between three channels with no information picks the logo they recognise,
+   * which is WhatsApp, which is the longest setup of the three.
+   */
+  recommended?: boolean;
 };
 
 export const CHANNELS: ChannelDef[] = [
   {
-    id: "whatsapp",
-    name: "WhatsApp",
-    tagline: "A business number of your own, through Meta",
-    logo: composioLogoUrl("whatsapp"),
-    // Meta's Cloud API, not device linking. Linking someone's personal WhatsApp needs a process
-    // holding a socket open per customer, and leans on libraries Meta bans accounts for using.
-    // The trade is stated in the tagline rather than buried: this is a separate number.
-    steps: [
-      "At developers.facebook.com, create an app of type Business and add the WhatsApp product to it.",
-      "In WhatsApp → API Setup, add the phone number you want the agent to answer on. It has to be a number that isn't already on WhatsApp.",
-      "Copy the Phone number ID from that page.",
-      "Create a permanent access token: Business Settings → Users → System users → add a system user with access to the app, then Generate token with the whatsapp_business_messaging permission.",
-      "In App Settings → Basic, copy the App secret.",
-      "Paste all three below and press Connect.",
-      "Back in Meta, under WhatsApp → Configuration, edit the webhook: paste the Callback URL and Verify token shown here after you connect, then subscribe to the messages field.",
-    ],
-    fields: [
-      { key: "accessToken", label: "Access token", placeholder: "Permanent access token" },
-      { key: "phoneNumberId", label: "Phone number ID", placeholder: "Phone number ID (a long number)" },
-      { key: "appSecret", label: "App secret", placeholder: "App secret from App Settings → Basic" },
-    ],
-    showWebhookUrl: true,
-    connectedNote:
-      "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner — anyone else gets nothing back.",
-  },
-  {
     id: "telegram",
     name: "Telegram",
+    recommended: true,
     tagline: "Your own private bot",
     logo: composioLogoUrl("telegram"),
     steps: [
@@ -128,6 +114,32 @@ export const CHANNELS: ChannelDef[] = [
     showWebhookUrl: true,
     connectedNote:
       "Direct-message the app in Slack and your agent answers there. The first person to DM it becomes its owner — anyone else in the workspace gets nothing back.",
+  },
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    tagline: "A business number of your own, through Meta",
+    logo: composioLogoUrl("whatsapp"),
+    // Meta's Cloud API, not device linking. Linking someone's personal WhatsApp needs a process
+    // holding a socket open per customer, and leans on libraries Meta bans accounts for using.
+    // The trade is stated in the tagline rather than buried: this is a separate number.
+    steps: [
+      "At developers.facebook.com, create an app of type Business and add the WhatsApp product to it.",
+      "In WhatsApp → API Setup, add the phone number you want the agent to answer on. It has to be a number that isn't already on WhatsApp.",
+      "Copy the Phone number ID from that page.",
+      "Create a permanent access token: Business Settings → Users → System users → add a system user with access to the app, then Generate token with the whatsapp_business_messaging permission.",
+      "In App Settings → Basic, copy the App secret.",
+      "Paste all three below and press Connect.",
+      "Back in Meta, under WhatsApp → Configuration, edit the webhook: paste the Callback URL and Verify token shown here after you connect, then subscribe to the messages field.",
+    ],
+    fields: [
+      { key: "accessToken", label: "Access token", placeholder: "Permanent access token" },
+      { key: "phoneNumberId", label: "Phone number ID", placeholder: "Phone number ID (a long number)" },
+      { key: "appSecret", label: "App secret", placeholder: "App secret from App Settings → Basic" },
+    ],
+    showWebhookUrl: true,
+    connectedNote:
+      "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner — anyone else gets nothing back.",
   },
 ];
 

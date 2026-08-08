@@ -191,10 +191,16 @@ export function ChecklistView() {
 // true — a reimplementation drifts from config/channels.ts the first time a setup step changes,
 // and the customer is the one who finds out. It carries its own connected state, its own
 // expand-into-steps behaviour, and its own bot-token forms.
+//
+// Heading included, rather than suppressed as it was at first. "Chat anywhere / Connect a chat
+// app you already use, and your agent answers there — to you and nobody else" says what the
+// three cards are FOR, which a bare row of logos under a generic section title does not. The
+// Refresh button comes with it, and is worth having: a channel that finishes connecting in
+// another tab has no way to tell this page on its own.
 function ChannelsBlock({ agentId }: { agentId: string }) {
   return (
     <div className="mt-2">
-      <ChannelsPanel agentId={agentId} showHeading={false} />
+      <ChannelsPanel agentId={agentId} />
     </div>
   );
 }
