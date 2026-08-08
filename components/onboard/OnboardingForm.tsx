@@ -304,20 +304,36 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
 
-          {/* Both ways out, stated. Telling somebody an address is taken and stopping there
-              leaves them to guess which of the two situations they are in: a second business on
-              a new address, or their own account they cannot get into. */}
+          {/* An existing account does not buy again - David's call, and the right one: they
+              already own a license, so a second purchase would charge them for something they
+              have. Getting back INTO the account is the whole job here.
+
+              So the primary action is the reset form itself, opened directly with their address
+              already in it. Linking to plain /login would land them on a sign-in form where they
+              still have to spot "Forgot password?" and retype the address they just typed, which
+              is most of the instruction left undone.
+
+              Registering a different business on another address stays available underneath,
+              stated plainly rather than as an equal-weight option. */}
           {taken && (
             <div style={{ marginTop: 16, padding: "14px 16px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.25)`, fontSize: 13, color: TXM, lineHeight: 1.65 }}>
               <p style={{ margin: "0 0 6px", fontWeight: 700, color: TX }}>
                 {d.email.trim().toLowerCase()} already has an ApolloClaw account.
               </p>
-              <p style={{ margin: 0 }}>
-                Use a different email address above to register a new one, or{" "}
-                <a href="/login" style={{ color: R, fontWeight: 600 }}>log in</a> - and if you
-                cannot remember the password, use{" "}
-                <a href="/login" style={{ color: R, fontWeight: 600 }}>Forgot password?</a> on
-                that page to reset it.
+              <p style={{ margin: "0 0 12px" }}>
+                There is nothing to buy - you already have a license. Reset your password and log
+                in to get back to your dashboard.
+              </p>
+              <a
+                href={`/login?reset=1&email=${encodeURIComponent(d.email.trim().toLowerCase())}`}
+                style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 700, fontSize: 14, padding: "11px 22px", borderRadius: 6, textDecoration: "none" }}
+              >
+                Reset my password →
+              </a>
+              <p style={{ margin: "12px 0 0", fontSize: 12, color: TXD }}>
+                Know your password?{" "}
+                <a href={`/login?email=${encodeURIComponent(d.email.trim().toLowerCase())}`} style={{ color: TXM, fontWeight: 600 }}>Log in</a>.
+                Setting up a different business? Use another email address above.
               </p>
             </div>
           )}

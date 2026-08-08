@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
@@ -23,15 +23,38 @@ function callbackUrl(next: string): string {
   return url.toString();
 }
 
-export default function LoginPage() {
-  const [showReset, setShowReset] = useState(false);
+// ?reset=1 opens the reset panel directly, and ?email= fills the address in.
+//
+// Onboarding sends people here when the address they typed already has an account: the useful
+// instruction is "reset your password and log in", and landing them on a sign-in form where
+// they still have to spot "Forgot password?" and retype the address they just typed is most of
+// that instruction left undone.
+//
+// Read through useSyncExternalStore rather than a useState initializer, because the server has
+// no window.location. An initializer would render the sign-in form on the server and the reset
+// form on the client, which is a hydration error.
+const subscribeNever = () => () => {};
+const readSearch = () => window.location.search;
+const readNoSearch = () => "";
 
-  const [signinEmail, setSigninEmail] = useState("");
+export default function LoginPage() {
+  const search = useSyncExternalStore(subscribeNever, readSearch, readNoSearch);
+  const params = useMemo(() => new URLSearchParams(search), [search]);
+  const prefill = params.get("email") ?? "";
+
+  // Derived rather than seeded, so the URL's answer can arrive on the render after hydration
+  // without a setState in an effect. Any explicit toggle from here on takes over.
+  const [resetChosen, setShowReset] = useState<boolean | null>(null);
+  const showReset = resetChosen ?? params.get("reset") === "1";
+
+  const [signinEmailTyped, setSigninEmail] = useState<string | null>(null);
+  const signinEmail = signinEmailTyped ?? prefill;
   const [signinPassword, setSigninPassword] = useState("");
   const [signinLoading, setSigninLoading] = useState(false);
 
 
-  const [resetEmail, setResetEmail] = useState("");
+  const [resetEmailTyped, setResetEmail] = useState<string | null>(null);
+  const resetEmail = resetEmailTyped ?? prefill;
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
