@@ -1,5 +1,7 @@
+import { after } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { ApiError, json, route } from "@/lib/http";
+import { syncMailchimpRegistration } from "@/lib/mailchimp";
 import { claimSeat } from "@/lib/seats";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -29,6 +31,21 @@ export const POST = route(async (_request: Request, { params }: Ctx) => {
   } catch (err) {
     console.error("[invitations] seat handover failed", workspaceId, user.id, err);
   }
+
+  // The OTHER way somebody becomes an ApolloClaw user: they never touched Stripe, an admin
+  // bought them a seat and they accepted. Registered the same as a buyer, so tagged the same,
+  // and previously invisible to Mailchimp entirely. After the response - joining is done and a
+  // marketing sync must not be in the path of the redirect they are waiting on.
+  const meta = (user.user_metadata ?? {}) as { first_name?: string; last_name?: string; full_name?: string; name?: string };
+  const full = (meta.full_name || meta.name || "").trim();
+  after(async () => {
+    await syncMailchimpRegistration({
+      email: user.email ?? "",
+      firstName: meta.first_name || full.split(/\s+/)[0] || "",
+      lastName: meta.last_name || full.split(/\s+/).slice(1).join(" "),
+      extraTags: ["ac-seat-accepted"],
+    });
+  });
 
   return json({ workspace_id: workspaceId, agent_id: claimed });
 });

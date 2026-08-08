@@ -12,6 +12,7 @@ import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegram } from "@/lib/telegram";
 import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
+import { syncMailchimpRegistration } from "@/lib/mailchimp";
 import { escapeHtml } from "@/lib/onboardingSections";
 
 // Stripe webhook — the provisioning side of the storefront.
@@ -167,6 +168,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         : "";
     const buyer = session.customer_details?.email || email || userId;
     after(async () => {
+      // Same audience sync as the licence flow. This buyer already had an account, so the tag
+      // may well be there - the upsert and the tag are both idempotent, and re-applying is
+      // cheaper than working out whether we have seen them before.
+      if (email) {
+        await syncMailchimpRegistration({
+          email,
+          firstName: (session.customer_details?.name || "").trim().split(/\s+/)[0] || "",
+          lastName: (session.customer_details?.name || "").trim().split(/\s+/).slice(1).join(" "),
+          extraTags: ["ac-agent-purchased"],
+        });
+      }
       // The customer's own welcome. Until this existed, buying an agent sent the buyer nothing
       // at all: Stripe redirected them to the questionnaire, and if they closed that tab the
       // purchase left no trace in their inbox and no way back to the page short of guessing
@@ -334,6 +346,16 @@ async function handleLicensePurchase(session: Stripe.Checkout.Session): Promise<
 
   // After the response so a slow Mandrill call never delays Stripe's 200 or risks a retry.
   after(async () => {
+    // Into the audience, tagged VPS-Registration. This is the moment the account exists, which
+    // makes it the moment they become a contact - and until this line was here, the licence
+    // flow put nobody in Mailchimp at all. Best effort inside; a Mailchimp outage must not
+    // fail a webhook whose real work (account, workspace, entitlement) has already landed.
+    await syncMailchimpRegistration({
+      email,
+      firstName: first,
+      lastName: last,
+      extraTags: ["ac-license-purchased"],
+    });
     await sendPurchaseReceiptEmail(email, first);
     await notifyLicensePurchase({ email, name: [first, last].filter(Boolean).join(" "), amount, sessionId: session.id });
   });
