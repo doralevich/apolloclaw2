@@ -144,11 +144,15 @@ export function AgentAvatarPicker({
       </button>
 
       {open && (
-        <div className={cn("absolute left-0 z-20 w-80 rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
+        <div className={cn("absolute left-0 z-20 w-[22rem] rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
           <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
           {/* Scrolls. Seven poses fitted in a popover; forty portraits do not, and a list that grows
               taller than the viewport puts "Upload your own" somewhere nobody can reach. */}
-          <div className="mt-2 grid max-h-64 grid-cols-5 gap-2 overflow-y-auto pr-1">
+          {/* Four across at 68px rather than five at 48px. These are photographs of faces now,
+              not poses of one robot: at 48px you could tell the mascot tiles apart by silhouette,
+              but you cannot tell two dark-haired people apart without seeing the face. Bigger
+              tiles are what make a grid of forty choosable rather than a texture. */}
+          <div className="mt-2 grid max-h-72 grid-cols-4 gap-2.5 overflow-y-auto pr-1">
             {AVATAR_PRESETS.map((p) => (
               <button
                 key={p.id}
@@ -157,12 +161,12 @@ export function AgentAvatarPicker({
                 onClick={() => save({ avatar_preset: p.src })}
                 aria-label={p.label}
                 className={cn(
-                  "size-12 overflow-hidden rounded-full border bg-secondary transition-colors hover:border-foreground disabled:opacity-50",
+                  "size-[68px] overflow-hidden rounded-full border bg-secondary transition-colors hover:border-foreground disabled:opacity-50",
                   currentUrl === p.src && "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-card"
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.src} alt="" className="size-12 object-cover" />
+                <img src={p.src} alt="" loading="lazy" className="size-[68px] object-cover" />
               </button>
             ))}
           </div>
