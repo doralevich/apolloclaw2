@@ -8,6 +8,14 @@ import PageViewTracker from "@/components/GoogleAnalytics";
 import CookieConsent from "@/components/CookieConsent";
 import { OG_IMAGES } from "@/lib/seo";
 
+// The GA4 property the site actually reports into.
+//
+// It was G-4ZR38XGEME, which is why "I don't see a connection to Google Analytics" was true and
+// the code looked fine at the same time: the tag was firing correctly the whole time, into a
+// property nobody was looking at. One constant now, used by both the loader and the config call,
+// because those two drifting apart is the failure that looks exactly like working.
+const GA_MEASUREMENT_ID = "G-54RFVNJSSN";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
@@ -247,7 +255,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-body), Inter, sans-serif", "--font-display": "var(--font-body)", "--font-mono": "'IBM Plex Mono', monospace" } as React.CSSProperties}
       >
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-4ZR38XGEME"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"
         />
         {/* Google Consent Mode v2. Analytics storage starts DENIED, so no analytics cookie or
@@ -284,7 +292,7 @@ export default function RootLayout({
             }
           } catch (e) {}
           gtag('js', new Date());
-          gtag('config', 'G-4ZR38XGEME');
+          gtag('config', '${GA_MEASUREMENT_ID}');
         `}</Script>
         <PageViewTracker />
         <RootShell>{children}</RootShell>
