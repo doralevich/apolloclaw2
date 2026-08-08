@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, MoreHorizontal, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { CHANNELS_ENABLED } from "@/config/channels";
@@ -29,6 +29,9 @@ import { cn } from "@/lib/utils";
 // former.
 const NAV = [
   { href: "/dashboard/start-here", label: "Start Here", icon: Compass, exact: false },
+  // Between Start Here and Chat, which is the order somebody works through them: the greeting
+  // points at the checklist, and the checklist's last item is to go and ask the thing something.
+  { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
   // Sits next to Connections because the two answer the neighbouring questions — what the agent
