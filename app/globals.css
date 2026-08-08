@@ -91,45 +91,47 @@
    Button and Input while every surface around them stayed put. ThemeProvider mounts
    in the dashboard layout only, and strips the class on the way out.
 
-   Built on the brand navy (#0B1729 ≈ hsl(215 58% 10%)) rather than neutral grey, so
-   dark mode reads as the same product with the lights off. Red stays the accent. */
+   Neutral black rather than the brand navy it was built on, David's call. The navy version
+   read as a blue theme rather than a dark one — on a large surface a 58%-saturation hue stops
+   being a tint and becomes the colour of the room. Every blue-family hue in this block is now
+   a pure grey at the same lightness, so the structure is untouched and only the cast is gone. */
 .dark {
-  --color-background: hsl(215 58% 8%);
-  --color-foreground: hsl(210 20% 96%);
+  --color-background: hsl(0 0% 8%);
+  --color-foreground: hsl(0 0% 96%);
 
-  --color-surface-alt: hsl(215 45% 12%);
-  --color-surface-purple: hsl(215 45% 12%);
-  --color-surface-teal: hsl(215 45% 12%);
+  --color-surface-alt: hsl(0 0% 12%);
+  --color-surface-purple: hsl(0 0% 12%);
+  --color-surface-teal: hsl(0 0% 12%);
 
-  --color-card: hsl(215 48% 11%);
-  --color-card-foreground: hsl(210 20% 96%);
-  --color-card-elevated: hsl(215 42% 15%);
+  --color-card: hsl(0 0% 11%);
+  --color-card-foreground: hsl(0 0% 96%);
+  --color-card-elevated: hsl(0 0% 15%);
 
-  --color-popover: hsl(215 48% 11%);
-  --color-popover-foreground: hsl(210 20% 96%);
+  --color-popover: hsl(0 0% 11%);
+  --color-popover-foreground: hsl(0 0% 96%);
 
   /* Lifted a touch: the light-mode red is tuned against cream and goes muddy on navy. */
   --color-primary: hsl(0 72% 58%);
   --color-primary-foreground: hsl(0 0% 100%);
 
-  --color-secondary: hsl(215 36% 18%);
-  --color-secondary-foreground: hsl(210 20% 96%);
+  --color-secondary: hsl(0 0% 18%);
+  --color-secondary-foreground: hsl(0 0% 96%);
 
-  --color-muted: hsl(215 36% 18%);
-  --color-muted-foreground: hsl(212 16% 68%);
-  --color-muted-subtle: hsl(212 14% 55%);
+  --color-muted: hsl(0 0% 18%);
+  --color-muted-foreground: hsl(0 0% 68%);
+  --color-muted-subtle: hsl(0 0% 55%);
 
-  --color-accent: hsl(215 36% 20%);
-  --color-accent-foreground: hsl(210 20% 96%);
+  --color-accent: hsl(0 0% 20%);
+  --color-accent-foreground: hsl(0 0% 96%);
 
   --color-destructive: hsl(0 72% 58%);
   --color-destructive-foreground: hsl(0 0% 100%);
 
-  --color-border: hsl(215 30% 21%);
-  --color-input: hsl(215 30% 21%);
+  --color-border: hsl(0 0% 21%);
+  --color-input: hsl(0 0% 21%);
   --color-ring: hsl(0 72% 58%);
 
-  --color-accent-blue: hsl(217 91% 62%);
+  --color-accent-blue: hsl(0 0% 62%);
 
   color-scheme: dark;
 }
@@ -167,30 +169,26 @@
      The button sits a step LIFTED from the rail rather than exactly on it — a control on a white
      page needs a little more weight than a surface behind everything does, and matching the two
      precisely made the button look like a hole. */
-  /* Apollo Claw red, David's call, and the same #D72B2B the marketing site and the transactional
-     emails already use — so a Connect button in the dashboard and a Set your password button in
-     the receipt are finally the same colour.
+  /* Black, David's call, and it is the other half of the logo: red bracket, black wordmark.
+     Red was the accent for one commit and it fought everything — every Connect, Save and Open
+     Chat button shouting at the same volume as Delete.
 
-     THE COST, and it is a real one: --color-destructive is also red. The note above used to say
-     destructive stays red "once the accent isn't", and the accent now is. A crimson Delete beside
-     a red Connect is two reds a customer has to tell apart by shade, which is the failure that
-     note was written to avoid. So destructive is darkened below rather than left to collide. */
-  --color-primary: hsl(0 68% 51%);
+     Black buys back --color-destructive. The note above this block always said destructive must
+     stay red "once the accent isn't"; with a red accent it could not, and Delete had to be
+     pushed to a brown-crimson nobody would have read as danger. It is plain red again. */
+  --color-primary: hsl(0 0% 9%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-accent: hsl(0 68% 51%);
+  --color-accent: hsl(0 0% 9%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-ring: hsl(0 60% 45%);
+  --color-ring: hsl(0 0% 32%);
 
-  /* Delete and Disconnect, pushed away from the accent: deeper, browner, and unmistakably not
-     the button you press to get on with things. */
-  --color-destructive: hsl(354 78% 34%);
 
   /* The two ends of the gradient: lifted navy down to the rail's own. Still a gradient — a flat
      button is the flat purple one with the colour removed, and flat was half of what was wrong. */
-  /* Red into near-black, which is the logo: red bracket, black wordmark. The old gradient ran
-     lifted-navy into rail-navy; this runs the brand's own two colours instead. */
-  --brand-from: hsl(0 68% 51%);
-  --brand-to: hsl(0 0% 12%);
+  /* Charcoal into black. Still a gradient, because a flat black button is the flat purple one
+     with the colour taken out, and flat was half of what was wrong with the first version. */
+  --brand-from: hsl(0 0% 22%);
+  --brand-to: hsl(0 0% 7%);
 }
 
 /* The surfaces underneath it.
@@ -213,29 +211,29 @@
      that was a three-point step, and three points across a 1px border is not an edge. Panels
      read as one continuous sheet with faint lines drawn on it, which is what "not crisp" was.
      Five points is enough to see where a panel starts without the surround going grey. */
-  --color-background: hsl(220 20% 95%);
-  --color-surface-alt: hsl(220 16% 94%);
-  --color-surface-purple: hsl(220 14% 96%);
-  --color-surface-teal: hsl(220 15% 93%);
+  --color-background: hsl(0 0% 95%);
+  --color-surface-alt: hsl(0 0% 94%);
+  --color-surface-purple: hsl(0 0% 96%);
+  --color-surface-teal: hsl(0 0% 93%);
   /* Was 97 — the exact value of --color-background, which made "elevated" mean nothing at all.
      White, so a surface asking to be lifted is lifted. */
   --color-card-elevated: hsl(0 0% 100%);
 
-  --color-secondary: hsl(220 15% 93%);
-  --color-secondary-foreground: hsl(220 12% 18%);
-  --color-muted: hsl(220 15% 93%);
-  --color-muted-foreground: hsl(220 12% 28%);
-  --color-muted-subtle: hsl(220 8% 56%);
+  --color-secondary: hsl(0 0% 93%);
+  --color-secondary-foreground: hsl(0 0% 12%);
+  --color-muted: hsl(0 0% 93%);
+  --color-muted-foreground: hsl(0 0% 26%);
+  --color-muted-subtle: hsl(0 0% 50%);
 
   /* Darker than the site's, deliberately. The dashboard is read all day at small sizes, and the
      old foreground/muted pair was the other half of "not enough contrast" — text that is fine in
      a hero is thin in a sidebar row. */
-  --color-foreground: hsl(222 30% 6%);
+  --color-foreground: hsl(0 0% 5%);
   /* Two points darker, for the same reason the background moved: a hairline is the only thing
      separating a white tile from the white panel it sits in, and at 88 it was doing that job
      on about a tenth of the available contrast. */
-  --color-border: hsl(220 14% 86%);
-  --color-input: hsl(220 14% 86%);
+  --color-border: hsl(0 0% 86%);
+  --color-input: hsl(0 0% 86%);
 }
 
 /* The brand gradient, for the few surfaces that carry it: the primary button, the send control,
@@ -246,19 +244,18 @@
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
 }
 
-/* Lifted against navy, the same adjustment the red needed: the light-mode violet goes muddy on
-   a dark surface, and a button nobody can find is worse than one in the wrong hue. */
-/* Inverted on navy: a black button on a dark surface is a hole in the page. Same idea — maximum
-   contrast, no hue — pointing the other way. */
+/* Inverted in the dark: a black button on a black surface is a hole in the page, so the accent
+   flips to white and its text to near-black. Same idea as the light theme - maximum contrast,
+   no hue - pointing the other way. */
 .app-accent.dark {
   --color-primary: hsl(0 0% 97%);
-  --color-primary-foreground: hsl(215 58% 8%);
+  --color-primary-foreground: hsl(0 0% 8%);
   --color-accent: hsl(0 0% 97%);
-  --color-accent-foreground: hsl(215 58% 8%);
+  --color-accent-foreground: hsl(0 0% 8%);
   --color-ring: hsl(0 0% 78%);
 
   --brand-from: hsl(0 0% 100%);
-  --brand-to: hsl(210 16% 88%);
+  --brand-to: hsl(0 0% 88%);
 }
 
 /* ─── The chat's background wash ──────────────────────────────────────────────

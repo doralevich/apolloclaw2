@@ -254,7 +254,19 @@ export default function RootLayout({
             identifier is written until the visitor accepts in the banner (components/
             CookieConsent.tsx, which calls gtag('consent','update',...)). A returning visitor's
             stored choice is replayed here synchronously, before the config call, so they don't
-            spend the first 500ms of every page in the denied state. */}
+            spend the first 500ms of every page in the denied state.
+
+            send_page_view is NOT disabled any more, and that was the bug. It was off because
+            PageViewTracker sends page_view itself — but that component's effect runs at
+            hydration, while both of these scripts are afterInteractive and may not have defined
+            window.gtag yet. When they had not, the tracker hit its `typeof gtagFn !== 'function'`
+            guard, returned, and never retried: its deps are [pathname, searchParams], neither of
+            which changes on a cold load. So the FIRST page view of every visit was dropped, and
+            with GA's own one disabled, a visitor who landed and left recorded nothing at all.
+
+            The config call handles the first view now — it is queued into dataLayer by the inline
+            gtag shim above, so it cannot lose the race — and the tracker covers soft navigations
+            only. */}
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
@@ -272,7 +284,7 @@ export default function RootLayout({
             }
           } catch (e) {}
           gtag('js', new Date());
-          gtag('config', 'G-4ZR38XGEME', { send_page_view: false });
+          gtag('config', 'G-4ZR38XGEME');
         `}</Script>
         <PageViewTracker />
         <RootShell>{children}</RootShell>
