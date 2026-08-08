@@ -109,8 +109,14 @@ export function StartHereView() {
           </Button>
         </div>
         <p className="text-center text-sm text-muted-foreground">
-          Talk to {agentName} the way you&apos;d talk to someone who works for you. The more you
-          say about how you want things done, the less you&apos;ll have to repeat yourself.
+          {/* Explicit {" "} around the name. The source had a plain space and production still
+              rendered "Talk to Cherisethe way" - I could not reproduce it here, so rather than
+              leave a space whose survival depends on how the JSX is folded, it is now a node of
+              its own that nothing can collapse. */}
+          Talk to{" "}
+          {agentName}{" "}
+          the way you&apos;d talk to someone who works for you. The more you say about how you
+          want things done, the less you&apos;ll have to repeat yourself.
         </p>
       </div>
 
