@@ -8,6 +8,7 @@ import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
 import { CHECKLIST_CATEGORIES, connectHref, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
+import { ChannelsPanel } from "@/components/ChannelsView";
 import { cn } from "@/lib/utils";
 
 // The checklist page.
@@ -103,7 +104,9 @@ export function ChecklistView() {
       ) : (
         CHECKLIST_CATEGORIES.map((cat) => {
           const rows = items.filter((i) => i.category === cat);
-          if (!rows.length) return null;
+          // Connect survives an empty item list: the channel cards live under it and a customer
+          // with no intake answers still has to be able to reach them.
+          if (!rows.length && cat !== "Connect your tools") return null;
           const catDone = rows.filter((r) => r.done).length;
           return (
             <section key={cat}>
@@ -111,9 +114,11 @@ export function ChecklistView() {
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   {cat}
                 </h2>
-                <span className="text-xs tabular-nums text-muted-foreground">
-                  {catDone}/{rows.length}
-                </span>
+                {rows.length > 0 && (
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {catDone}/{rows.length}
+                  </span>
+                )}
               </div>
               {/* Apps two-up, everything else full width — the layout David picked.
                   An app card is logo, name, one line and a button, which is narrow content: at
@@ -155,6 +160,8 @@ export function ChecklistView() {
                   to connect whatever you use.
                 </div>
               )}
+
+              {cat === "Connect your tools" && <ChannelsBlock agentId={agentId} />}
             </section>
           );
         })
@@ -174,6 +181,20 @@ export function ChecklistView() {
           works now.
         </p>
       </div>
+    </div>
+  );
+}
+
+// The Channels page's own panel, not a copy of it.
+//
+// David asked for these cards "exact", and reusing the component is the only way that stays
+// true — a reimplementation drifts from config/channels.ts the first time a setup step changes,
+// and the customer is the one who finds out. It carries its own connected state, its own
+// expand-into-steps behaviour, and its own bot-token forms.
+function ChannelsBlock({ agentId }: { agentId: string }) {
+  return (
+    <div className="mt-2">
+      <ChannelsPanel agentId={agentId} showHeading={false} />
     </div>
   );
 }

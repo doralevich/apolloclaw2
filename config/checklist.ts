@@ -53,7 +53,7 @@ for (const [label, slug] of Object.entries(TOOL_SLUGS)) {
  * bot token, not an OAuth connection. Sending somebody to Connections to look for Slack would
  * be sending them somewhere it will never appear.
  */
-const CHANNEL_TOOLS: Record<string, string> = { Slack: "slack", Telegram: "telegram" };
+const CHANNEL_TOOLS = new Set(["Slack", "Telegram"]);
 
 /** Selections that mean "none" — never turned into an item. */
 const NEGATIVE = new Set(["No CRM currently", "No PM tool", "None", "Other", "None / Not applicable"]);
@@ -150,19 +150,17 @@ function answerText(answers: Record<string, unknown>, key: string): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
-/** The one row that applies whatever they answered and is not an app. */
-const CORE: ChecklistItem[] = [
-  {
-    id: "core:channel",
-    title: "Choose where it answers you",
-    body: "Connect a chat app so you can reach it without opening this dashboard.",
-    category: "Connect your tools",
-    href: "/dashboard/channels",
-    cta: "Open Channels",
-    icon: { kind: "icon", name: "Radio" },
-    derived: "channel",
-  },
-];
+// There is no CORE row any more.
+//
+// "Choose where it answers you" was one line pointing at the Channels page. It is now the
+// Channels page's own panel, rendered inside this one — David asked for the cards exactly as
+// they appear there, and the panel is the only way to get "exactly" and keep it that way.
+// Anything short of reusing it drifts from config/channels.ts the first time a setup step
+// changes, and the customer is the one who finds out.
+//
+// The named-channel rows went with it. Somebody who told us they use Slack does not need a row
+// saying "Put it in Slack" above a Slack card that already says Not connected and expands into
+// the steps.
 
 // Enough to be worth finishing, few enough to look finishable. Past about a dozen a checklist
 // stops reading as progress and starts reading as a chore list — and the intake gives us more
@@ -184,13 +182,9 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
   // the whole feature exists — a list that guesses is the generic list with extra steps, and
   // showing six apps nobody named makes "built from what you told us" a lie on the same screen
   // that claims it. An empty section says something true: we have nothing on file for you.
-  if (!answers) return CORE;
+  if (!answers) return [];
 
-  // Named channels replace the generic "choose where it answers you" rather than sitting beside
-  // it. Somebody who told us they use Slack does not need to be asked to pick a channel and then
-  // asked to set up Slack — that is one job described twice.
-  let namedChannels = false;
-  const items: ChecklistItem[] = [...CORE];
+  const items: ChecklistItem[] = [];
 
   // ── Their stack ──────────────────────────────────────────────────────────────────────────
   const stack = [
@@ -204,21 +198,9 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
     if (NEGATIVE.has(label) || seenTools.has(label)) continue;
     seenTools.add(label);
 
-    const channelId = CHANNEL_TOOLS[label];
-    if (channelId) {
-      items.push({
-        id: `channel:${channelId}`,
-        title: `Put it in ${label}`,
-        body: `You told us your team works in ${label}. This is where the agent answers you there.`,
-        category: "Connect your tools",
-        href: "/dashboard/channels",
-        cta: `Set up ${label}`,
-        icon: { kind: "icon", name: channelId === "slack" ? "Slack" : "Send" },
-        derived: `channel:${channelId}` as const,
-      });
-      namedChannels = true;
-      continue;
-    }
+    // Chat apps are skipped here: they are not OAuth connections, and ChannelsPanel below the
+    // app grid already lists every one of them with its own state and setup steps.
+    if (CHANNEL_TOOLS.has(label)) continue;
 
     const slug = TOOL_SLUGS[label];
     items.push({
@@ -274,11 +256,9 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
     });
   }
 
-  const pruned = namedChannels ? items.filter((i) => i.id !== "core:channel") : items;
-
   // Trim from the end, which drops generated items before CORE — those three apply to everybody
   // and one of them is how you talk to the thing at all.
-  return pruned.slice(0, MAX_ITEMS);
+  return items.slice(0, MAX_ITEMS);
 }
 
 export const CHECKLIST_CATEGORIES: ChecklistCategory[] = ["Connect your tools", "Hand it your work"];
