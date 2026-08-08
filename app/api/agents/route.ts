@@ -59,11 +59,22 @@ export const GET = route(async (request: Request) => {
 
   const role = await requireMember(supabase, workspaceId, user.id);
 
-  const { data: rows, error } = await supabase
-    .from("agents")
-    .select("*")
-    .eq("workspace_id", workspaceId)
-    .order("created_at", { ascending: false });
+  // Seats: a member sees their own agents, an admin sees the workspace's.
+  //
+  // This is the whole point of agents.owner_id. Chat history lives on the instance, so without
+  // it a company that buys a second agent for its office manager gets one where the office
+  // manager can switch to the founder's agent and read those threads — and would have no way
+  // to know that was possible until it happened.
+  //
+  // owner_id IS NULL is included deliberately: those agents predate seats and were
+  // workspace-wide when they were created, so filtering them out would take an agent away from
+  // somebody already using it every day.
+  let query = supabase.from("agents").select("*").eq("workspace_id", workspaceId);
+  if (role !== "admin") {
+    query = query.or(`owner_id.eq.${user.id},owner_id.is.null`);
+  }
+
+  const { data: rows, error } = await query.order("created_at", { ascending: false });
   if (error) throw new ApiError(500, "db_error", error.message);
 
   // Which agent types in this workspace have had their setup questionnaire completed, and

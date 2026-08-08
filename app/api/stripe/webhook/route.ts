@@ -473,6 +473,14 @@ async function notifyPurchase(o: {
 // Hosting subscription cancelled -> flip the Stripe-managed entitlement off. Only rows
 // this webhook owns (source = 'stripe') are touched; admin allowlist entries survive.
 // The agent instance itself is left running — suspension policy is a human decision.
+//
+// SEATS AND THIS FUNCTION. The update below is keyed on EMAIL, so it cancels the whole
+// customer, not one agent. That is correct here and only because seats are sold as a QUANTITY
+// on this one subscription (lib/hosting-seats.ts): removing a colleague decrements the quantity
+// and fires no event at all, so by the time this runs the customer really has cancelled
+// everything. Sell a seat as a second subscription and this becomes a live bug - cancelling one
+// would lock the whole company out, founder included. If that ever changes, this has to key on
+// something narrower than the address.
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   // Ours if it carries either marker: `agent_type` from the retired per-agent checkout, or
   // `flow` from the license checkout. Without the second test a cancelled license would have

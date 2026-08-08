@@ -1,3 +1,10 @@
+/** An error the API described, with the machine-readable parts kept. */
+export interface ApiFetchError extends Error {
+  /** The API's `error.code`, e.g. "external_domain". Absent if the response carried none. */
+  code?: string;
+  status: number;
+}
+
 export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
@@ -6,8 +13,15 @@ export async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
   if (!res.ok) {
-    const message = (data as { error?: { message?: string } })?.error?.message;
-    throw new Error(message || `Request failed (${res.status})`);
+    const body = (data as { error?: { message?: string; code?: string } })?.error;
+    // The message is what every existing caller reads, so it stays exactly where it was.
+    // `code` and `status` ride along because some failures are not failures: a caller that
+    // needs to tell "that address is outside your company, confirm?" from "that broke" can
+    // only do it by code, and matching on the prose would break the first time it is reworded.
+    const err = new Error(body?.message || `Request failed (${res.status})`) as ApiFetchError;
+    err.status = res.status;
+    if (body?.code) err.code = body.code;
+    throw err;
   }
   return data as T;
 }
