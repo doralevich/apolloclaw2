@@ -364,13 +364,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         ],
       },
       {
-        key: "cpa_staff",
-        label: "Team size",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
-      },
-      {
         key: "cpa_seasonality",
         label: "How seasonal is the work?",
         type: "radio",
@@ -542,13 +535,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "agency_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["New business and pitching", "Client reporting", "Content production", "Campaign management", "Scope creep and billing", "Team capacity", "Lead follow-up"] },
       { key: "agency_tool", label: "Primary platform", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Airtable", "GoHighLevel", "AgencyAnalytics", "None", "Other"] },
       {
-        key: "agency_team",
-        label: "Team size",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
-      },
-      {
         key: "agency_revenue_mix",
         label: "How the work is sold",
         type: "radio",
@@ -567,23 +553,15 @@ export const industryConfig: Record<string, IndustryBranch> = {
     stepTitle: "Your Product",
     stepSubtitle: "Your motion and stage so the agent fits how you grow and retain.",
     fields: [
-      { key: "saas_stage", label: "Stage", type: "dropdown", required: true, options: ["Pre-revenue / MVP", "Early (under $1M ARR)", "Growth ($1M to $10M ARR)", "Scale ($10M+ ARR)"] },
-      { key: "saas_motion", label: "Go-to-market motion", type: "dropdown", required: true, options: ["Product-led / self-serve", "Sales-led", "Hybrid"] },
+      // "Not applicable" on both, at David's call. Both are REQUIRED, and both assume a
+      // venture-shaped software company: an ARR band assumes revenue is how you measure
+      // yourself, and a go-to-market motion assumes you are selling to strangers. A studio
+      // building software for clients, an internal tool, or a business whose software sits
+      // beside a service had to pick something untrue to get past the step.
+      { key: "saas_stage", label: "Stage", type: "dropdown", required: true, options: ["Pre-revenue / MVP", "Early (under $1M ARR)", "Growth ($1M to $10M ARR)", "Scale ($10M+ ARR)", "Not applicable"] },
+      { key: "saas_motion", label: "Go-to-market motion", type: "dropdown", required: true, options: ["Product-led / self-serve", "Sales-led", "Hybrid", "Not applicable"] },
       { key: "saas_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Onboarding and activation", "Support tickets", "Churn and retention", "Sales follow-up", "Lead qualification", "Billing and dunning", "Feature request triage"] },
       { key: "saas_tool", label: "Primary CRM / support tool", type: "dropdown", options: ["HubSpot", "Salesforce", "Intercom", "Zendesk", "Pipedrive", "Stripe Billing", "None", "Other"] },
-      {
-        key: "saas_team",
-        label: "Team size",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 10", "11 to 30", "31 to 100", "100+"],
-      },
-      {
-        key: "saas_acv",
-        label: "Typical annual contract value",
-        type: "dropdown",
-        options: ["Under $1k", "$1k to $10k", "$10k to $50k", "$50k to $250k", "$250k+"],
-      },
       {
         key: "saas_support",
         label: "How customers reach you",
@@ -601,13 +579,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "engagement_model", label: "Primary engagement model", type: "dropdown", required: true, options: ["Retainer", "Project-based", "Hourly", "Performance-based", "Mix"] },
       { key: "services_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and scoping", "Client onboarding", "Project delivery", "Time tracking and billing", "Lead follow-up", "Scheduling"] },
       { key: "services_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Notion", "Dubsado / HoneyBook", "None", "Other"] },
-      {
-        key: "services_team",
-        label: "Team size",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
-      },
       {
         key: "services_clients",
         label: "Active clients",
@@ -669,12 +640,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         options: ["Live one to one", "Live group", "Cohort based", "Self-paced course", "Membership community", "In person", "Hybrid"],
       },
       {
-        key: "edu_team",
-        label: "Team size",
-        type: "dropdown",
-        options: ["Just me", "2 to 5", "6 to 15", "16+"],
-      },
-      {
         key: "edu_revenue_model",
         label: "How you charge",
         type: "dropdown",
@@ -691,13 +656,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "mfg_volume", label: "Monthly order volume", type: "dropdown", required: true, options: ["Under 100", "100 to 1000", "1000 to 5000", "5000+"] },
       { key: "mfg_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Order processing", "Inventory management", "Quoting and RFQs", "Supplier coordination", "Shipping and tracking", "Customer service"] },
       { key: "mfg_tool", label: "Primary system", type: "dropdown", options: ["NetSuite", "SAP", "QuickBooks", "Fishbowl", "ShipStation", "None", "Other"] },
-      {
-        key: "mfg_team",
-        label: "Team size",
-        type: "dropdown",
-        required: true,
-        options: ["Under 10", "10 to 50", "50 to 200", "200+"],
-      },
       {
         key: "mfg_customers",
         label: "Who you sell to",
@@ -932,13 +890,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "consult_load", label: "Active clients", type: "dropdown", required: true, options: ["1 to 3", "4 to 10", "10 to 25", "25+"] },
       { key: "consult_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and pitching", "Client onboarding", "Deliverable production", "Scheduling", "Billing and time tracking", "Lead follow-up"] },
       { key: "consult_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Notion", "Asana", "Dubsado", "None", "Other"] },
-      {
-        key: "consult_team",
-        label: "Team size",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 5", "6 to 15", "16+"],
-      },
       {
         key: "consult_engagement",
         label: "Typical engagement length",

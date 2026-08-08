@@ -66,17 +66,6 @@ const ROLE_OPTIONS = [
   "Other",
 ];
 
-// Asked separately because it changes what the agent may decide on its own. A sole owner
-// wants it to act; someone answering to partners or a board wants it to draft and wait.
-const OWNERSHIP_OPTIONS = [
-  "Sole owner",
-  "Majority owner",
-  "Equal partner",
-  "Minority owner",
-  "Investor, not in the day to day",
-  "Not an owner - I run it",
-];
-
 const STRUCTURE_OPTIONS = [
   "Holding company / umbrella",
   "Independent businesses I own",
@@ -96,7 +85,6 @@ const AMBITION_OPTIONS = [
   "One agent across all my businesses",
 ];
 
-const MAX_COMPANIES = 5;
 
 // ---- Tokens (match app/onboard/page.tsx) ----------------------------------
 
@@ -155,11 +143,6 @@ export default function CompanyRepeater({
     },
     [companies, onCompaniesChange]
   );
-
-  const addCompany = useCallback(() => {
-    if (companies.length >= MAX_COMPANIES) return;
-    onCompaniesChange([...companies, emptyCompany()]);
-  }, [companies, onCompaniesChange]);
 
   const removeCompany = useCallback(
     (index: number) => {
@@ -277,17 +260,16 @@ export default function CompanyRepeater({
               </Field>
             )}
 
-            <Field
-              label="Your stake"
-              required
-              hint="This tells your agent how much it can decide on its own versus draft for you."
-            >
-              <Select
-                value={company.ownership}
-                onChange={(v) => updateCompany(i, { ownership: v })}
-                options={OWNERSHIP_OPTIONS}
-              />
-            </Field>
+            {/* "Your stake" was here and is gone at David's call. It asked how much of the
+                business someone owned in order to infer how much the agent could decide alone -
+                a real signal, but an uncomfortable question to be asked in the first two minutes
+                by a company you have just paid, and one people round or decline to answer. The
+                same latitude is settled better in conversation with the agent than by a
+                dropdown before it has said a word.
+
+                The `ownership` field stays on the Company type and in the payload as an empty
+                string: it is read by buildData and by the intake email, and dropping it would
+                mean touching both for a value nothing decides on. */}
 
             {company.industry === "Other" && (
               <Field label="Tell us your industry" required>
@@ -306,26 +288,12 @@ export default function CompanyRepeater({
         </div>
       ))}
 
-      {companies.length < MAX_COMPANIES && (
-        <button
-          type="button"
-          onClick={addCompany}
-          style={{
-            border: `1px dashed ${T.line}`,
-            borderRadius: 8,
-            background: "transparent",
-            color: T.ink,
-            fontFamily: T.body,
-            fontWeight: 600,
-            fontSize: 13,
-            padding: "11px 14px",
-            cursor: "pointer",
-            width: "100%",
-          }}
-        >
-          + Add another business
-        </button>
-      )}
+      {/* "+ Add another business" was here and is gone at David's call.
+          Almost nobody has a second business, and offering the option in the first minutes
+          implied the questionnaire was longer than it is - which is the wrong impression to
+          give on the screen people are most likely to abandon. The repeater itself, the
+          portfolio block and MAX_COMPANIES all stay: a workspace can still hold more than one
+          company, and putting the control back is this block, not a rebuild. */}
 
       {/* Portfolio block: only when more than one company. */}
       {multi && (
