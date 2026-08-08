@@ -34,6 +34,8 @@ export const POST = route(async (request: Request) => {
     agent_name?: string;
     avatar_upload?: AvatarUpload;
     avatar_preset?: string;
+    /** Which agent, when the workspace holds more than one of this type. */
+    agent37_id?: string;
   }>(request);
 
   if (!body.agent_type) throw new ApiError(400, "invalid_request", "agent_type is required");
@@ -90,6 +92,10 @@ export const POST = route(async (request: Request) => {
     agentName: body.agent_name,
     avatarUpload: body.avatar_upload,
     avatarPreset: body.avatar_preset,
+    // Named when the workspace holds more than one agent of this type, so the answers attach
+    // to the instance the customer is actually setting up rather than to whichever one the
+    // lookup happens to find first.
+    agent37Id: body.agent37_id,
     // The Stripe webhook provisions this flow's agents; this route only ever injects into
     // whatever it finds.
     provisionIfMissing: false,

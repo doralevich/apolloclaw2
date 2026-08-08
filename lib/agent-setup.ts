@@ -91,6 +91,14 @@ export interface SetupInput {
   avatarUpload?: AvatarUpload;
   avatarPreset?: string;
   /**
+   * Which agent these answers describe.
+   *
+   * Only needed when a workspace holds more than one agent of the same type, where "the agent
+   * of this type" stops being a single answer. Omitted everywhere else, and resolved from the
+   * workspace as before.
+   */
+  agent37Id?: string;
+  /**
    * Provision the agent here if it does not exist yet.
    *
    * False for the per-agent flow, where the Stripe webhook provisions and this route only
@@ -136,32 +144,57 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
     ? (await uploadAgentAvatar(workspaceId, type.id, input.avatarUpload)) ?? undefined
     : presetUrl;
 
-  const { error } = await db.from("agent_setup").upsert(
-    {
-      workspace_id: workspaceId,
-      agent_type: type.id,
-      answers,
-      agent_name: agentName ?? null,
-      avatar_url: avatarUrl ?? null,
-      submitted_by: submittedBy ?? null,
-      injected_at: null,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "workspace_id,agent_type" }
-  );
+  // WHICH AGENT do these answers belong to?
+  //
+  // Named explicitly when the caller knows - a second agent in a workspace that already has
+  // one, where "the agent of this type" is ambiguous and guessing would attach somebody's
+  // answers to the wrong instance. Otherwise the single agent of this type, which is every
+  // flow that existed before seats.
+  let agentId = input.agent37Id;
+  if (!agentId) {
+    // Does the agent exist yet? The per-agent flow races the Stripe webhook and usually finds
+    // one; the license flow never will, because nothing provisions before this point.
+    const { data: agentRow } = await db
+      .from("agents")
+      .select("agent37_id")
+      .eq("workspace_id", workspaceId)
+      .or(`agent_type.eq.${type.id},template.eq.${type.template}`)
+      .limit(1)
+      .maybeSingle();
+    agentId = agentRow?.agent37_id as string | undefined;
+  }
+
+  // Find the row this submission updates, rather than upserting on (workspace, type).
+  //
+  // That key meant ONE answers row per company per type, and every ApolloClaw agent is the same
+  // type - so the second person in a workspace to finish the questionnaire overwrote the first
+  // person's answers and took the agent37_id stamp with them, orphaning the original. Silent,
+  // and unrecoverable. Migration 0023 replaced it with a surrogate key and two partial uniques;
+  // this is the read side of that.
+  //
+  // A known agent matches its own row. An unknown one matches the unclaimed row for this type,
+  // which is what keeps the licence flow idempotent when a buyer submits twice.
+  const finder = db.from("agent_setup").select("id").eq("workspace_id", workspaceId);
+  const { data: existingRow } = agentId
+    ? await finder.eq("agent37_id", agentId).maybeSingle()
+    : await finder.eq("agent_type", type.id).is("agent37_id", null).maybeSingle();
+
+  const record = {
+    workspace_id: workspaceId,
+    agent_type: type.id,
+    ...(agentId ? { agent37_id: agentId } : {}),
+    answers,
+    agent_name: agentName ?? null,
+    avatar_url: avatarUrl ?? null,
+    submitted_by: submittedBy ?? null,
+    injected_at: null,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = existingRow?.id
+    ? await db.from("agent_setup").update(record).eq("id", existingRow.id)
+    : await db.from("agent_setup").insert(record);
   if (error) throw new ApiError(500, "db_error", error.message);
-
-  // Does the agent exist yet? The per-agent flow races the Stripe webhook and usually finds
-  // one; the license flow never will, because nothing provisions before this point.
-  const { data: agentRow } = await db
-    .from("agents")
-    .select("agent37_id")
-    .eq("workspace_id", workspaceId)
-    .or(`agent_type.eq.${type.id},template.eq.${type.template}`)
-    .limit(1)
-    .maybeSingle();
-
-  let agentId = agentRow?.agent37_id as string | undefined;
 
   if (!agentId && provisionIfMissing) {
     // Agent37 tags the instance to an end user and the row records created_by, so there is
