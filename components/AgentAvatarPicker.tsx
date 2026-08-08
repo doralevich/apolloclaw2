@@ -23,20 +23,12 @@ export function AgentAvatarPicker({
   currentUrl,
   agentName,
   size = "md",
-  portrait = false,
 }: {
   agentId: string;
   currentUrl?: string | null;
   agentName: string;
   /** "lg" is the Start Here greeting, where the mascot is the illustration rather than a chip. */
   size?: "md" | "lg";
-  /**
-   * Show the full-body mascot at its own proportions instead of a circular crop, the way the
-   * reference does. Only applies while nobody has chosen a picture: the moment somebody uploads
-   * a logo or picks a pose, that is what belongs here, and a headshot in a circle is the shape
-   * that suits an arbitrary image.
-   */
-  portrait?: boolean;
 }) {
   const { refresh } = useActiveAgent();
   const [open, setOpen] = useState(false);
@@ -87,13 +79,17 @@ export function AgentAvatarPicker({
   // every unconfigured agent look like it had been given a face, so the picker's own selected
   // ring was the only thing distinguishing "chose the mascot" from "chose nothing". Initials say
   // what is true - nobody has picked yet - and the picker is one click away.
-  const box = size === "lg" ? "h-28 w-28" : "h-14 w-14";
+  const box = size === "lg" ? "h-32 w-32" : "h-14 w-14";
   const initial = agentName.trim().charAt(0).toUpperCase() || "?";
 
-  // The portrait variant only has something to draw when a picture exists. Without one it is the
-  // same lettered circle at the larger size, rather than a mascot standing in for a choice
-  // nobody made.
-  const asPortrait = portrait && !!currentUrl;
+  // ALWAYS A CIRCLE. There was a `portrait` variant here that drew the picture at its natural
+  // proportions with no crop and no rounding, built for the full-body mascot PNG - a standing
+  // robot looks wrong squeezed into a circle.
+  //
+  // The presets are headshots now, and that variant left them square: the image is a 256px
+  // square, so the circular face inside it met a straight edge on every side. It read as a
+  // broken crop because it was one. A headshot belongs in a circle, and so does an uploaded
+  // logo, so there is no longer a case the variant serves.
 
   return (
     <div className="relative shrink-0">
@@ -104,16 +100,13 @@ export function AgentAvatarPicker({
         aria-expanded={open}
         className={cn(
           "group relative block",
-          asPortrait ? "w-auto" : cn("overflow-hidden rounded-full bg-secondary", box)
+          "overflow-hidden rounded-full bg-secondary",
+          box
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         {currentUrl ? (
-          <img
-            src={currentUrl}
-            alt=""
-            className={cn(asPortrait ? "h-32 w-auto sm:h-40" : cn("object-cover", box))}
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={currentUrl} alt="" className={cn("object-cover", box)} />
         ) : (
           <span
             className={cn(
@@ -129,22 +122,20 @@ export function AgentAvatarPicker({
         <span
           className={cn(
             "absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
-            // No dark scrim over the portrait: the PNG is transparent, so a full-bleed overlay
-            // would darken the card behind it rather than the robot. The icon alone carries it.
-            asPortrait ? "items-end pb-2" : "rounded-full bg-black/50"
+            "rounded-full bg-black/50"
           )}
         >
           <Camera
             className={cn(
               "size-5",
-              asPortrait ? "rounded-full bg-foreground/80 p-1 text-background" : "text-white"
+              "text-white"
             )}
           />
         </span>
       </button>
 
       {open && (
-        <div className={cn("absolute left-0 z-20 w-[22rem] rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
+        <div className={cn("absolute left-0 z-20 w-[22rem] rounded-xl border bg-card p-4 shadow-lg", size === "lg" ? "top-36" : "top-16")}>
           <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
           {/* Scrolls. Seven poses fitted in a popover; forty portraits do not, and a list that grows
               taller than the viewport puts "Upload your own" somewhere nobody can reach. */}

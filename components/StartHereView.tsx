@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MessageSquare } from "lucide-react";
+import { ListChecks, MessageSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
@@ -65,7 +65,6 @@ export function StartHereView() {
               currentUrl={active.avatar_url}
               agentName={agentName}
               size="lg"
-              portrait
             />
           </div>
 
@@ -77,10 +76,14 @@ export function StartHereView() {
               {userFirstName && <span className="text-primary">{userFirstName}</span>}, I&apos;m{" "}
               {agentName}.
             </h1>
+            {/* "Three things make me useful, and they go in this order" used to end this
+                paragraph, and it was wrong on screen: the checklist below is generated from each
+                customer's own answers, so it is as often four or nine items as three. A greeting
+                that miscounts the list directly under it is the first thing somebody notices. */}
             <p className="mt-3 text-muted-foreground">
               I am built around your business rather than trained on it in general - your people,
-              your stack, the things that keep going wrong. Three things make me useful, and
-              they go in this order.
+              your stack, the things that keep going wrong. Here is what will make me useful,
+              in the order worth doing it.
             </p>
           </div>
         </div>
@@ -88,12 +91,23 @@ export function StartHereView() {
         <SetupChecklist agentId={active.agent37_id} />
       </div>
 
+      {/* Two buttons, because there are two honest next moves and the page should not pretend
+          otherwise: finish setting up, or start talking to it. Chat stays primary - the product
+          works before the list is done - and the checklist gets equal billing rather than the
+          small text link it had inside the card. */}
       <div className="flex flex-col items-center gap-3">
-        <Button asChild size="lg">
-          <Link href="/dashboard/chat">
-            <MessageSquare /> Open Chat
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button asChild size="lg">
+            <Link href="/dashboard/chat">
+              <MessageSquare /> Open Chat
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/dashboard/checklist">
+              <ListChecks /> Open Checklist
+            </Link>
+          </Button>
+        </div>
         <p className="text-center text-sm text-muted-foreground">
           Talk to {agentName} the way you&apos;d talk to someone who works for you. The more you
           say about how you want things done, the less you&apos;ll have to repeat yourself.
