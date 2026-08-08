@@ -1,5 +1,5 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
-import { HOSTING_PLAN, LICENSE_PLAN } from "@/lib/pricing/catalog";
+import { HOSTING_PLAN, resolveLicenseTier } from "@/lib/pricing/catalog";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
@@ -26,6 +26,8 @@ interface CheckoutBody {
   email?: string;
   personalEmail?: string;
   phone?: string;
+  /** "basic" or "advanced". Anything else resolves to Advanced — see resolveLicenseTier. */
+  tier?: string;
 }
 
 // Stripe metadata values are capped at 500 characters and the whole object at 50 keys. None
@@ -49,12 +51,16 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(400, "invalid_request", "A valid business email is required.");
   }
 
+  // The tier is resolved from the catalog, never taken as a price id from the body. A caller
+  // who could name the price could name a $0 one, and this route is deliberately open.
+  const tier = resolveLicenseTier(body.tier);
+
   const stripe = getStripe();
   const { data: prices } = await stripe.prices.list({
-    lookup_keys: [LICENSE_PLAN.catalogKey, HOSTING_PLAN.catalogKey],
+    lookup_keys: [tier.catalogKey, HOSTING_PLAN.catalogKey],
     active: true,
   });
-  const licensePrice = prices.find((p) => p.lookup_key === LICENSE_PLAN.catalogKey);
+  const licensePrice = prices.find((p) => p.lookup_key === tier.catalogKey);
   const hostingPrice = prices.find((p) => p.lookup_key === HOSTING_PLAN.catalogKey);
   if (!licensePrice || !hostingPrice) {
     // Reads as a config problem to us and as "try again shortly" to the buyer, which is
@@ -71,8 +77,14 @@ export const POST = route(async (request: Request) => {
   // user_id/workspace_id/agent_type instead) or a College Agent sale on this shared Stripe
   // account. Both the session and the subscription carry it, so later subscription
   // lifecycle events can also be traced back to this purchase.
+  //
+  // `flow` stays "onboard_license" for BOTH tiers. The webhook keys on it to decide that this
+  // session creates an account, and both tiers do — they provision identically. `license_tier`
+  // rides alongside as a label, so David can tell from Stripe alone who bought setup calls and
+  // who is self-serving, without it becoming a second code path.
   const metadata = {
     flow: "onboard_license",
+    license_tier: tier.id,
     lead_email: email,
     first_name: first,
     last_name: last,

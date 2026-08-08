@@ -4,6 +4,13 @@ import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type Portf
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
+import {
+  DEFAULT_LICENSE_TIER,
+  LICENSE_TIERS,
+  resolveLicenseTier,
+  type LicenseTier,
+  type LicenseTierId,
+} from "@/lib/pricing/catalog";
 import { apiFetch } from "@/lib/api";
 
 // The single business-onboarding questionnaire, shared by three entry points:
@@ -438,26 +445,57 @@ function Success({ nextStep }: { nextStep?: boolean }) {
 // drop-off here is still a lead we have), then payment, then the questionnaire. The buyer
 // has no account at this point and does not need one — /api/onboard/checkout is anonymous
 // and the account is created from the completed checkout by the Stripe webhook.
-// One priced line on the paywall. Module scope, not defined inside Paywall: a component
-// created during render is a fresh type on every render, which remounts its subtree.
-function PriceLine({ label, sub, price, per }: { label: string; sub: string; price: string; per: string }) {
+// One tier card on the paywall. Module scope, not defined inside Paywall: a component created
+// during render is a fresh type on every render, which remounts its subtree.
+//
+// The whole card is the control, and it is a real <button> rather than a div with an onClick —
+// so it is reachable by keyboard and announces its pressed state without any of that being
+// reimplemented here.
+function TierCard({ tier, selected, disabled, onSelect }: { tier: LicenseTier; selected: boolean; disabled: boolean; onSelect: () => void }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, padding: "18px 0", borderBottom: `1px solid ${BDR}` }}>
-      <div>
-        <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: TX }}>{label}</p>
-        <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>{sub}</p>
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: TX }}>{price}</p>
-        <p style={{ margin: "2px 0 0", fontSize: 12, color: TXD }}>{per}</p>
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={onSelect}
+      disabled={disabled}
+      aria-pressed={selected}
+      style={{
+        flex: "1 1 260px", textAlign: "left", fontFamily: "inherit", cursor: disabled ? "default" : "pointer",
+        background: selected ? "rgba(215,43,43,0.05)" : "transparent",
+        border: `1px solid ${selected ? R : BDR}`,
+        boxShadow: selected ? `0 0 0 1px ${R}` : "none",
+        borderRadius: 10, padding: "20px 18px", position: "relative", transition: "border-color .15s, background .15s",
+      }}
+    >
+      {tier.recommended && (
+        <span style={{ position: "absolute", top: -9, right: 16, background: R, color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 8px", borderRadius: 4 }}>
+          Recommended
+        </span>
+      )}
+      <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>{tier.label}</p>
+      <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>{tier.tagline}</p>
+      {/* Both numbers, always. The license alone reads as the whole price, and a monthly
+          somebody only meets on the Stripe page is the kind of surprise that becomes a
+          chargeback rather than a customer. */}
+      <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{tier.priceLabel}</p>
+      <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7 }}>
+        {tier.includes.map((line) => (
+          <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
+            <span aria-hidden style={{ color: R, fontWeight: 800, flexShrink: 0 }}>✓</span>
+            {line}
+          </li>
+        ))}
+      </ul>
+    </button>
   );
 }
 
 function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  // Pre-selected rather than blank. A picker with nothing chosen adds a decision before the
+  // decision, and the default is the tier we steer to anyway.
+  const [tierId, setTierId] = useState<LicenseTierId>(DEFAULT_LICENSE_TIER);
+  const tier = resolveLicenseTier(tierId);
 
   const go = async () => {
     setErr("");
@@ -471,6 +509,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
           last: gate.last,
           email: gate.email,
           phone: gate.phone,
+          tier: tierId,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -497,13 +536,31 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
       </div>
 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-        <div style={{ width: "100%", maxWidth: 640, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
+        <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
-          <PriceLine label="Agent License" sub="One-time. Your build, your customization, yours to keep." price="$2,500" per="once" />
-          <PriceLine label="Managed Hosting" sub="We run it, patch it, and keep it online. Includes $25/mo of token usage." price="$189" per="per month" />
+          {/* Two ways to buy the same agent. Wraps to a single column under ~600px, where two
+              cards side by side would each be too narrow to read the includes list in. */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6 }}>
+            {LICENSE_TIERS.map((t) => (
+              <TierCard
+                key={t.id}
+                tier={t}
+                selected={t.id === tierId}
+                disabled={loading}
+                onSelect={() => setTierId(t.id)}
+              />
+            ))}
+          </div>
 
-          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "20px 0 0" }}>
+          {/* Said once, under both, because it is identical on both. Repeating it inside each
+              card would read as a difference between them. */}
+          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "18px 0 0" }}>
+            The $189/mo covers managed hosting - we run it, patch it and keep it online - and
+            includes $25/mo of token usage. Same on either tier. Cancel the hosting whenever you
+            like; the license is yours to keep.
+          </p>
+          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "10px 0 0" }}>
             Billed securely through Stripe. Your account is created the moment payment clears,
             and we will email you a link to set your password.
           </p>
@@ -511,7 +568,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
 
           <button type="button" onClick={go} disabled={loading} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "15px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1, letterSpacing: "0.01em" }}>
-            {loading ? "Taking you to checkout…" : "Continue to Payment →"}
+            {loading ? "Taking you to checkout…" : `Continue with ${tier.label} - ${tier.priceLabel} →`}
           </button>
           <button type="button" onClick={onBack} disabled={loading} style={{ width: "100%", marginTop: 10, background: "transparent", border: "none", color: TXD, fontFamily: "inherit", fontSize: 13, padding: "8px", cursor: loading ? "default" : "pointer" }}>
             ← Back
@@ -531,7 +588,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
 // ════════════════════════════════════════════════════════════
 // CONFIRMATION (lead mode, back from Stripe)
 // ════════════════════════════════════════════════════════════
-// Someone has just spent $2,500. Dropping them straight into a form with no acknowledgement
+// Someone has just spent $449 or $2,500. Dropping them straight into a form with no acknowledgement
 // reads as though the payment went nowhere, so this marks the moment before the
 // questionnaire starts.
 //
@@ -1018,27 +1075,23 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // the gate and the questionnaire, keyed on mode === "lead" — this mode is exempt by design,
   // which is the entire reason it exists.
   const isWhiteGlove = mode === "whiteglove";
-  // THE PAYWALL IS OFF. David's call: there is no published pricing yet and engagements are
-  // billed separately, so /onboard now behaves the way /white-glove-onboarding always has -
-  // gate, questionnaire, submitted as a lead.
+  // THE PAYWALL IS BACK ON, as a choice between two tiers rather than the single $2,500 wall
+  // it was. It was off for one deploy while David decided pricing.
   //
-  // A flag rather than a deletion, and every branch below it is left intact, for two reasons.
-  // Somebody who started a checkout before this deploys still comes back with ?paid=1 and a
-  // session id, and that return path has to keep working or their payment buys them nothing.
-  // And turning pricing back on should be one line, not a rebuild of the flow.
+  // Payment is what gates provisioning, and that is the point of turning it back on. The
+  // paywall is the only thing that reaches /api/onboard/complete, which stores the answers and
+  // PROVISIONS THE AGENT while the Stripe webhook creates the account and sends the
+  // set-your-password email. Provisioning spends real money on a VPS and API credits, so with
+  // no checkout in front of it that endpoint is a bill anyone can run up. The alternative gate
+  // we discussed - an invite code - would have made David the bottleneck on every signup,
+  // including the ones that arrive at 3am, which is the opposite of what /onboard is for.
   //
-  // WHAT THIS TURNS OFF, which is more than a screen. The paywall was the only thing that
-  // reached /api/onboard/complete, and that route is what creates nothing less than the whole
-  // customer: the Stripe webhook makes the account and sends the set-your-password email, and
-  // the completion call stores the answers and PROVISIONS THE AGENT. Without a checkout there
-  // is no session to verify, so none of that fires. A submission is now a lead in the CRM and
-  // an email to David, and the agent gets built by hand.
+  // Basic at $449 is what makes that gate acceptable rather than a wall: it is low enough to
+  // buy without a conversation, so somebody can find the site and finish alone.
   //
-  // That is deliberate rather than an oversight. The alternative - keep provisioning, drop the
-  // payment - would leave /api/onboard/complete with no gate at all, and provisioning spends
-  // real money on a VPS and API credits. An open endpoint that mints those for anyone who can
-  // POST to it is not a paywall change, it is a bill.
-  const PAYWALL_ENABLED = false;
+  // Still a flag rather than an inlined `mode === "lead"`, because the reason to reach for it
+  // again (a free tier, a trial) is a live possibility rather than a hypothetical.
+  const PAYWALL_ENABLED = true;
   const isPaywalled = PAYWALL_ENABLED && mode === "lead";
 
   // Coming back from Stripe: `justPaid` is read from ?paid=1 on the SERVER and arrives as a
