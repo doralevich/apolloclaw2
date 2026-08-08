@@ -22,10 +22,13 @@ export function AgentAvatarPicker({
   agentId,
   currentUrl,
   agentName,
+  size = "md",
 }: {
   agentId: string;
   currentUrl?: string | null;
   agentName: string;
+  /** "lg" is the Start Here greeting, where the mascot is the illustration rather than a chip. */
+  size?: "md" | "lg";
 }) {
   const { refresh } = useActiveAgent();
   const [open, setOpen] = useState(false);
@@ -70,6 +73,16 @@ export function AgentAvatarPicker({
     reader.readAsDataURL(file);
   }
 
+  // Fall back to the house mascot rather than an initial.
+  //
+  // Nothing sets avatar_url at provisioning, so until somebody opened this picker their agent
+  // was a grey circle with one letter in it — which on Start Here, where this is meant to be
+  // the agent's PORTRAIT, read as a missing image rather than as a default. The preset is only
+  // shown, never saved: an avatar_url still means somebody chose it, so the popover's selected
+  // ring stays honest and picking pose 1 deliberately is still a real change.
+  const shownUrl = currentUrl || AVATAR_PRESETS[0].src;
+  const box = size === "lg" ? "h-28 w-28" : "h-14 w-14";
+
   return (
     <div className="relative shrink-0">
       <button
@@ -77,16 +90,10 @@ export function AgentAvatarPicker({
         onClick={() => setOpen((o) => !o)}
         aria-label={`Change ${agentName}'s picture`}
         aria-expanded={open}
-        className="group relative block h-14 w-14 overflow-hidden rounded-full bg-secondary"
+        className={cn("group relative block overflow-hidden rounded-full bg-secondary", box)}
       >
-        {currentUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={currentUrl} alt="" className="h-14 w-14 object-cover" />
-        ) : (
-          <span className="flex h-14 w-14 items-center justify-center text-lg font-semibold text-muted-foreground">
-            {agentName.slice(0, 1).toUpperCase()}
-          </span>
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={shownUrl} alt="" className={cn("object-cover", box)} />
         {/* The affordance only appears on hover/focus so the greeting stays a greeting. */}
         <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
           <Camera className="size-5 text-white" />
@@ -94,7 +101,7 @@ export function AgentAvatarPicker({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-16 z-20 w-72 rounded-xl border bg-card p-4 shadow-lg">
+        <div className={cn("absolute left-0 z-20 w-72 rounded-xl border bg-card p-4 shadow-lg", size === "lg" ? "top-32" : "top-16")}>
           <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {AVATAR_PRESETS.map((p) => (

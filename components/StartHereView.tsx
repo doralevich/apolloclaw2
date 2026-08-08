@@ -84,6 +84,7 @@ export function StartHereView() {
               agentId={active.agent37_id}
               currentUrl={active.avatar_url}
               agentName={agentName}
+              size="lg"
             />
           </div>
 
