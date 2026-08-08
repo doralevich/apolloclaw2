@@ -335,19 +335,27 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
               <p style={{ margin: "0 0 6px", fontWeight: 700, color: TX }}>
                 {d.email.trim().toLowerCase()} already has an ApolloClaw account.
               </p>
+              {/* Naming the destination, not just the obstacle.
+                  This said "reset your password and log in" and stopped there, which reads as
+                  "there is nothing for you here" to the one person it most needs to help:
+                  somebody with an account and NO agent. David hit exactly that on a test
+                  address - blocked at the gate, offered a password reset, and no way to reach
+                  the Create button that is now waiting on Welcome for any workspace with zero
+                  agents. The route existed; the sign did not. */}
               <p style={{ margin: "0 0 12px" }}>
-                There is nothing to buy - you already have a license. Reset your password and log
-                in to get back to your dashboard.
+                There is nothing to buy here - the licence is already yours. Log in and your
+                dashboard picks up where you left off, and if there is no agent on it yet you can
+                build one from the Welcome page.
               </p>
               <a
-                href={`/login?reset=1&email=${encodeURIComponent(d.email.trim().toLowerCase())}`}
+                href={`/login?email=${encodeURIComponent(d.email.trim().toLowerCase())}`}
                 style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 700, fontSize: 14, padding: "11px 22px", borderRadius: 6, textDecoration: "none" }}
               >
-                Reset my password →
+                Log in →
               </a>
               <p style={{ margin: "12px 0 0", fontSize: 12, color: TXD }}>
-                Know your password?{" "}
-                <a href={`/login?email=${encodeURIComponent(d.email.trim().toLowerCase())}`} style={{ color: TXM, fontWeight: 600 }}>Log in</a>.
+                Forgotten your password?{" "}
+                <a href={`/login?reset=1&email=${encodeURIComponent(d.email.trim().toLowerCase())}`} style={{ color: TXM, fontWeight: 600 }}>Reset it</a>.
                 Setting up a different business? Use another email address above.
               </p>
             </div>
@@ -1248,6 +1256,8 @@ export interface OnboardingFormProps {
   agentTypeId?: string;
   agentLabel?: string;
   workspaceId?: string;
+  /** customer mode only: which agent this questionnaire is for, when there is more than one. */
+  agent37Id?: string;
   justPaid?: boolean;
   /** Stripe checkout session id, from the success URL. Lead mode only. */
   sessionId?: string;
@@ -1312,7 +1322,7 @@ function clearStoredGate(): void {
   }
 }
 
-export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, justPaid, sessionId }: OnboardingFormProps) {
+export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
   // White glove submits down the same unauthenticated /api/intake path as the plain lead
   // form. The difference is what it means: these people have already been sold, offline, so
@@ -1406,6 +1416,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
           method: "POST",
           body: JSON.stringify({
             workspace_id: workspaceId,
+            agent37_id: agent37Id,
             agent_type: agentTypeId,
             answers: data,
             agent_name: personalize.agentName || undefined,

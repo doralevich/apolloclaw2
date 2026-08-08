@@ -44,7 +44,20 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   await requireAdmin(supabase, id, user.id);
   await requireEntitled(supabase);
 
-  const body = await readJson<{ email?: string; name?: string; allow_external?: boolean }>(request);
+  const body = await readJson<{
+    email?: string;
+    name?: string;
+    allow_external?: boolean;
+    /**
+     * Deliberately adding ANOTHER agent for someone who already has one.
+     *
+     * The duplicate guard below exists to stop an admin double-charging for a colleague by
+     * pressing twice, which is an accident. "A second agent for myself" is the same request
+     * made on purpose, and the two are indistinguishable at this layer - so the caller says
+     * which it is, and only the Add-another button on Settings > My Agent sets this.
+     */
+    additional?: boolean;
+  }>(request);
   const email = (typeof body.email === "string" ? body.email : "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new ApiError(400, "invalid_request", "A valid email address is required.");
@@ -67,7 +80,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   const member = (existingMember as Array<{ user_id: string; email: string }> | null)?.find(
     (m) => m.email?.trim().toLowerCase() === email
   );
-  if (member) {
+  if (member && !body.additional) {
     const { data: owned } = await db
       .from("agents")
       .select("agent37_id")

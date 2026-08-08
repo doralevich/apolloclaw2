@@ -6,8 +6,12 @@
 
 @theme {
   /* Colors */
-  --color-background: hsl(45 20% 97%);
-  --color-foreground: hsl(0 0% 4%);
+  /* Crisp white, David's call. This was hsl(45 20% 97%) - a warm CREAM, 45deg of yellow at
+     20% saturation, left over from the light/cream direction the site rebuild started in
+     and pivoted away from. Against the pure-white cards it read as a screen needing
+     calibrating rather than as a deliberate tint. */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(0 0% 0%);
 
   --color-surface-alt: hsl(45 14% 93%);
   --color-surface-purple: hsl(45 10% 95%);
@@ -27,7 +31,10 @@
   --color-secondary-foreground: hsl(0 0% 15%);
 
   --color-muted: hsl(45 8% 88%);
-  --color-muted-foreground: hsl(0 0% 24%);
+  /* Secondary text at 24% grey was still visibly grey beside 4% body copy. David has asked
+     for black twice; this is as far as it goes while a hierarchy still exists - anything
+     closer and "muted" stops meaning anything at all. */
+  --color-muted-foreground: hsl(0 0% 15%);
   --color-muted-subtle: hsl(0 0% 55%);
 
   --color-accent: hsl(0 68% 51%);

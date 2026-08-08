@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 type Props = {
   params: Promise<{ agent: string }>;
-  searchParams: Promise<{ ws?: string; paid?: string }>;
+  searchParams: Promise<{ ws?: string; paid?: string; agent?: string }>;
 };
 
 export default async function AgentSetupPage({ params, searchParams }: Props) {
@@ -31,7 +31,7 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
   const { user } = await getSession();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/onboard/${agent}`)}`);
 
-  const { ws, paid } = await searchParams;
+  const { ws, paid, agent: agent37Id } = await searchParams;
 
   return (
     <OnboardingForm
@@ -39,6 +39,7 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
       agentTypeId={type.id}
       agentLabel={type.label}
       workspaceId={ws}
+      agent37Id={agent37Id}
       justPaid={paid === "1"}
     />
   );

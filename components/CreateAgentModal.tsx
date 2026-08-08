@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bot,
   Briefcase,
@@ -65,6 +66,7 @@ export function CreateAgentModal({
   triggerVariant?: ButtonProps["variant"];
   triggerSize?: ButtonProps["size"];
 }) {
+  const router = useRouter();
   const { current, isPlatformAdmin } = useWorkspace();
   const { agents, refresh, setActiveId } = useActiveAgent();
   const { busy, run } = useAsyncAction();
@@ -153,6 +155,19 @@ export function CreateAgentModal({
       await refresh();
       if (created?.id) setActiveId(created.id);
       onCreated?.();
+
+      // Then straight into the questionnaire, which is the half that was missing.
+      //
+      // Creating the instance is not the job. The agent is BUILT FROM these answers - they
+      // become USER.md and the setup checklist - so a rebuild that stopped at "provisioning"
+      // handed somebody a generic agent and no route to fix it: /onboard/{type} is not linked
+      // from anywhere in the dashboard, so unless you knew to type the URL you were stuck with
+      // it. That is what David hit rebuilding after a delete.
+      //
+      // Safe to send them here now and not before: the page 404s on an unknown type and
+      // /api/agent-setup refuses unless an agent of this type already exists in the workspace,
+      // which the line above has just made true.
+      router.push(`/onboard/${selectedType.id}?ws=${encodeURIComponent(current.id)}`);
     });
   }
 

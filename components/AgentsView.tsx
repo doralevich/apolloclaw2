@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { AgentVitals } from "@/components/AgentVitals";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
+import { AddAgentButton } from "@/components/AddAgentButton";
 import { SetupBanner } from "@/components/SetupPrompt";
 
 // My Agent reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
@@ -75,8 +76,12 @@ export function AgentsView() {
           <h1 className="text-2xl font-semibold tracking-tight">{agents.length > 1 ? "My Agents" : "My Agent"}</h1>
           <p className="text-sm text-muted-foreground">{current.name}</p>
         </div>
-        {/* Visible to every member - the server enforces entitlement + the per-type cap. */}
-        <CreateAgentModal triggerSize="sm" />
+        {/* Two different acts, so two different controls.
+            CreateAgentModal is the REBUILD: it renders only at zero agents and spends nothing
+            beyond what they already pay. AddAgentButton is a PURCHASE - a second agent, its own
+            VPS, its own credit, +$189/mo - so it only shows once there is something to add to,
+            and it states the charge before it makes it. */}
+        {agents.length === 0 ? <CreateAgentModal triggerSize="sm" /> : <AddAgentButton />}
       </div>
 
       {/* Nothing used to tell a customer their agent was unconfigured. */}
