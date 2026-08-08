@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // The five things you DO with an agent. Everything you only ever configure — credits,
 // members, the workspace itself — moved behind Settings, which is its own area rather than
@@ -190,9 +191,14 @@ function SidebarContent({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoUrl} alt={logoAlt} className="h-8 w-auto max-w-[9rem] object-contain object-left" />
         ) : (
-          // No logo anywhere means nothing would name the product at all, so the wordmark
-          // stands in. Never the workspace name — that would reintroduce the duplicate.
-          <span className="truncate font-semibold">{branding.appName}</span>
+          // Ours, the real wordmark, not the app name in bold text.
+          //
+          // branding.logoUrl comes from NEXT_PUBLIC_LOGO_URL, which is unset — this is a
+          // white-label shell, so it defaults to empty and every install without that variable
+          // fell through to a text string. The same inline SVG the marketing nav uses fills that
+          // gap: it takes an ink colour, so the black wordmark works on this light rail while
+          // the bracket keeps the brand red.
+          <ApolloClawLogo ink="var(--color-foreground)" height={26} />
         )}
       </div>
 

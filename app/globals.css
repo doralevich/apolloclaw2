@@ -167,16 +167,30 @@
      The button sits a step LIFTED from the rail rather than exactly on it — a control on a white
      page needs a little more weight than a surface behind everything does, and matching the two
      precisely made the button look like a hole. */
-  --color-primary: hsl(216 45% 15%);
+  /* Apollo Claw red, David's call, and the same #D72B2B the marketing site and the transactional
+     emails already use — so a Connect button in the dashboard and a Set your password button in
+     the receipt are finally the same colour.
+
+     THE COST, and it is a real one: --color-destructive is also red. The note above used to say
+     destructive stays red "once the accent isn't", and the accent now is. A crimson Delete beside
+     a red Connect is two reds a customer has to tell apart by shade, which is the failure that
+     note was written to avoid. So destructive is darkened below rather than left to collide. */
+  --color-primary: hsl(0 68% 51%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-accent: hsl(216 45% 15%);
+  --color-accent: hsl(0 68% 51%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-ring: hsl(215 32% 35%);
+  --color-ring: hsl(0 60% 45%);
+
+  /* Delete and Disconnect, pushed away from the accent: deeper, browner, and unmistakably not
+     the button you press to get on with things. */
+  --color-destructive: hsl(354 78% 34%);
 
   /* The two ends of the gradient: lifted navy down to the rail's own. Still a gradient — a flat
      button is the flat purple one with the colour removed, and flat was half of what was wrong. */
-  --brand-from: hsl(214 38% 24%);
-  --brand-to: hsl(216 52% 11%);
+  /* Red into near-black, which is the logo: red bracket, black wordmark. The old gradient ran
+     lifted-navy into rail-navy; this runs the brand's own two colours instead. */
+  --brand-from: hsl(0 68% 51%);
+  --brand-to: hsl(0 0% 12%);
 }
 
 /* The surfaces underneath it.
