@@ -84,13 +84,15 @@ const STACK_CRM    = ["Salesforce","HubSpot","Microsoft Dynamics 365","Oracle Ne
 // made a short list read like a tool directory. WhatsApp added: outside the US it is the
 // default way a business talks to customers, and it is one of the channels the agent can
 // answer on.
-const STACK_COMMS  = ["Google Workspace","Office 365","Slack","Microsoft Teams","Google Meet","WhatsApp","Telegram","Other"];
+// "Google Workspace" split into Google Mail and Google Calendar at David's call. The suite name
+// was one checkbox standing for two separate Composio connections, so ticking it produced a
+// single checklist item for mail and silently nothing for calendar - and somebody who lives in
+// Calendar but not Gmail had no way to say so.
+const STACK_COMMS  = ["Google Mail","Google Calendar","Office 365","Slack","Microsoft Teams","Google Meet","WhatsApp","Telegram","Other"];
 const STACK_PM     = ["Notion","Asana","ClickUp","Trello","Monday.com","Jira / Linear","No PM tool","Other"];
 const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBooks","NetSuite","Bill.com","Ramp / Brex","Stripe","Square","PayPal","None","Other"];
 const IT_COMPLY    = ["HIPAA (healthcare)","PCI-DSS (payments)","GDPR (EU data)","CCPA (California)","SOC 2","None / Not applicable","Not sure","Multiple"];
 const BROKEN_AREAS = ["Sales / Lead Generation","Customer Support / Service","Operations / Admin","Marketing & Content","Invoicing & Finance","Scheduling & Calendar","Hiring & HR","Reporting & Analytics","Order Fulfillment / Shipping","Email & Inbox","Team Communication","Vendor / Supplier Management","Project Management","Customer Onboarding","Contracts & Proposals"];
-const HOURS_WASTED = ["Less than 5 hrs/wk","5-10 hrs/wk","10-20 hrs/wk","20-30 hrs/wk","30-40 hrs/wk","40+ hrs/wk (a full-time job)","Not sure - it's everywhere"];
-const COST_IMPACT  = ["Minor inconvenience","Moderate - costing real money","Significant - blocking growth","Critical - threatening the business","Unknown - hard to quantify"];
 const KIDS_COUNT   = ["None","1","2","3","4","5 or more"];
 const MARITAL      = ["Single","In a relationship","Engaged","Married","Domestic partnership","Divorced / Separated","Widowed","Prefer not to say"];
 const LIFE_STAGE   = ["Building - early, grinding hard","Scaling - growing fast, feeling stretched","Optimizing - established, refining","Exiting - preparing to sell or step back","Pivoting - changing direction","Surviving - navigating a hard period"];
@@ -210,6 +212,38 @@ function Divider({ label }: { label?: string }) {
 // narrow (mobile) screens instead of squishing and truncating.
 function Row2({ children }: { children: React.ReactNode }) { return <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>{children}</div>; }
 function Stack({ children }: { children: React.ReactNode }) { return <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>{children}</div>; }
+export interface KeyPerson { name: string; role: string }
+// The people around the customer, by name and role.
+//
+// Name and role as SEPARATE fields, and repeated rather than one textarea, because of what the
+// agent does with them: "Sarah, Ops Manager" typed into a paragraph is prose it can quote back,
+// while a list of {name, role} is something it can match against - so when an email arrives
+// from Sarah it already knows who she is and what she decides, instead of asking.
+//
+// Starts as one blank row and grows on demand. Rows left empty are dropped on submit, so
+// somebody who has nobody to name simply walks past it.
+function KeyPeople({ people, onChange }: { people: KeyPerson[]; onChange: (p: KeyPerson[]) => void }) {
+  const update = (i: number, patch: Partial<KeyPerson>) => onChange(people.map((p, n) => (n === i ? { ...p, ...patch } : p)));
+  const remove = (i: number) => onChange(people.length > 1 ? people.filter((_, n) => n !== i) : [{ name: "", role: "" }]);
+  return (
+    <FF label="Key people we should know about" hint="The names that come up in your day - who they are and what they run. Optional, and you can add more later.">
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+        {people.map((p, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
+              <TInput value={p.name} onChange={v => update(i, { name: v })} placeholder="Name" />
+              <TInput value={p.role} onChange={v => update(i, { role: v })} placeholder="Role - e.g. Operations Manager" />
+            </div>
+            <button type="button" onClick={() => remove(i)} aria-label={`Remove person ${i + 1}`} style={{ border: "none", background: "none", color: TXD, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0 }}>x</button>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => onChange([...people, { name: "", role: "" }])} style={{ marginTop: 10, border: `1px dashed ${BDR}`, background: "transparent", color: TXM, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, padding: "8px 14px", borderRadius: 6 }}>
+        + Add another person
+      </button>
+    </FF>
+  );
+}
 function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; total: number; title: string; subtitle?: string; badge?: string }) {
   return (
     <div style={{ marginBottom: 28 }}>
@@ -914,6 +948,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const [s6, setS6] = useState({ tone: [] as string[], writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
   const [s7, setS7] = useState({ goals: [] as string[], metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
   const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
+  const [keyPeople, setKeyPeople] = useState<KeyPerson[]>([{ name: "", role: "" }]);
   const [companies, setCompanies] = useState<Company[]>([emptyCompany()]);
   const [primaryIndex, setPrimaryIndex] = useState(0);
   const [portfolio, setPortfolio] = useState<PortfolioMeta>(emptyPortfolio());
@@ -936,7 +971,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   //
   // It stays a literal because the handlers below close over it and allPages is built from
   // state further down; the assertion is what makes the duplication safe.
-  const pageKeys = ["biz", "whatyoudo", ...(branch ? ["industry"] : []), "stack", "ops", "exec", "life", "voice", "sample", "goals", "scopeai", "scope"];
+  const pageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "horizon", "scope"];
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
@@ -944,7 +979,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1013,6 +1048,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
           say it more accurately than the label would. s2.model stays in state and in the
           payload as an empty string; nothing reads it to decide anything. */}
       <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
+      <KeyPeople people={keyPeople} onChange={setKeyPeople} />
     </Stack>
     ) },
     { key: "whatyoudo", label: "What You Do", node: (
@@ -1020,6 +1056,22 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       <SHead stepNum={2} total={0} title="What Do You Do?" subtitle="Who you serve, what you deliver, and the edge that wins you business." badge="Business" />
       <FF label="Describe your business" required hint="Who do you serve, and what do you deliver for them?"><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
       <FF label="What makes you different?" hint="Why clients choose you over the alternatives - your real edge."><TArea value={s2.differentiate} onChange={v => f2("differentiate", v)} placeholder="e.g. We're the only firm in the region that..., our turnaround is 3x faster, we own a proprietary process..." rows={3} /></FF>
+    </Stack>
+    ) },
+    // Moved up to sit directly after What You Do, at David's call. Describing the business and
+    // then immediately saying where you want it to go is one thought; asking for it four pages
+    // later, after tooling and pain points, made it read as an afterthought when it is the
+    // question the whole build is aimed at.
+    { key: "exec", label: "Executive Profile", node: (
+    <Stack key="s5exec">
+      <SHead stepNum={5} total={0} title={`Executive Profile for ${primaryName}`} subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
+      <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
+      <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={2} split />
+      {/* Moved here from Your Voice at David's call, and it reads as an oversight corrected:
+          how you weigh a decision belongs beside your goal and your bottleneck, not beside
+          your tone of voice. It also governs how much the agent decides alone versus brings
+          to you, which is an executive question. */}
+      <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={2} split />
     </Stack>
     ) },
     ...(branch ? [{ key: "industry", label: "Industry", node: (
@@ -1040,6 +1092,11 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       <Divider label="Finance & Billing" />
       <CheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} cols={2} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
+      {/* Moved here from Final Details at David's call. Who can touch the stack after launch is
+          a fact about the stack, and asking it beside the tools it applies to gets a truer
+          answer than asking it on the last page beside compliance and a file upload. */}
+      <Divider label="After Launch" />
+      <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
     </Stack>
     ) },
     { key: "ops", label: "Operations", node: (
@@ -1047,27 +1104,18 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       <SHead stepNum={4} total={0} title={`Operations & Pain Points for ${primaryName}`} subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
       <FF label="Your biggest operational headache right now"><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
       <CheckGroup label="Which areas feel most broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
-      <Row2>
-        <FF label="Hours lost to administrative tasks each week"><TSelect value={s3.hours} onChange={v => f3("hours", v)} options={HOURS_WASTED} /></FF>
-        <FF label="What's this costing the business?"><TSelect value={s3.costImpact} onChange={v => f3("costImpact", v)} options={COST_IMPACT} /></FF>
-      </Row2>
+      {/* "Hours lost to administrative tasks each week" and "What's this costing the business?"
+          sat here and are gone at David's call. Both asked for a number nobody has: the hours
+          are spread across a dozen small tasks and the cost is a guess on top of that guess, so
+          the answer was a shrug picked from a dropdown. The headache box and the broken-areas
+          list above say the same thing in terms the customer can actually be sure of.
+          s3.hours and s3.costImpact stay in state and in the payload as empty strings; nothing
+          reads them to decide anything. */}
       {/* "Rough weekly volume on your busiest workflow" was here and is gone at David's
           call. It asked somebody to pick their busiest workflow and then estimate it, which
           is two judgements before an answer, and the industry branches that care about
           volume ask it in their own terms - patients per week, active clients, order count.
           branchHasVolume existed only to stop this duplicating those. */}
-    </Stack>
-    ) },
-    { key: "exec", label: "Executive Profile", node: (
-    <Stack key="s5exec">
-      <SHead stepNum={5} total={0} title={`Executive Profile for ${primaryName}`} subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
-      <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
-      <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={2} split />
-      {/* Moved here from Your Voice at David's call, and it reads as an oversight corrected:
-          how you weigh a decision belongs beside your goal and your bottleneck, not beside
-          your tone of voice. It also governs how much the agent decides alone versus brings
-          to you, which is an executive question. */}
-      <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={2} split />
     </Stack>
     ) },
     { key: "life", label: "Life Context", node: (
@@ -1190,24 +1238,6 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       )}
       <RadioGroup label="How does your team feel about implementing our new program?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
       <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
-
-      {/* Three horizons, three boxes, not one.
-          Every other question here describes the business as it is today. This is the only one
-          that says where it is going, which is what turns the agent from something that answers
-          into something that can tell you whether you are on track.
-          Separate fields rather than one paragraph because that is what makes them usable
-          later: dated intentions the agent can hold you to and check against, instead of a
-          block of prose it can only quote back. Optional throughout - somebody who does not
-          know yet should not be blocked, and a guess entered to get past a required field
-          would be worse than an empty one. */}
-      <Divider label="Where this is going" />
-      <p style={{ fontSize: 13, color: TXM, margin: "-6px 0 4px", lineHeight: 1.6 }}>
-        Where do you see your agent and your organization at each point? Rough is fine - your
-        agent uses these to tell whether things are on track, and you can change them any time.
-      </p>
-      <FF label="In three months"><TArea value={s7.horizon3} onChange={v => f7("horizon3", v)} placeholder="e.g. It handles the inbox end to end and I've stopped doing quotes by hand." rows={2} /></FF>
-      <FF label="In six months"><TArea value={s7.horizon6} onChange={v => f7("horizon6", v)} placeholder="e.g. Two people hired, and the agent runs onboarding for every new client." rows={2} /></FF>
-      <FF label="In twelve months"><TArea value={s7.horizon12} onChange={v => f7("horizon12", v)} placeholder="e.g. Double the revenue with the same headcount, and the agent owns all first-line support." rows={2} /></FF>
     </Stack>
     ) },
     // The page break David asked for. "What should it do" and "what does winning look like" are
@@ -1230,10 +1260,30 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       )}
     </Stack>
     ) },
+    // Its own page at David's call. It was a divider at the bottom of Where You Are With AI -
+    // three open boxes arriving after five questions about the past, on a page somebody had
+    // already decided they were finished with. The only forward-looking question in the
+    // questionnaire deserves to be asked on its own.
+    { key: "horizon", label: "Where This Is Going", node: (
+    <Stack key="s7horizon">
+      {/* Three horizons, three boxes, not one.
+          Separate fields rather than one paragraph because that is what makes them usable
+          later: dated intentions the agent can hold you to and check against, instead of a
+          block of prose it can only quote back. Optional throughout - somebody who does not
+          know yet should not be blocked, and a guess entered to get past a required field
+          would be worse than an empty one. */}
+      <SHead stepNum={9} total={0} title="Where This Is Going" subtitle="Where you see your agent and your organization at each point. Rough is fine - your agent uses these to tell whether things are on track, and you can change them any time." badge="Business" />
+      {/* Placeholders are a rollout arc, at David's call: one team, then the company, then the
+          business result. They set the scale of answer this wants - "second tier", "throughout
+          the company" - which an example about a tidy inbox did not. */}
+      <FF label="In three months"><TArea value={s7.horizon3} onChange={v => f7("horizon3", v)} placeholder="e.g. Deployed to a second tier of the team." rows={2} /></FF>
+      <FF label="In six months"><TArea value={s7.horizon6} onChange={v => f7("horizon6", v)} placeholder="e.g. Deployment throughout the company." rows={2} /></FF>
+      <FF label="In twelve months"><TArea value={s7.horizon12} onChange={v => f7("horizon12", v)} placeholder="e.g. Double the revenue with the same headcount, and the agent owns all first-line support." rows={2} /></FF>
+    </Stack>
+    ) },
     { key: "scope", label: "Scope", node: (
     <Stack key="s8">
       <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
-      <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
       <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
       <FF label="Anything else we should know?" hint="Extra context, priorities, or details that will help us build."><TArea value={s8.constraints} onChange={v => f8("constraints", v)} placeholder="Anything else that helps us understand your business and what you need." rows={4} /></FF>
       <FF label="Upload company materials" hint="Optional, and the more the better. Anything that helps us learn your business: company materials, your resume so we know your background, example emails / memos / documents, SOPs, and templates.">
