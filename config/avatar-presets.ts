@@ -38,3 +38,13 @@ const PRESET_SRCS = new Set(AVATAR_PRESETS.map((p) => p.src));
 export function isAvatarPresetPath(value: string): boolean {
   return PRESET_SRCS.has(value);
 }
+
+/**
+ * The full-body render the seven presets above were cropped from.
+ *
+ * Kept separate from AVATAR_PRESETS on purpose: it is not selectable. At 211x468 it is the wrong
+ * shape for an avatar — the crops exist precisely because a whole robot in a 32px circle is an
+ * unreadable smudge — so this is only ever the standing illustration on Start Here, shown while
+ * nobody has chosen a picture of their own.
+ */
+export const MASCOT_FULL = "/avatars/ac-guy-full.png";

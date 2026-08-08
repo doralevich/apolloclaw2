@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { AVATAR_PRESETS } from "@/config/avatar-presets";
+import { AVATAR_PRESETS, MASCOT_FULL } from "@/config/avatar-presets";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { cn } from "@/lib/utils";
 
@@ -23,12 +23,20 @@ export function AgentAvatarPicker({
   currentUrl,
   agentName,
   size = "md",
+  portrait = false,
 }: {
   agentId: string;
   currentUrl?: string | null;
   agentName: string;
   /** "lg" is the Start Here greeting, where the mascot is the illustration rather than a chip. */
   size?: "md" | "lg";
+  /**
+   * Show the full-body mascot at its own proportions instead of a circular crop, the way the
+   * reference does. Only applies while nobody has chosen a picture: the moment somebody uploads
+   * a logo or picks a pose, that is what belongs here, and a headshot in a circle is the shape
+   * that suits an arbitrary image.
+   */
+  portrait?: boolean;
 }) {
   const { refresh } = useActiveAgent();
   const [open, setOpen] = useState(false);
@@ -83,6 +91,11 @@ export function AgentAvatarPicker({
   const shownUrl = currentUrl || AVATAR_PRESETS[0].src;
   const box = size === "lg" ? "h-28 w-28" : "h-14 w-14";
 
+  // The full-body render the seven presets were cropped from. Standing at its own aspect rather
+  // than squeezed into a circle — a whole robot in a disc is the unreadable smudge those crops
+  // exist to avoid, and at this size there is room for the whole character.
+  const asPortrait = portrait && !currentUrl;
+
   return (
     <div className="relative shrink-0">
       <button
@@ -90,18 +103,37 @@ export function AgentAvatarPicker({
         onClick={() => setOpen((o) => !o)}
         aria-label={`Change ${agentName}'s picture`}
         aria-expanded={open}
-        className={cn("group relative block overflow-hidden rounded-full bg-secondary", box)}
+        className={cn(
+          "group relative block",
+          asPortrait ? "w-auto" : cn("overflow-hidden rounded-full bg-secondary", box)
+        )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={shownUrl} alt="" className={cn("object-cover", box)} />
+        <img
+          src={asPortrait ? MASCOT_FULL : shownUrl}
+          alt=""
+          className={cn(asPortrait ? "h-32 w-auto sm:h-40" : cn("object-cover", box))}
+        />
         {/* The affordance only appears on hover/focus so the greeting stays a greeting. */}
-        <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-          <Camera className="size-5 text-white" />
+        <span
+          className={cn(
+            "absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
+            // No dark scrim over the portrait: the PNG is transparent, so a full-bleed overlay
+            // would darken the card behind it rather than the robot. The icon alone carries it.
+            asPortrait ? "items-end pb-2" : "rounded-full bg-black/50"
+          )}
+        >
+          <Camera
+            className={cn(
+              "size-5",
+              asPortrait ? "rounded-full bg-foreground/80 p-1 text-background" : "text-white"
+            )}
+          />
         </span>
       </button>
 
       {open && (
-        <div className={cn("absolute left-0 z-20 w-72 rounded-xl border bg-card p-4 shadow-lg", size === "lg" ? "top-32" : "top-16")}>
+        <div className={cn("absolute left-0 z-20 w-72 rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
           <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {AVATAR_PRESETS.map((p) => (
