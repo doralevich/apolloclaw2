@@ -1,24 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import * as Icons from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
-import { CHECKLIST_CATEGORIES } from "@/config/checklist";
+import { CHECKLIST_CATEGORIES, type ChecklistIcon } from "@/config/checklist";
 import { cn } from "@/lib/utils";
 
-// The full checklist page.
+// The checklist page.
 //
-// Two kinds of row, and the difference is visible on purpose. A derived row ticks itself from
-// something observable — a live Composio connection, a configured channel, a chat thread — and
-// cannot be clicked, because it is a fact rather than a claim. A self-reported row is a checkbox,
-// because handing invoicing over to your agent happens inside a conversation and no column
-// anywhere records that it went well.
+// It was a column of grey text with a small link under each line, which read as a document
+// rather than something to use. Three things fixed that, and they are all about making a row
+// look like the thing it is:
 //
-// Making them look identical would be the friendlier lie. Somebody who unticks "Connect HubSpot"
-// and watches it tick straight back would conclude the page is broken; showing it as a state
-// rather than a control says why before they try.
+//   A TILE AT THE FRONT. Product logos where they exist — a HubSpot row carrying the HubSpot
+//   mark is recognisable before you have read a word, which "Connect HubSpot" in body text
+//   never was. Lucide icons everywhere else, so no row is a bare paragraph.
+//
+//   THE WHOLE ROW IS THE TARGET. A 90px-wide text link at the bottom of a 4-line block is a
+//   small target reached by reading first. The row is the link now, with the arrow only there
+//   to say so.
+//
+//   DONE LOOKS FINISHED RATHER THAN DELETED. Struck-through grey said "cancelled". A filled
+//   tick and a receded tile says "that one is behind you", which is what a checklist is for.
+
+function ItemIcon({ icon, className }: { icon: ChecklistIcon; className?: string }) {
+  if (icon.kind === "logo") {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={icon.src} alt="" loading="lazy" className={cn("size-6 rounded object-contain", className)} />;
+  }
+  // Resolved by name so config/checklist.ts stays JSX-free and server-safe, the same split
+  // config/agent-types makes. Unknown names fall back rather than crashing the page.
+  const Cmp = (Icons as unknown as Record<string, Icons.LucideIcon>)[icon.name] ?? Icons.Sparkles;
+  return <Cmp className={cn("size-5", className)} />;
+}
 
 export function ChecklistView() {
   const { active, loading: loadingAgent } = useActiveAgent();
@@ -41,26 +58,34 @@ export function ChecklistView() {
   }
 
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const complete = total > 0 && doneCount === total;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Setup checklist</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {personalized
-            ? "Built from what you told us at onboarding, so it only lists what applies to you."
-            : "The essentials, in the order they matter."}
-        </p>
-      </div>
-
-      <div>
-        <div className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="font-medium">
-            {doneCount} of {total} complete
-          </span>
-          <span className="text-muted-foreground">{pct}%</span>
+      <div className="rounded-xl border bg-card p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold tracking-tight">
+              {complete ? "You are set up." : "Getting set up"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {personalized
+                ? "Built from what you told us at onboarding, so it only lists what applies to you."
+                : "The essentials, in the order they matter."}
+            </p>
+          </div>
+          {/* The number, at the size the number deserves. A progress bar with the count buried
+              in 12px grey underneath made the one fact people came for the smallest thing here. */}
+          <div className="shrink-0 text-right">
+            <div className="text-2xl font-semibold tabular-nums">
+              {doneCount}
+              <span className="text-muted-foreground">/{total}</span>
+            </div>
+            <div className="text-xs text-muted-foreground">{pct}% done</div>
+          </div>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
           <div
             className="h-full rounded-full bg-primary transition-[width] duration-500"
             style={{ width: `${pct}%` }}
@@ -80,19 +105,21 @@ export function ChecklistView() {
           if (!rows.length) return null;
           const catDone = rows.filter((r) => r.done).length;
           return (
-            <div key={cat} className="rounded-xl border bg-card">
-              <div className="flex items-baseline justify-between gap-3 border-b px-5 py-3.5">
-                <h2 className="font-semibold">{cat}</h2>
-                <span className="text-xs text-muted-foreground">
+            <section key={cat}>
+              <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {cat}
+                </h2>
+                <span className="text-xs tabular-nums text-muted-foreground">
                   {catDone}/{rows.length}
                 </span>
               </div>
-              <div className="divide-y">
+              <div className="space-y-2">
                 {rows.map((item) => (
                   <Row key={item.id} item={item} onToggle={() => toggle(item)} />
                 ))}
               </div>
-            </div>
+            </section>
           );
         })
       )}
@@ -104,57 +131,77 @@ function Row({ item, onToggle }: { item: ResolvedItem; onToggle: () => void }) {
   const derived = !!item.derived;
 
   return (
-    <div className="flex items-start gap-3 px-5 py-4">
-      {derived ? (
-        // A state, not a control. No hover, no cursor, nothing that invites a click it would
-        // have to refuse — the tick is telling you what we can already see.
-        <span
-          className={cn(
-            "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border",
-            item.done ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30"
+    <div
+      className={cn(
+        "group relative flex items-start gap-4 rounded-xl border bg-card p-4 transition-colors",
+        item.done ? "border-primary/25 bg-primary/[0.03]" : "hover:border-foreground/20"
+      )}
+    >
+      {/* The tile. Carries the tick when done, so completion reads at the front of the row where
+          the eye already is, rather than as a second marker competing with the icon. */}
+      <div
+        className={cn(
+          "flex size-11 shrink-0 items-center justify-center rounded-lg border transition-colors",
+          item.done ? "border-primary bg-primary text-primary-foreground" : "bg-secondary/60"
+        )}
+      >
+        {item.done ? <Check className="size-5" /> : <ItemIcon icon={item.icon} />}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h3 className={cn("font-semibold leading-tight", item.done && "text-muted-foreground")}>
+            {item.title}
+          </h3>
+          {derived && item.done && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              Connected
+            </span>
           )}
-          aria-hidden
-        >
-          {item.done && <Check className="size-3" />}
-        </span>
-      ) : (
+        </div>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+
+        {!item.done && (
+          // The whole row is the target: this stretches over the card, so the tick button below
+          // stays clickable by sitting above it. Reading the label is not a prerequisite for
+          // hitting it.
+          <Link
+            href={item.href}
+            className="mt-2.5 inline-flex items-center gap-1 text-sm font-medium text-primary after:absolute after:inset-0 after:content-[''] hover:underline"
+          >
+            {item.cta}
+            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        )}
+      </div>
+
+      {/* Self-reported only. A derived row has nothing to toggle — its tile already says what we
+          can see — and a checkbox that refused every click would be worse than no checkbox. */}
+      {!derived && (
         <button
           type="button"
           role="checkbox"
           aria-checked={item.done}
-          aria-label={item.title}
+          aria-label={`Mark "${item.title}" as ${item.done ? "not done" : "done"}`}
           onClick={onToggle}
           className={cn(
-            "mt-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors",
+            "relative z-10 mt-0.5 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
             item.done
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40 hover:border-foreground"
+              ? "border-primary/30 text-primary hover:bg-primary/5"
+              : "text-muted-foreground hover:border-foreground/30 hover:text-foreground"
           )}
         >
-          {item.done && <Check className="size-3" />}
+          <span
+            className={cn(
+              "flex size-3.5 items-center justify-center rounded-full border",
+              item.done ? "border-primary bg-primary text-primary-foreground" : "border-current"
+            )}
+          >
+            {item.done && <Check className="size-2.5" />}
+          </span>
+          {item.done ? "Done" : "Mark done"}
         </button>
       )}
-
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2">
-          <span className={cn("font-medium", item.done && "text-muted-foreground line-through decoration-1")}>
-            {item.title}
-          </span>
-          {derived && (
-            // Says why this one has no checkbox, once, where somebody would otherwise try.
-            <span className="text-[11px] text-muted-foreground/70">ticks itself</span>
-          )}
-        </div>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-        {!item.done && (
-          <Link
-            href={item.href}
-            className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
-          >
-            {item.cta} →
-          </Link>
-        )}
-      </div>
     </div>
   );
 }

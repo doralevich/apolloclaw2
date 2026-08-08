@@ -1,4 +1,4 @@
-import { DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
+import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
 
 // The setup checklist, built per customer from what they told us at intake.
 //
@@ -80,7 +80,29 @@ const AREA_ITEMS: Record<string, string> = {
   "Contracts & Proposals": "Upload one you are happy with — it becomes the template for the rest.",
 };
 
-export type ChecklistCategory = "Connect" | "Hand over" | "Get going";
+/** Lucide icon per broken area, so a list of handovers is scannable rather than fifteen grey rows. */
+const AREA_ICONS: Record<string, string> = {
+  "Sales / Lead Generation": "TrendingUp",
+  "Customer Support / Service": "LifeBuoy",
+  "Operations / Admin": "Settings2",
+  "Marketing & Content": "Megaphone",
+  "Invoicing & Finance": "Receipt",
+  "Scheduling & Calendar": "CalendarDays",
+  "Hiring & HR": "UserPlus",
+  "Reporting & Analytics": "BarChart3",
+  "Order Fulfillment / Shipping": "Package",
+  "Email & Inbox": "Mail",
+  "Team Communication": "Users",
+  "Vendor / Supplier Management": "Truck",
+  "Project Management": "SquareCheck",
+  "Customer Onboarding": "UserCheck",
+  "Contracts & Proposals": "FileSignature",
+};
+
+export type ChecklistCategory = "Connect your tools" | "Hand it your work" | "Start using it";
+
+/** What to draw in the row's tile. A real product logo where one exists, a lucide name otherwise. */
+export type ChecklistIcon = { kind: "logo"; src: string } | { kind: "icon"; name: string };
 
 export type ChecklistItem = {
   /** Stable id. Stored in agent_checklist_items when the item is self-reported. */
@@ -90,6 +112,15 @@ export type ChecklistItem = {
   category: ChecklistCategory;
   href: string;
   cta: string;
+  /**
+   * The tile at the front of the row.
+   *
+   * Product logos wherever there is one — a HubSpot row with the HubSpot mark is recognisable at
+   * a glance in a way "Connect HubSpot" in grey text is not, and the Connections page already
+   * serves these from Composio's CDN. Lucide names elsewhere, resolved in the component so this
+   * file stays JSX-free and server-safe.
+   */
+  icon: ChecklistIcon;
   /**
    * How this item ticks itself, if it can. Items with no `derived` are self-reported and the
    * customer ticks them by hand. `toolkit:<slug>` and `channel:<id>` tick on THAT app or THAT
@@ -118,18 +149,20 @@ const CORE: ChecklistItem[] = [
     body:
       "Gmail, Calendar, Drive — whatever you live in. An agent with no connections can advise. " +
       "One with connections can act.",
-    category: "Connect",
+    category: "Connect your tools",
     href: "/dashboard/integrations",
     cta: "Open Connections",
+    icon: { kind: "icon", name: "Blocks" },
     derived: "tools",
   },
   {
     id: "core:channel",
     title: "Choose where it answers you",
     body: "Connect a chat app so you can reach it without opening this dashboard.",
-    category: "Connect",
+    category: "Connect your tools",
     href: "/dashboard/channels",
     cta: "Open Channels",
+    icon: { kind: "icon", name: "Radio" },
     derived: "channel",
   },
   {
@@ -138,9 +171,10 @@ const CORE: ChecklistItem[] = [
     body:
       "Not a test question — something you were going to have to do anyway. That is the fastest " +
       "way to find where it helps.",
-    category: "Get going",
+    category: "Start using it",
     href: "/dashboard/chat",
     cta: "Open Chat",
+    icon: { kind: "icon", name: "MessageSquare" },
     derived: "asked",
   },
 ];
@@ -184,9 +218,10 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
         id: `channel:${channelId}`,
         title: `Put it in ${label}`,
         body: `You told us your team works in ${label}. This is where the agent answers you there.`,
-        category: "Connect",
+        category: "Connect your tools",
         href: "/dashboard/channels",
-        cta: "Open Channels",
+        cta: `Set up ${label}`,
+        icon: { kind: "icon", name: channelId === "slack" ? "Slack" : "Send" },
         derived: `channel:${channelId}` as const,
       });
       namedChannels = true;
@@ -203,9 +238,12 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
           // search rather than promising a Connect button we cannot build a link for.
           `You told us you use ${label}. Search for it in Connections — the catalogue runs well ` +
           `past the apps listed on the front page.`,
-      category: "Connect",
+      category: "Connect your tools",
       href: "/dashboard/integrations",
       cta: slug ? `Connect ${label}` : "Search Connections",
+      // The real product mark when we have a slug for it. Without one there is no logo to fetch,
+      // so a neutral tile rather than a broken image.
+      icon: slug ? { kind: "logo", src: composioLogoUrl(slug) } : { kind: "icon", name: "Search" },
       derived: slug ? (`toolkit:${slug}` as const) : undefined,
     });
   }
@@ -220,9 +258,10 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
       id: `area:${area.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "")}`,
       title: `Hand over ${area.toLowerCase()}`,
       body,
-      category: "Hand over",
+      category: "Hand it your work",
       href: "/dashboard/chat",
       cta: "Start that conversation",
+      icon: { kind: "icon", name: AREA_ICONS[area] ?? "Sparkles" },
     });
   }
 
@@ -235,9 +274,10 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
       id: "hated",
       title: "Take the task you hate most off your plate",
       body: `You told us: “${hated.length > 160 ? `${hated.slice(0, 160)}…` : hated}”`,
-      category: "Hand over",
+      category: "Hand it your work",
       href: "/dashboard/chat",
       cta: "Start that conversation",
+      icon: { kind: "icon", name: "Flame" },
     });
   }
 
@@ -248,4 +288,8 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
   return pruned.slice(0, MAX_ITEMS);
 }
 
-export const CHECKLIST_CATEGORIES: ChecklistCategory[] = ["Connect", "Hand over", "Get going"];
+export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
+  "Connect your tools",
+  "Hand it your work",
+  "Start using it",
+];

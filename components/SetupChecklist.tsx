@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import * as Icons from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
+import type { ChecklistIcon } from "@/config/checklist";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist } from "@/lib/useChecklist";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,15 @@ import { cn } from "@/lib/utils";
 //
 // So: a progress bar, and the next three things that are not done. Three because it is enough to
 // see what kind of work is left without becoming the list itself.
+function ItemIcon({ icon }: { icon: ChecklistIcon }) {
+  if (icon.kind === "logo") {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={icon.src} alt="" loading="lazy" className="size-4 rounded object-contain" />;
+  }
+  const Cmp = (Icons as unknown as Record<string, Icons.LucideIcon>)[icon.name] ?? Icons.Sparkles;
+  return <Cmp className="size-4 text-muted-foreground" />;
+}
+
 export function SetupChecklist({ agentId }: { agentId: string }) {
   const { sessions } = useChatContext();
   const { items, doneCount, total, loading } = useChecklist(agentId, sessions.length);
@@ -52,21 +63,23 @@ export function SetupChecklist({ agentId }: { agentId: string }) {
           Everything on the checklist is done. Anything else you hand over from here is a bonus.
         </p>
       ) : (
-        <ul className="mt-4 space-y-2.5">
+        // Rows, not bullets. Each one goes straight to the place that finishes it, so the
+        // summary is usable rather than a table of contents pointing at another page.
+        <div className="mt-4 space-y-1.5">
           {next.map((item) => (
-            <li key={item.id} className="flex items-start gap-3 text-sm">
-              <span
-                className="mt-0.5 size-4 shrink-0 rounded-full border border-muted-foreground/30"
-                aria-hidden
-              />
-              <span className="min-w-0">
-                <span className="font-medium">{item.title}</span>
-                {/* One line, not the full body — the detail is one click away and repeating it
-                    here is what turned the greeting into a second checklist last time. */}
+            <Link
+              key={item.id}
+              href={item.href}
+              className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/60"
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary/70">
+                <ItemIcon icon={item.icon} />
               </span>
-            </li>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.title}</span>
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
 
       <Link
