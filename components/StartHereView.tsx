@@ -6,6 +6,7 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { SetupChecklist } from "@/components/SetupChecklist";
+import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
 import { Button } from "@/components/ui/button";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
@@ -98,6 +99,8 @@ export function StartHereView() {
           say about how you want things done, the less you&apos;ll have to repeat yourself.
         </p>
       </div>
+
+      <HelpFooter />
     </div>
   );
 }

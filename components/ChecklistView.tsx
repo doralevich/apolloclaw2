@@ -9,6 +9,7 @@ import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
 import { CHECKLIST_CATEGORIES, connectHref, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
 import { ChannelsPanel } from "@/components/ChannelsView";
+import { HelpFooter } from "@/components/HelpFooter";
 import { cn } from "@/lib/utils";
 
 // The checklist page.
@@ -181,6 +182,8 @@ export function ChecklistView() {
           works now.
         </p>
       </div>
+
+      <HelpFooter />
     </div>
   );
 }

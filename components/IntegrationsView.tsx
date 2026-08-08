@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { HelpFooter } from "@/components/HelpFooter";
 import {
   categoryForSlug,
   composioLogoUrl,
@@ -166,6 +167,7 @@ export function IntegrationsView() {
         </p>
       )}
       <IntegrationsPanel key={active.agent37_id} agentId={active.agent37_id} />
+      <HelpFooter className="max-w-6xl" />
     </div>
   );
 }
