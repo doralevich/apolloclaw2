@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, FileText, Loader2, Mail, PenLine, Plus } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Mail, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { HeaderClock } from "./HeaderClock";
-import { HeaderCredit } from "./HeaderCredit";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -49,11 +46,11 @@ export function ChatView({
 }) {
   const { userFirstName } = useWorkspace();
   const {
-    sessions,
+    
     activeSessionId,
     composerFocusToken,
     requestComposerFocus,
-    startNewChat,
+    
     onSessionCreated,
     bumpSession,
   } = useChatContext();
@@ -94,11 +91,6 @@ export function ChatView({
 
   const showWelcome = !loadingHistory && messages.length === 0;
   // Memoized so the per-token re-renders during streaming don't re-scan the thread list.
-  const activeTitle = useMemo(
-    () => sessions.find((s) => s.session_id === activeSessionId)?.title?.trim(),
-    [sessions, activeSessionId]
-  );
-  const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
   // A chip the customer clicked, and how many have been clicked. The counter is what makes
   // picking the SAME chip twice work — see the note in ChatComposer.
@@ -128,29 +120,6 @@ export function ChatView({
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
       {att.dragOver && <DropOverlay />}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card/80 px-6 backdrop-blur-sm md:px-8">
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-        {/* Date and time, from the mockup. The weather it also shows isn't here - see HeaderClock. */}
-        <HeaderClock />
-        {/* What this conversation has left to spend, and a way to top it up from here. */}
-        <HeaderCredit agentId={agentId} />
-        {/* Light/dark at the top of the screen, where you are when you decide you want it. The
-            three-way preference (including "follow my device") stays in Settings. */}
-        <ThemeToggle />
-        <button
-          type="button"
-          onClick={startNewChat}
-          title="New chat"
-          className="brand-gradient inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/25 transition-shadow hover:shadow-md hover:shadow-primary/30"
-        >
-          <Plus className="h-4 w-4" />
-          New Chat
-        </button>
-        </div>
-      </header>
 
       {/* Everything below the header is a row: the conversation, and - only on the empty state -
           the integrations rail beside it.

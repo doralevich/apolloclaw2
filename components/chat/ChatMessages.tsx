@@ -1,15 +1,41 @@
 "use client";
 
+import { useState } from "react";
 import { Bot, Check, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
+import { AVATAR_PRESETS } from "@/config/avatar-presets";
+import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
 
-// The agent's face beside its messages — a neutral bot glyph in a bordered circle.
+// The agent's own face beside its messages.
+//
+// This was a hardcoded lucide Bot glyph, so the picture somebody chose on Start Here - a mascot
+// pose, or their own logo uploaded - appeared everywhere in the dashboard EXCEPT the place they
+// spend all their time. Every reply came from a generic robot outline.
+//
+// Falls back the same way the picker does: chosen avatar, then the house mascot's head crop,
+// which is what the presets are for. The Bot glyph only survives as the last resort if an image
+// fails to load, so a broken CDN degrades to an icon rather than to a torn-image square.
 function AgentBadge() {
+  const { active } = useActiveAgent();
+  const [broken, setBroken] = useState(false);
+  const src = active?.avatar_url || AVATAR_PRESETS[0].src;
+
   return (
     <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background text-muted-foreground">
-      <Bot className="h-4 w-4" />
+      {broken ? (
+        <Bot className="h-4 w-4" />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          className="h-7 w-7 object-cover"
+          onError={() => setBroken(true)}
+        />
+      )}
     </span>
   );
 }

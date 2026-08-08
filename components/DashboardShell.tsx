@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 // The five things you DO with an agent. Everything you only ever configure — credits,
 // members, the workspace itself — moved behind Settings, which is its own area rather than
@@ -269,6 +270,7 @@ function AccountCard({ userEmail }: { userEmail: string }) {
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isChat = pathname.startsWith("/dashboard/chat");
   const { userEmail } = useWorkspace();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -329,9 +331,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
-      </main>
+      {/* Header and content are siblings inside a column, and the column is the shell's h-screen
+          track: the header is pinned because only <main> scrolls, with no fixed positioning and
+          no phantom gap reserved at the top of every page.
+
+          Chat needs the whole height and manages its own scrolling, so it renders bare - the
+          max-w-7xl reading measure and the padding belong to pages of prose and cards, and
+          around a conversation they would put the composer in a box in the middle of the room. */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <DashboardHeader />
+        {isChat ? (
+          <div className="min-h-0 flex-1">{children}</div>
+        ) : (
+          <main className="min-h-0 flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
+          </main>
+        )}
+      </div>
     </div>
   );
 }
