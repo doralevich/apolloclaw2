@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import * as Icons from "lucide-react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, MessageSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
-import { CHECKLIST_CATEGORIES, type ChecklistIcon } from "@/config/checklist";
+import { CHECKLIST_CATEGORIES, connectHref, type ChecklistIcon } from "@/config/checklist";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // The checklist page.
@@ -116,18 +117,41 @@ export function ChecklistView() {
               </div>
               <div className="space-y-2">
                 {rows.map((item) => (
-                  <Row key={item.id} item={item} onToggle={() => toggle(item)} />
+                  <Row key={item.id} item={item} agentId={agentId} onToggle={() => toggle(item)} />
                 ))}
               </div>
             </section>
           );
         })
       )}
+
+      {/* Chat is not a step. "Ask it something real" was the last row of a list, which put the
+          point of the product behind everything else and made it something to tick rather than
+          something to do. It is a button now, reachable at any point down the page. */}
+      <div className="flex flex-col items-center gap-2 pt-2">
+        <Button asChild size="lg">
+          <Link href="/dashboard/chat">
+            <MessageSquare /> Open Chat
+          </Link>
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          You do not have to finish the list first — it works better with connections, but it
+          works now.
+        </p>
+      </div>
     </div>
   );
 }
 
-function Row({ item, onToggle }: { item: ResolvedItem; onToggle: () => void }) {
+function Row({
+  item,
+  agentId,
+  onToggle,
+}: {
+  item: ResolvedItem;
+  agentId: string;
+  onToggle: () => void;
+}) {
   const derived = !!item.derived;
 
   return (
@@ -161,18 +185,32 @@ function Row({ item, onToggle }: { item: ResolvedItem; onToggle: () => void }) {
         </div>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
 
-        {!item.done && (
-          // The whole row is the target: this stretches over the card, so the tick button below
-          // stays clickable by sitting above it. Reading the label is not a prerequisite for
-          // hitting it.
-          <Link
-            href={item.href}
-            className="mt-2.5 inline-flex items-center gap-1 text-sm font-medium text-primary after:absolute after:inset-0 after:content-[''] hover:underline"
-          >
-            {item.cta}
-            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        )}
+        {!item.done &&
+          (item.toolkitSlug ? (
+            // The actual connection, here. This is the same server-side redirect the Connections
+            // page uses — a plain anchor, so no fetch and no token in the browser — which means
+            // connecting Gmail is one press on this page rather than a trip to another one.
+            <Button asChild size="sm" className="relative z-10 mt-2.5 h-8">
+              <a
+                href={connectHref(agentId, item.toolkitSlug)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {item.cta}
+                <ExternalLink className="size-3.5" />
+              </a>
+            </Button>
+          ) : (
+            // The whole row is the target for everything else: this stretches over the card, so
+            // the tick button stays clickable by sitting above it.
+            <Link
+              href={item.href}
+              className="mt-2.5 inline-flex items-center gap-1 text-sm font-medium text-primary after:absolute after:inset-0 after:content-[''] hover:underline"
+            >
+              {item.cta}
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          ))}
       </div>
 
       {/* Self-reported only. A derived row has nothing to toggle — its tile already says what we

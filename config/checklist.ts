@@ -1,4 +1,8 @@
-import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
+import {
+  composioLogoUrl,
+  DEFAULT_INTEGRATION_TOOLKITS,
+  ESSENTIAL_INTEGRATION_SLUGS,
+} from "@/lib/integration-catalog";
 
 // The setup checklist, built per customer from what they told us at intake.
 //
@@ -99,7 +103,10 @@ const AREA_ICONS: Record<string, string> = {
   "Contracts & Proposals": "FileSignature",
 };
 
-export type ChecklistCategory = "Connect your tools" | "Hand it your work" | "Start using it";
+// "Start using it" is gone, and with it the "Ask it something real" row. Opening chat is not a
+// setup step you tick off — it is the thing the setup was for — so it is a button on the page
+// rather than the last item on a list somebody has to finish first.
+export type ChecklistCategory = "Connect your tools" | "Hand it your work";
 
 /** What to draw in the row's tile. A real product logo where one exists, a lucide name otherwise. */
 export type ChecklistIcon = { kind: "logo"; src: string } | { kind: "icon"; name: string };
@@ -122,6 +129,12 @@ export type ChecklistItem = {
    */
   icon: ChecklistIcon;
   /**
+   * The Composio toolkit this row connects, when it is an app. Its presence is what turns the
+   * row into a real Connect button that starts OAuth from here — the page David asked for
+   * "the actual connections" on — rather than a link to go and find it on another screen.
+   */
+  toolkitSlug?: string;
+  /**
    * How this item ticks itself, if it can. Items with no `derived` are self-reported and the
    * customer ticks them by hand. `toolkit:<slug>` and `channel:<id>` tick on THAT app or THAT
    * channel specifically — a customer who named both Slack and Telegram gets two rows, and one
@@ -141,20 +154,31 @@ function answerText(answers: Record<string, unknown>, key: string): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
-/** The three that apply to everybody, whatever they answered. */
-const CORE: ChecklistItem[] = [
-  {
-    id: "core:tools",
-    title: "Connect an app",
-    body:
-      "Gmail, Calendar, Drive — whatever you live in. An agent with no connections can advise. " +
-      "One with connections can act.",
-    category: "Connect your tools",
+/**
+ * The apps everybody is offered when we have nothing better to go on.
+ *
+ * One row per app rather than a single "connect an app" pointing at another page. That row was
+ * the whole problem: a customer with no intake answers — which is anyone whose agent was not
+ * built through the licence questionnaire — got three vague lines and nothing to actually press.
+ * These carry the real logo and a real Connect button.
+ */
+const ESSENTIAL_ITEMS: ChecklistItem[] = ESSENTIAL_INTEGRATION_SLUGS.map((slug) => {
+  const t = DEFAULT_INTEGRATION_TOOLKITS.find((x) => x.slug.toLowerCase() === slug.toLowerCase());
+  return {
+    id: `tool:${slug}`,
+    title: `Connect ${t?.name ?? slug}`,
+    body: t?.description ?? "",
+    category: "Connect your tools" as const,
     href: "/dashboard/integrations",
-    cta: "Open Connections",
-    icon: { kind: "icon", name: "Blocks" },
-    derived: "tools",
-  },
+    cta: "Connect",
+    icon: { kind: "logo" as const, src: composioLogoUrl(slug) },
+    toolkitSlug: slug,
+    derived: `toolkit:${slug}` as const,
+  };
+});
+
+/** The one row that applies whatever they answered and is not an app. */
+const CORE: ChecklistItem[] = [
   {
     id: "core:channel",
     title: "Choose where it answers you",
@@ -164,18 +188,6 @@ const CORE: ChecklistItem[] = [
     cta: "Open Channels",
     icon: { kind: "icon", name: "Radio" },
     derived: "channel",
-  },
-  {
-    id: "core:asked",
-    title: "Ask it something real",
-    body:
-      "Not a test question — something you were going to have to do anyway. That is the fastest " +
-      "way to find where it helps.",
-    category: "Start using it",
-    href: "/dashboard/chat",
-    cta: "Open Chat",
-    icon: { kind: "icon", name: "MessageSquare" },
-    derived: "asked",
   },
 ];
 
@@ -192,7 +204,9 @@ const MAX_ITEMS = 12;
  * reaches this database. They get a short generic list rather than a wrong personal one.
  */
 export function buildChecklist(answers: Record<string, unknown> | null): ChecklistItem[] {
-  if (!answers) return CORE;
+  // No answers is the common case for agents not built through the licence questionnaire, and
+  // it used to mean three vague rows. Real apps instead, each connectable from the page.
+  if (!answers) return [...ESSENTIAL_ITEMS, ...CORE];
 
   // Named channels replace the generic "choose where it answers you" rather than sitting beside
   // it. Somebody who told us they use Slack does not need to be asked to pick a channel and then
@@ -240,10 +254,11 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
           `past the apps listed on the front page.`,
       category: "Connect your tools",
       href: "/dashboard/integrations",
-      cta: slug ? `Connect ${label}` : "Search Connections",
+      cta: slug ? "Connect" : "Search Connections",
       // The real product mark when we have a slug for it. Without one there is no logo to fetch,
       // so a neutral tile rather than a broken image.
       icon: slug ? { kind: "logo", src: composioLogoUrl(slug) } : { kind: "icon", name: "Search" },
+      toolkitSlug: slug,
       derived: slug ? (`toolkit:${slug}` as const) : undefined,
     });
   }
@@ -288,8 +303,10 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
   return pruned.slice(0, MAX_ITEMS);
 }
 
-export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
-  "Connect your tools",
-  "Hand it your work",
-  "Start using it",
-];
+export const CHECKLIST_CATEGORIES: ChecklistCategory[] = ["Connect your tools", "Hand it your work"];
+
+/** Where the OAuth handshake starts. Same route the Connections page uses, so the two can never
+ *  disagree about how an app connects. */
+export function connectHref(agentId: string, slug: string): string {
+  return `/api/agents/${encodeURIComponent(agentId)}/integrations/connect/redirect?toolkit=${encodeURIComponent(slug)}`;
+}
