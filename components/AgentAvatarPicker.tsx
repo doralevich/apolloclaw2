@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { AVATAR_PRESETS, MASCOT_FULL } from "@/config/avatar-presets";
+import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { cn } from "@/lib/utils";
 
@@ -81,20 +81,19 @@ export function AgentAvatarPicker({
     reader.readAsDataURL(file);
   }
 
-  // Fall back to the house mascot rather than an initial.
+  // No picture until somebody picks one. Initials instead, David's call.
   //
-  // Nothing sets avatar_url at provisioning, so until somebody opened this picker their agent
-  // was a grey circle with one letter in it — which on Start Here, where this is meant to be
-  // the agent's PORTRAIT, read as a missing image rather than as a default. The preset is only
-  // shown, never saved: an avatar_url still means somebody chose it, so the popover's selected
-  // ring stays honest and picking pose 1 deliberately is still a real change.
-  const shownUrl = currentUrl || AVATAR_PRESETS[0].src;
+  // This briefly fell back to the house mascot, which was wrong in a way worth naming: it made
+  // every unconfigured agent look like it had been given a face, so the picker's own selected
+  // ring was the only thing distinguishing "chose the mascot" from "chose nothing". Initials say
+  // what is true - nobody has picked yet - and the picker is one click away.
   const box = size === "lg" ? "h-28 w-28" : "h-14 w-14";
+  const initial = agentName.trim().charAt(0).toUpperCase() || "?";
 
-  // The full-body render the seven presets were cropped from. Standing at its own aspect rather
-  // than squeezed into a circle — a whole robot in a disc is the unreadable smudge those crops
-  // exist to avoid, and at this size there is room for the whole character.
-  const asPortrait = portrait && !currentUrl;
+  // The portrait variant only has something to draw when a picture exists. Without one it is the
+  // same lettered circle at the larger size, rather than a mascot standing in for a choice
+  // nobody made.
+  const asPortrait = portrait && !!currentUrl;
 
   return (
     <div className="relative shrink-0">
@@ -109,11 +108,23 @@ export function AgentAvatarPicker({
         )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={asPortrait ? MASCOT_FULL : shownUrl}
-          alt=""
-          className={cn(asPortrait ? "h-32 w-auto sm:h-40" : cn("object-cover", box))}
-        />
+        {currentUrl ? (
+          <img
+            src={currentUrl}
+            alt=""
+            className={cn(asPortrait ? "h-32 w-auto sm:h-40" : cn("object-cover", box))}
+          />
+        ) : (
+          <span
+            className={cn(
+              "flex items-center justify-center font-semibold text-muted-foreground",
+              box,
+              size === "lg" ? "text-3xl" : "text-lg"
+            )}
+          >
+            {initial}
+          </span>
+        )}
         {/* The affordance only appears on hover/focus so the greeting stays a greeting. */}
         <span
           className={cn(
@@ -133,9 +144,11 @@ export function AgentAvatarPicker({
       </button>
 
       {open && (
-        <div className={cn("absolute left-0 z-20 w-72 rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
+        <div className={cn("absolute left-0 z-20 w-80 rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
           <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          {/* Scrolls. Seven poses fitted in a popover; forty portraits do not, and a list that grows
+              taller than the viewport puts "Upload your own" somewhere nobody can reach. */}
+          <div className="mt-2 grid max-h-64 grid-cols-5 gap-2 overflow-y-auto pr-1">
             {AVATAR_PRESETS.map((p) => (
               <button
                 key={p.id}
