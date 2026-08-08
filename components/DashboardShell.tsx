@@ -30,7 +30,7 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 // ones competed for the same attention; a rail you scan every day should only carry the
 // former.
 const NAV = [
-  { href: "/dashboard/start-here", label: "Start Here", icon: Compass, exact: false },
+  { href: "/dashboard/start-here", label: "Welcome", icon: Compass, exact: false },
   // Between Start Here and Chat, which is the order somebody works through them: the greeting
   // points at the checklist, and the checklist's last item is to go and ask the thing something.
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
