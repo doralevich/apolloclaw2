@@ -1018,9 +1018,28 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // the gate and the questionnaire, keyed on mode === "lead" — this mode is exempt by design,
   // which is the entire reason it exists.
   const isWhiteGlove = mode === "whiteglove";
-  // Only the public /onboard journey is paywalled. White glove is exempt by design (its
-  // commercial terms were agreed offline) and customer mode has already paid.
-  const isPaywalled = mode === "lead";
+  // THE PAYWALL IS OFF. David's call: there is no published pricing yet and engagements are
+  // billed separately, so /onboard now behaves the way /white-glove-onboarding always has -
+  // gate, questionnaire, submitted as a lead.
+  //
+  // A flag rather than a deletion, and every branch below it is left intact, for two reasons.
+  // Somebody who started a checkout before this deploys still comes back with ?paid=1 and a
+  // session id, and that return path has to keep working or their payment buys them nothing.
+  // And turning pricing back on should be one line, not a rebuild of the flow.
+  //
+  // WHAT THIS TURNS OFF, which is more than a screen. The paywall was the only thing that
+  // reached /api/onboard/complete, and that route is what creates nothing less than the whole
+  // customer: the Stripe webhook makes the account and sends the set-your-password email, and
+  // the completion call stores the answers and PROVISIONS THE AGENT. Without a checkout there
+  // is no session to verify, so none of that fires. A submission is now a lead in the CRM and
+  // an email to David, and the agent gets built by hand.
+  //
+  // That is deliberate rather than an oversight. The alternative - keep provisioning, drop the
+  // payment - would leave /api/onboard/complete with no gate at all, and provisioning spends
+  // real money on a VPS and API credits. An open endpoint that mints those for anyone who can
+  // POST to it is not a paywall change, it is a bill.
+  const PAYWALL_ENABLED = false;
+  const isPaywalled = PAYWALL_ENABLED && mode === "lead";
 
   // Coming back from Stripe: `justPaid` is read from ?paid=1 on the SERVER and arrives as a
   // prop, while the answers themselves were stashed in sessionStorage before the redirect.

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import * as Icons from "lucide-react";
-import { ArrowRight, Check } from "lucide-react";
-import type { ChecklistIcon } from "@/config/checklist";
+import { ArrowRight, Check, ExternalLink } from "lucide-react";
+import { connectHref, type ChecklistIcon } from "@/config/checklist";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist } from "@/lib/useChecklist";
 import { cn } from "@/lib/utils";
@@ -66,19 +66,50 @@ export function SetupChecklist({ agentId }: { agentId: string }) {
         // Rows, not bullets. Each one goes straight to the place that finishes it, so the
         // summary is usable rather than a table of contents pointing at another page.
         <div className="mt-4 space-y-1.5">
-          {next.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/60"
-            >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary/70">
-                <ItemIcon icon={item.icon} />
-              </span>
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.title}</span>
-              <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          ))}
+          {next.map((item) => {
+            // An app row IS the connection now, not a signpost to it.
+            //
+            // It used to go to /dashboard/integrations, where you then had to find the same app
+            // again and press Connect - two screens and a search to do the one thing the row was
+            // already naming. This is the same server-side redirect the Connections page uses,
+            // as a plain anchor: no fetch, no token in the browser, and no way for the two to
+            // disagree about how anything connects.
+            //
+            // Rows without a toolkit still navigate, because there is nothing to start: a
+            // channel needs a bot token pasted in, and a handover happens in a conversation.
+            const connects = !!item.toolkitSlug;
+            const className =
+              "group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/60";
+            const body = (
+              <>
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary/70">
+                  <ItemIcon icon={item.icon} />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.title}</span>
+                {connects ? (
+                  <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+                ) : (
+                  <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                )}
+              </>
+            );
+
+            return connects ? (
+              <a
+                key={item.id}
+                href={connectHref(agentId, item.toolkitSlug!)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={className}
+              >
+                {body}
+              </a>
+            ) : (
+              <Link key={item.id} href={item.href} className={className}>
+                {body}
+              </Link>
+            );
+          })}
         </div>
       )}
 
