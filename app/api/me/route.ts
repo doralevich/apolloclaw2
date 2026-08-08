@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
-import { json, readJson, route } from "@/lib/http";
+import { isAvatarPresetPath } from "@/config/avatar-presets";
+import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadUserAvatar, type ImageUpload } from "@/lib/supabase/avatar-storage";
 
@@ -28,6 +29,8 @@ export const PATCH = route(async (request: Request) => {
     avatar_upload?: ImageUpload;
     /** Explicit empty string clears the picture. Absent means "leave it alone". */
     avatar_url?: string;
+    /** One of the shipped portraits, matched against the exact list. */
+    avatar_preset?: string;
   }>(request);
 
   const first = clean(body.first_name);
@@ -39,6 +42,14 @@ export const PATCH = route(async (request: Request) => {
   let avatarUrl: string | undefined;
   if (body.avatar_upload) {
     avatarUrl = (await uploadUserAvatar(user.id, body.avatar_upload)) ?? undefined;
+  } else if (body.avatar_preset !== undefined) {
+    // Matched against the exact shipped list, the same rule /api/agents/[id] applies. This
+    // value ends up in user_metadata and is rendered as an <img src>, so accepting a bare
+    // string here would let the browser point everyone's face at any URL it liked.
+    if (!isAvatarPresetPath(body.avatar_preset)) {
+      throw new ApiError(400, "invalid_request", "Unknown avatar");
+    }
+    avatarUrl = body.avatar_preset;
   } else if (body.avatar_url === "") {
     avatarUrl = "";
   }
