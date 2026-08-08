@@ -97,8 +97,20 @@ export function CreateAgentModal({
   // than picked from a card, so they're filtered out for customers — "you cannot choose this"
   // and "this is not a thing you choose" are different messages. Platform admins DO see them,
   // because otherwise testing a provisioning change means having no way to provision.
+  //
+  // EXCEPT WHEN THE WORKSPACE HAS NONE, which is the dead end David found: delete your agent to
+  // start over and there is no way back. The license type was the only thing this modal could
+  // have offered, `internal` hid it, and the customer was left on a dashboard they are still
+  // paying $189/mo for with nothing in it and no button. Their only route was to email us.
+  //
+  // This is a REBUILD, not a purchase. It appears only at zero agents, so it cannot be used to
+  // add a second one - that is what seats are for, priced and behind Members. They have already
+  // bought the licence and are still paying the hosting; giving it back to them is not a new
+  // sale, and the server agrees: POST /api/agents already provisions this type for an entitled
+  // admin, so the only thing that stood in the way was this filter.
+  const hasNoAgents = agents.length === 0;
   const pickableTypes = AGENT_TYPES.filter(
-    (t) => !t.externalUrl && (isPlatformAdmin || !t.internal)
+    (t) => !t.externalUrl && (isPlatformAdmin || !t.internal || hasNoAgents)
   );
 
   // One option is not a choice. With the College Agent gone from the list this is the normal
