@@ -20,7 +20,7 @@ export const maxDuration = 300;
 export const GET = route(async (request: Request) => {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
-    console.error("[cron:scheduled-skills] CRON_SECRET is not set — refusing to run");
+    console.error("[cron:scheduled-skills] CRON_SECRET is not set - refusing to run");
     return NextResponse.json({ error: "cron not configured" }, { status: 500 });
   }
   if (request.headers.get("authorization") !== `Bearer ${secret}`) {

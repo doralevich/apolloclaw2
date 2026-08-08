@@ -22,7 +22,7 @@ Before writing anything, read the voice section of AGENTS.md and the owner's wri
 USER.md: how they describe their own voice, the brands they admire, the words they like, and the
 words they hate. Those were collected for exactly this moment.
 
-Match sentence length and rhythm, not just vocabulary — that is what makes writing recognisable.
+Match sentence length and rhythm, not just vocabulary - that is what makes writing recognisable.
 If they write in short declaratives, do not produce balanced two-clause sentences because they
 read as more professional.
 
@@ -72,7 +72,7 @@ thoughts".
 ## The difficult ones
 
 Bad news, a price rise, a boundary, a mistake. The rules invert: say the thing in the first
-sentence, no build-up. Do not over-explain — length reads as guilt. Own what is yours, and do not
+sentence, no build-up. Do not over-explain - length reads as guilt. Own what is yours, and do not
 apologise for what is not.
 
 Offer the next step. People handle bad news far better with something to do about it.
@@ -107,7 +107,7 @@ page. If it needs two, the first should be readable alone.
 only this should be able to act. Include the numbers; a summary without them is an abstract.
 
 **Formal letter** — a fixed shape, and the shape is the point. Purpose, substance, required
-action, clear close. Formality does not mean archaic — "as per our conversation" helps nobody.
+action, clear close. Formality does not mean archaic - "as per our conversation" helps nobody.
 
 ## What to cut
 
@@ -161,7 +161,7 @@ for the human. Content optimised past readability ranks for a while and converts
 
 ## Case studies
 
-Situation, what was tried, what was done, what changed — with numbers. A client quote in their own
+Situation, what was tried, what was done, what changed - with numbers. A client quote in their own
 words. Keep it honest: the version that admits what was hard is more persuasive than the one where
 everything went smoothly, because nobody believes the second.
 
@@ -184,7 +184,7 @@ ${VOICE_RULE}
 ## The only real requirement
 
 **A position somebody could disagree with.** Content that everyone in the industry already agrees
-with builds nothing — it reads as filler even when it is well written.
+with builds nothing - it reads as filler even when it is well written.
 
 Start from what this person believes that their peers do not. It is usually in what frustrates
 them, what they have changed their mind about, or what they think their industry gets wrong.
@@ -195,7 +195,7 @@ Their answers in USER.md often contain it verbatim.
 1. **The claim.** Stated plainly, early, without softening.
 2. **Why it is not obvious.** What most people believe instead, and why that is reasonable but
    wrong.
-3. **The evidence.** From their own work. This is what they have that a commentator does not — a
+3. **The evidence.** From their own work. This is what they have that a commentator does not - a
    specific engagement, a number, a thing they watched happen.
 4. **What follows.** What someone should do differently.
 
@@ -209,7 +209,7 @@ Their answers in USER.md often contain it verbatim.
 ## Formats
 
 **LinkedIn** — first two lines carry it; the rest is only read if those land. **Op-ed** — one
-argument, 800 words, a concrete recommendation. **Podcast angle** — a title, the claim, and three
+argument, 800 words, a concrete recommendation. **Podcast angle** - a title, the claim, and three
 stories only this person can tell.
 
 ${DRAFT_RULE}
@@ -230,13 +230,13 @@ ${VOICE_RULE}
 
 ## Decide once, then hold
 
-The **promise** — what a subscriber gets, every time. Specific enough that they can tell whether
+The **promise** - what a subscriber gets, every time. Specific enough that they can tell whether
 it was delivered.
 
-The **shape** — the same sections in the same order. Familiarity is what makes it skimmable, and
+The **shape** - the same sections in the same order. Familiarity is what makes it skimmable, and
 skimmable is what keeps people subscribed.
 
-The **length** — and it should be shorter than instinct suggests.
+The **length** - and it should be shorter than instinct suggests.
 
 ## Per issue
 
@@ -253,7 +253,7 @@ could tell someone else one thing from it.
 
 ## The recurring temptation
 
-Writing about the business — a new hire, an award, an anniversary. Almost nobody subscribed for
+Writing about the business - a new hire, an award, an anniversary. Almost nobody subscribed for
 that. It belongs occasionally and briefly, near the end.
 
 ${DRAFT_RULE}
@@ -278,7 +278,7 @@ ${VOICE_RULE}
 - **Concrete over abstract.** "Three people in a garage" not "a nascent enterprise".
 - **Repetition is a feature.** In writing it is redundancy; in speech it is how a point survives.
 - **Numbers rounded.** "Nearly a thousand" not "973".
-- **Read it aloud.** Anything that trips the tongue gets rewritten. This is not optional — it is
+- **Read it aloud.** Anything that trips the tongue gets rewritten. This is not optional - it is
   the only real test.
 
 ## Structure
@@ -299,7 +299,7 @@ before starting. Overrunning is the most common and least forgivable failure.
 ## Delivery notes
 
 Mark where to pause, what to emphasise, and where a slide changes. Deliver as a script plus
-notes, not prose — nobody reads paragraphs aloud well.
+notes, not prose - nobody reads paragraphs aloud well.
 
 ${DRAFT_RULE}
 `,
@@ -317,7 +317,7 @@ attention.
 
 ## Establish the standard first
 
-Check whether a template or brand guide exists before inventing anything — the workspace files or
+Check whether a template or brand guide exists before inventing anything - the workspace files or
 their Drive usually have one. Matching an existing standard badly is worse than not matching it.
 
 If there is none, derive it from their most recent good document and say that is what you did.
@@ -328,14 +328,14 @@ If there is none, derive it from their most recent good document and say that is
 - **One body font, one heading font.** Sizes from a fixed scale, not chosen per document.
 - **Spacing that is consistent**, particularly before and after headings. Inconsistent spacing is
   the single biggest source of "this looks amateur" and almost nobody can name it.
-- **Alignment** — one grid. Tables, images and text sharing edges.
-- **Page furniture** — numbers, a footer with the document name, a date. Missing page numbers on
+- **Alignment** - one grid. Tables, images and text sharing edges.
+- **Page furniture** - numbers, a footer with the document name, a date. Missing page numbers on
   anything over three pages is a small thing that reads as carelessness.
-- **The first page** — title, who it is for, date, author. Astonishingly often missing.
+- **The first page** - title, who it is for, date, author. Astonishingly often missing.
 
 ## What to leave alone
 
-The words. If something reads badly, say so separately — do not quietly rewrite while formatting.
+The words. If something reads badly, say so separately - do not quietly rewrite while formatting.
 The author needs to know.
 
 ## Deliver

@@ -113,7 +113,7 @@ export async function POST(request: Request, { params }: Ctx) {
       // Say something rather than going quiet. Silence from a chat app is indistinguishable from
       // a broken product, and the customer can't see our logs.
       await telegram
-        .sendMessage(config.token, update.chatId, "Sorry — something went wrong on my end.")
+        .sendMessage(config.token, update.chatId, "Sorry - something went wrong on my end.")
         .catch(() => {});
       await upsertChannel(agentId, "telegram", { state: "error", message }).catch(() => {});
     }

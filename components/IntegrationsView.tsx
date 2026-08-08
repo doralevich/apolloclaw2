@@ -3,19 +3,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  BarChart3,
   Check,
   ChevronRight,
+  Code2,
   ExternalLink,
+  FileText,
   Loader2,
+  Mail,
+  Megaphone,
   Plug,
   Plus,
   Search,
+  Sparkles,
   Star,
+  SquareCheck,
   Unplug,
+  Video,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { HelpFooter } from "@/components/HelpFooter";
 import {
   categoryForSlug,
   composioLogoUrl,
@@ -54,6 +64,22 @@ type StatusFilter = "all" | "connected" | "available";
 // INTEGRATION_CATEGORIES.
 const ALL = "all";
 const ESSENTIALS = "essentials";
+
+// One icon per curated category, keyed by the exact title in INTEGRATION_CATEGORIES.
+//
+// A plain list of seven text rows gives the eye nothing to land on, and these are scanned far
+// more often than they are read. Keyed by title rather than carried on the category objects so
+// lib/integration-catalog.ts stays JSX-free and server-safe — the same split config/agent-types
+// makes with its icon names.
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  "Email & calendar": Mail,
+  "Files & docs": FileText,
+  "Tasks & projects": SquareCheck,
+  Meetings: Video,
+  "Sales & marketing": Megaphone,
+  "Design & code": Code2,
+  "Research & agent tools": BarChart3,
+};
 
 function toolkitKey(slug: string): string {
   return slug.toLowerCase();
@@ -141,6 +167,7 @@ export function IntegrationsView() {
         </p>
       )}
       <IntegrationsPanel key={active.agent37_id} agentId={active.agent37_id} />
+      <HelpFooter className="max-w-6xl" />
     </div>
   );
 }
@@ -425,7 +452,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
           </div>
         </div>
         <p className="max-w-xl text-sm text-muted-foreground">
-          Connect an app and your agent can work in it for you — reading your mail, adding to
+          Connect an app and your agent can work in it for you - reading your mail, adding to
           your calendar, finding a file.
         </p>
       </div>
@@ -499,16 +526,20 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                   />
                   Essentials
                 </FilterRow>
-                {INTEGRATION_CATEGORIES.map((cat) => (
-                  <FilterRow
-                    key={cat.title}
-                    active={category === cat.title}
-                    onClick={() => setCategory(cat.title)}
-                    count={categoryCounts.get(cat.title) ?? 0}
-                  >
-                    {cat.title}
-                  </FilterRow>
-                ))}
+                {INTEGRATION_CATEGORIES.map((cat) => {
+                  const Icon = CATEGORY_ICONS[cat.title] ?? Sparkles;
+                  return (
+                    <FilterRow
+                      key={cat.title}
+                      active={category === cat.title}
+                      onClick={() => setCategory(cat.title)}
+                      count={categoryCounts.get(cat.title) ?? 0}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      {cat.title}
+                    </FilterRow>
+                  );
+                })}
               </div>
             </div>
 
@@ -632,7 +663,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                     ) : status === "connected" ? (
                       "Nothing connected in this category yet."
                     ) : (
-                      "Nothing left to connect in this category — you've got them all."
+                      "Nothing left to connect in this category - you've got them all."
                     )}
                   </p>
                   <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
@@ -640,7 +671,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {filtered.map(renderCard)}
                 </div>
               )}
@@ -652,7 +683,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 </p>
               )}
 
-              {/* The full catalog is only pageable when nothing narrows it — the remote list
+              {/* The full catalog is only pageable when nothing narrows it - the remote list
                   is popularity-ranked, not category-tagged, so paging it inside a category
                   would append apps that don't belong to that category. */}
               {!q && category === ALL && (
@@ -821,7 +852,7 @@ function Section({
           </button>
         )}
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">{children}</div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{children}</div>
     </div>
   );
 }
@@ -843,27 +874,57 @@ function IntegrationCard({
   onConnect: () => void;
   onManage: () => void;
 }) {
+  const category = categoryForSlug(t.slug);
   return (
-    // One row, not a stacked card.
+    // A stacked card: logo, name, category, what it does, then the action on its own row.
     //
-    // It was logo, name, category, description and a full-width button — five things to say
-    // "Gmail, connect it", stacked to 130px, in a grid of a thousand. The logo and the name
-    // identify the app. The category is the filter you arrived through. The description is a
-    // sentence nobody reads about software they already use every day. The button is the only
-    // thing anybody came to press, so it is the only other thing left.
+    // This WAS one compact row, and the argument for that was real — a sentence about Gmail is a
+    // sentence nobody reads about software they already use every day. What that argument misses
+    // is the rest of the catalogue. "More from the app store" reaches a thousand-odd Composio
+    // toolkits nobody has heard of, and for those the description is the only thing separating
+    // one unfamiliar logo from the next. The compact row was right for the eleven Essentials and
+    // wrong for everything behind them.
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5 transition-colors hover:border-foreground/20",
+        "flex flex-col rounded-xl border bg-card p-4 transition-colors hover:border-foreground/20",
         connected && "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/25"
       )}
     >
-      <ToolkitLogo logo={t.logo} name={t.name} />
-
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium">{t.name}</div>
+      <div className="flex items-start gap-3">
+        <ToolkitLogo logo={t.logo} name={t.name} size="lg" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-semibold leading-tight">{t.name}</div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            {connected ? (
+              <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
+                Connected
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                <span className="size-1.5 rounded-full bg-muted-foreground/40" aria-hidden />
+                Not connected
+              </span>
+            )}
+            {/* Undefined for anything from the remote catalogue, which has no curated category -
+                omitted rather than printed as "Other", which would claim a classification we
+                never made. */}
+            {category && <span className="text-muted-foreground/70">{category}</span>}
+          </div>
+        </div>
       </div>
 
-      <div className="shrink-0">
+      {/* Two lines, clamped. Composio's descriptions run from four words to a paragraph, and
+          without a clamp one long one sets the height of every card in its row. */}
+      {t.description && (
+        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+          {t.description}
+        </p>
+      )}
+
+      {/* mt-auto so the action sits on the floor of the card whatever the description did to
+          the middle — a row of three with buttons at three different heights reads as broken. */}
+      <div className="mt-auto flex items-center justify-end pt-4">
         {connected ? (
           <Button
             variant="ghost"
@@ -872,7 +933,7 @@ function IntegrationCard({
             onClick={onManage}
           >
             <Check className="h-3.5 w-3.5" />
-            Added
+            Manage
           </Button>
         ) : pending ? (
           <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs" disabled>

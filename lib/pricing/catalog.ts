@@ -31,14 +31,7 @@ export const CURRENCY = "usd";
 // the customization. One licensing fee, one hosting subscription, and what gets built is
 // decided by the onboarding answers rather than by which SKU someone clicked.
 
-/** One-time licensing fee. Charged once, at the /onboard paywall. */
-export const LICENSE_PLAN = {
-  catalogKey: "apollo_license",
-  name: "ApolloClaw Agent License",
-  amountCents: 250000,
-} as const;
-
-/** Shared recurring hosting price — every license subscribes to this. */
+/** Shared recurring hosting price — every license, on either tier, subscribes to this. */
 export const HOSTING_PLAN = {
   catalogKey: "apollo_hosting",
   name: "ApolloClaw Agent Hosting",
@@ -46,8 +39,106 @@ export const HOSTING_PLAN = {
   interval: "month",
 } as const;
 
-/** Human display of the bundle, used at the paywall. */
-export const BUNDLE_PRICE_LABEL = "$2,500 license + $189/mo hosting";
+// ─── The two license tiers ────────────────────────────────────────────────────
+//
+// David's call. One product, two ways to buy the setup of it.
+//
+// THE TIERS DIFFER ON DAVID'S TIME, NOT ON THE SOFTWARE. Both provision the same agent on the
+// same infrastructure with the same integrations and the same model access. Advanced buys the
+// onboarding done with you; Basic is the same thing self-served through the dashboard
+// checklist. That distinction is the whole design: a Basic that were a deliberately weaker
+// product would make Advanced read as a tax rather than as a service.
+//
+// HOSTING IS THE SAME $189 ON BOTH, deliberately. Hosting is the line with real recurring cost
+// behind it — the VPS, the included tokens, keeping it patched — and discounting that would
+// discount the wrong thing. The license is what discounts, because the license is time.
+//
+// A NOTE ON THE HEADLINE. $449 against $2,500 looks like an 82% discount and is not: with
+// hosting on both, year one is $2,717 against $4,768, so Basic is 57% of Advanced. That is
+// good for margin and bad for trust if the monthly is buried, which is why every surface that
+// prints a tier price prints `priceLabel` — both numbers, always — rather than the license
+// alone.
+
+export type LicenseTierId = "basic" | "advanced";
+
+export interface LicenseTier {
+  id: LicenseTierId;
+  /** Stripe product metadata.catalog_key + price lookup_key. */
+  catalogKey: string;
+  /** Stripe product display name (what the customer sees at checkout). */
+  name: string;
+  /** One-time licensing fee, in cents. Charged once, at the /onboard paywall. */
+  amountCents: number;
+  /** Short name on the picker. */
+  label: string;
+  /** One line under the name: who this tier is for. */
+  tagline: string;
+  /** Never the license fee alone — see the note above. */
+  priceLabel: string;
+  /** What this tier includes that the customer can check off. */
+  includes: string[];
+  /** The one we steer people to. Exactly one tier should carry it. */
+  recommended?: boolean;
+}
+
+export const LICENSE_TIERS: readonly LicenseTier[] = [
+  {
+    id: "basic",
+    catalogKey: "apollo_license_basic",
+    name: "ApolloClaw Agent License - Basic",
+    amountCents: 44900,
+    label: "Basic",
+    tagline: "You set it up, in your own time.",
+    priceLabel: "$449 once + $189/mo",
+    includes: [
+      "The same agent, built from your questionnaire answers",
+      "Managed hosting, including $25/mo of token usage",
+      "Connect your own apps and chat channels from the dashboard",
+      "A setup checklist that walks you through it",
+      "Email support",
+    ],
+  },
+  {
+    id: "advanced",
+    catalogKey: "apollo_license",
+    name: "ApolloClaw Agent License",
+    amountCents: 250000,
+    label: "Advanced",
+    tagline: "We set it up with you, on a call.",
+    priceLabel: "$2,500 once + $189/mo",
+    recommended: true,
+    includes: [
+      "Everything in Basic",
+      "Setup calls - we connect your apps and channels with you",
+      "Your agent configured around how your business actually runs",
+      "We stay on it until it is doing real work, not just answering",
+      "Direct access to David after launch",
+    ],
+  },
+];
+
+// `apollo_license` deliberately keeps its original key on the Advanced tier. That key is
+// stamped on the live Stripe product and on every license already sold through it; renaming it
+// would mint a second product and orphan the history.
+export const DEFAULT_LICENSE_TIER: LicenseTierId = "advanced";
+
+export function licenseTierFor(id: string | undefined | null): LicenseTier | undefined {
+  return LICENSE_TIERS.find((t) => t.id === id);
+}
+
+/**
+ * The tier a bare checkout means.
+ *
+ * Anything unrecognised resolves to Advanced rather than to the cheaper tier: a caller can put
+ * whatever it likes in the request body, and a typo that silently sells $2,500 of work for $449
+ * is the expensive direction to be wrong in.
+ */
+export function resolveLicenseTier(id: string | undefined | null): LicenseTier {
+  return licenseTierFor(id) ?? licenseTierFor(DEFAULT_LICENSE_TIER)!;
+}
+
+/** Human display of the bundle where no tier has been chosen yet. */
+export const BUNDLE_PRICE_LABEL = "From $449 license + $189/mo hosting";
 
 /** What the $189 covers. Stated plainly because it is the first thing people ask. */
 export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";

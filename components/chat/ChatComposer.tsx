@@ -129,7 +129,13 @@ export function ChatComposer({
         // The composer is the one control on this screen, so it carries the accent rather than
         // waiting to be focused before it looks like anything. Focus deepens it instead of
         // introducing it.
-        "mx-auto w-full rounded-[20px] border border-primary/30 bg-card shadow-[0_10px_34px_-12px_var(--color-primary)] transition-[border-color,box-shadow] focus-within:border-primary/60 focus-within:shadow-[0_14px_40px_-12px_var(--color-primary)]",
+        // Softer, and closer to the box.
+        //
+        // It was a 34px navy bloom thrown 10px down, which on a white page pooled into the gap
+        // above the suggestion chips and read as a smudge rather than a lift. Half the blur, half
+        // the offset, and carried at 12% opacity instead of full-strength primary — enough to say
+        // the composer sits above the page, not enough to look like something spilled.
+        "mx-auto w-full rounded-[20px] border border-primary/30 bg-card shadow-[0_4px_16px_-8px_color-mix(in_srgb,var(--color-primary)_12%,transparent)] transition-[border-color,box-shadow] focus-within:border-primary/50 focus-within:shadow-[0_6px_20px_-8px_color-mix(in_srgb,var(--color-primary)_18%,transparent)]",
         large ? "max-w-2xl" : "max-w-3xl"
       )}
     >

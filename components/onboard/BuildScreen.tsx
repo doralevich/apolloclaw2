@@ -172,7 +172,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
         <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 6px", letterSpacing: "-0.02em" }}>Building Your {agentLabel}</h2>
         <p style={{ fontSize: 13, color: TXM, margin: "0 0 18px", lineHeight: 1.6 }}>
           {viaSession
-            ? "This usually takes a minute or two. Your answers are already in — we're building your agent around them now."
+            ? "This usually takes a minute or two. Your answers are already in - we're building your agent around them now."
             : "This usually takes a minute or two. You'll be taken to your dashboard the moment it's ready."}
         </p>
         <div style={{ borderTop: `1px solid ${BDR}` }}>
@@ -213,7 +213,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
         )}
         {askForPassword && useLogin && (
           <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.2)`, fontSize: 13, color: TXM, lineHeight: 1.6 }}>
-            This account already has a password. Log in with it — or use &ldquo;Forgot
+            This account already has a password. Log in with it - or use &ldquo;Forgot
             password?&rdquo; if you need a new one. Your agent
             {phase === "ready" ? " is live and waiting." : " will be waiting once it finishes building."}
           </div>
@@ -224,7 +224,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             automatically once it&apos;s ready.
           </div>
         )}
-        {/* The license buyer's way in is the password they are typing above, not a link — a
+        {/* The license buyer's way in is the password they are typing above, not a link - a
             plain "go to my dashboard" would bounce them to a login they cannot pass. Every
             other case still has somewhere useful to point. */}
         {askForPassword && !useLogin ? (

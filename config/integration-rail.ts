@@ -35,7 +35,7 @@ function tk(name: string, slug: string): RailTile {
   if (!CATALOG.has(slug.toLowerCase())) {
     throw new Error(
       `integration-rail: "${slug}" is not in the Connections catalogue. Add it to ` +
-        `lib/integration-catalog.ts first — a slug that isn't there can't be connected.`
+        `lib/integration-catalog.ts first - a slug that isn't there can't be connected.`
     );
   }
   return { kind: "toolkit", key: slug, name, slug, logo: composioLogoUrl(slug) };

@@ -59,9 +59,62 @@ export type ChannelDef = {
    * equivalent API, so without this their setup simply cannot be completed.
    */
   showWebhookUrl?: boolean;
+
+  /**
+   * Mark this as the one to pick.
+   *
+   * Telegram, David's call, and the setup bears it out: it is the only one of the three needing
+   * nothing but a bot token from BotFather — no Meta business verification, no Slack workspace
+   * admin, and no webhook URL to paste anywhere, because setWebhook registers it for them.
+   * Somebody choosing between three channels with no information picks the logo they recognise,
+   * which is WhatsApp, which is the longest setup of the three.
+   */
+  recommended?: boolean;
 };
 
 export const CHANNELS: ChannelDef[] = [
+  {
+    id: "telegram",
+    name: "Telegram",
+    recommended: true,
+    tagline: "Your own private bot",
+    logo: composioLogoUrl("telegram"),
+    steps: [
+      "In Telegram, open @BotFather and send /newbot to create a bot.",
+      "Copy the bot token it gives you and paste it below.",
+    ],
+    fields: [
+      { key: "botToken", label: "Bot token", placeholder: "Paste your bot token (e.g. 123456:ABC-DEF...)" },
+    ],
+    connectedNote:
+      "Message your bot in Telegram and your agent answers there. The first person to message it becomes its owner - anyone else who finds the bot gets nothing back.",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    tagline: "A private app in your workspace",
+    logo: composioLogoUrl("slack"),
+    // No Socket Mode. It needs a process holding a WebSocket open and there is nothing on Vercel
+    // to hold one; the Events API does the same job over a webhook, the way Telegram does.
+    steps: [
+      "Create an app at api.slack.com/apps - choose From scratch, and pick your workspace.",
+      "Under OAuth & Permissions, add the chat:write and im:history bot scopes, then Install to Workspace. Copy the Bot User OAuth Token - it starts xoxb-.",
+      "Under Basic Information, copy the Signing Secret.",
+      "Paste both below and press Connect.",
+      "Back in Slack, under Event Subscriptions, turn events on and paste the Request URL shown here after you connect. Slack will tick it green.",
+      "Still under Event Subscriptions, expand Subscribe to bot events and add message.im. Save, then reinstall the app if Slack asks.",
+      "Under App Home → Show Tabs, turn on the Messages Tab and tick \"Allow users to send Slash commands and messages from the messages tab\". Without this Slack refuses to send your message at all.",
+    ],
+    fields: [
+      { key: "botToken", label: "Bot token", placeholder: "Bot token (xoxb-...)" },
+      { key: "signingSecret", label: "Signing secret", placeholder: "Signing secret from Basic Information" },
+    ],
+    // Slack has no API for "deliver to this URL" — the customer pastes it themselves, so the card
+    // has to show it.
+    showWebhookUrl: true,
+    connectedNote:
+      "Direct-message the app in Slack and your agent answers there. The first person to DM it becomes its owner - anyone else in the workspace gets nothing back.",
+  },
   {
     id: "whatsapp",
     name: "WhatsApp",
@@ -86,48 +139,7 @@ export const CHANNELS: ChannelDef[] = [
     ],
     showWebhookUrl: true,
     connectedNote:
-      "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner — anyone else gets nothing back.",
-  },
-  {
-    id: "telegram",
-    name: "Telegram",
-    tagline: "Your own private bot",
-    logo: composioLogoUrl("telegram"),
-    steps: [
-      "In Telegram, open @BotFather and send /newbot to create a bot.",
-      "Copy the bot token it gives you and paste it below.",
-    ],
-    fields: [
-      { key: "botToken", label: "Bot token", placeholder: "Paste your bot token (e.g. 123456:ABC-DEF...)" },
-    ],
-    connectedNote:
-      "Message your bot in Telegram and your agent answers there. The first person to message it becomes its owner — anyone else who finds the bot gets nothing back.",
-  },
-  {
-    id: "slack",
-    name: "Slack",
-    tagline: "A private app in your workspace",
-    logo: composioLogoUrl("slack"),
-    // No Socket Mode. It needs a process holding a WebSocket open and there is nothing on Vercel
-    // to hold one; the Events API does the same job over a webhook, the way Telegram does.
-    steps: [
-      "Create an app at api.slack.com/apps — choose From scratch, and pick your workspace.",
-      "Under OAuth & Permissions, add the chat:write and im:history bot scopes, then Install to Workspace. Copy the Bot User OAuth Token — it starts xoxb-.",
-      "Under Basic Information, copy the Signing Secret.",
-      "Paste both below and press Connect.",
-      "Back in Slack, under Event Subscriptions, turn events on and paste the Request URL shown here after you connect. Slack will tick it green.",
-      "Still under Event Subscriptions, expand Subscribe to bot events and add message.im. Save, then reinstall the app if Slack asks.",
-      "Under App Home → Show Tabs, turn on the Messages Tab and tick \"Allow users to send Slash commands and messages from the messages tab\". Without this Slack refuses to send your message at all.",
-    ],
-    fields: [
-      { key: "botToken", label: "Bot token", placeholder: "Bot token (xoxb-...)" },
-      { key: "signingSecret", label: "Signing secret", placeholder: "Signing secret from Basic Information" },
-    ],
-    // Slack has no API for "deliver to this URL" — the customer pastes it themselves, so the card
-    // has to show it.
-    showWebhookUrl: true,
-    connectedNote:
-      "Direct-message the app in Slack and your agent answers there. The first person to DM it becomes its owner — anyone else in the workspace gets nothing back.",
+      "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner - anyone else gets nothing back.",
   },
 ];
 

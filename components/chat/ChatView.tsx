@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, FileText, Loader2, Mail, PanelRight, PenLine, Plus } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Mail, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { HeaderClock } from "./HeaderClock";
-import { HeaderCredit } from "./HeaderCredit";
-import { IntegrationsRail } from "./IntegrationsRail";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -29,17 +25,6 @@ import { useChatAttachments } from "./useChatAttachments";
 // A false positive still shows a helpful card with the real path to fixing most outages.
 // Chip id -> icon. Lives here rather than in config/shortcuts so that file stays JSX-free.
 const CHIP_ICONS = { mail: Mail, calendar: CalendarDays, file: FileText, pen: PenLine } as const;
-
-// Whether the integrations panel is tucked away. Remembered, because somebody who closed it does
-// not want to close it again on every new chat — and read through useSyncExternalStore so the
-// server renders the open state and the browser corrects it, with no state written from an effect
-// to get there.
-const RAIL_HIDDEN_KEY = "apolloclaw:integrations-rail-hidden";
-
-function subscribeStorage(onChange: () => void): () => void {
-  window.addEventListener("storage", onChange);
-  return () => window.removeEventListener("storage", onChange);
-}
 
 function isOutOfCreditsError(message: string): boolean {
   return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
@@ -61,11 +46,11 @@ export function ChatView({
 }) {
   const { userFirstName } = useWorkspace();
   const {
-    sessions,
+    
     activeSessionId,
     composerFocusToken,
     requestComposerFocus,
-    startNewChat,
+    
     onSessionCreated,
     bumpSession,
   } = useChatContext();
@@ -106,31 +91,11 @@ export function ChatView({
 
   const showWelcome = !loadingHistory && messages.length === 0;
   // Memoized so the per-token re-renders during streaming don't re-scan the thread list.
-  const activeTitle = useMemo(
-    () => sessions.find((s) => s.session_id === activeSessionId)?.title?.trim(),
-    [sessions, activeSessionId]
-  );
-  const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
   // A chip the customer clicked, and how many have been clicked. The counter is what makes
   // picking the SAME chip twice work — see the note in ChatComposer.
   const [picked, setPicked] = useState<{ text: string; n: number } | null>(null);
 
-  const storedRailHidden = useSyncExternalStore(
-    subscribeStorage,
-    () => window.localStorage.getItem(RAIL_HIDDEN_KEY),
-    () => null
-  );
-  const [railOverride, setRailOverride] = useState<boolean | null>(null);
-  const railHidden = railOverride ?? storedRailHidden === "1";
-  const setRailHidden = (next: boolean) => {
-    setRailOverride(next);
-    try {
-      window.localStorage.setItem(RAIL_HIDDEN_KEY, next ? "1" : "0");
-    } catch {
-      // Private browsing, or storage full. The toggle still works for this session.
-    }
-  };
 
   // Null rather than a placeholder: an unnamed agent should stay out of the greeting entirely.
   const greetName = agentName?.trim() || null;
@@ -155,31 +120,8 @@ export function ChatView({
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
       {att.dragOver && <DropOverlay />}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card/80 px-6 backdrop-blur-sm md:px-8">
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-        {/* Date and time, from the mockup. The weather it also shows isn't here — see HeaderClock. */}
-        <HeaderClock />
-        {/* What this conversation has left to spend, and a way to top it up from here. */}
-        <HeaderCredit agentId={agentId} />
-        {/* Light/dark at the top of the screen, where you are when you decide you want it. The
-            three-way preference (including "follow my device") stays in Settings. */}
-        <ThemeToggle />
-        <button
-          type="button"
-          onClick={startNewChat}
-          title="New chat"
-          className="brand-gradient inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm shadow-primary/25 transition-shadow hover:shadow-md hover:shadow-primary/30"
-        >
-          <Plus className="h-4 w-4" />
-          New Chat
-        </button>
-        </div>
-      </header>
 
-      {/* Everything below the header is a row: the conversation, and — only on the empty state —
+      {/* Everything below the header is a row: the conversation, and - only on the empty state -
           the integrations rail beside it.
           The rail is a SIBLING of the conversation column rather than something inside it, so its
           appearing and disappearing never moves the composer within its parent. That matters: the
@@ -220,7 +162,7 @@ export function ChatView({
               {greeting && (
                 <>
                   <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">
-                    {/* Was split, with the address in the accent — that was the loudest part of
+                    {/* Was split, with the address in the accent - that was the loudest part of
                         the violet pass and it went with it. Weight carries the line instead. */}
                     {greeting.headline}
                   </h1>
@@ -239,10 +181,10 @@ export function ChatView({
         )}
       </div>
 
-      {/* Composer wrapper — the STABLE 2nd child. Its chrome (docked vs bare centered) is a
+      {/* Composer wrapper - the STABLE 2nd child. Its chrome (docked vs bare centered) is a
           className swap so the ChatComposer inside never changes tree position. */}
       <div className={cn("relative", showWelcome ? "w-full px-6 md:px-10" : "bg-background px-6 py-3 md:px-10 sm:py-4")}>
-        {/* No hard divider — a short fade dissolves the transcript into the composer instead. */}
+        {/* No hard divider - a short fade dissolves the transcript into the composer instead. */}
         {!showWelcome && (
           <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent" />
         )}
@@ -278,7 +220,7 @@ export function ChatView({
 
       {/* Bottom: balances the vertical spacing on the welcome state. */}
       {showWelcome && (
-        <div className="flex flex-1 flex-col items-center gap-4 px-4 pt-4">
+        <div className="flex flex-1 flex-col items-center gap-4 px-4 pt-7">
           {/* Four things to say, under the box you'd say them in. They fill the composer rather
               than sending: several want a name or a document swapped in first, and firing one off
               unedited produces exactly the weak first answer this is meant to prevent. */}
@@ -305,47 +247,6 @@ export function ChatView({
       )}
         </div>
 
-        {/* The panel slides OUT TO THE RIGHT rather than collapsing in place, and the wrapper's
-            width goes with it — a panel that closes without giving its space back has moved, not
-            closed. Both properties are on the same transition so the chat widens at exactly the
-            rate the panel leaves.
-            overflow-hidden is what keeps the translated panel from painting over the composer on
-            its way out. The rail stays mounted so its fetched state survives a close and reopen.
-            Hidden below lg — a 340px rail on a phone would be the whole screen. Mobile gets the
-            one-line link under the greeting instead, so Connections is still reachable from here. */}
-        {showWelcome && (
-          <div
-            className={cn(
-              "hidden shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-out lg:block",
-              railHidden ? "w-0 opacity-0" : "w-[372px] opacity-100"
-            )}
-            aria-hidden={railHidden}
-          >
-            <div
-              className={cn(
-                "h-full w-[372px] p-4 pl-0 transition-transform duration-300 ease-out",
-                railHidden && "translate-x-full"
-              )}
-            >
-              <IntegrationsRail agentId={agentId} onHide={() => setRailHidden(true)} />
-            </div>
-          </div>
-        )}
-
-        {/* The way back. A tab on the edge the panel left from, so reopening is where closing
-            happened rather than somewhere in the header. */}
-        {showWelcome && railHidden && (
-          <button
-            type="button"
-            onClick={() => setRailHidden(false)}
-            aria-label="Show integrations"
-            title="Integrations"
-            className="my-4 mr-4 hidden shrink-0 items-center gap-1.5 self-start rounded-l-xl border border-r-0 bg-card px-2 py-3 text-muted-foreground transition-colors hover:text-foreground lg:flex"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <PanelRight className="h-4 w-4" />
-          </button>
-        )}
       </div>
     </div>
   );

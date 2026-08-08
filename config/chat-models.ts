@@ -90,7 +90,7 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
 
   if (data.length === 0) {
     console.warn(
-      "[chat-models] no approved model matched this instance — falling back to the full list.",
+      "[chat-models] no approved model matched this instance - falling back to the full list.",
       "reported:",
       (response.data ?? []).slice(0, 10).map((m) => m.id).join(", ")
     );

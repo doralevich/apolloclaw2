@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 
 const MC_API_KEY = process.env.MAILCHIMP_API_KEY || "";
 const MC_SERVER = MC_API_KEY.split("-").pop() || "us1"; // e.g. us1
-const MC_LIST_ID = "8faa1558b2"; // Apollo Claw — The AI Edge
+const MC_LIST_ID = "8faa1558b2"; // Apollo Claw - The AI Edge
 
 function mcHeaders() {
   return {

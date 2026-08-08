@@ -5,7 +5,7 @@ import { OG_IMAGES } from "@/lib/seo";
 export const metadata: Metadata = {
   title: { absolute: "Sales AI Agent | AI-Powered Sales Assistant | Apollo[Claw]" },
   description:
-    "An AI agent that qualifies leads, follows up with prospects, and keeps your sales pipeline moving — 24/7.",
+    "An AI agent that qualifies leads, follows up with prospects, and keeps your sales pipeline moving - 24/7.",
   alternates: {
     canonical: "https://apolloclaw.ai/ai-agents/sales",
   },

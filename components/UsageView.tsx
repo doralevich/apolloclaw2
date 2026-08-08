@@ -43,7 +43,7 @@ function periodProgress(period: string): { elapsed: number; total: number } | nu
 }
 
 function perCall(cost: number, calls: number): string {
-  if (!calls) return "—";
+  if (!calls) return "-";
   // Sub-cent averages are the norm here, so usd() (2dp) would print $0.00 for every row and
   // say nothing. Four decimals is the smallest that distinguishes a cheap call from a dear one.
   return `$${(cost / calls / 1_000_000).toFixed(4)}`;
@@ -164,7 +164,7 @@ export function UsageView() {
     {
       icon: <Sparkles className="size-4" />,
       label: "LLM",
-      hint: "Thinking and writing — every reply your agent composes.",
+      hint: "Thinking and writing - every reply your agent composes.",
       cost: usage.by_integration.llm.cost_micros,
       calls: usage.by_integration.llm.calls,
     },
@@ -178,7 +178,7 @@ export function UsageView() {
     {
       icon: <Wrench className="size-4" />,
       label: "Tools",
-      hint: "Acting in your connected apps — sending mail, reading files.",
+      hint: "Acting in your connected apps - sending mail, reading files.",
       cost: usage.by_integration.composio.cost_micros,
       calls: usage.by_integration.composio.calls,
     },
@@ -219,7 +219,7 @@ export function UsageView() {
               {projected !== null && (
                 <>
                   At this pace the month lands near <span className="font-medium">{usd(projected)}</span>
-                  {overCap ? " — over the cap, so top-up credits would cover the rest." : "."}
+                  {overCap ? " - over the cap, so top-up credits would cover the rest." : "."}
                 </>
               )}
             </p>
@@ -276,7 +276,7 @@ export function UsageView() {
             <span className="font-medium tabular-nums">
               {usage.by_integration.llm.output_tokens.toLocaleString()}
             </span>
-            . Roughly, a token is three quarters of a word — long conversations and big
+            . Roughly, a token is three quarters of a word - long conversations and big
             attachments are what move this number.
           </p>
         )}

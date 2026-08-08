@@ -60,7 +60,7 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <div className="mt-6 flex min-h-0 flex-col">
+      <div className="mt-6 flex min-h-0 flex-1 flex-col">
         <div className="flex items-center justify-between px-3 pb-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Chats
@@ -81,7 +81,7 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
         {/* Capped rather than flex-1: this shares the rail with the nav above and the account
             controls below, so a customer with forty threads must not push those off screen. */}
-        <div className="max-h-[40vh] min-h-0 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {loadingSessions ? (
             <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" /> Loading...

@@ -96,7 +96,7 @@ export function ChatPageClient() {
           <div className="flex shrink-0 items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs text-amber-800">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
             <span>
-              {active.name || "This agent"} is {active.live_status || "not running"} — messages will fail until
+              {active.name || "This agent"} is {active.live_status || "not running"} - messages will fail until
               it&apos;s running.{" "}
               <Link href="/dashboard/settings/agent" className="font-semibold underline underline-offset-2">
                 Manage agent

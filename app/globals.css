@@ -7,7 +7,7 @@
 @theme {
   /* Colors */
   --color-background: hsl(45 20% 97%);
-  --color-foreground: hsl(0 0% 10%);
+  --color-foreground: hsl(0 0% 4%);
 
   --color-surface-alt: hsl(45 14% 93%);
   --color-surface-purple: hsl(45 10% 95%);
@@ -27,7 +27,7 @@
   --color-secondary-foreground: hsl(0 0% 15%);
 
   --color-muted: hsl(45 8% 88%);
-  --color-muted-foreground: hsl(0 0% 35%);
+  --color-muted-foreground: hsl(0 0% 24%);
   --color-muted-subtle: hsl(0 0% 55%);
 
   --color-accent: hsl(0 68% 51%);
@@ -91,45 +91,51 @@
    Button and Input while every surface around them stayed put. ThemeProvider mounts
    in the dashboard layout only, and strips the class on the way out.
 
-   Built on the brand navy (#0B1729 ≈ hsl(215 58% 10%)) rather than neutral grey, so
-   dark mode reads as the same product with the lights off. Red stays the accent. */
+   Near-black rather than dark grey, after the reference David sent: the page is 4% and cards sit
+   at 10%, so the card is the lit surface and the page is the room. At 8%/11% the two were three
+   points apart and the whole screen read as one flat grey sheet.
+
+   Neutral black rather than the brand navy it was built on, David's call. The navy version
+   read as a blue theme rather than a dark one — on a large surface a 58%-saturation hue stops
+   being a tint and becomes the colour of the room. Every blue-family hue in this block is now
+   a pure grey at the same lightness, so the structure is untouched and only the cast is gone. */
 .dark {
-  --color-background: hsl(215 58% 8%);
-  --color-foreground: hsl(210 20% 96%);
+  --color-background: hsl(0 0% 4%);
+  --color-foreground: hsl(0 0% 96%);
 
-  --color-surface-alt: hsl(215 45% 12%);
-  --color-surface-purple: hsl(215 45% 12%);
-  --color-surface-teal: hsl(215 45% 12%);
+  --color-surface-alt: hsl(0 0% 12%);
+  --color-surface-purple: hsl(0 0% 12%);
+  --color-surface-teal: hsl(0 0% 12%);
 
-  --color-card: hsl(215 48% 11%);
-  --color-card-foreground: hsl(210 20% 96%);
-  --color-card-elevated: hsl(215 42% 15%);
+  --color-card: hsl(0 0% 10%);
+  --color-card-foreground: hsl(0 0% 96%);
+  --color-card-elevated: hsl(0 0% 15%);
 
-  --color-popover: hsl(215 48% 11%);
-  --color-popover-foreground: hsl(210 20% 96%);
+  --color-popover: hsl(0 0% 11%);
+  --color-popover-foreground: hsl(0 0% 96%);
 
   /* Lifted a touch: the light-mode red is tuned against cream and goes muddy on navy. */
   --color-primary: hsl(0 72% 58%);
   --color-primary-foreground: hsl(0 0% 100%);
 
-  --color-secondary: hsl(215 36% 18%);
-  --color-secondary-foreground: hsl(210 20% 96%);
+  --color-secondary: hsl(0 0% 18%);
+  --color-secondary-foreground: hsl(0 0% 96%);
 
-  --color-muted: hsl(215 36% 18%);
-  --color-muted-foreground: hsl(212 16% 68%);
-  --color-muted-subtle: hsl(212 14% 55%);
+  --color-muted: hsl(0 0% 18%);
+  --color-muted-foreground: hsl(0 0% 68%);
+  --color-muted-subtle: hsl(0 0% 55%);
 
-  --color-accent: hsl(215 36% 20%);
-  --color-accent-foreground: hsl(210 20% 96%);
+  --color-accent: hsl(0 0% 20%);
+  --color-accent-foreground: hsl(0 0% 96%);
 
   --color-destructive: hsl(0 72% 58%);
   --color-destructive-foreground: hsl(0 0% 100%);
 
-  --color-border: hsl(215 30% 21%);
-  --color-input: hsl(215 30% 21%);
+  --color-border: hsl(0 0% 18%);
+  --color-input: hsl(0 0% 21%);
   --color-ring: hsl(0 72% 58%);
 
-  --color-accent-blue: hsl(217 91% 62%);
+  --color-accent-blue: hsl(0 0% 62%);
 
   color-scheme: dark;
 }
@@ -167,16 +173,26 @@
      The button sits a step LIFTED from the rail rather than exactly on it — a control on a white
      page needs a little more weight than a surface behind everything does, and matching the two
      precisely made the button look like a hole. */
-  --color-primary: hsl(216 45% 15%);
+  /* Black, David's call, and it is the other half of the logo: red bracket, black wordmark.
+     Red was the accent for one commit and it fought everything — every Connect, Save and Open
+     Chat button shouting at the same volume as Delete.
+
+     Black buys back --color-destructive. The note above this block always said destructive must
+     stay red "once the accent isn't"; with a red accent it could not, and Delete had to be
+     pushed to a brown-crimson nobody would have read as danger. It is plain red again. */
+  --color-primary: hsl(0 0% 9%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-accent: hsl(216 45% 15%);
+  --color-accent: hsl(0 0% 9%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-ring: hsl(215 32% 35%);
+  --color-ring: hsl(0 0% 32%);
+
 
   /* The two ends of the gradient: lifted navy down to the rail's own. Still a gradient — a flat
      button is the flat purple one with the colour removed, and flat was half of what was wrong. */
-  --brand-from: hsl(214 38% 24%);
-  --brand-to: hsl(216 52% 11%);
+  /* Charcoal into black. Still a gradient, because a flat black button is the flat purple one
+     with the colour taken out, and flat was half of what was wrong with the first version. */
+  --brand-from: hsl(0 0% 22%);
+  --brand-to: hsl(0 0% 7%);
 }
 
 /* The surfaces underneath it.
@@ -189,34 +205,39 @@
    whichever is written later wins — and this rule is later, which meant these light greys were
    overriding the navy dark theme and the sidebar stayed white with the lights off. The dark
    palette is already cool; it needs neutralising by nobody. */
+/* Darker text throughout, David's call.
+   Secondary copy was the problem rather than headings: at 42% lightness a description under a
+   card title is legible but reads as disabled, and a page where most of the words are grey
+   looks like it is waiting to load. Body text lands near-black and muted text is dark enough
+   to be read rather than skimmed past. */
 .app-accent:not(.dark) {
   /* 95, not 97. Cards here are pure white, so the page behind them IS the separation — at 97
      that was a three-point step, and three points across a 1px border is not an edge. Panels
      read as one continuous sheet with faint lines drawn on it, which is what "not crisp" was.
      Five points is enough to see where a panel starts without the surround going grey. */
-  --color-background: hsl(220 20% 95%);
-  --color-surface-alt: hsl(220 16% 94%);
-  --color-surface-purple: hsl(220 14% 96%);
-  --color-surface-teal: hsl(220 15% 93%);
+  --color-background: hsl(0 0% 97%);
+  --color-surface-alt: hsl(0 0% 94%);
+  --color-surface-purple: hsl(0 0% 96%);
+  --color-surface-teal: hsl(0 0% 93%);
   /* Was 97 — the exact value of --color-background, which made "elevated" mean nothing at all.
      White, so a surface asking to be lifted is lifted. */
   --color-card-elevated: hsl(0 0% 100%);
 
-  --color-secondary: hsl(220 15% 93%);
-  --color-secondary-foreground: hsl(220 12% 18%);
-  --color-muted: hsl(220 15% 93%);
-  --color-muted-foreground: hsl(220 9% 42%);
-  --color-muted-subtle: hsl(220 8% 56%);
+  --color-secondary: hsl(0 0% 94%);
+  --color-secondary-foreground: hsl(0 0% 12%);
+  --color-muted: hsl(0 0% 93%);
+  --color-muted-foreground: hsl(0 0% 26%);
+  --color-muted-subtle: hsl(0 0% 50%);
 
   /* Darker than the site's, deliberately. The dashboard is read all day at small sizes, and the
      old foreground/muted pair was the other half of "not enough contrast" — text that is fine in
      a hero is thin in a sidebar row. */
-  --color-foreground: hsl(222 24% 11%);
+  --color-foreground: hsl(0 0% 5%);
   /* Two points darker, for the same reason the background moved: a hairline is the only thing
      separating a white tile from the white panel it sits in, and at 88 it was doing that job
      on about a tenth of the available contrast. */
-  --color-border: hsl(220 14% 86%);
-  --color-input: hsl(220 14% 86%);
+  --color-border: hsl(0 0% 89%);
+  --color-input: hsl(0 0% 86%);
 }
 
 /* The brand gradient, for the few surfaces that carry it: the primary button, the send control,
@@ -227,19 +248,18 @@
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
 }
 
-/* Lifted against navy, the same adjustment the red needed: the light-mode violet goes muddy on
-   a dark surface, and a button nobody can find is worse than one in the wrong hue. */
-/* Inverted on navy: a black button on a dark surface is a hole in the page. Same idea — maximum
-   contrast, no hue — pointing the other way. */
+/* Inverted in the dark: a black button on a black surface is a hole in the page, so the accent
+   flips to white and its text to near-black. Same idea as the light theme - maximum contrast,
+   no hue - pointing the other way. */
 .app-accent.dark {
   --color-primary: hsl(0 0% 97%);
-  --color-primary-foreground: hsl(215 58% 8%);
+  --color-primary-foreground: hsl(0 0% 8%);
   --color-accent: hsl(0 0% 97%);
-  --color-accent-foreground: hsl(215 58% 8%);
+  --color-accent-foreground: hsl(0 0% 8%);
   --color-ring: hsl(0 0% 78%);
 
   --brand-from: hsl(0 0% 100%);
-  --brand-to: hsl(210 16% 88%);
+  --brand-to: hsl(0 0% 88%);
 }
 
 /* ─── The chat's background wash ──────────────────────────────────────────────
@@ -295,46 +315,6 @@
    --color-primary goes light: it is near-black outside, and a near-black control on
    navy is a hole. Nothing in the rail uses it today; this is so that the first thing
    that does isn't invisible. */
-.rail-dark {
-  --color-background: hsl(216 52% 9%);
-  --color-foreground: hsl(210 20% 96%);
-  --color-card: hsl(215 44% 13%);
-  --color-card-foreground: hsl(210 20% 96%);
-  --color-secondary: hsl(215 34% 19%);
-  --color-secondary-foreground: hsl(210 20% 96%);
-  --color-muted: hsl(215 34% 19%);
-  --color-muted-foreground: hsl(212 16% 66%);
-  --color-muted-subtle: hsl(212 14% 52%);
-  --color-border: hsl(215 28% 21%);
-  --color-input: hsl(215 28% 21%);
-  --color-primary: hsl(0 0% 97%);
-  --color-primary-foreground: hsl(216 52% 9%);
-  --color-ring: hsl(212 16% 66%);
-
-  /* The gradient is charcoal-to-ink outside, which on navy is a dark tile on a dark rail — the
-     workspace avatar simply vanished. Lifted navy instead, so it reads as raised rather than as
-     a hole. */
-  --brand-from: hsl(214 30% 29%);
-  --brand-to: hsl(215 36% 19%);
-
-  color: var(--color-foreground);
-}
-
-/* The grid from David's swatch. Two hairline gradients at 3% — at this strength it
-   is texture rather than pattern, which is the difference between a surface that
-   feels made and one that looks like a spreadsheet. Sits behind the content via a
-   pseudo-element so the rail's own children keep their stacking. */
-.rail-dark::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
-  background-size: 34px 34px;
-}
-
 /* Keyframes */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }

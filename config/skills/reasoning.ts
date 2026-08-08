@@ -21,7 +21,7 @@ export const REASONING_SKILLS: AgentSkill[] = [
     body: `
 # Devil's advocate
 
-Before delivering a recommendation, argue against it properly. Not a token caveat at the end —
+Before delivering a recommendation, argue against it properly. Not a token caveat at the end -
 a real attempt to knock it down.
 
 ## The four questions
@@ -38,7 +38,7 @@ a real attempt to knock it down.
 ## What to deliver
 
 The recommendation, then the strongest objection to it, then why the recommendation survives
-anyway — or does not. If the objection wins, say so and change the answer.
+anyway - or does not. If the objection wins, say so and change the answer.
 
 ## When it matters most
 
@@ -61,21 +61,21 @@ retreat into "it depends". Reach a position.
     body: `
 # Pre-mortem
 
-Imagine it is six months from now and this failed badly. Not "it underperformed" — it failed,
+Imagine it is six months from now and this failed badly. Not "it underperformed" - it failed,
 visibly, and everyone knows. Write the story of how.
 
 The trick is the tense. "What might go wrong?" produces a polite list of risks nobody acts on.
-"It went wrong — why?" produces specifics, because the mind explains far better than it predicts.
+"It went wrong - why?" produces specifics, because the mind explains far better than it predicts.
 
 ## How to run it
 
 1. **State the failure out loud.** One sentence, in past tense, concrete. "The launch shipped
    three months late and the two anchor customers walked."
-2. **List the causes.** At least six. Push past the obvious two — the useful ones are third
+2. **List the causes.** At least six. Push past the obvious two - the useful ones are third
    through sixth, after the easy answers are spent.
 3. **Sort them.** Which were foreseeable? Which were inside our control? The intersection of
    those two is the whole point of the exercise.
-4. **Name the earliest warning sign for each.** Not the failure itself — the thing visible weeks
+4. **Name the earliest warning sign for each.** Not the failure itself - the thing visible weeks
    before it, while there is still room to act.
 5. **Decide what changes today.** A pre-mortem that ends in awareness has failed. It should end
    in an altered plan, a tripwire, or an explicit accepted risk.
@@ -126,7 +126,7 @@ the renewal is a fight and the margin never comes back, and other clients hear t
 ## What to deliver
 
 The recommendation, plus the one downstream consequence most likely to be missed. Not a
-catalogue — the single one worth changing the plan for.
+catalogue - the single one worth changing the plan for.
 `,
   },
   {
@@ -157,7 +157,7 @@ at all?"). Reach for it when the question is about direction rather than executi
 ## The bias to correct for
 
 Small businesses die of too many yeses far more often than too few. When the answer is genuinely
-close, the tiebreak is usually no — the compounding cost of a divided focus exceeds the value of
+close, the tiebreak is usually no - the compounding cost of a divided focus exceeds the value of
 a marginal opportunity.
 
 ## What to deliver
@@ -196,7 +196,7 @@ What does it cost them in money, effort or habit? Would they notice if it never 
 
 ## How to run it
 
-Give each chair a short, distinct answer in their own register — the operator should sound
+Give each chair a short, distinct answer in their own register - the operator should sound
 practical, the skeptic sharp. Then the important part: **name where they disagree**, and say
 which disagreement matters most.
 
@@ -233,9 +233,9 @@ bear.
 
 Every substantive claim gets one:
 
-- **High** — multiple independent sources, recent, primary where possible.
-- **Medium** — credible but thin, dated, or all tracing to one origin.
-- **Low** — plausible, uncorroborated, inferred. Say so plainly.
+- **High** - multiple independent sources, recent, primary where possible.
+- **Medium** - credible but thin, dated, or all tracing to one origin.
+- **Low** - plausible, uncorroborated, inferred. Say so plainly.
 
 ## The rule that matters
 

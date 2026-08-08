@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { SchedulePanel } from "@/components/SchedulePanel";
+import { HelpFooter } from "@/components/HelpFooter";
 
 // Channels — where the agent can be talked to.
 //
@@ -73,6 +74,7 @@ export function ChannelsView() {
       {/* Below the channels, because it depends on them: a scheduled brief is delivered through
           whichever chat app is connected above. */}
       <SchedulePanel key={`sched-${active.agent37_id}`} agentId={active.agent37_id} />
+      <HelpFooter className="max-w-4xl" />
     </div>
   );
 }
@@ -149,7 +151,7 @@ export function ChannelsPanel({
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Chat anywhere</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Connect a chat app you already use, and your agent answers there — to you and
+                Connect a chat app you already use, and your agent answers there - to you and
                 nobody else.
               </p>
             </div>
@@ -267,8 +269,15 @@ function ChannelCard({
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-base font-semibold">{def.name}</h2>
             <StateBadge state={state} loaded={loaded} />
+            {/* Only on the one that is genuinely easiest to finish. A recommendation on more
+                than one is not a recommendation. */}
+            {def.recommended && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                Recommended
+              </span>
+            )}
           </div>
-          {/* Collapsed, this line is all anyone sees — so once connected it says who it's
+          {/* Collapsed, this line is all anyone sees - so once connected it says who it's
               connected AS, which is the fact worth having at a glance. */}
           <p className="mt-0.5 truncate text-sm text-muted-foreground">
             {connected && channel?.account ? `Connected as ${channel.account}` : def.tagline}
@@ -291,7 +300,7 @@ function ChannelCard({
             </p>
           )}
           {def.connectedNote && <p className="text-sm text-muted-foreground">{def.connectedNote}</p>}
-          {/* Still shown once connected — for Slack and WhatsApp this is the step AFTER
+          {/* Still shown once connected - for Slack and WhatsApp this is the step AFTER
               connecting, and hiding it the moment the credentials land would strand the setup
               half-done. */}
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
@@ -370,7 +379,7 @@ function CopyableValue({ label, value }: { label: string; value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       })
-      .catch(() => toast.error("Couldn't copy — select the text and copy it manually."));
+      .catch(() => toast.error("Couldn't copy - select the text and copy it manually."));
   };
 
   return (

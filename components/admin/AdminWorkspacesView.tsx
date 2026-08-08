@@ -219,7 +219,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
                   having here — the image name only ever told us what the build was once
                   called. An unrecognised image falls back to showing its raw name. */}
               <td className="px-3 py-2 text-muted-foreground">
-                {a.agent_type ? getAgentType(a.agent_type)?.label ?? a.agent_type : "—"}
+                {a.agent_type ? getAgentType(a.agent_type)?.label ?? a.agent_type : "-"}
                 {(runtimeForTemplate(a.template) ?? a.template) && (
                   <div className="text-[11px] text-muted-foreground/70">
                     {runtimeForTemplate(a.template) ?? a.template}
@@ -277,7 +277,7 @@ function SkillsCell({ agentId }: { agentId: string }) {
         setState({ busy: false, installed: skills });
         if (mode === "install") {
           toast.success(
-            skills.length ? `Installed: ${skills.join(", ")}` : "Nothing installed — not an OpenClaw instance?"
+            skills.length ? `Installed: ${skills.join(", ")}` : "Nothing installed - not an OpenClaw instance?"
           );
         }
       })

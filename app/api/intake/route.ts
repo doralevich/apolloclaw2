@@ -20,8 +20,8 @@ const MANDRILL_KEY = process.env.MANDRILL_API_KEY || "";
 const trackLabel: Record<string, string> = {
   business: "Business Owner / Executive",
   personal: "Personal CEO",
-  student: "Collegiate — Student",
-  admin: "Collegiate — Administrator",
+  student: "Collegiate - Student",
+  admin: "Collegiate - Administrator",
   agency: "Agency / Reseller",
 };
 
@@ -197,7 +197,7 @@ async function findOrCreateCrmClient(
   const enc = encodeURIComponent(cleanEmail);
   const label = trackLabel[trackType] || trackType;
   if (!SUPA_KEY) {
-    console.error("[intake][crm] SUPABASE service-role key is MISSING — CRM writes skipped (email/PDF still send)");
+    console.error("[intake][crm] SUPABASE service-role key is MISSING - CRM writes skipped (email/PDF still send)");
     return null;
   }
   try {
@@ -207,7 +207,7 @@ async function findOrCreateCrmClient(
       { headers: sbHeaders }
     );
     if (!cardSearch.ok) {
-      console.error(`[intake][crm] entity lookup rejected — HTTP ${cardSearch.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardSearch.text()).slice(0, 300));
+      console.error(`[intake][crm] entity lookup rejected - HTTP ${cardSearch.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardSearch.text()).slice(0, 300));
       return null;
     }
     const cardFound = await cardSearch.json() as Array<{ id: string }>;
@@ -235,7 +235,7 @@ async function findOrCreateCrmClient(
         if (!patch.ok) {
           // Worth a line in the log, not worth failing the submission over. The intake email
           // and PDF still carry the new details either way.
-          console.error(`[intake][crm] card refresh rejected — HTTP ${patch.status}:`, (await patch.text()).slice(0, 200));
+          console.error(`[intake][crm] card refresh rejected - HTTP ${patch.status}:`, (await patch.text()).slice(0, 200));
         }
       }
     } else {
@@ -246,7 +246,7 @@ async function findOrCreateCrmClient(
           kind: "company", name: name, email: cleanEmail,
           phone: phone || null, company_text: company || null,
           business_id: "apolloclaw", status: "contacted", type: "apolloclaw",
-          notes: `Intake form submitted — Track: ${label}`,
+          notes: `Intake form submitted - Track: ${label}`,
           referral_source: "intake_form",
         }),
       });
@@ -268,7 +268,7 @@ async function findOrCreateCrmClient(
         return null;
       }
       if (!cardRes.ok) {
-        console.error(`[intake][crm] entity create rejected — HTTP ${cardRes.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardRes.text()).slice(0, 300));
+        console.error(`[intake][crm] entity create rejected - HTTP ${cardRes.status} at ${SUPA_URL} (401=bad/rotated key, 404=wrong project):`, (await cardRes.text()).slice(0, 300));
         return null;
       }
       const cardCreated = await cardRes.json() as Array<{ id: string }>;
@@ -414,10 +414,10 @@ export async function POST(req: NextRequest) {
 
     // 1. Telegram text summary
     const lines = [
-      `<b>🎯 New Apollo[Claw] Intake — ${track}</b>`,
+      `<b>🎯 New Apollo[Claw] Intake - ${track}</b>`,
       `<b>Name:</b> ${fullName}`,
       `<b>Email:</b> ${email}`,
-      `<b>Phone:</b> ${phone || "—"}`,
+      `<b>Phone:</b> ${phone || "-"}`,
     ];
     if (company) lines.push(`<b>Company:</b> ${company}`);
     if (data.industry) lines.push(`<b>Industry:</b> ${data.industry}`);
@@ -463,7 +463,7 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: email,
       toName: fullName,
-      subject: "Got it — Apollo[Claw]",
+      subject: "Got it - Apollo[Claw]",
       html: submitterHtml,
       pdfBuffer: pdfBuffer || undefined,
       pdfFilename: pdfBuffer ? filename : undefined,
@@ -479,7 +479,7 @@ export async function POST(req: NextRequest) {
         <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
           <tr><td style="padding:6px 0;color:#6b7280;width:35%;">Name</td><td style="padding:6px 0;"><strong>${fullName}</strong></td></tr>
           <tr><td style="padding:6px 0;color:#6b7280;">Email</td><td style="padding:6px 0;">${email}</td></tr>
-          <tr><td style="padding:6px 0;color:#6b7280;">Phone</td><td style="padding:6px 0;">${phone || "—"}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280;">Phone</td><td style="padding:6px 0;">${phone || "-"}</td></tr>
           <tr><td style="padding:6px 0;color:#6b7280;">Track</td><td style="padding:6px 0;">${track}</td></tr>
           ${company ? `<tr><td style="padding:6px 0;color:#6b7280;">Company</td><td style="padding:6px 0;">${company}</td></tr>` : ""}
           ${data.industry ? `<tr><td style="padding:6px 0;color:#6b7280;">Industry</td><td style="padding:6px 0;">${data.industry}</td></tr>` : ""}
@@ -494,7 +494,7 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: "david@apolloclaw.ai",
       toName: "David Oralevich",
-      subject: `${intakeKind(data) ? `${intakeKind(data)} Intake` : "New Intake"}: ${fullName}${company ? ` — ${company}` : ""} [${track}]`,
+      subject: `${intakeKind(data) ? `${intakeKind(data)} Intake` : "New Intake"}: ${fullName}${company ? ` - ${company}` : ""} [${track}]`,
       html: davidHtml,
       pdfBuffer: pdfBuffer || undefined,
       pdfFilename: pdfBuffer ? filename : undefined,
@@ -539,14 +539,14 @@ export async function POST(req: NextRequest) {
     if (clientId) {
       // Attach intake PDF + any client uploads to the Documents section of the CRM card
       if (docUrl) {
-        await attachDocumentToEntity(clientId, "Intake Form", `Apollo[Claw] Intake — ${fullName}`, docUrl);
+        await attachDocumentToEntity(clientId, "Intake Form", `Apollo[Claw] Intake - ${fullName}`, docUrl);
       }
       for (const ud of uploadedDocs) {
         await attachDocumentToEntity(clientId, "Client Upload", ud.name, ud.url);
       }
       const noteLines = [
-        `Apollo[Claw] intake form submitted — ${track}`,
-        `Name: ${fullName} | Email: ${email} | Phone: ${phone || "—"}`,
+        `Apollo[Claw] intake form submitted - ${track}`,
+        `Name: ${fullName} | Email: ${email} | Phone: ${phone || "-"}`,
         company ? `Company: ${company}` : "",
         data.industry ? `Industry: ${data.industry}` : "",
         data.budget ? `Budget: ${data.budget}` : "",
@@ -557,11 +557,11 @@ export async function POST(req: NextRequest) {
       ].filter(Boolean);
 
       await logCrmNote(clientId, noteLines.join("\n"));
-      await sendTelegram(`<b>✅ CRM logged</b> — ${fullName} under Apollo[Claw] prospects. Emails delivered.`);
+      await sendTelegram(`<b>✅ CRM logged</b> - ${fullName} under Apollo[Claw] prospects. Emails delivered.`);
       crmStatus = "ok";
     } else {
       crmStatus = SUPA_KEY ? "write_failed" : "no_service_key";
-      console.error(`[intake][crm] result=${crmStatus} — email/PDF sent but no CRM card for ${email}`);
+      console.error(`[intake][crm] result=${crmStatus} - email/PDF sent but no CRM card for ${email}`);
       await sendTelegram(`<b>⚠️ CRM NOT logged</b> (${crmStatus}) for ${fullName}. Emails still sent.`);
     }
 

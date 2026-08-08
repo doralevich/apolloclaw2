@@ -15,7 +15,7 @@ const AC_SUPA_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 async function upsertAgentSetup(email: string, agentType: string, answers: Record<string, unknown>): Promise<void> {
   if (!AC_SUPA_KEY) {
-    console.warn("[upsertAgentSetup] SUPABASE_SERVICE_ROLE_KEY not set — skipping");
+    console.warn("[upsertAgentSetup] SUPABASE_SERVICE_ROLE_KEY not set - skipping");
     return;
   }
   try {
@@ -32,7 +32,7 @@ async function upsertAgentSetup(email: string, agentType: string, answers: Recor
     if (!user) {
       // Client hasn't created their dashboard account yet — store in pending_setups table if exists,
       // otherwise log and continue (non-fatal)
-      console.warn(`[upsertAgentSetup] No dashboard account for ${email} — skipping agent_setup write`);
+      console.warn(`[upsertAgentSetup] No dashboard account for ${email} - skipping agent_setup write`);
       return;
     }
 
@@ -91,7 +91,7 @@ async function sendSummaryEmail(opts: {
   html: string;
 }): Promise<void> {
   if (!MANDRILL_KEY) {
-    console.warn("[submit-setup] MANDRILL_API_KEY not set — skipping email");
+    console.warn("[submit-setup] MANDRILL_API_KEY not set - skipping email");
     return;
   }
   const message: Record<string, unknown> = {
@@ -203,7 +203,7 @@ export async function POST(req: NextRequest) {
           name,
           email,
           "onboarding",
-          "Setup complete — deployment_ready"
+          "Setup complete - deployment_ready"
         );
       } catch (err) {
         console.error("[submit-setup] Step 2 entity create failed:", err);
@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
       }
 
       await sendTelegram(
-        `<b>Technical Setup Complete — Apollo[Claw]</b>\n` +
+        `<b>Technical Setup Complete - Apollo[Claw]</b>\n` +
           `<b>Name:</b> ${name}\n` +
           `<b>Email:</b> ${email}\n` +
           `<b>Assistant:</b> ${fields.assistant_name || ""}\n` +
@@ -308,7 +308,7 @@ export async function POST(req: NextRequest) {
         const dealId = await findAttioDealByEmail(email);
         if (dealId) {
           const noteLines = [
-            `Setup Complete — ${name}`,
+            `Setup Complete - ${name}`,
             `Email: ${email}`,
             `Assistant Name: ${fields.assistant_name || ""}`,
             `Timezone: ${fields.timezone || ""}`,
@@ -321,7 +321,7 @@ export async function POST(req: NextRequest) {
             `Tavily API Key: ${fields.tavily_api_key || ""}`,
             `Calendly URL: ${fields.calendly_url || ""}`,
           ].filter(l => !l.endsWith(": ")).join("\n");
-          await addAttioNote(dealId, "Technical Setup — Credentials", noteLines);
+          await addAttioNote(dealId, "Technical Setup - Credentials", noteLines);
           await updateAttioDealStage(dealId, "Setup Complete", "deployment_ready");
         }
       } catch (attioErr) {

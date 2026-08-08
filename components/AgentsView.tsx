@@ -49,7 +49,7 @@ export function AgentsView() {
     const checkout = params.get("checkout");
     if (!checkout) return;
     if (checkout === "success") {
-      toast.success("Payment received — your agent is being provisioned and will appear here shortly.");
+      toast.success("Payment received - your agent is being provisioned and will appear here shortly.");
       const timers = [5_000, 15_000, 30_000].map((ms) => setTimeout(() => void refresh(), ms));
       params.delete("checkout");
       params.delete("type");
@@ -58,7 +58,7 @@ export function AgentsView() {
       return () => timers.forEach(clearTimeout);
     }
     if (checkout === "cancelled") {
-      toast.info("Checkout cancelled — you weren't charged.");
+      toast.info("Checkout cancelled - you weren't charged.");
       params.delete("checkout");
       const qs = params.toString();
       window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
@@ -75,7 +75,7 @@ export function AgentsView() {
           <h1 className="text-2xl font-semibold tracking-tight">{agents.length > 1 ? "My Agents" : "My Agent"}</h1>
           <p className="text-sm text-muted-foreground">{current.name}</p>
         </div>
-        {/* Visible to every member — the server enforces entitlement + the per-type cap. */}
+        {/* Visible to every member - the server enforces entitlement + the per-type cap. */}
         <CreateAgentModal triggerSize="sm" />
       </div>
 

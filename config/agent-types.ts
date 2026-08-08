@@ -67,7 +67,7 @@ export const AGENT_TYPES: AgentType[] = [
     id: "college",
     label: "The College Agent",
     description:
-      "An AI agent that guides a student from sophomore year of high school through college graduation — classes, deadlines, applications, financial aid, and internships.",
+      "An AI agent that guides a student from sophomore year of high school through college graduation - classes, deadlines, applications, financial aid, and internships.",
     template: "college-agent",
     monthlyCapUsd: 5,
     available: true,
@@ -108,7 +108,7 @@ export const AGENT_TYPES: AgentType[] = [
     id: "apollo",
     label: "Apollo Agent",
     description:
-      "A private AI agent built around one business — its people, its stack, its bottlenecks — from the answers given at onboarding.",
+      "A private AI agent built around one business - its people, its stack, its bottlenecks - from the answers given at onboarding.",
     // OpenClaw, from the stock image — David's call, and the reason it can be the STOCK one is
     // that nothing about the product lives in the image any more. SOUL.md now comes from
     // config/personas.ts and the other five files are generated from the questionnaire

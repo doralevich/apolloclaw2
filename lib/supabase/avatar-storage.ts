@@ -2,10 +2,11 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Public storage for the images customers upload: agent avatars (the onboarding form's
-// Personalize step) and workspace logos (dashboard settings). Public buckets — both are
+// Personalize step), workspace logos (dashboard settings), and the person's own picture. Public buckets — both are
 // rendered as a plain <img src> in the dashboard, so signed URLs would buy nothing.
 const AVATAR_BUCKET = "agent-avatars";
 const LOGO_BUCKET = "workspace-logos";
+const USER_BUCKET = "user-avatars";
 const MAX_BYTES = 3 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 // SVG is deliberately absent. It is the format a company most likely HAS its logo in, and the
@@ -89,4 +90,19 @@ export async function uploadAgentAvatar(
   upload: ImageUpload
 ): Promise<string | null> {
   return storeImage(AVATAR_BUCKET, (ext) => `${workspaceId}/${agentTypeId}-${Date.now()}.${ext}`, upload);
+}
+
+/**
+ * The signed-in person's own picture, shown beside their messages in chat.
+ *
+ * Its own bucket rather than a folder inside agent-avatars: this one belongs to a USER, not to a
+ * workspace, and it outlives every workspace they are a member of. Keying it under a workspace
+ * id would make "which of my workspaces did I upload this in" a real question, and deleting that
+ * workspace would take their face with it.
+ *
+ * Timestamped for the same reason the workspace logo is: the URL is public and cached, so
+ * overwriting in place would leave them looking at their old picture until the CDN let go.
+ */
+export async function uploadUserAvatar(userId: string, upload: ImageUpload): Promise<string | null> {
+  return storeImage(USER_BUCKET, (ext) => `${userId}/avatar-${Date.now()}.${ext}`, upload);
 }

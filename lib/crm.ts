@@ -23,7 +23,7 @@ function supaHeaders(extra: Record<string, string> = {}): Record<string, string>
 // ── Pipeline deals — write directly to Supabase ───────────────────────────────
 
 export async function createPipelineDeal(payload: object): Promise<{ id?: string }> {
-  if (!SUPA_KEY) throw new Error("SUPABASE_SERVICE_KEY not set — cannot create pipeline deal");
+  if (!SUPA_KEY) throw new Error("SUPABASE_SERVICE_KEY not set - cannot create pipeline deal");
   const res = await fetch(`${SUPA_URL}/rest/v1/pipeline_deals`, {
     method: "POST",
     headers: supaHeaders({ Prefer: "return=representation" }),
@@ -39,7 +39,7 @@ export async function createPipelineDeal(payload: object): Promise<{ id?: string
 
 export async function upsertPipelineDeal(email: string, payload: object): Promise<void> {
   if (!SUPA_KEY) {
-    console.warn("[upsertPipelineDeal] SUPABASE_SERVICE_KEY not set — skipping");
+    console.warn("[upsertPipelineDeal] SUPABASE_SERVICE_KEY not set - skipping");
     return;
   }
   const enc = encodeURIComponent(email);
@@ -100,7 +100,7 @@ export async function findOrCreateCrmEntity(
         business_id: "apolloclaw",
         status: stage,
         type: "apolloclaw",
-        notes: notes || `Apollo Claw lead — stage: ${stage}`,
+        notes: notes || `Apollo Claw lead - stage: ${stage}`,
         referral_source: "apollo_flow",
       }),
     });

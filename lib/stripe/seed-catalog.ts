@@ -1,6 +1,6 @@
 import "server-only";
 import type Stripe from "stripe";
-import { AGENT_PLANS, CREDIT_PACKS, CURRENCY, HOSTING_PLAN, LICENSE_PLAN } from "@/lib/pricing/catalog";
+import { AGENT_PLANS, CREDIT_PACKS, CURRENCY, HOSTING_PLAN, LICENSE_TIERS } from "@/lib/pricing/catalog";
 
 // Idempotent Stripe catalog sync — safe to run any number of times, against test or live.
 //
@@ -28,11 +28,10 @@ export interface SeedAction {
 
 function entries(): SeedEntry[] {
   return [
-    {
-      catalogKey: LICENSE_PLAN.catalogKey,
-      name: LICENSE_PLAN.name,
-      amountCents: LICENSE_PLAN.amountCents,
-    },
+    // One entry per license tier. Advanced keeps the original `apollo_license` key, so this
+    // run updates the product already live rather than creating a second one beside it; Basic
+    // is new and gets created on the first sync after this deploys.
+    ...LICENSE_TIERS.map(({ catalogKey, name, amountCents }) => ({ catalogKey, name, amountCents })),
     {
       catalogKey: HOSTING_PLAN.catalogKey,
       name: HOSTING_PLAN.name,
@@ -97,7 +96,7 @@ async function seedEntry(stripe: Stripe, entry: SeedEntry): Promise<SeedAction> 
     const owner = typeof current.product === "string" ? current.product : current.product.id;
     if (owner !== product.id) {
       throw new Error(
-        `lookup_key "${entry.catalogKey}" already belongs to foreign product ${owner} — ` +
+        `lookup_key "${entry.catalogKey}" already belongs to foreign product ${owner} - ` +
           `refusing to transfer it. Resolve the collision in the Stripe dashboard first.`
       );
     }

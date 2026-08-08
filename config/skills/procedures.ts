@@ -37,13 +37,13 @@ Flag anything back to back with no gap, and anything they haven't accepted yet.
 ## 2. Waiting on you
 
 Threads where the last message is from someone else and it asks for something. Order by how long
-it has been sitting, oldest first. Name the person and what they want in one line each — not a
+it has been sitting, oldest first. Name the person and what they want in one line each - not a
 subject line, which tells them nothing they didn't know.
 
 ## 3. Moved yesterday
 
 What actually changed since the last brief: replies that arrived on things they were chasing,
-work that closed, decisions made. Skip this block entirely if nothing did — a heading with
+work that closed, decisions made. Skip this block entirely if nothing did - a heading with
 "nothing to report" underneath is noise.
 
 ## 4. If you only do one thing
@@ -67,7 +67,7 @@ ${MISSING_CONNECTION_RULE}
 # Follow-up chaser
 
 Things the owner sent that never came back. The job is to find them, judge which are worth a
-nudge, and write the nudges — not to send anything.
+nudge, and write the nudges - not to send anything.
 
 ## Finding them
 
@@ -80,7 +80,7 @@ Not everything unanswered deserves chasing:
 
 - Anything that didn't ask for something. A thank-you needs no reply.
 - Newsletters, receipts, automated mail, no-reply addresses.
-- Threads where they got their answer another way — a meeting happened, someone else replied,
+- Threads where they got their answer another way - a meeting happened, someone else replied,
   the work landed. Check before assuming silence means stalled.
 
 ## The draft
@@ -88,7 +88,7 @@ Not everything unanswered deserves chasing:
 One short message per thread. In the owner's voice, which means read AGENTS.md and USER.md first
 if you haven't this session.
 
-Reference the specific thing, not the fact of silence — "still after the Q3 numbers before
+Reference the specific thing, not the fact of silence - "still after the Q3 numbers before
 Thursday" beats "just following up on my last email". Give them an easy out: a deadline, a
 narrowed ask, or an explicit "if this isn't yours, who should I ask?".
 
@@ -116,7 +116,7 @@ which one you picked.
 
 ## Who's in it
 
-Each external attendee: name, role, company. Where you know it from — the last correspondence,
+Each external attendee: name, role, company. Where you know it from - the last correspondence,
 their signature, the calendar invite. If you don't know who someone is, say so rather than
 inferring from their email domain.
 
@@ -133,13 +133,13 @@ as which. This is the block the owner actually reads.
 
 ## Likely to come up
 
-At most three. Grounded in the thread — a question they asked that never got answered, a decision
+At most three. Grounded in the thread - a question they asked that never got answered, a decision
 that was deferred, a deadline that has since moved. Not generic meeting advice.
 
 ## What you need from them
 
-If preparing this surfaced something only the owner knows — a price they haven't shared, a
-decision they haven't made — ask it as a direct question at the end. One line each.
+If preparing this surfaced something only the owner knows - a price they haven't shared, a
+decision they haven't made - ask it as a direct question at the end. One line each.
 
 ## Length
 
@@ -156,21 +156,21 @@ ${MISSING_CONNECTION_RULE}
     body: `
 # End of day summary
 
-A short, honest close. The point is a trail — so that a week does not pass without anyone being
-able to say where it went — and a clean start tomorrow.
+A short, honest close. The point is a trail - so that a week does not pass without anyone being
+able to say where it went - and a clean start tomorrow.
 
 Three blocks. Keep the whole thing to one screen.
 
 ## Done today
 
-What actually completed. Not what was worked on — what finished. Sent, shipped, decided, signed.
+What actually completed. Not what was worked on - what finished. Sent, shipped, decided, signed.
 If something moved a long way without finishing, say so in those terms: "proposal drafted, not
 sent" is more useful than either "done" or silence.
 
 ## Still open
 
 What was expected today and did not happen. For each, one line on where it stopped. Resist
-softening this — a carried-over item that reads as progress is how the same thing carries over
+softening this - a carried-over item that reads as progress is how the same thing carries over
 for three weeks.
 
 Anything now overdue gets marked plainly, with how long.
@@ -206,7 +206,7 @@ happens to you.
 ## 1. What is already fixed
 
 The week's meetings and hard deadlines. This is the container everything else has to fit inside,
-so it comes first — a plan made without it is a wish list.
+so it comes first - a plan made without it is a wish list.
 
 Total the committed hours. If more than about half the week is already booked, say so plainly;
 it changes what is realistic and they may want to move something.
@@ -214,13 +214,13 @@ it changes what is realistic and they may want to move something.
 ## 2. What is carrying over
 
 Everything that did not finish last week, with how long it has been open. Anything on its third
-week gets called out as such — that is usually a sign it is either blocked or not actually
+week gets called out as such - that is usually a sign it is either blocked or not actually
 important, and both are worth knowing.
 
 ## 3. What has to happen this week
 
 The genuinely time-bound: client commitments with dates, deadlines, anything blocking somebody
-else. Distinguish between "promised to someone" and "would like to do" — the first is not
+else. Distinguish between "promised to someone" and "would like to do" - the first is not
 negotiable without a conversation, and the second is.
 
 ## 4. The three that matter
@@ -229,7 +229,7 @@ From everything above, three things. Not five, not a list. For each: why this we
 and roughly how long it needs.
 
 Then check them against block 1. If the three do not fit in the unbooked time, the plan is
-already wrong — say so now and propose what moves.
+already wrong - say so now and propose what moves.
 
 ## 5. What is not happening
 

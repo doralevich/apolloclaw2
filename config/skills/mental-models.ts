@@ -30,7 +30,7 @@ are needed.
 
 ## 1. Circle of competence
 
-Is this inside what you actually understand? Not "could I learn it" — do you understand it now,
+Is this inside what you actually understand? Not "could I learn it" - do you understand it now,
 well enough to know what would go wrong?
 
 The circle's size does not matter. Knowing where its edge is does. Outside it, the honest answer
@@ -39,17 +39,17 @@ is "I don't know", and "I don't know" is a complete answer.
 ## 2. Margin of safety
 
 If your estimate is wrong by half, does this still work? Good decisions survive being wrong about
-the details. Anything that only works if the plan lands exactly is a bet, not an investment —
+the details. Anything that only works if the plan lands exactly is a bet, not an investment -
 which is fine, as long as it is called one.
 
 ## 3. Inversion
 
-Instead of "how do I succeed at this", ask "how would I guarantee failure?" — then avoid those
+Instead of "how do I succeed at this", ask "how would I guarantee failure?" - then avoid those
 things. Avoiding stupidity is more reliable than seeking brilliance, and considerably easier.
 
 ## 4. The ten-year test
 
-Would you be happy owning this — the client, the commitment, the position — if you could not
+Would you be happy owning this - the client, the commitment, the position - if you could not
 change it for ten years? If the answer depends on being able to exit quickly, that assumption
 deserves scrutiny, because exits are hardest exactly when they are most wanted.
 
@@ -70,7 +70,7 @@ good one is far smaller than the cost of taking a bad one you did not understand
 ## First principles
 
 Take the problem apart to things that are physically or economically true, then rebuild from
-there. The question is never "what does this cost?" — it is "what does it cost to make, from its
+there. The question is never "what does this cost?" - it is "what does it cost to make, from its
 components, and why is the gap what it is?"
 
 Most costs are conventional rather than necessary. Somebody decided it once, everyone copied
@@ -82,7 +82,7 @@ hours of skilled work" is closer to a fact. Price from the second.
 ## 10x, not 10%
 
 A 10% improvement comes from optimising what exists. A 10x improvement usually requires deciding
-that the current approach is wrong. Ask for the 10x version first — it reframes the problem even
+that the current approach is wrong. Ask for the 10x version first - it reframes the problem even
 when you end up shipping the 10%.
 
 ## The assumption audit
@@ -108,7 +108,7 @@ it exists before overriding it.
 
 ## Working backwards
 
-Start at the end. Write the announcement — what changed, for whom, and why they care — before any
+Start at the end. Write the announcement - what changed, for whom, and why they care - before any
 work begins. If that is hard to write, the idea is not ready, and no amount of building will fix
 what the description could not.
 
@@ -122,7 +122,7 @@ time.
 **Type 2 is a two-way door.** Walk through, look around, walk back if wrong. Should be made
 quickly, by whoever is closest to it.
 
-The common failure is applying Type 1 process to Type 2 decisions — committees and analysis for
+The common failure is applying Type 1 process to Type 2 decisions - committees and analysis for
 something that could have been tried in a week. Most decisions are Type 2 and are treated as
 Type 1. Ask which this is, first, because it determines how much process it earns.
 
@@ -158,7 +158,7 @@ is where the real cuts are.
 
 ## The power of no
 
-Focus is not deciding what to do — that part is easy and pleasant. It is deciding what not to do,
+Focus is not deciding what to do - that part is easy and pleasant. It is deciding what not to do,
 including good ideas. Especially good ideas, because bad ones decline themselves.
 
 For any list of initiatives: which three matter? What happens to the rest? "Later" is usually a
@@ -202,8 +202,8 @@ Answer that before theorising about motives.
 ## Use several models, not one
 
 A single framework applied to everything produces a predictable answer and a blind spot the size
-of the framework. Run a decision through two or three unrelated lenses — economic, psychological,
-competitive — and pay attention to where they disagree. That disagreement is information.
+of the framework. Run a decision through two or three unrelated lenses - economic, psychological,
+competitive - and pay attention to where they disagree. That disagreement is information.
 
 ## The Lollapalooza effect
 
@@ -232,7 +232,7 @@ how bad decisions acquire false support.
 
 ## Everything is a machine
 
-A business is a system that produces outcomes. A bad outcome is not bad luck — it is the machine
+A business is a system that produces outcomes. A bad outcome is not bad luck - it is the machine
 working as built. So the useful question is never "how do we fix this instance?" but **"what in
 the machine produced this, and what change stops the next one?"**
 
@@ -253,7 +253,7 @@ Ask: has this decision been made before? If so, why is it being made again?
 ## Believability weighting
 
 Not all opinions are equal, and pretending otherwise wastes the good ones. Weight by track record
-in **this specific domain** — someone excellent at sales is not therefore worth listening to on
+in **this specific domain** - someone excellent at sales is not therefore worth listening to on
 hiring. When people disagree, ask who has actually done this before and how it went.
 
 ## Radical honesty
@@ -281,7 +281,7 @@ there is no answer, the strategy is imitation, and imitation competes on price.
 ## Competition is for losers
 
 Being in a crowded market is not validation, it is margin compression. The goal is to be the only
-one doing a specific thing for a specific group — not the best of many at the same thing.
+one doing a specific thing for a specific group - not the best of many at the same thing.
 
 For any positioning question: **what is the smallest market this could dominate?** Start there.
 Dominating something small is a real position; being fourth in something large is not.
@@ -296,7 +296,7 @@ Which is this? Answer before planning.
 
 ## Definite over indefinite
 
-A definite plan — "we will do these five things in this order and here is why" — beats optionality
+A definite plan - "we will do these five things in this order and here is why" - beats optionality
 and waiting to see. Indefinite optimism is a way of avoiding the work of having a view.
 
 ## The failure mode
@@ -316,11 +316,11 @@ but "what do they believe that the evidence does not actually support?"
 
 ## Strategic inflection points
 
-Sometimes the rules of a business change permanently — a technology, a regulation, a competitor's
+Sometimes the rules of a business change permanently - a technology, a regulation, a competitor's
 new model. The signal is subtle at first and unmistakable too late.
 
 The tell: **the things that used to work stop working, and doing more of them does not help.**
-When effort stops converting to results at the old rate, that is the question to ask — not "how
+When effort stops converting to results at the old rate, that is the question to ask - not "how
 do we push harder" but "has the game changed?"
 
 ## Only the paranoid survive
@@ -339,7 +339,7 @@ and would anyone notice if it stopped?
 ## The 50/50 test
 
 For a decision that is genuinely balanced, the tiebreak is which way you could recover from. Grove
-ran Intel out of memory chips by asking what a new management brought in from outside would do —
+ran Intel out of memory chips by asking what a new management brought in from outside would do -
 then doing that, rather than defending a history he happened to be attached to.
 
 Ask: **if someone took over tomorrow with no loyalty to how we got here, what would they change?**
@@ -361,7 +361,7 @@ Ask: **if someone took over tomorrow with no loyalty to how we got here, what wo
 2. **Ask what is actually true.** Separate physical and economic facts from convention, habit and
    assumption. "Printing costs money" is a fact. "Proposals are twelve pages" is a convention.
 3. **Ask why the convention exists.** Often there was a good reason once. Find out whether it
-   still applies — this step is what separates first-principles thinking from ignorance.
+   still applies - this step is what separates first-principles thinking from ignorance.
 4. **Rebuild from the facts.** Given only what is true, what would you design? Ignore the
    existing answer entirely at this stage.
 5. **Compare.** Where the rebuild differs from the convention, you have either found something or
@@ -391,7 +391,7 @@ cannot be answered, stop and go and learn rather than proceeding.
 
 1. **Pick the population.** Clients, services, marketing channels, hours in a week, sources of
    revenue. One at a time.
-2. **Rank by contribution.** Revenue, profit, referrals, satisfaction — say which measure and why.
+2. **Rank by contribution.** Revenue, profit, referrals, satisfaction - say which measure and why.
    Profit and revenue often rank very differently, and profit is usually the honest one.
 3. **Find the break.** Where does the top slice account for most of the total? Rarely exactly
    80/20; sometimes 90/10, sometimes 60/30. The exact ratio does not matter.
@@ -404,7 +404,7 @@ The bottom of a client list is usually consuming disproportionate time. This is 
 gets avoided, because the answer is often to raise prices on them or let them go, and both feel
 like losing.
 
-Name the specific cost — hours, stress, opportunity — rather than leaving it abstract.
+Name the specific cost - hours, stress, opportunity - rather than leaving it abstract.
 
 ## What to deliver
 
@@ -447,9 +447,9 @@ period of investment is worth its return.
 
 For each item: would you start it today? If not, sort into:
 
-- **End it** — the cost of continuing exceeds the cost of stopping.
-- **Change it** — it would be worth starting in a different shape. Rescope, reprice, renegotiate.
-- **Keep it, deliberately** — there is a reason that survives the question. Write the reason down;
+- **End it** - the cost of continuing exceeds the cost of stopping.
+- **Change it** - it would be worth starting in a different shape. Rescope, reprice, renegotiate.
+- **Keep it, deliberately** - there is a reason that survives the question. Write the reason down;
   next time, that is what gets re-examined instead of the whole thing.
 
 ## The honest use
@@ -482,7 +482,7 @@ For any decision:
 
 ## Separate decision quality from outcome quality
 
-A good decision can lose. A bad decision can win. Judging by outcome — "resulting" — teaches the
+A good decision can lose. A bad decision can win. Judging by outcome - "resulting" - teaches the
 wrong lesson from both.
 
 When reviewing something that went badly: **was the process wrong, or was this the 20% landing?**
@@ -509,13 +509,13 @@ obvious in hindsight.
 People do not buy products. They hire them to make progress in a situation. The job is the
 progress, and it is usually not what the product description says.
 
-Nobody wants a drill. Nobody wants a hole either — they want a shelf up before their partner gets
+Nobody wants a drill. Nobody wants a hole either - they want a shelf up before their partner gets
 home.
 
 ## The questions
 
 1. **What situation are they in when they start looking?** The trigger, not the demographic.
-2. **What progress are they trying to make?** Functional, but also social and emotional — how it
+2. **What progress are they trying to make?** Functional, but also social and emotional - how it
    makes them look, and how it makes them feel.
 3. **What are they using instead today?** The real competition is usually a spreadsheet, an
    assistant, or doing nothing. Not the obvious competitor.
@@ -556,7 +556,7 @@ As if it already shipped. One page, for the customer, in plain language:
 - Why they would choose it over what they do today
 - The quote you would want from a customer who used it
 
-Written before any building. If it is hard to write, the idea is not ready — and that is a cheap
+Written before any building. If it is hard to write, the idea is not ready - and that is a cheap
 discovery at this stage rather than an expensive one later.
 
 ## Step 2: list the questions
@@ -571,7 +571,7 @@ until you reach something doable this week. That is the first move.
 
 ## Why it beats planning forwards
 
-Forwards planning starts from capability — what can we build with what we have — and arrives
+Forwards planning starts from capability - what can we build with what we have - and arrives
 somewhere adjacent to what was needed. Backwards planning starts from the outcome and finds out
 early that the plan does not reach it.
 
@@ -592,7 +592,7 @@ Notice it and decide, rather than quietly editing the page.
 ## The premise
 
 Most businesses compete in a red ocean: same customers, same factors, differentiated by price and
-volume. A blue ocean is demand nobody is fighting over — created by competing on different things
+volume. A blue ocean is demand nobody is fighting over - created by competing on different things
 rather than winning on the same ones.
 
 ## The map
@@ -605,18 +605,18 @@ rather than winning on the same ones.
 
 ## The four actions
 
-- **Eliminate** — which factors the industry competes on could be removed entirely? Usually one
+- **Eliminate** - which factors the industry competes on could be removed entirely? Usually one
   is legacy nobody has questioned.
-- **Reduce** — what is over-served? Effort spent beyond what customers value.
-- **Raise** — what should be well above the standard?
-- **Create** — what does nobody in the category offer at all?
+- **Reduce** - what is over-served? Effort spent beyond what customers value.
+- **Raise** - what should be well above the standard?
+- **Create** - what does nobody in the category offer at all?
 
 Eliminate and Reduce are what fund the other two. A strategy that only adds is a cost increase
 wearing a strategy costume.
 
 ## The test
 
-A real blue ocean position makes some customers a bad fit — plainly and deliberately. If the new
+A real blue ocean position makes some customers a bad fit - plainly and deliberately. If the new
 positioning appeals to everyone the old one did, plus more, it is not repositioning, it is
 marketing copy.
 `,
@@ -633,7 +633,7 @@ marketing copy.
 
 **Conclusion first.** Then the reasons it holds. Then the evidence under each reason.
 
-Most writing is built the other way — context, then analysis, then finally the point — because
+Most writing is built the other way - context, then analysis, then finally the point - because
 that is the order it was discovered in. Nobody wants to read the order of discovery. They want
 the answer and the option to interrogate it.
 
@@ -659,7 +659,7 @@ of those delays the point and costs the reader's attention.
 ## The test
 
 Read only the first sentence of each section. Does the argument still stand up? If so, the
-structure works. If the point only appears at the end, it is not a pyramid — it is a story with
+structure works. If the point only appears at the end, it is not a pyramid - it is a story with
 a twist, and business readers do not want twists.
 `,
   },
@@ -684,7 +684,7 @@ stop being about a person and start being about a system.
 2. **Why?** The pricing needed sign-off and the approver was travelling. →
 3. **Why?** All pricing needs one person's approval. →
 4. **Why?** There is no documented pricing rule, so every quote is a judgement call. →
-5. **Why?** Pricing has never been written down — it lives in one person's head.
+5. **Why?** Pricing has never been written down - it lives in one person's head.
 
 The fix at level 1 is "chase harder". The fix at level 5 is a written pricing policy, which stops
 every future instance. Same problem, entirely different intervention.
@@ -692,7 +692,7 @@ every future instance. Same problem, entirely different intervention.
 ## The rules
 
 - **Follow one chain.** Multiple causes are common; do them one at a time or you get a mess.
-- **Stop when you reach a system, not a person.** "Because Dave forgot" is not a root cause —
+- **Stop when you reach a system, not a person.** "Because Dave forgot" is not a root cause -
   the next why is "why does this depend on Dave remembering?"
 - **Five is a guide.** Sometimes three, sometimes seven. Stop when the answer is something you
   can actually change.

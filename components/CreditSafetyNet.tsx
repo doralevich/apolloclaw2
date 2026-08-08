@@ -138,7 +138,7 @@ export function CreditSafetyNet({ agentId }: { agentId: string | null }) {
             <p className="mt-1 text-xs text-muted-foreground">
               {settings.canAutorecharge
                 ? "Buy more automatically when the balance runs low, so your agent never stops."
-                : "Buy a pack once first — that saves your card, which is what this charges."}
+                : "Buy a pack once first - that saves your card, which is what this charges."}
             </p>
           </div>
           <Toggle

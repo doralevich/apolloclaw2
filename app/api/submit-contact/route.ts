@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             client_id: entityId,
             business_id: "apolloclaw",
-            title: `Follow up — ${name} (contact form)`,
+            title: `Follow up - ${name} (contact form)`,
             status: "pending",
             priority: "high",
             due_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     }
 
     await sendTelegram(
-      `<b>New Contact Form — Apollo Claw</b>\n<b>Name:</b> ${name}\n<b>Email:</b> ${data.email}${data.company ? `\n<b>Company:</b> ${data.company}` : ""}${data.challenge ? `\n<b>Message:</b> ${data.challenge.substring(0, 200)}` : ""}`,
+      `<b>New Contact Form - Apollo Claw</b>\n<b>Name:</b> ${name}\n<b>Email:</b> ${data.email}${data.company ? `\n<b>Company:</b> ${data.company}` : ""}${data.challenge ? `\n<b>Message:</b> ${data.challenge.substring(0, 200)}` : ""}`,
     );
 
     return NextResponse.json({ ok: true });

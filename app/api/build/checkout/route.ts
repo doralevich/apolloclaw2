@@ -26,7 +26,7 @@ export const POST = route(async (request: Request) => {
   const type = getAgentType(body.type);
   if (!type) throw new ApiError(404, "not_found", "Unknown agent type");
   if (!type.available) {
-    throw new ApiError(400, "invalid_request", `${type.label} isn't available yet — coming soon.`);
+    throw new ApiError(400, "invalid_request", `${type.label} isn't available yet - coming soon.`);
   }
   const plan = planForAgentType(type.id);
   if (!plan || !type.planKey) {
@@ -61,7 +61,7 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(
       500,
       "config_error",
-      "Pricing isn't set up yet — run the Stripe catalog sync and try again."
+      "Pricing isn't set up yet - run the Stripe catalog sync and try again."
     );
   }
 

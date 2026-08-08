@@ -36,7 +36,7 @@ const processSteps = [
 export default function AboutPage() {
   return (
     <>
-      {/* HERO — dark navy */}
+      {/* HERO - dark navy */}
       <section
         style={{ background: "#0B1729", color: "#ffffff" }}
         className="relative overflow-hidden"
@@ -135,7 +135,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* LETS FIND OUT — cream */}
+      {/* LETS FIND OUT - cream */}
       <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-4xl text-center">
           <ScrollReveal>
@@ -194,7 +194,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* FOUNDER — cream, 2-col */}
+      {/* FOUNDER - cream, 2-col */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-6xl">
           <style>{`
@@ -212,7 +212,7 @@ export default function AboutPage() {
             }
           `}</style>
           <div id="about-founder-grid">
-            {/* LEFT — photo + nameplate */}
+            {/* LEFT - photo + nameplate */}
             <ScrollReveal>
               <div>
                 <div
@@ -254,7 +254,7 @@ export default function AboutPage() {
               </div>
             </ScrollReveal>
 
-            {/* RIGHT — bio */}
+            {/* RIGHT - bio */}
             <ScrollReveal delay={120}>
               <div>
                 <span
@@ -297,7 +297,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* WHAT WE BELIEVE — dark navy, 3-col */}
+      {/* WHAT WE BELIEVE - dark navy, 3-col */}
       <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
         <div
           aria-hidden

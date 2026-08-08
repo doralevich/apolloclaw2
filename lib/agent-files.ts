@@ -50,7 +50,7 @@ function str(v: unknown): string | undefined {
  *  "we asked and they had nothing to say", which is not what a blank field means. */
 function bullet(label: string, v: unknown): string | null {
   const value = str(v);
-  return value ? `- **${label}** — ${value}` : null;
+  return value ? `- **${label}** - ${value}` : null;
 }
 
 /** Swap the literal "Other" out of a multi-select answer for the write-in it stands for.
@@ -198,12 +198,12 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
   out.push(
     `## Where to look`,
     ``,
-    `- **USER.md** — every answer they gave, in full. Ground truth about them.`,
+    `- **USER.md** - every answer they gave, in full. Ground truth about them.`,
     ...(contextSummary
-      ? [`- **${CONTEXT_FILENAME}** — ${contextSummary}, in their own words. Read it before you` +
+      ? [`- **${CONTEXT_FILENAME}** - ${contextSummary}, in their own words. Read it before you` +
          ` guess at what they sell or how they describe themselves.`]
       : []),
-    `- **TOOLS.md** — the software their business runs on.`,
+    `- **TOOLS.md** - the software their business runs on.`,
     ``,
     wroteSomething
       ? `Never tell them you don't know who they are or what they do. It's written down.`
@@ -243,7 +243,7 @@ export function buildToolsMd(answers: Record<string, unknown>): string {
       `# Their stack`,
       ``,
       `Your owner didn't list the software they use during setup. Ask before assuming anything` +
-        ` about their tools — and write what you learn below, outside this block.`,
+        ` about their tools - and write what you learn below, outside this block.`,
     ].join("\n");
   }
 
@@ -261,8 +261,8 @@ export function buildToolsMd(answers: Record<string, unknown>): string {
     `Unless you have been given a working integration or credentials, you cannot read from or`,
     `write to any of it.`,
     ``,
-    `So: use these names to talk about their business the way they do — reference their actual`,
-    `CRM, not "your CRM" — and ask before promising to do anything inside one of them.`,
+    `So: use these names to talk about their business the way they do - reference their actual`,
+    `CRM, not "your CRM" - and ask before promising to do anything inside one of them.`,
   ].join("\n");
 }
 
@@ -282,12 +282,12 @@ export function buildIdentityMd(
     `# Who you are`,
     ``,
     name
-      ? `Your name is **${name}**. Your owner chose it — use it when you introduce yourself.`
+      ? `Your name is **${name}**. Your owner chose it - use it when you introduce yourself.`
       : `Your owner didn't name you during setup. If they call you something, take it.`,
     ``,
     `You are a private AI agent. You serve ${owner || "your owner"}${
       role && company ? `, ${role} at ${company}` : company ? ` at ${company}` : ""
-    } — one person and one business, not a general assistant and not a product with other`,
+    } - one person and one business, not a general assistant and not a product with other`,
     `users. Nothing you know about them goes anywhere else.`,
     ``,
     `You were built by ApolloClaw from a questionnaire your owner filled out. That's where`,

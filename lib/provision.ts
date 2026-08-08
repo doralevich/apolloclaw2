@@ -489,7 +489,7 @@ export function buildUserMd(
     `# About the business you work for`,
     ``,
     `Notes from your owner's ${typeLabel} setup questionnaire. Treat this as ground truth`,
-    `about who you work for — and update it as you learn more.`,
+    `about who you work for - and update it as you learn more.`,
     ``,
     sectionsToMarkdown(sections),
     ...(contextSummary
@@ -499,7 +499,7 @@ export function buildUserMd(
           ``,
           `There is a file called \`${CONTEXT_FILENAME}\` in this same directory holding`,
           `${contextSummary}, captured during setup. It is too long to keep here, so read it`,
-          `when you need the detail — what they sell, how they describe themselves, their own`,
+          `when you need the detail - what they sell, how they describe themselves, their own`,
           `words. Prefer it over guessing, and treat anything in it as a snapshot from setup`,
           `rather than as today's truth.`,
         ]

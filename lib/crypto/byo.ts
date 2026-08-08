@@ -51,7 +51,7 @@ export function encryptForStorage(plaintext?: string | null): string | null {
   if (!s) return null;
   if (isEncrypted(s)) return s; // already enveloped, don't double-wrap
   if (!byoEncConfigured()) {
-    console.warn("[byo] BYO_ENC_KEY not set — storing credential as plaintext");
+    console.warn("[byo] BYO_ENC_KEY not set - storing credential as plaintext");
     return s;
   }
   try {

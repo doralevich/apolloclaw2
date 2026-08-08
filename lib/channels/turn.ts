@@ -40,6 +40,6 @@ export async function runTurn(
  */
 export function answerFrom(result: TurnResult): string {
   if (result.status === "completed" && result.output_text?.trim()) return result.output_text;
-  if (result.error?.message) return `Sorry — that didn't work: ${result.error.message}`;
+  if (result.error?.message) return `Sorry - that didn't work: ${result.error.message}`;
   return "Sorry, I couldn't finish that one. Try again?";
 }

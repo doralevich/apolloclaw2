@@ -27,7 +27,7 @@ export async function sendMandrillEmail(opts: {
   attachments?: EmailAttachment[];
 }): Promise<boolean> {
   if (!MANDRILL_KEY) {
-    console.warn("[email] MANDRILL_API_KEY not set — skipping:", opts.subject);
+    console.warn("[email] MANDRILL_API_KEY not set - skipping:", opts.subject);
     return false;
   }
   const to = opts.to || NOTIFY_EMAIL;

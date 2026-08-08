@@ -109,7 +109,7 @@ export async function POST(request: Request, { params }: Ctx) {
           config.externalId!,
           config.token,
           message.from,
-          "Sorry — something went wrong on my end."
+          "Sorry - something went wrong on my end."
         )
         .catch(() => {});
       await upsertChannel(agentId, "whatsapp", { state: "error", message: msg }).catch(() => {});

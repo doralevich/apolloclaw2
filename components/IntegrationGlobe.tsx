@@ -30,9 +30,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 import createGlobe from "cobe";
 
 // ---- Palette (Apollo Claw: red accent, cream section for contrast against the dark homepage) -----
-const BRAND = "#E12E30"; // accent (kicker + CTA) — true logo red
-const CREAM = "#F2F0EB"; // section background — same cream token as --color-cream in globals.css
-const INK = "#0B1729"; // headings / body — same navy as the dark sections' ink
+const BRAND = "#E12E30"; // accent (kicker + CTA) - true logo red
+const CREAM = "#F2F0EB"; // section background - same cream token as --color-cream in globals.css
+const INK = "#0B1729"; // headings / body - same navy as the dark sections' ink
 
 const logoUrl = (slug: string) => `https://logos.composio.dev/api/${slug}`;
 

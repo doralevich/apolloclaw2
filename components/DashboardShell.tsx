@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, LogOut, Menu, MessageSquare, MoreHorizontal, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { CHANNELS_ENABLED } from "@/config/channels";
@@ -21,6 +21,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 // The five things you DO with an agent. Everything you only ever configure — credits,
 // members, the workspace itself — moved behind Settings, which is its own area rather than
@@ -29,6 +31,9 @@ import { cn } from "@/lib/utils";
 // former.
 const NAV = [
   { href: "/dashboard/start-here", label: "Start Here", icon: Compass, exact: false },
+  // Between Start Here and Chat, which is the order somebody works through them: the greeting
+  // points at the checklist, and the checklist's last item is to go and ask the thing something.
+  { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
   // Sits next to Connections because the two answer the neighbouring questions — what the agent
@@ -187,9 +192,14 @@ function SidebarContent({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoUrl} alt={logoAlt} className="h-8 w-auto max-w-[9rem] object-contain object-left" />
         ) : (
-          // No logo anywhere means nothing would name the product at all, so the wordmark
-          // stands in. Never the workspace name — that would reintroduce the duplicate.
-          <span className="truncate font-semibold">{branding.appName}</span>
+          // Ours, the real wordmark, not the app name in bold text.
+          //
+          // branding.logoUrl comes from NEXT_PUBLIC_LOGO_URL, which is unset — this is a
+          // white-label shell, so it defaults to empty and every install without that variable
+          // fell through to a text string. The same inline SVG the marketing nav uses fills that
+          // gap: it takes an ink colour, so the black wordmark works on this light rail while
+          // the bracket keeps the brand red.
+          <ApolloClawLogo ink="var(--color-foreground)" height={26} />
         )}
       </div>
 
@@ -204,7 +214,7 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* Your conversations, under the nav — reachable from any page rather than only once
+      {/* Your conversations, under the nav - reachable from any page rather than only once
           you've opened Chat. The rail used to be a second column inside the chat page, which
           meant two sidebars on screen there and none anywhere else. */}
       <ChatSidebar onNavigate={onNavigate} />
@@ -260,11 +270,20 @@ function AccountCard({ userEmail }: { userEmail: string }) {
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isChat = pathname.startsWith("/dashboard/chat");
   const { userEmail } = useWorkspace();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    // h-screen + overflow-hidden from md up, so the rail holds its own height and only <main>
+    // scrolls. It was min-h-screen, which lets the whole page grow with the content and take the
+    // rail's foot down with it — on a long Connections page, Settings and the account card ended
+    // up somewhere below the fold, which is the one place navigation must never be.
+    //
+    // Mobile keeps min-h-screen and a normal document scroll. The rail there is a drawer that
+    // overlays, not a column, so there is nothing to pin and a fixed viewport height would just
+    // fight the browser chrome.
+    <div className="flex min-h-screen flex-col md:h-screen md:min-h-0 md:flex-row md:overflow-hidden">
       {/* Mobile top bar */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4 md:hidden">
         <div className="flex items-center gap-2">
@@ -283,7 +302,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} aria-hidden />
-          <div className="rail-dark relative flex h-full w-72 max-w-[85vw] flex-col border-r border-transparent bg-background p-4 shadow-xl">
+          <div className="relative flex h-full w-72 max-w-[85vw] flex-col border-r bg-background p-4 shadow-xl">
             <div className="flex justify-end">
               <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)} aria-label="Close menu">
                 <X className="h-5 w-5" />
@@ -299,18 +318,36 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Desktop rail.
           bg-background, not bg-card: the rail and the content pane were both pure white,
           separated by a hairline and a beige gutter — so the navigation advanced and the page
-          around it receded, which is backwards. The rail is the recessive surface now and the
-          content card is the white one, the way the mockups have it. Reads the same either
-          way round in dark mode, where background is the deeper navy. */}
-      <aside className="rail-dark relative hidden w-[17rem] shrink-0 flex-col border-r border-transparent bg-background p-4 md:flex">
-        <div className="relative flex min-h-0 flex-1 flex-col">
+          around it receded, which is backwards. The rail is the recessive surface and the
+          content cards are the white ones, the way the mockups have it.
+
+          The border is drawn rather than transparent. It could be transparent back when this
+          rail was navy, because the colour change WAS the edge. Light on light, the rail and the
+          pane it sits against resolve to the same token — without a hairline here the two merge
+          and the layout loses its left edge entirely. */}
+      <aside className="relative hidden w-[17rem] shrink-0 flex-col border-r bg-background p-4 md:flex">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           <SidebarContent pathname={pathname} userEmail={userEmail} />
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
-      </main>
+      {/* Header and content are siblings inside a column, and the column is the shell's h-screen
+          track: the header is pinned because only <main> scrolls, with no fixed positioning and
+          no phantom gap reserved at the top of every page.
+
+          Chat needs the whole height and manages its own scrolling, so it renders bare - the
+          max-w-7xl reading measure and the padding belong to pages of prose and cards, and
+          around a conversation they would put the composer in a box in the middle of the room. */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <DashboardHeader />
+        {isChat ? (
+          <div className="min-h-0 flex-1">{children}</div>
+        ) : (
+          <main className="min-h-0 flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
+          </main>
+        )}
+      </div>
     </div>
   );
 }

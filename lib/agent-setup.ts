@@ -268,14 +268,14 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
       `🤖 ${type.label} setup completed\n` +
         `Business: ${businessName || "?"}\n` +
         `By: ${buyerEmail}\n` +
-        `Agent provisioned: ${provisioned ? "yes — profile injected" : "not yet — will inject at provision"}`
+        `Agent provisioned: ${provisioned ? "yes - profile injected" : "not yet - will inject at provision"}`
     );
 
     const submittedAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
     let pdf: Buffer | null = null;
     try {
       pdf = await renderSectionsPdf({
-        docTitle: `${type.label} — Setup Profile`,
+        docTitle: `${type.label} - Setup Profile`,
         heading: [businessName, buyerEmail].filter(Boolean).join(" • "),
         submittedAt,
         badge: type.label,
@@ -287,11 +287,11 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
 
     await sendMandrillEmail({
       to: NOTIFY_EMAIL,
-      subject: `${type.label} setup — ${businessName || buyerEmail}`,
+      subject: `${type.label} setup - ${businessName || buyerEmail}`,
       html:
         `<h2 style="font-family:sans-serif;color:#0B1729">${escapeHtml(type.label)} setup completed</h2>` +
         `<p style="font-family:sans-serif;font-size:13px;color:#6b7280">By ${escapeHtml(buyerEmail)}. ` +
-        `${pdf ? "Full profile attached as a PDF." : "PDF unavailable — full details below."}</p>` +
+        `${pdf ? "Full profile attached as a PDF." : "PDF unavailable - full details below."}</p>` +
         sectionsToHtml(sections),
       attachments: pdf ? [{ filename: `${type.id}-setup.pdf`, content: pdf }] : undefined,
     });

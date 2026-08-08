@@ -98,7 +98,7 @@ export const SKILL_FAMILIES: SkillFamily[] = [
   },
   {
     title: "The C-suite you don't have",
-    blurb: "Finance, operations, people — the questions a bigger company has someone for.",
+    blurb: "Finance, operations, people - the questions a bigger company has someone for.",
     skills: EXECUTIVE_SKILLS,
   },
   {

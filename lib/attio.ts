@@ -73,7 +73,7 @@ export async function createAttioDeal(opts: {
     const companyId = opts.company ? await upsertAttioCompany(opts.company) : null;
 
     const dealValues: Record<string, unknown> = {
-      name: [{ value: `${opts.name} — Apollo Claw` }],
+      name: [{ value: `${opts.name} - Apollo Claw` }],
       stage: [{ status: "Prospect" }],
       referral_source: opts.referralSource ? [{ value: opts.referralSource }] : undefined,
       company_name: opts.company ? [{ value: opts.company }] : undefined,

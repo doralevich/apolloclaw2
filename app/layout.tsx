@@ -8,6 +8,14 @@ import PageViewTracker from "@/components/GoogleAnalytics";
 import CookieConsent from "@/components/CookieConsent";
 import { OG_IMAGES } from "@/lib/seo";
 
+// The GA4 property the site actually reports into.
+//
+// It was G-4ZR38XGEME, which is why "I don't see a connection to Google Analytics" was true and
+// the code looked fine at the same time: the tag was firing correctly the whole time, into a
+// property nobody was looking at. One constant now, used by both the loader and the config call,
+// because those two drifting apart is the failure that looks exactly like working.
+const GA_MEASUREMENT_ID = "G-54RFVNJSSN";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
@@ -247,14 +255,26 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-body), Inter, sans-serif", "--font-display": "var(--font-body)", "--font-mono": "'IBM Plex Mono', monospace" } as React.CSSProperties}
       >
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-4ZR38XGEME"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"
         />
         {/* Google Consent Mode v2. Analytics storage starts DENIED, so no analytics cookie or
             identifier is written until the visitor accepts in the banner (components/
             CookieConsent.tsx, which calls gtag('consent','update',...)). A returning visitor's
             stored choice is replayed here synchronously, before the config call, so they don't
-            spend the first 500ms of every page in the denied state. */}
+            spend the first 500ms of every page in the denied state.
+
+            send_page_view is NOT disabled any more, and that was the bug. It was off because
+            PageViewTracker sends page_view itself — but that component's effect runs at
+            hydration, while both of these scripts are afterInteractive and may not have defined
+            window.gtag yet. When they had not, the tracker hit its `typeof gtagFn !== 'function'`
+            guard, returned, and never retried: its deps are [pathname, searchParams], neither of
+            which changes on a cold load. So the FIRST page view of every visit was dropped, and
+            with GA's own one disabled, a visitor who landed and left recorded nothing at all.
+
+            The config call handles the first view now — it is queued into dataLayer by the inline
+            gtag shim above, so it cannot lose the race — and the tracker covers soft navigations
+            only. */}
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
@@ -272,7 +292,7 @@ export default function RootLayout({
             }
           } catch (e) {}
           gtag('js', new Date());
-          gtag('config', 'G-4ZR38XGEME', { send_page_view: false });
+          gtag('config', '${GA_MEASUREMENT_ID}');
         `}</Script>
         <PageViewTracker />
         <RootShell>{children}</RootShell>

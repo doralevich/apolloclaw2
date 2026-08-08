@@ -43,7 +43,7 @@ const HEADLINES: HeadlineVariant[] = [
   { build: (n) => (n ? `Ready when you are, ${n}.` : "Ready when you are.") },
   {
     namesAgent: true,
-    build: (n, a) => (n ? `Hi ${n} — ${a} here.` : `Hi, this is ${a}.`),
+    build: (n, a) => (n ? `Hi ${n} - ${a} here.` : `Hi, this is ${a}.`),
   },
   {
     namesAgent: true,
@@ -56,9 +56,9 @@ const HEADLINES: HeadlineVariant[] = [
 const SUBLINES: string[] = [
   "What can I do for you?",
   "What's on your plate today?",
-  "Ask in your own words — there's no list of commands to learn.",
+  "Ask in your own words - there's no list of commands to learn.",
   "Tell me what you need and I'll work out the steps.",
-  "Big or small — a quick question or a whole afternoon of work.",
+  "Big or small - a quick question or a whole afternoon of work.",
   "Start anywhere. I'll ask if I need more.",
   "Give me the messy version. I'll sort it out.",
 ];

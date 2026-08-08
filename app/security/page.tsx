@@ -202,7 +202,7 @@ export default function SecurityPage() {
         description="Enterprise-grade protection, in plain language. Here is exactly how we protect your business."
       />
 
-      {/* CORE PRINCIPLES — 5 cards, white bg */}
+      {/* CORE PRINCIPLES - 5 cards, white bg */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <div className="space-y-6">
@@ -247,7 +247,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* GOVERNANCE — cream */}
+      {/* GOVERNANCE - cream */}
       <section style={{ background: CREAM }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <ScrollReveal>
@@ -275,7 +275,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* SECURITY POLICIES — white */}
+      {/* SECURITY POLICIES - white */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <ScrollReveal>
@@ -321,7 +321,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* BUILT ON TRUSTED INFRASTRUCTURE — white, logo row */}
+      {/* BUILT ON TRUSTED INFRASTRUCTURE - white, logo row */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <ScrollReveal>
@@ -375,7 +375,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* COMPLIANCE & PRIVACY — cream */}
+      {/* COMPLIANCE & PRIVACY - cream */}
       <section style={{ background: CREAM }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <ScrollReveal>
@@ -397,7 +397,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* FOR IT & PROCUREMENT — white, checklist + contact */}
+      {/* FOR IT & PROCUREMENT - white, checklist + contact */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
           <ScrollReveal>
@@ -444,7 +444,7 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* QUESTIONS — cream, closing */}
+      {/* QUESTIONS - cream, closing */}
       <section style={{ background: CREAM }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-24 max-w-2xl text-center">
           <ScrollReveal>

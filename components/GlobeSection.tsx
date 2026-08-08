@@ -227,7 +227,7 @@ export default function GlobeSection() {
           </p>
         </div>
 
-        {/* Globe wrap — normally flowed so offsetWidth is reliable */}
+        {/* Globe wrap - normally flowed so offsetWidth is reliable */}
         <div ref={wrapRef} style={{ position: "relative", aspectRatio: "1", width: "min(580px, 86vw)", margin: "0 auto" }}>
           <canvas ref={canvasRef} style={{ width: "100%", height: "100%", borderRadius: "50%", display: "block" }} />
           {/* Icon cards positioned relative to the wrap */}

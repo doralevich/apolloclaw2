@@ -205,13 +205,42 @@ export async function rememberStripeCustomer(
   if (error) console.error("[credit-settings] customer capture failed:", agent37Id, error.message);
 }
 
-/** Every instance the sweep should look at. */
+/**
+ * Every instance the sweep should look at — which is EVERY AGENT, not every settings row.
+ *
+ * This used to select from credit_settings alone. That looked right and was not: a row is only
+ * written when somebody changes a setting or buys credits, so an agent nobody has configured
+ * had no row and was therefore never swept. `defaultSettings` says warnEnabled: true, but that
+ * default only reached the settings screen — it never reached the sweep, so the promise it
+ * makes was one the product did not keep.
+ *
+ * In production that meant 4 agents and 0 rows: not one live customer would have been told
+ * their agent was about to go quiet. The person this hurts most is the one who never opens the
+ * dashboard because they talk to their agent in Telegram — exactly the customer least likely
+ * to notice a balance falling on a page they never visit.
+ *
+ * So: start from agents, left-join their settings, and fall back to the defaults for the ones
+ * with no row. An agent is only skipped when someone has deliberately switched both the
+ * warning and auto-recharge off.
+ */
 export async function listWatchedAgents(): Promise<CreditSettings[]> {
   const db = createAdminClient();
-  const { data, error } = await db
-    .from("credit_settings")
-    .select("*")
-    .or("warn_enabled.eq.true,autorecharge_enabled.eq.true");
+
+  const { data: agents, error: agentsError } = await db
+    .from("agents")
+    .select("agent37_id, workspace_id");
+  if (agentsError) throw new ApiError(500, "db_error", agentsError.message);
+
+  const { data: rows, error } = await db.from("credit_settings").select("*");
   if (error) throw new ApiError(500, "db_error", error.message);
-  return ((data ?? []) as Row[]).map(fromRow);
+
+  const byAgent = new Map<string, CreditSettings>();
+  for (const row of (rows ?? []) as Row[]) byAgent.set(row.agent37_id, fromRow(row));
+
+  return (agents ?? [])
+    .map((a) => {
+      const id = a.agent37_id as string;
+      return byAgent.get(id) ?? defaultSettings(id, a.workspace_id as string);
+    })
+    .filter((s) => s.warnEnabled || s.autorechargeEnabled);
 }

@@ -36,7 +36,7 @@ work described inside it.
 ## Order matters
 
 1. **Their situation**, in their words, from what they actually said. This is the section that
-   decides whether the rest gets read — a proposal that opens with the vendor's credentials reads
+   decides whether the rest gets read - a proposal that opens with the vendor's credentials reads
    as a template.
 2. **What they get.** Outcomes first, deliverables second. "You stop losing two days a month to
    invoice chasing" then "we build and document the process".
@@ -53,7 +53,7 @@ work described inside it.
 Every deliverable needs a noun and a boundary. "Website" is not a scope. "Five-page site, two
 rounds of revisions, content supplied by client" is one.
 
-Name the change process for anything beyond it. Not to be defensive — so that a change is a
+Name the change process for anything beyond it. Not to be defensive - so that a change is a
 conversation rather than a grievance.
 
 ## Length
@@ -74,7 +74,7 @@ ${OWNER_DECIDES}
 ## Price the outcome, not the hours
 
 Hourly pricing caps earnings at capacity and punishes getting faster. Where the value is a result
-rather than time, price the result — the question is not "how long does this take us" but "what
+rather than time, price the result - the question is not "how long does this take us" but "what
 is it worth to them, and what would the alternative cost".
 
 The floor is cost plus margin. The ceiling is their alternative. The price sits between, nearer
@@ -91,14 +91,14 @@ the ceiling than instinct suggests.
 
 ## Anchoring
 
-The first number sets the frame. If options are shown, the most expensive first — every number
+The first number sets the frame. If options are shown, the most expensive first - every number
 after reads as smaller. Three options maximum, genuinely different in scope rather than the same
 thing in three sizes.
 
 ## The profitability check
 
 Before any number goes out: at this price, with an honest estimate of hours including revisions
-and account management, what is the margin? Do the same on the last three engagements — the gap
+and account management, what is the margin? Do the same on the last three engagements - the gap
 between quoted and actual is usually the real finding, and it is usually 30%.
 
 ## Raising prices
@@ -128,7 +128,7 @@ it a value or budget conversation. A no means price was never the issue.
 
 ## The pattern
 
-1. **Acknowledge it properly.** Not "I understand, but" — that is disagreement with a preamble.
+1. **Acknowledge it properly.** Not "I understand, but" - that is disagreement with a preamble.
 2. **Ask one clarifying question.** Most objections shrink when specified.
 3. **Answer the actual concern**, briefly.
 4. **Check it landed.** "Does that address it?" Moving on from an unresolved objection is how
@@ -137,7 +137,7 @@ it a value or budget conversation. A no means price was never the issue.
 ## The common four
 
 **"Too expensive."** Reframe against the cost of the status quo or the alternative. Change scope
-rather than price if something must move — discounting teaches them the first number was invented.
+rather than price if something must move - discounting teaches them the first number was invented.
 
 **"We need to think about it."** Usually an unspoken concern or a missing decision-maker. Ask what
 would need to be true, and who else is involved.
@@ -167,7 +167,7 @@ of it.
 
 ## Before any conversation
 
-- **What is the actual goal?** Not "win" — the specific outcome that would be good.
+- **What is the actual goal?** Not "win" - the specific outcome that would be good.
 - **What is the walk-away?** Decided in advance, in writing, before anyone is in the room. A
   walk-away invented during a conversation is not one.
 - **What is cheap to give and valuable to receive?** Timeline flexibility, case-study rights,
@@ -223,7 +223,7 @@ Not "I see you're in insurance". That is a database lookup wearing the costume o
 ## The first message
 
 - **Four sentences.** Longer does not get read.
-- **Open with them**, not with you. No "my name is" — it is in the signature.
+- **Open with them**, not with you. No "my name is" - it is in the signature.
 - **The specific observation**, and why it made you write.
 - **One line on the relevance** of what you do. Not features.
 - **A small ask.** A question, not a meeting. Meetings are a big commitment from a stranger;
@@ -234,9 +234,9 @@ Not "I see you're in insurance". That is a database lookup wearing the costume o
 
 Three to four touches over two to three weeks, each adding something rather than repeating.
 
-- **Touch 2** — a resource or observation relevant to the first. Give something.
-- **Touch 3** — a different angle. Perhaps they are not the right person; ask who is.
-- **Touch 4** — the close-out. "I'll stop here — if this becomes relevant, I'm easy to find."
+- **Touch 2** - a resource or observation relevant to the first. Give something.
+- **Touch 3** - a different angle. Perhaps they are not the right person; ask who is.
+- **Touch 4** - the close-out. "I'll stop here - if this becomes relevant, I'm easy to find."
   This gets more replies than any of the others, and it should be genuine.
 
 Then stop. Persistence past four is not persistence.
@@ -260,13 +260,13 @@ ${OWNER_DECIDES}
 ## What makes one persuasive
 
 A reader recognising their own situation in the opening paragraph. Everything else is secondary,
-which means the client's problem — not the work — is where it starts.
+which means the client's problem - not the work - is where it starts.
 
 ## Structure
 
 1. **Who they are**, briefly. Enough for a reader to place themselves.
 2. **The problem**, in their words where possible, with a cost attached. "Two days a month" or
-   "losing one in three enquiries" — the number is what makes it real.
+   "losing one in three enquiries" - the number is what makes it real.
 3. **What made it hard.** What they had already tried, what had failed. This is the section that
    separates a case study from an advert, and the one usually cut.
 4. **What was done.** Enough to be credible, not a methodology lecture.
@@ -276,7 +276,7 @@ which means the client's problem — not the work — is where it starts.
 ## Getting the numbers
 
 Ask the client for the before and after. If nothing was measured, say what changed qualitatively
-rather than inventing a percentage — an invented number is the single fastest way to lose
+rather than inventing a percentage - an invented number is the single fastest way to lose
 credibility with the exact buyer this is meant to convince.
 
 ## Honesty as a technique
@@ -288,7 +288,7 @@ outperforms the flawless one. Nobody believes the flawless one, and the reader's
 ## Before publishing
 
 Client approval in writing, on the exact text and the exact numbers. Every time, including when
-the relationship is good — especially then.
+the relationship is good - especially then.
 `,
   },
   {
@@ -300,7 +300,7 @@ the relationship is good — especially then.
 # Partnership development
 
 Most partnerships produce nothing. They are agreed enthusiastically, announced, and never
-generate a single referral — because nobody decided what either side actually does.
+generate a single referral - because nobody decided what either side actually does.
 
 ## Qualify first
 
@@ -323,13 +323,13 @@ The three questions that separate real partnerships from announcements:
 
 ## Then make it easy
 
-Give them the words. A short description of who to send and how to introduce them — most partners
+Give them the words. A short description of who to send and how to introduce them - most partners
 fail to refer because they cannot describe what you do, not because they do not want to.
 
 ## Review it
 
 At ninety days: what actually happened? A partnership producing nothing after ninety days is
-usually structurally wrong rather than short of time. Fix the structure or end it — quietly and
+usually structurally wrong rather than short of time. Fix the structure or end it - quietly and
 without rancour, since the relationship is usually worth more than the arrangement.
 
 ${OWNER_DECIDES}

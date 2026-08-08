@@ -21,20 +21,20 @@ async function createTypedAgent(typeId: string, workspaceId: string | undefined,
   const type = getAgentType(typeId);
   if (!type) throw new ApiError(404, "not_found", "Unknown agent type");
   if (!type.available) {
-    throw new ApiError(400, "invalid_request", `${type.label} isn't available yet — coming soon.`);
+    throw new ApiError(400, "invalid_request", `${type.label} isn't available yet - coming soon.`);
   }
   if (type.planKey) {
     throw new ApiError(
       402,
       "payment_required",
-      `${type.label} is a paid agent — purchase it through checkout to provision it.`
+      `${type.label} is a paid agent - purchase it through checkout to provision it.`
     );
   }
   if (type.externalUrl) {
     throw new ApiError(
       400,
       "invalid_request",
-      `${type.label} is sold at ${new URL(type.externalUrl).hostname} — purchase and setup happen there.`
+      `${type.label} is sold at ${new URL(type.externalUrl).hostname} - purchase and setup happen there.`
     );
   }
 

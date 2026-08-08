@@ -108,7 +108,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         id: "brief-me",
         prompt: "I have a call with [name] in an hour. Brief me.",
-        detail: "History, last conversation, anything outstanding — before you dial.",
+        detail: "History, last conversation, anything outstanding - before you dial.",
       },
       {
         id: "log-it",
@@ -121,7 +121,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     id: "voice",
     title: "Writing as you",
     blurb:
-      "{agent} has your tone, the words you like, and the ones you can't stand — you gave them at setup.",
+      "{agent} has your tone, the words you like, and the ones you can't stand - you gave them at setup.",
     shortcuts: [
       {
         id: "reply",
@@ -153,7 +153,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         id: "read-contract",
         prompt: "Read this contract and tell me what I should be worried about.",
-        detail: "Not legal advice — but it will find the clause you'd have skimmed past.",
+        detail: "Not legal advice - but it will find the clause you'd have skimmed past.",
       },
       {
         id: "summarise",
@@ -225,7 +225,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         id: "remind",
         prompt: "Remind me to follow up with anyone who hasn't replied in three days.",
-        detail: "A rule, not a reminder — it keeps applying to new people.",
+        detail: "A rule, not a reminder - it keeps applying to new people.",
       },
       {
         id: "watch",
@@ -234,7 +234,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       },
       {
         id: "correct",
-        prompt: "That's not quite how I'd say it — I'd have said [this]. Remember that.",
+        prompt: "That's not quite how I'd say it - I'd have said [this]. Remember that.",
         detail: "Correct it once and it holds. This is how it gets to sound like you.",
       },
     ],

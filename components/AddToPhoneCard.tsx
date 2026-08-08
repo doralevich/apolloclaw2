@@ -118,7 +118,7 @@ export function AddToPhoneCard() {
         <div className="min-w-0 pr-6">
           <div className="font-medium">Add this to your phone</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            It opens like an app — full screen, one tap from your home screen, no hunting for the
+            It opens like an app - full screen, one tap from your home screen, no hunting for the
             tab.
           </p>
 

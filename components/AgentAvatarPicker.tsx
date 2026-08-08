@@ -22,10 +22,21 @@ export function AgentAvatarPicker({
   agentId,
   currentUrl,
   agentName,
+  size = "md",
+  portrait = false,
 }: {
   agentId: string;
   currentUrl?: string | null;
   agentName: string;
+  /** "lg" is the Start Here greeting, where the mascot is the illustration rather than a chip. */
+  size?: "md" | "lg";
+  /**
+   * Show the full-body mascot at its own proportions instead of a circular crop, the way the
+   * reference does. Only applies while nobody has chosen a picture: the moment somebody uploads
+   * a logo or picks a pose, that is what belongs here, and a headshot in a circle is the shape
+   * that suits an arbitrary image.
+   */
+  portrait?: boolean;
 }) {
   const { refresh } = useActiveAgent();
   const [open, setOpen] = useState(false);
@@ -70,6 +81,20 @@ export function AgentAvatarPicker({
     reader.readAsDataURL(file);
   }
 
+  // No picture until somebody picks one. Initials instead, David's call.
+  //
+  // This briefly fell back to the house mascot, which was wrong in a way worth naming: it made
+  // every unconfigured agent look like it had been given a face, so the picker's own selected
+  // ring was the only thing distinguishing "chose the mascot" from "chose nothing". Initials say
+  // what is true - nobody has picked yet - and the picker is one click away.
+  const box = size === "lg" ? "h-28 w-28" : "h-14 w-14";
+  const initial = agentName.trim().charAt(0).toUpperCase() || "?";
+
+  // The portrait variant only has something to draw when a picture exists. Without one it is the
+  // same lettered circle at the larger size, rather than a mascot standing in for a choice
+  // nobody made.
+  const asPortrait = portrait && !!currentUrl;
+
   return (
     <div className="relative shrink-0">
       <button
@@ -77,26 +102,57 @@ export function AgentAvatarPicker({
         onClick={() => setOpen((o) => !o)}
         aria-label={`Change ${agentName}'s picture`}
         aria-expanded={open}
-        className="group relative block h-14 w-14 overflow-hidden rounded-full bg-secondary"
+        className={cn(
+          "group relative block",
+          asPortrait ? "w-auto" : cn("overflow-hidden rounded-full bg-secondary", box)
+        )}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         {currentUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={currentUrl} alt="" className="h-14 w-14 object-cover" />
+          <img
+            src={currentUrl}
+            alt=""
+            className={cn(asPortrait ? "h-32 w-auto sm:h-40" : cn("object-cover", box))}
+          />
         ) : (
-          <span className="flex h-14 w-14 items-center justify-center text-lg font-semibold text-muted-foreground">
-            {agentName.slice(0, 1).toUpperCase()}
+          <span
+            className={cn(
+              "flex items-center justify-center font-semibold text-muted-foreground",
+              box,
+              size === "lg" ? "text-3xl" : "text-lg"
+            )}
+          >
+            {initial}
           </span>
         )}
         {/* The affordance only appears on hover/focus so the greeting stays a greeting. */}
-        <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-          <Camera className="size-5 text-white" />
+        <span
+          className={cn(
+            "absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
+            // No dark scrim over the portrait: the PNG is transparent, so a full-bleed overlay
+            // would darken the card behind it rather than the robot. The icon alone carries it.
+            asPortrait ? "items-end pb-2" : "rounded-full bg-black/50"
+          )}
+        >
+          <Camera
+            className={cn(
+              "size-5",
+              asPortrait ? "rounded-full bg-foreground/80 p-1 text-background" : "text-white"
+            )}
+          />
         </span>
       </button>
 
       {open && (
-        <div className="absolute left-0 top-16 z-20 w-72 rounded-xl border bg-card p-4 shadow-lg">
+        <div className={cn("absolute left-0 z-20 w-[22rem] rounded-xl border bg-card p-4 shadow-lg", asPortrait ? "top-36 sm:top-44" : size === "lg" ? "top-32" : "top-16")}>
           <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          {/* Scrolls. Seven poses fitted in a popover; forty portraits do not, and a list that grows
+              taller than the viewport puts "Upload your own" somewhere nobody can reach. */}
+          {/* Four across at 68px rather than five at 48px. These are photographs of faces now,
+              not poses of one robot: at 48px you could tell the mascot tiles apart by silhouette,
+              but you cannot tell two dark-haired people apart without seeing the face. Bigger
+              tiles are what make a grid of forty choosable rather than a texture. */}
+          <div className="mt-2 grid max-h-72 grid-cols-4 gap-2.5 overflow-y-auto pr-1">
             {AVATAR_PRESETS.map((p) => (
               <button
                 key={p.id}
@@ -105,12 +161,12 @@ export function AgentAvatarPicker({
                 onClick={() => save({ avatar_preset: p.src })}
                 aria-label={p.label}
                 className={cn(
-                  "size-12 overflow-hidden rounded-full border bg-secondary transition-colors hover:border-foreground disabled:opacity-50",
+                  "size-[68px] overflow-hidden rounded-full border bg-secondary transition-colors hover:border-foreground disabled:opacity-50",
                   currentUrl === p.src && "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-card"
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.src} alt="" className="size-12 object-cover" />
+                <img src={p.src} alt="" loading="lazy" className="size-[68px] object-cover" />
               </button>
             ))}
           </div>
