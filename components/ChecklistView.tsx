@@ -115,11 +115,46 @@ export function ChecklistView() {
                   {catDone}/{rows.length}
                 </span>
               </div>
-              <div className="space-y-2">
-                {rows.map((item) => (
-                  <Row key={item.id} item={item} agentId={agentId} onToggle={() => toggle(item)} />
-                ))}
+              {/* Apps two-up, everything else full width — the layout David picked.
+                  An app card is logo, name, one line and a button, which is narrow content: at
+                  full width the button ends up a long way from the name it belongs to. A channel
+                  or a handover carries more text and earns the whole row. */}
+              {rows.some((r) => r.toolkitSlug) && (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {rows
+                    .filter((r) => r.toolkitSlug)
+                    .map((item) => (
+                      <Row
+                        key={item.id}
+                        item={item}
+                        agentId={agentId}
+                        onToggle={() => toggle(item)}
+                      />
+                    ))}
+                </div>
+              )}
+
+              <div className="mt-2 space-y-2">
+                {rows
+                  .filter((r) => !r.toolkitSlug)
+                  .map((item) => (
+                    <Row key={item.id} item={item} agentId={agentId} onToggle={() => toggle(item)} />
+                  ))}
               </div>
+
+              {/* Says why the apps are missing rather than leaving a gap. Only under Connect, and
+                  only when nothing was on file — an agent built outside the licence questionnaire
+                  has no answers to read, which is otherwise invisible and reads as a bug. */}
+              {cat === "Connect your tools" && !personalized && (
+                <div className="mt-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                  No apps came through from your onboarding answers, so there is nothing to list
+                  here yet.{" "}
+                  <Link href="/dashboard/integrations" className="font-medium text-primary hover:underline">
+                    Browse Connections
+                  </Link>{" "}
+                  to connect whatever you use.
+                </div>
+              )}
             </section>
           );
         })

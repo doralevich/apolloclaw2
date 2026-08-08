@@ -1,8 +1,4 @@
-import {
-  composioLogoUrl,
-  DEFAULT_INTEGRATION_TOOLKITS,
-  ESSENTIAL_INTEGRATION_SLUGS,
-} from "@/lib/integration-catalog";
+import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
 
 // The setup checklist, built per customer from what they told us at intake.
 //
@@ -154,29 +150,6 @@ function answerText(answers: Record<string, unknown>, key: string): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
-/**
- * The apps everybody is offered when we have nothing better to go on.
- *
- * One row per app rather than a single "connect an app" pointing at another page. That row was
- * the whole problem: a customer with no intake answers — which is anyone whose agent was not
- * built through the licence questionnaire — got three vague lines and nothing to actually press.
- * These carry the real logo and a real Connect button.
- */
-const ESSENTIAL_ITEMS: ChecklistItem[] = ESSENTIAL_INTEGRATION_SLUGS.map((slug) => {
-  const t = DEFAULT_INTEGRATION_TOOLKITS.find((x) => x.slug.toLowerCase() === slug.toLowerCase());
-  return {
-    id: `tool:${slug}`,
-    title: `Connect ${t?.name ?? slug}`,
-    body: t?.description ?? "",
-    category: "Connect your tools" as const,
-    href: "/dashboard/integrations",
-    cta: "Connect",
-    icon: { kind: "logo" as const, src: composioLogoUrl(slug) },
-    toolkitSlug: slug,
-    derived: `toolkit:${slug}` as const,
-  };
-});
-
 /** The one row that applies whatever they answered and is not an app. */
 const CORE: ChecklistItem[] = [
   {
@@ -204,9 +177,14 @@ const MAX_ITEMS = 12;
  * reaches this database. They get a short generic list rather than a wrong personal one.
  */
 export function buildChecklist(answers: Record<string, unknown> | null): ChecklistItem[] {
-  // No answers is the common case for agents not built through the licence questionnaire, and
-  // it used to mean three vague rows. Real apps instead, each connectable from the page.
-  if (!answers) return [...ESSENTIAL_ITEMS, ...CORE];
+  // No answers means no apps. David's rule: the only things under "Connect your tools" are the
+  // ones somebody actually picked at onboarding.
+  //
+  // The alternative was a default shelf of Gmail/Outlook/Drive, and it was wrong for the reason
+  // the whole feature exists — a list that guesses is the generic list with extra steps, and
+  // showing six apps nobody named makes "built from what you told us" a lie on the same screen
+  // that claims it. An empty section says something true: we have nothing on file for you.
+  if (!answers) return CORE;
 
   // Named channels replace the generic "choose where it answers you" rather than sitting beside
   // it. Somebody who told us they use Slack does not need to be asked to pick a channel and then
