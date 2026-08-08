@@ -13,7 +13,11 @@ export default async function Page() {
 
   return (
     <div className="max-w-xl space-y-8">
-      <ProfileNameCard initialFirst={str(meta.first_name)} initialLast={str(meta.last_name)} />
+      <ProfileNameCard
+        initialFirst={str(meta.first_name)}
+        initialLast={str(meta.last_name)}
+        initialAvatar={str(meta.avatar_url)}
+      />
       <div className="border-t pt-8">
         <SettingsView />
       </div>

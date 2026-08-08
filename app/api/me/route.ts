@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { uploadUserAvatar, type ImageUpload } from "@/lib/supabase/avatar-storage";
 
 // The signed-in person's own name.
 //
@@ -21,18 +22,39 @@ function clean(value: unknown): string {
 
 export const PATCH = route(async (request: Request) => {
   const { user } = await requireUser();
-  const body = await readJson<{ first_name?: string; last_name?: string }>(request);
+  const body = await readJson<{
+    first_name?: string;
+    last_name?: string;
+    avatar_upload?: ImageUpload;
+    /** Explicit empty string clears the picture. Absent means "leave it alone". */
+    avatar_url?: string;
+  }>(request);
 
   const first = clean(body.first_name);
   const last = clean(body.last_name);
+
+  // Upload first: a storage failure must not half-write the name. storeImage returns null
+  // rather than throwing on a bad file, so this leaves the existing picture alone instead of
+  // clearing it — losing a face because a JPEG was malformed would be a strange trade.
+  let avatarUrl: string | undefined;
+  if (body.avatar_upload) {
+    avatarUrl = (await uploadUserAvatar(user.id, body.avatar_upload)) ?? undefined;
+  } else if (body.avatar_url === "") {
+    avatarUrl = "";
+  }
 
   const db = createAdminClient();
   const { error } = await db.auth.admin.updateUserById(user.id, {
     // Merged, not replaced. `phone` is written here by the Stripe webhook and nothing on this
     // screen collects it — a bare object would silently drop it.
-    user_metadata: { ...(user.user_metadata ?? {}), first_name: first, last_name: last },
+    user_metadata: {
+      ...(user.user_metadata ?? {}),
+      first_name: first,
+      last_name: last,
+      ...(avatarUrl !== undefined ? { avatar_url: avatarUrl } : {}),
+    },
   });
   if (error) throw new Error(error.message);
 
-  return json({ ok: true, first_name: first, last_name: last });
+  return json({ ok: true, first_name: first, last_name: last, avatar_url: avatarUrl });
 });

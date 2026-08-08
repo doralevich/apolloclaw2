@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Bot, Check, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { useWorkspace } from "@/components/WorkspaceProvider";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
@@ -42,6 +43,30 @@ function AgentBadge() {
 
 // The user's marker beside their messages: first initial in a brand-tinted circle
 // (a neutral person glyph if we somehow have no email to take a letter from).
+
+// The reader's own picture, and only if they have one.
+//
+// No initials fallback on purpose. An avatar column that is empty for most people would add a
+// 28px gutter to every message in every transcript to serve the few who uploaded something, and
+// the letter-in-a-circle version of this was removed once already for being fussy. Nothing to
+// show means nothing rendered.
+function UserBadge() {
+  const { userAvatarUrl } = useWorkspace();
+  const [broken, setBroken] = useState(false);
+  if (!userAvatarUrl || broken) return null;
+  return (
+    <span className="mt-0.5 flex h-7 w-7 shrink-0 overflow-hidden rounded-full border bg-background">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={userAvatarUrl}
+        alt=""
+        loading="lazy"
+        className="h-7 w-7 object-cover"
+        onError={() => setBroken(true)}
+      />
+    </span>
+  );
+}
 
 // Files that rode along with a user turn, shown as compact chips above the message bubble.
 function MessageAttachments({ attachments }: { attachments: MessageAttachment[] }) {
@@ -113,11 +138,14 @@ export function ChatMessages({
         if (m.role === "user") {
           const attachments = m.attachments ?? [];
           return (
-            // No avatar on your own messages. Right alignment already says who spoke, and a
-            // 28px initial hanging off the side of every bubble was the fussiest thing in the
-            // transcript. The corner nearest the sender is tightened instead — the same cue,
-            // carried by the shape.
-            <div key={m.id} className="flex items-start justify-end">
+            // Your own face, once you have set one in Settings.
+            //
+            // This deliberately had no avatar: right alignment already says who spoke, and a
+            // 28px INITIAL hanging off every bubble was the fussiest thing in the transcript.
+            // A picture is a different proposition from a letter in a circle - it is somebody's
+            // face - so it appears only if they uploaded one, and the transcript stays clean for
+            // everyone who did not.
+            <div key={m.id} className="flex items-start justify-end gap-2.5">
               <div className="flex min-w-0 max-w-[80%] flex-col items-end gap-1.5">
                 {attachments.length > 0 && <MessageAttachments attachments={attachments} />}
                 {m.content && (
@@ -126,6 +154,7 @@ export function ChatMessages({
                   </div>
                 )}
               </div>
+              <UserBadge />
             </div>
           );
         }
