@@ -925,10 +925,18 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const primaryCompany = companies[primaryIndex] || companies[0];
   const primaryName = primaryCompany?.name?.trim() || "your business";
   const branch = getIndustryBranch(primaryCompany?.industry);
-  // Ordered step keys (mirrors allPages below); the Industry Deep-Dive only appears once
-  // the primary company has an industry. Defined up front so navigation/validation never
-  // reference allPages before it is built.
-  const pageKeys = ["biz", "whatyoudo", ...(branch ? ["industry"] : []), "stack", "ops", "exec", "life", "voice", "goals", "scope"];
+  // The step order, and it MUST match allPages below. Checked at the bottom of this component
+  // rather than trusted.
+  //
+  // These two drifted the moment two pages were added - Your Writing and What It Should Do -
+  // without this list. Nothing errored. validate() silently began reading the wrong key for
+  // every step past the insert, and next() caps the step at pageKeys.length - 1, so the
+  // questionnaire simply STOPPED ADVANCING at index 9: Continue did nothing, and said nothing
+  // about why. Which page you got stuck on depended on the industry branch.
+  //
+  // It stays a literal because the handlers below close over it and allPages is built from
+  // state further down; the assertion is what makes the duplication safe.
+  const pageKeys = ["biz", "whatyoudo", ...(branch ? ["industry"] : []), "stack", "ops", "exec", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
@@ -1241,6 +1249,18 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
     </Stack>
     ) },
   ];
+  // The check that makes the duplication above safe. A page added without a key - or a key
+  // without a page - is a questionnaire that quietly stops advancing partway through, which is
+  // the worst kind of bug this form can have: the customer sees a Continue button that does
+  // nothing. Loud in development, and never silent again.
+  if (process.env.NODE_ENV !== "production") {
+    const rendered = allPages.map((p) => p.key).join(",");
+    const declared = pageKeys.join(",");
+    if (rendered !== declared) {
+      console.error(`[onboard] step order mismatch\n  pages:    ${rendered}\n  pageKeys: ${declared}`);
+    }
+  }
+
   const stepLabels = allPages.map(p => p.label);
   const cur = allPages[step] || allPages[allPages.length - 1];
   return <Shell steps={stepLabels} step={step} onBack={back} canBack={step > 0 || !!onExit} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
