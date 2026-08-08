@@ -253,8 +253,9 @@ async function handleCreditPurchase(session: Stripe.Checkout.Session): Promise<v
 // Under the current model there is nothing to provision at this moment: we sell the
 // customization, and what gets built is decided by the onboarding answers the buyer is
 // filling in right now, on the other side of the redirect. So this does exactly three
-// things — create the auth user, give them a workspace, and email them a link to set a
-// password — and then tells David a sale happened.
+// things — create the auth user, give them a workspace, and send a receipt — and then tells
+// David a sale happened. The password is not this route's business: the buyer chooses it on
+// the closing screen of the flow they are still in.
 //
 // Every step is written to tolerate re-delivery. Stripe retries until it gets a 2xx, and
 // while the stripe_events claim makes that rare, "rare" is not "never" and creating a
@@ -333,33 +334,31 @@ async function handleLicensePurchase(session: Stripe.Checkout.Session): Promise<
 
   // After the response so a slow Mandrill call never delays Stripe's 200 or risks a retry.
   after(async () => {
-    await sendPasswordSetupEmail(db, email, first);
+    await sendPurchaseReceiptEmail(email, first);
     await notifyLicensePurchase({ email, name: [first, last].filter(Boolean).join(" "), amount, sessionId: session.id });
   });
 }
 
-// The buyer has an account but no password — they never chose one, they paid. This sends
-// them a recovery link, which for a passwordless user is simply "set your password".
-async function sendPasswordSetupEmail(
-  db: ReturnType<typeof createAdminClient>,
-  email: string,
-  first: string
-): Promise<void> {
+// The receipt. NO SET-PASSWORD LINK — the buyer chooses their password on the closing screen
+// of the flow they are still in (components/onboard/BuildScreen.tsx → /api/onboard/set-password).
+//
+// This used to carry a "Set your password" button, generated from a Supabase recovery link.
+// That made sense when the flow ended at /login with no password to log in with. It stopped
+// making sense when the closing screen started asking for one, and became actively confusing:
+// the email lands while they are mid-questionnaire, so they are told to go and set a password
+// they are about to be asked for anyway. Worse, using the emailed link stamps last_sign_in_at,
+// and /api/onboard/set-password then refuses with "already_set" — so the email could send a
+// buyer down a path that breaks the screen they were on.
+//
+// "Forgot password?" is named as the way back in, in words rather than as a button. Somebody
+// who pays and closes the tab before the closing screen still has a route, and it is the
+// ordinary one that proves control of the mailbox rather than a link sitting in an inbox.
+async function sendPurchaseReceiptEmail(email: string, first: string): Promise<void> {
   const origin = publicSiteOrigin();
   // Licence buyers have no agent provisioned yet, so their questionnaire is the lead-mode
   // form at plain /onboard — the same place Stripe returns them to.
   const questionnaireUrl = `${origin}/onboard`;
   try {
-    const { data, error } = await db.auth.admin.generateLink({
-      type: "recovery",
-      email,
-      options: { redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/reset-password")}` },
-    });
-    const link = data?.properties?.action_link;
-    if (error || !link) {
-      console.error("[stripe-webhook] could not generate password link:", email, error?.message);
-      return;
-    }
     await sendMandrillEmail({
       to: email,
       subject: "Your ApolloClaw account is ready",
@@ -367,18 +366,16 @@ async function sendPasswordSetupEmail(
         `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
         `<h2 style="color:#0B1729">Welcome${first ? `, ${first}` : ""}.</h2>` +
         `<p>Your payment is confirmed and your ApolloClaw account has been created for <strong>${email}</strong>.</p>` +
-        `<p>Set your password to get into your dashboard:</p>` +
-        `<p><a href="${link}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Set your password</a></p>` +
-        `<p style="color:#6b7280;font-size:13px">This link expires. If it does, use "Forgot password?" on the login page and we will send a fresh one.</p>` +
-        // Used to say "finish the questionnaire first" and then not say where. Somebody who
-        // paid and closed the tab had no way back to it short of guessing the URL.
-        `<p style="color:#6b7280;font-size:13px">Next up is the questionnaire, which is what your agent gets built from: <a href="${questionnaireUrl}" style="color:#D72B2B">start it here</a>.</p>` +
+        `<p>Carry on where you left off - you'll choose your password at the end, and go straight into your dashboard.</p>` +
+        `<p><a href="${questionnaireUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Continue setting up</a></p>` +
+        `<p style="color:#6b7280;font-size:13px">The questionnaire is what your agent gets built from, so it is worth the few minutes.</p>` +
+        `<p style="color:#6b7280;font-size:13px">Already finished and need to get back in? Log in with the password you chose, or use "Forgot password?" on the login page.</p>` +
         `</div>`,
     });
   } catch (err) {
     // Best effort. The account exists either way, and "Forgot password?" on the login page
     // is a working second path, so a mail failure must not fail the webhook.
-    console.error("[stripe-webhook] password setup email failed:", email, err);
+    console.error("[stripe-webhook] purchase receipt email failed:", email, err);
   }
 }
 

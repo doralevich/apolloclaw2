@@ -6,10 +6,12 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 import { useWorkspace } from "@/components/WorkspaceProvider";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { Camera, Loader2, Trash2, Users } from "lucide-react";
+import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 // Your own name, which had nowhere to be set until now.
 //
@@ -40,8 +42,29 @@ export function ProfileNameCard({
   const [last, setLast] = useState(initialLast);
   const [avatar, setAvatar] = useState(initialAvatar);
   const [uploading, setUploading] = useState(false);
+  const [picking, setPicking] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { busy, run } = useAsyncAction();
+
+  // Saves on click, like the upload does, and closes the grid. Choosing a face is a deliberate
+  // act with visible feedback; making it wait behind the Save button meant for the name fields
+  // would leave a picture looking chosen but unsaved.
+  function choosePreset(src: string) {
+    return run(async () => {
+      await apiFetch("/api/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          first_name: first.trim(),
+          last_name: last.trim(),
+          avatar_preset: src,
+        }),
+      });
+      setAvatar(src);
+      setPicking(false);
+      router.refresh();
+      toast.success("Picture updated");
+    });
+  }
 
   // The picture saves on its own rather than waiting for the Save button. Choosing a file is
   // already a deliberate act with a confirmation step of its own - the OS file dialog - and a
@@ -78,6 +101,7 @@ export function ProfileNameCard({
           return;
         }
         setAvatar(res.avatar_url);
+        setPicking(false);
         router.refresh();
         toast.success("Picture updated");
       } finally {
@@ -138,11 +162,12 @@ export function ProfileNameCard({
             type="button"
             variant="outline"
             size="sm"
-            disabled={uploading}
-            onClick={() => fileRef.current?.click()}
+            disabled={uploading || busy}
+            onClick={() => setPicking((p) => !p)}
+            aria-expanded={picking}
           >
-            {uploading ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
-            {avatar ? "Change picture" : "Upload a picture"}
+            <Users className="size-4" />
+            {avatar ? "Change picture" : "Choose a picture"}
           </Button>
           {avatar && (
             <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={removeAvatar}>
@@ -162,6 +187,45 @@ export function ProfileNameCard({
           />
         </div>
       </div>
+
+      {/* The same forty portraits the agent picker offers.
+          This card used to go straight to the file dialog, so the only way to have a face here
+          was to own a photo and find it - which is a real obstacle for the people most likely to
+          want one, and made the presets look like they had gone missing. They are faces of
+          people; if they suit an agent they certainly suit a person. */}
+      {picking && (
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs font-medium text-muted-foreground">Pick a picture</p>
+          <div className="mt-2 grid max-h-72 grid-cols-5 gap-2.5 overflow-y-auto pr-1 sm:grid-cols-8">
+            {AVATAR_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                disabled={busy || uploading}
+                onClick={() => choosePreset(p.src)}
+                aria-label={p.label}
+                className={cn(
+                  "size-[68px] overflow-hidden rounded-full border bg-secondary transition-colors hover:border-foreground disabled:opacity-50",
+                  avatar === p.src && "border-foreground ring-2 ring-foreground ring-offset-2 ring-offset-card"
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.src} alt="" loading="lazy" className="size-[68px] object-cover" />
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            disabled={busy || uploading}
+            onClick={() => fileRef.current?.click()}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
+            {uploading ? "Saving..." : "Upload your own"}
+          </button>
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">

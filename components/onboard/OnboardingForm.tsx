@@ -222,11 +222,51 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
   const [d, setD] = useState<GateData>(initial ?? { first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
 
   const [err, setErr] = useState("");
-  const set = (k: keyof GateData, v: string) => setD(p => ({ ...p, [k]: v }));
-  const submit = () => {
+  // "That address already has an account" is not an error in the same sense as a missing field
+  // — there is nothing to correct unless they want to correct it — so it renders as its own
+  // block with the two ways out, rather than as red text telling them off.
+  const [taken, setTaken] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const set = (k: keyof GateData, v: string) => {
+    setD(p => ({ ...p, [k]: v }));
+    // Editing the address clears the verdict on the old one.
+    if (k === "email") setTaken(false);
+  };
+
+  const submit = async () => {
     if (!d.first.trim() || !d.last.trim() || !d.email.trim() || !d.phone.trim()) { setErr("Please fill in all required fields to continue."); return; }
     if (!/\S+@\S+\.\S+/.test(d.email)) { setErr("Please enter a valid email address."); return; }
-    setErr(""); onPass(d);
+    setErr("");
+    setTaken(false);
+
+    // Checked HERE, on the first screen, because this is the last moment it is free.
+    //
+    // An address that already has an account used to get all the way through the gate, the
+    // checkout and the questionnaire before dying on the closing screen, where
+    // /api/onboard/set-password refuses an account that has ever been signed into. The buyer
+    // discovered the problem after paying, at the final step, with no way forward.
+    //
+    // Failure to reach the check does NOT block: the endpoint fails open for the same reason,
+    // and a network blip must not cost a sale.
+    setChecking(true);
+    try {
+      const res = await fetch("/api/onboard/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: d.email.trim().toLowerCase() }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body?.available === false) {
+        setTaken(true);
+        return;
+      }
+    } catch {
+      // Deliberately ignored - see above.
+    } finally {
+      setChecking(false);
+    }
+
+    onPass(d);
   };
   return (
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
@@ -263,8 +303,43 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
             <FF label="LinkedIn" hint="Optional. Helps your agent understand your professional background."><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
-          <button type="button" onClick={submit} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
-            Continue →
+
+          {/* An existing account does not buy again - David's call, and the right one: they
+              already own a license, so a second purchase would charge them for something they
+              have. Getting back INTO the account is the whole job here.
+
+              So the primary action is the reset form itself, opened directly with their address
+              already in it. Linking to plain /login would land them on a sign-in form where they
+              still have to spot "Forgot password?" and retype the address they just typed, which
+              is most of the instruction left undone.
+
+              Registering a different business on another address stays available underneath,
+              stated plainly rather than as an equal-weight option. */}
+          {taken && (
+            <div style={{ marginTop: 16, padding: "14px 16px", borderRadius: 6, background: "rgba(215,43,43,0.06)", border: `1px solid rgba(215,43,43,0.25)`, fontSize: 13, color: TXM, lineHeight: 1.65 }}>
+              <p style={{ margin: "0 0 6px", fontWeight: 700, color: TX }}>
+                {d.email.trim().toLowerCase()} already has an ApolloClaw account.
+              </p>
+              <p style={{ margin: "0 0 12px" }}>
+                There is nothing to buy - you already have a license. Reset your password and log
+                in to get back to your dashboard.
+              </p>
+              <a
+                href={`/login?reset=1&email=${encodeURIComponent(d.email.trim().toLowerCase())}`}
+                style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 700, fontSize: 14, padding: "11px 22px", borderRadius: 6, textDecoration: "none" }}
+              >
+                Reset my password →
+              </a>
+              <p style={{ margin: "12px 0 0", fontSize: 12, color: TXD }}>
+                Know your password?{" "}
+                <a href={`/login?email=${encodeURIComponent(d.email.trim().toLowerCase())}`} style={{ color: TXM, fontWeight: 600 }}>Log in</a>.
+                Setting up a different business? Use another email address above.
+              </p>
+            </div>
+          )}
+
+          <button type="button" onClick={() => void submit()} disabled={checking} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: checking ? "default" : "pointer", opacity: checking ? 0.75 : 1, letterSpacing: "0.01em" }}>
+            {checking ? "Checking…" : "Continue →"}
           </button>
           <p style={{ textAlign: "center", fontSize: 11, color: TXD, marginTop: 12, lineHeight: 1.5 }}>Your information is confidential. We do not sell or share your data.</p>
         </div>
