@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import * as Icons from "lucide-react";
-import { ArrowRight, Check, ExternalLink } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { connectHref, type ChecklistIcon } from "@/config/checklist";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist } from "@/lib/useChecklist";
-import { cn } from "@/lib/utils";
 
 // The checklist, summarised, inside the Start Here greeting.
 //
@@ -113,15 +112,9 @@ export function SetupChecklist({ agentId }: { agentId: string }) {
         </div>
       )}
 
-      <Link
-        href="/dashboard/checklist"
-        className={cn(
-          "mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        )}
-      >
-        {finished ? <Check className="size-4" /> : null}
-        {finished ? "Review the checklist" : "Open the checklist"} →
-      </Link>
+      {/* "Open the checklist ->" was here and is gone at David's call. Welcome grew a proper
+          Open Checklist button under the card, so this was the same destination offered twice on
+          one screen - and the small text link was the weaker of the two. */}
     </div>
   );
 }

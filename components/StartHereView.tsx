@@ -36,12 +36,17 @@ export function StartHereView() {
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
 
+  // Reached two ways, and this used to describe only one of them: a new customer waiting for
+  // provisioning, and somebody who deleted their agent to start over. The second was told their
+  // agent "is created for you once your license purchase is complete" - which they had done
+  // months ago - beside a button that, until now, rendered nothing at all.
   if (agents.length === 0 || !active) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
         <p className="text-sm text-muted-foreground">
-          No agents in this workspace yet. Your Apollo Agent is created for you once your license
-          purchase and setup questionnaire are complete.
+          There is no agent in this workspace right now. If you have just bought a licence, yours
+          is built as soon as the questionnaire is in. If you deleted the last one, you can build
+          a fresh one here - your licence and hosting are unchanged.
         </p>
         <div className="mt-4 flex justify-center">
           <CreateAgentModal />
