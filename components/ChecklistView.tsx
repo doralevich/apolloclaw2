@@ -8,7 +8,7 @@ import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
 import { CHECKLIST_CATEGORIES, connectHref, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
-import { ChannelsPanel } from "@/components/ChannelsView";
+import { SchedulePanel } from "@/components/SchedulePanel";
 import { HelpFooter } from "@/components/HelpFooter";
 import { cn } from "@/lib/utils";
 
@@ -162,7 +162,7 @@ export function ChecklistView() {
                 </div>
               )}
 
-              {cat === "Connect your tools" && <ChannelsBlock agentId={agentId} />}
+              {cat === "Connect your tools" && <ScheduleBlock agentId={agentId} />}
             </section>
           );
         })
@@ -188,22 +188,24 @@ export function ChecklistView() {
   );
 }
 
-// The Channels page's own panel, not a copy of it.
+// The schedule, where the channel cards used to be. David's call, and the swap is the right way
+// round.
 //
-// David asked for these cards "exact", and reusing the component is the only way that stays
-// true — a reimplementation drifts from config/channels.ts the first time a setup step changes,
-// and the customer is the one who finds out. It carries its own connected state, its own
-// expand-into-steps behaviour, and its own bot-token forms.
+// The channel cards were the Channels page's own component, embedded here so the two could not
+// drift. That was true and still left this page duplicating a whole page of the dashboard: the
+// checklist already carries a "choose where it answers you" row that links to Channels, so the
+// cards below it were the same job done twice, and they were the longest thing on the screen.
 //
-// Heading included, rather than suppressed as it was at first. "Chat anywhere / Connect a chat
-// app you already use, and your agent answers there — to you and nobody else" says what the
-// three cards are FOR, which a bare row of logos under a generic section title does not. The
-// Refresh button comes with it, and is worth having: a channel that finishes connecting in
-// another tab has no way to tell this page on its own.
-function ChannelsBlock({ agentId }: { agentId: string }) {
+// A schedule is the opposite case. It has no row of its own, it is the step people do not think
+// to look for, and it is the difference between an agent that answers when spoken to and one
+// that turns up on its own on Monday morning - which is the thing customers say sold them. It
+// belongs on the list of things worth setting up.
+//
+// Same reuse rule as before: the Channels page's SchedulePanel, not a copy of it.
+function ScheduleBlock({ agentId }: { agentId: string }) {
   return (
     <div className="mt-2">
-      <ChannelsPanel agentId={agentId} />
+      <SchedulePanel agentId={agentId} />
     </div>
   );
 }
