@@ -11,6 +11,8 @@ import { useAsyncAction } from "@/lib/useAsyncAction";
 import type { Invitation, Role, WorkspaceMember } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +49,11 @@ export function MembersView() {
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteRole, setInviteRole] = useState<Role>("member");
+  const [inviteEmail, setInviteEmail] = useState("");
+  // Set when the server has said the address is outside the inviter's company. The next press
+  // sends allow_external and goes through — a confirm, not a wall. See lib/seats.ts for why
+  // this warns rather than refuses.
+  const [externalWarning, setExternalWarning] = useState("");
   const { busy, run } = useAsyncAction();
 
   const load = useCallback(async () => {
@@ -75,14 +82,33 @@ export function MembersView() {
   function createInvite() {
     if (!current) return;
     return run(async () => {
-      const { url } = await apiFetch<{ url: string }>(`/api/workspaces/${current.id}/members`, {
-        method: "POST",
-        body: JSON.stringify({ role: inviteRole }),
-      });
-      await navigator.clipboard.writeText(url).catch(() => {});
-      toast.success("Invite link created and copied");
-      setInviteOpen(false);
-      load();
+      try {
+        const { url } = await apiFetch<{ url: string }>(`/api/workspaces/${current.id}/members`, {
+          method: "POST",
+          body: JSON.stringify({
+            role: inviteRole,
+            // Optional: an invite with no address is the old copy-a-link behaviour, which
+            // still works and is the only option when you do not know where they read mail.
+            ...(inviteEmail.trim() ? { email: inviteEmail.trim() } : {}),
+            allow_external: !!externalWarning,
+          }),
+        });
+        await navigator.clipboard.writeText(url).catch(() => {});
+        toast.success("Invite link created and copied");
+        setInviteOpen(false);
+        setInviteEmail("");
+        setExternalWarning("");
+        load();
+      } catch (e) {
+        // 409 external_domain is a question, not a failure: show what is unusual about the
+        // address and let the same button mean "yes, I meant that".
+        const err = e as { code?: string; message?: string };
+        if (err?.code === "external_domain") {
+          setExternalWarning(err.message || "That address is outside your company.");
+          return;
+        }
+        throw e;
+      }
     });
   }
 
@@ -133,6 +159,36 @@ export function MembersView() {
                 </DialogDescription>
               </DialogHeader>
 
+              {/* Who it is for. Optional, because an invite with no address is the old
+                  copy-a-link behaviour and is still the only option when you do not know where
+                  someone reads their mail. Supplied, it is what the same-company check reads
+                  and what a seat will be provisioned against. */}
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-email">Their email</Label>
+                <Input
+                  id="invite-email"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => {
+                    setInviteEmail(e.target.value);
+                    // Editing the address retracts the confirmation — otherwise a second,
+                    // different outside address would ride through on the first one's approval.
+                    setExternalWarning("");
+                  }}
+                  placeholder="colleague@yourcompany.com"
+                  autoComplete="off"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Optional. Leave it empty for a link you share yourself.
+                </p>
+              </div>
+
+              {externalWarning && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+                  {externalWarning} Press invite again to go ahead.
+                </div>
+              )}
+
               {/* Member is the default and deliberately listed first. Admin used to be the only
                   option — inviting anyone handed them the workspace. */}
               <div className="space-y-2">
@@ -158,7 +214,11 @@ export function MembersView() {
                   Cancel
                 </Button>
                 <Button onClick={createInvite} disabled={busy}>
-                  {busy ? "Creating..." : "Create invite link"}
+                  {busy
+                    ? "Creating..."
+                    : externalWarning
+                      ? "Invite anyway"
+                      : "Create invite link"}
                 </Button>
               </DialogFooter>
             </DialogContent>

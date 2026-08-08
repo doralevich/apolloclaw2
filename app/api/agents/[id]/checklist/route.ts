@@ -26,18 +26,36 @@ async function loadAnswers(
     .maybeSingle();
   if (!agent?.workspace_id) return null;
 
-  // agent_setup is keyed by (workspace_id, agent_type), and a workspace has at most one paid
-  // agent under this model. Taking the most recent row rather than matching a type keeps this
-  // working if the workspace ever holds more than one.
-  const { data } = await db
+  // THIS agent's answers first.
+  //
+  // It used to take the workspace's most recent row, which was right while a workspace held one
+  // agent and wrong the moment it holds two: an office manager's checklist would list the
+  // founder's apps and the founder's handovers, and tick itself off against work she has no
+  // part in. Seats stamp agent_setup.agent37_id, so the right row can be asked for by name.
+  const { data: own } = await db
     .from("agent_setup")
-    .select("answers, updated_at")
-    .eq("workspace_id", agent.workspace_id)
-    .order("updated_at", { ascending: false })
-    .limit(1)
+    .select("answers")
+    .eq("agent37_id", agentId)
     .maybeSingle();
 
-  const answers = data?.answers;
+  // Falling back to the workspace row covers every set of answers written before seats existed,
+  // which have no agent id on them. Restricted to rows not claimed by some OTHER agent, so a
+  // colleague's answers are never borrowed - better a generic checklist than a confidently
+  // wrong one.
+  let row = own;
+  if (!row) {
+    const { data: legacy } = await db
+      .from("agent_setup")
+      .select("answers")
+      .eq("workspace_id", agent.workspace_id)
+      .is("agent37_id", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    row = legacy;
+  }
+
+  const answers = row?.answers;
   return answers && typeof answers === "object" ? (answers as Record<string, unknown>) : null;
 }
 

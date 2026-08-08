@@ -209,6 +209,22 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
     }
   }
 
+  // Stamp the answers with the agent they built, now that we know which one it is.
+  //
+  // Seats made this necessary. The row is keyed (workspace_id, agent_type), which is one set of
+  // answers per company — so a second person's agent in the same workspace would be built from,
+  // and would report a checklist for, the FIRST person's answers: their calendar, their team,
+  // their apps. The stamp lets a reader ask for the answers belonging to a specific agent and
+  // fall back to the workspace row only when there is no per-agent one, which is every row
+  // written before this shipped.
+  if (agentId) {
+    await db
+      .from("agent_setup")
+      .update({ agent37_id: agentId })
+      .eq("workspace_id", workspaceId)
+      .eq("agent_type", type.id);
+  }
+
   // The agent's own name/avatar columns are ours to write directly and instantly — unlike
   // USER.md (which needs a retrying exec against the booting instance below).
   if (agentId && (agentName || avatarUrl)) {

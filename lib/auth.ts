@@ -58,11 +58,37 @@ export async function getAgentRow(db: DB, agent37Id: string): Promise<AgentRow> 
 
 // The auth preamble every per-agent route shares: authenticate, resolve the agent's
 // row, then enforce the workspace role. Returns the pieces handlers go on to use.
+//
+// SEATS ARE ENFORCED HERE, not in the listing. /api/agents hides other people's agents from the
+// sidebar, but hiding is not access control: an agent37 id appears in every URL its owner
+// visits, and a member who has one can call /api/agents/{id}/chat directly. Since chat history,
+// connected mailboxes and channel tokens all hang off these routes, workspace membership alone
+// would mean a company's office manager could read the founder's threads by typing an id.
+//
+// Every per-agent route funnels through this function, so this is the one place that has to be
+// right rather than thirty.
 export async function requireAgentAccess(agent37Id: string, level: "member" | "admin") {
   const { supabase, user } = await requireUser();
   const row = await getAgentRow(supabase, agent37Id);
-  if (level === "admin") await requireAdmin(supabase, row.workspace_id, user.id);
-  else await requireMember(supabase, row.workspace_id, user.id);
+  if (level === "admin") {
+    // Already the stricter test: a workspace admin owns the billing and the agent lifecycle,
+    // so they reach every agent in their workspace by design.
+    await requireAdmin(supabase, row.workspace_id, user.id);
+    return { supabase, user, row };
+  }
+
+  const role = await requireMember(supabase, row.workspace_id, user.id);
+
+  // Admins see everything. A member reaches their own agent, and any agent with no owner —
+  // those predate seats and were workspace-wide when they were created, so refusing them now
+  // would lock somebody out of the agent they use every day.
+  const owner = (row as AgentRow & { owner_id?: string | null }).owner_id ?? null;
+  if (role !== "admin" && owner && owner !== user.id) {
+    // 404, not 403. "You may not touch this agent" confirms the id names a real agent in a
+    // workspace they belong to, which is exactly what someone probing ids is trying to learn.
+    throw new ApiError(404, "not_found", "Agent not found");
+  }
+
   return { supabase, user, row };
 }
 
