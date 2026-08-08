@@ -98,10 +98,13 @@ function NavLink({
       onClick={onNavigate}
       className={cn(
         "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-        // Tinted with the accent rather than plain grey: on a rail of six identical rows, a grey
-        // pill behind grey text is not a selected state, it's a slightly different grey.
+        // Black label on the selected row, David's call. It was text-primary on bg-primary/10,
+        // and since the accent went black earlier today "primary at 10%" is a pale grey pill -
+        // so the selected row was grey text on grey, which is the exact thing the tint was
+        // introduced to avoid. Full-strength foreground and a heavier weight carry it now, and
+        // the pill stays as the shape rather than as the signal.
         active
-          ? "bg-primary/10 text-primary"
+          ? "bg-secondary font-semibold text-foreground"
           : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
       )}
     >
@@ -131,7 +134,8 @@ function SidebarContent({
     item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item
   );
 
-  const { current } = useWorkspace();
+  const { current, workspaces } = useWorkspace();
+  const hasManyWorkspaces = workspaces.length > 1;
   const logoUrl = current?.logo_url || branding.logoUrl;
   // The logo stands alone now, so it has to carry its own name for anyone who can't see it.
   const logoAlt = current?.logo_url ? current.name : branding.appName;
@@ -203,8 +207,16 @@ function SidebarContent({
         )}
       </div>
 
+      {/* The agent, named, with its face - the treatment David liked on The College Agent, where
+          the rail opens with Max and "Your agent" and nothing else.
+          The workspace tile above it is gone for anyone with a single workspace. It answered
+          "whose account am I in", which is a real question in a product where you switch between
+          them - and nobody here does: every customer has exactly one, so it was a permanent row
+          restating their own name back at them, directly under a wordmark. WorkspaceSwitcher
+          still renders in full when there IS more than one, which is when the question starts
+          being worth a row. */}
       <div className="mt-4 space-y-2">
-        <WorkspaceSwitcher />
+        {hasManyWorkspaces && <WorkspaceSwitcher />}
         <AgentSwitcher />
       </div>
 
@@ -340,10 +352,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           around a conversation they would put the composer in a box in the middle of the room. */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <DashboardHeader />
+        {/* The lavender-and-rose bloom below is on every page now, not only the chat welcome.
+            It was written for that one screen and applied there alone, so David - looking at
+            Welcome - reasonably reported it missing. Same wash: two radials at the bottom, felt
+            before it is noticed, and it is what stops a pure-white page reading as blank rather
+            than as clean. `relative` because .chat-wash paints through a ::before at inset-0. */}
         {isChat ? (
           <div className="min-h-0 flex-1">{children}</div>
         ) : (
-          <main className="min-h-0 flex-1 overflow-y-auto">
+          <main className="chat-wash relative min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
           </main>
         )}
