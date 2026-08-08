@@ -22,33 +22,12 @@ import { CreateAgentModal } from "@/components/CreateAgentModal";
 // commonest outcome was opening chat first and asking an agent with nothing connected to do
 // something it had no way to do.
 //
-// Step 2 is also how this page went back to ASKING anybody to connect their apps. That prompt
-// left with the "What your agent can reach" grid, and without it a customer who never opened
-// Connections on their own was never told an agent with no mailbox can only give advice.
-const STEPS = [
-  {
-    title: "Tell me about you",
-    body: (agentName: string) =>
-      `Open a chat and say what your business does, who you serve, and what you want off your ` +
-      `plate. ${agentName} has your questionnaire answers already — this is the detail that ` +
-      `never fits in a form.`,
-  },
-  {
-    title: "Connect your tools",
-    body: () =>
-      "Go to Connections in the sidebar and link the apps you already live in: Gmail, Calendar, " +
-      "Drive, Outlook, Dropbox. An agent with no connections can advise. One with connections " +
-      "can act.",
-  },
-  {
-    title: "Ask me something real",
-    body: () =>
-      "Not a test question — something you were going to have to do anyway. That is the fastest " +
-      "way to find where it helps, and the Guide has openers grouped by what you are trying to " +
-      "get done.",
-  },
-];
-
+// The three steps live in SetupChecklist, which ticks them off against real state. They were
+// static prose here first — a list that does not know what you have done is a poster, not a
+// checklist, and it would have told somebody to connect their tools a week after they did.
+//
+// It is also what points at Channels now: the channels panel used to sit on this page and
+// David has taken it off, so the checklist's second item is the only route to it from here.
 export function StartHereView() {
   const { current, userFirstName } = useWorkspace();
   const { agents, active, loading } = useActiveAgent();
@@ -104,27 +83,8 @@ export function StartHereView() {
           </div>
         </div>
 
-        <div className="mt-8 space-y-6 border-t pt-6">
-          {STEPS.map((step, i) => (
-            <div key={step.title} className="flex gap-4">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
-                {i + 1}
-              </div>
-              <div className="min-w-0">
-                <h2 className="font-semibold">{step.title}</h2>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {step.body(agentName)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <SetupChecklist agentId={active.agent37_id} />
       </div>
-
-      {/* Channels stays below the card rather than becoming a fourth step: it is optional in a
-          way the three above are not. Somebody who never connects Slack still has a working
-          agent; somebody who never connects Gmail does not. */}
-      <SetupChecklist agentId={active.agent37_id} />
 
       <div className="flex flex-col items-center gap-3">
         <Button asChild size="lg">
