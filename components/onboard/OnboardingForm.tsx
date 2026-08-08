@@ -98,7 +98,7 @@ const DECISION_STYLE = ["Data-first - I need numbers before I commit","Gut-first
 const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive"];
 const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, no fluff","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Brene Brown - vulnerable, human-centered","Steve Jobs - visionary, minimalist","Warren Buffett - plainspoken, folksy wisdom","Rachel Hollis - motivational, relatable","Other"];
 const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
-const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","All of the above"];
+const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
 const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
 // ════════════════════════════════════════════════════════════
@@ -904,7 +904,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const [s4, setS4] = useState({ marital: "", partnerName: "", kids: "", kidsDetails: "", household: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
   const [s5, setS5] = useState({ decStyle: [] as string[], stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[] });
   const [s6, setS6] = useState({ tone: [] as string[], writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
-  const [s7, setS7] = useState({ goals: [] as string[], metric: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
+  const [s7, setS7] = useState({ goals: [] as string[], metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
   const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
   const [companies, setCompanies] = useState<Company[]>([emptyCompany()]);
   const [primaryIndex, setPrimaryIndex] = useState(0);
@@ -928,7 +928,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1159,9 +1159,11 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
     ) },
     { key: "goals", label: "Goals & AI", node: (
     <Stack key="s7">
-      <SHead stepNum={8} total={0} title="Goals & AI Scope" subtitle="What you want AI to own, and what winning looks like." badge="Business" />
-      <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
-      <CheckGroup label="What does winning look like?" hint="Select all that apply" split options={SUCCESS_MET} value={s7.metric ? [s7.metric] : []} onChange={v => f7("metric", v[v.length-1] || "")} cols={2} />
+      {/* Reordered at David's call, and the new order tells a story the old one did not: what
+          you have tried, how the room feels about it, how far you trust it. Each answer sets up
+          the next, and all three are about READINESS. "What should it do" is a different
+          question and now gets its own page. */}
+      <SHead stepNum={8} total={0} title="Where You Are With AI" subtitle="What you have tried, how your team feels, and how much you want it deciding on its own." badge="Business" />
       <RadioGroup label="Have you tried AI or automation before?" options={["Yes","No"]} value={s7.prior} onChange={v => f7("prior", v)} />
       {s7.prior === "Yes" && (
         <>
@@ -1170,7 +1172,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
           <FF label="How was the implementation / startup?"><TArea value={s7.aiStartup} onChange={v => f7("aiStartup", v)} placeholder="How smooth or rough was getting it set up and adopted?" rows={2} /></FF>
         </>
       )}
-      <RadioGroup label="How does your team feel about bringing in AI?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
+      <RadioGroup label="How does your team feel about implementing our new program?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
+      <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
 
       {/* Three horizons, three boxes, not one.
           Every other question here describes the business as it is today. This is the only one
@@ -1189,8 +1192,26 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       <FF label="In three months"><TArea value={s7.horizon3} onChange={v => f7("horizon3", v)} placeholder="e.g. It handles the inbox end to end and I've stopped doing quotes by hand." rows={2} /></FF>
       <FF label="In six months"><TArea value={s7.horizon6} onChange={v => f7("horizon6", v)} placeholder="e.g. Two people hired, and the agent runs onboarding for every new client." rows={2} /></FF>
       <FF label="In twelve months"><TArea value={s7.horizon12} onChange={v => f7("horizon12", v)} placeholder="e.g. Double the revenue with the same headcount, and the agent owns all first-line support." rows={2} /></FF>
-
-      <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
+    </Stack>
+    ) },
+    // The page break David asked for. "What should it do" and "what does winning look like" are
+    // the two questions that decide what gets built, and they were buried under the AI-history
+    // block on a step that had grown to eight questions.
+    { key: "scopeai", label: "What It Should Do", node: (
+    <Stack key="s7scope">
+      <SHead stepNum={9} total={0} title="What your agent should take on" subtitle="The work you want off your desk, and what a win looks like." badge="Business" />
+      <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+      {/* `split` removed at David's call. It bolded everything before the dash and greyed the
+          rest, so "Save time" and "Increase revenue" shouted while the clause that carried the
+          actual meaning receded. Plain sentences, read as written.
+          Multi-select too: it kept only the last box despite saying "select all that apply",
+          the same bug as the tone question - and most people want two or three of these. */}
+      <CheckGroup label="What does winning look like?" hint="Select all that apply" options={SUCCESS_MET} value={s7.metric} onChange={v => f7("metric", v)} cols={2} />
+      {s7.metric.includes("Something else") && (
+        <FF label="Tell us what winning looks like" hint="In your words.">
+          <TArea value={s7.metricOther} onChange={v => f7("metricOther", v)} placeholder="What would make this obviously worth it, six months from now?" rows={2} />
+        </FF>
+      )}
     </Stack>
     ) },
     { key: "scope", label: "Scope", node: (
