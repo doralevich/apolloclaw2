@@ -120,7 +120,7 @@ export function ChecklistView() {
                   </span>
                 )}
               </div>
-              {/* Apps two-up, everything else full width — the layout David picked.
+              {/* Apps two-up, everything else full width - the layout David picked.
                   An app card is logo, name, one line and a button, which is narrow content: at
                   full width the button ends up a long way from the name it belongs to. A channel
                   or a handover carries more text and earns the whole row. */}
@@ -177,7 +177,7 @@ export function ChecklistView() {
           </Link>
         </Button>
         <p className="text-center text-sm text-muted-foreground">
-          You do not have to finish the list first — it works better with connections, but it
+          You do not have to finish the list first - it works better with connections, but it
           works now.
         </p>
       </div>
@@ -275,7 +275,7 @@ function Row({
           ))}
       </div>
 
-      {/* Self-reported only. A derived row has nothing to toggle — its tile already says what we
+      {/* Self-reported only. A derived row has nothing to toggle - its tile already says what we
           can see — and a checkbox that refused every click would be worse than no checkbox. */}
       {!derived && (
         <button

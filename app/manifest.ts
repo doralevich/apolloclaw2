@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Apollo Claw",
     short_name: "Apollo Claw",
-    description: "Your Apollo agent — chat, channels, and connected apps.",
+    description: "Your Apollo agent - chat, channels, and connected apps.",
 
     // The dashboard, deliberately, not the site root. Somebody who installs this wants the
     // agent they pay for; an installed copy of the marketing homepage would be useless, and

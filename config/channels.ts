@@ -87,7 +87,7 @@ export const CHANNELS: ChannelDef[] = [
       { key: "botToken", label: "Bot token", placeholder: "Paste your bot token (e.g. 123456:ABC-DEF...)" },
     ],
     connectedNote:
-      "Message your bot in Telegram and your agent answers there. The first person to message it becomes its owner — anyone else who finds the bot gets nothing back.",
+      "Message your bot in Telegram and your agent answers there. The first person to message it becomes its owner - anyone else who finds the bot gets nothing back.",
   },
   {
     id: "slack",
@@ -97,8 +97,8 @@ export const CHANNELS: ChannelDef[] = [
     // No Socket Mode. It needs a process holding a WebSocket open and there is nothing on Vercel
     // to hold one; the Events API does the same job over a webhook, the way Telegram does.
     steps: [
-      "Create an app at api.slack.com/apps — choose From scratch, and pick your workspace.",
-      "Under OAuth & Permissions, add the chat:write and im:history bot scopes, then Install to Workspace. Copy the Bot User OAuth Token — it starts xoxb-.",
+      "Create an app at api.slack.com/apps - choose From scratch, and pick your workspace.",
+      "Under OAuth & Permissions, add the chat:write and im:history bot scopes, then Install to Workspace. Copy the Bot User OAuth Token - it starts xoxb-.",
       "Under Basic Information, copy the Signing Secret.",
       "Paste both below and press Connect.",
       "Back in Slack, under Event Subscriptions, turn events on and paste the Request URL shown here after you connect. Slack will tick it green.",
@@ -113,7 +113,7 @@ export const CHANNELS: ChannelDef[] = [
     // has to show it.
     showWebhookUrl: true,
     connectedNote:
-      "Direct-message the app in Slack and your agent answers there. The first person to DM it becomes its owner — anyone else in the workspace gets nothing back.",
+      "Direct-message the app in Slack and your agent answers there. The first person to DM it becomes its owner - anyone else in the workspace gets nothing back.",
   },
   {
     id: "whatsapp",
@@ -139,7 +139,7 @@ export const CHANNELS: ChannelDef[] = [
     ],
     showWebhookUrl: true,
     connectedNote:
-      "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner — anyone else gets nothing back.",
+      "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner - anyone else gets nothing back.",
   },
 ];
 

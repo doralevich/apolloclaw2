@@ -101,7 +101,7 @@ async function warn(ctx: AgentContext, balance: number, autorechargeOffered: boo
   const html =
     `<h2 style="font-family:sans-serif;color:#0B1729">${agentName} is running low on credits</h2>` +
     `<p style="font-family:sans-serif;font-size:15px;color:#111827">` +
-    `There is <strong>${usd(balance)}</strong> left to spend — below the ${threshold} line you set.</p>` +
+    `There is <strong>${usd(balance)}</strong> left to spend - below the ${threshold} line you set.</p>` +
     `<p style="font-family:sans-serif;font-size:15px;color:#111827">` +
     `Credits pay for everything your agent does: thinking, searching the web, and using your ` +
     `connected tools. When they run out your agent stops answering until you top up.</p>` +
@@ -121,9 +121,9 @@ async function warn(ctx: AgentContext, balance: number, autorechargeOffered: boo
   }
 
   await sendTelegram(
-    `⚠️ Low credits — ${agentName}\n` +
+    `⚠️ Low credits - ${agentName}\n` +
       `Balance: ${usd(balance)} (warns below ${threshold})\n` +
-      `Told: ${ownerEmails.join(", ") || "nobody — no member emails found"}`
+      `Told: ${ownerEmails.join(", ") || "nobody - no member emails found"}`
   );
 
   const db = createAdminClient();
@@ -181,7 +181,7 @@ async function recharge(ctx: AgentContext, pack: CreditPack, balance: number): P
       payment_method: paymentMethod,
       off_session: true,
       confirm: true,
-      description: `ApolloClaw auto-recharge — ${pack.name}`,
+      description: `ApolloClaw auto-recharge - ${pack.name}`,
       metadata: {
         flow: "credit_autorecharge",
         workspace_id: settings.workspaceId,
@@ -226,7 +226,7 @@ async function recharge(ctx: AgentContext, pack: CreditPack, balance: number): P
     for (const to of ownerEmails) {
       await sendMandrillEmail({ to, subject: `${agentName}: credits topped up automatically`, html });
     }
-    await sendTelegram(`💳 Auto-recharge — ${agentName}\nCharged ${usd(pack.amountCents * 10_000)} (balance was ${usd(balance)})`);
+    await sendTelegram(`💳 Auto-recharge - ${agentName}\nCharged ${usd(pack.amountCents * 10_000)} (balance was ${usd(balance)})`);
     return true;
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
@@ -252,13 +252,13 @@ async function recharge(ctx: AgentContext, pack: CreditPack, balance: number): P
         `We tried to top up your credits ${MAX_FAILED_CHARGES} times and the card was declined each ` +
         `time. Rather than keep trying, we've switched auto-recharge off.</p>` +
         `<p style="font-family:sans-serif;font-size:15px;color:#111827">` +
-        `Buy a pack manually on the Credits page — that saves the card you use — and you can turn ` +
+        `Buy a pack manually on the Credits page - that saves the card you use - and you can turn ` +
         `auto-recharge back on from the same place.</p>` +
         `<p style="font-family:sans-serif;font-size:13px;color:#6b7280">Stripe said: ${reason}</p>`;
       for (const to of ownerEmails) {
         await sendMandrillEmail({ to, subject: `Action needed: auto-recharge is off for ${agentName}`, html });
       }
-      await sendTelegram(`🚫 Auto-recharge disabled — ${agentName}\nAfter ${failures} failed charges: ${reason}`);
+      await sendTelegram(`🚫 Auto-recharge disabled - ${agentName}\nAfter ${failures} failed charges: ${reason}`);
     }
     return false;
   }

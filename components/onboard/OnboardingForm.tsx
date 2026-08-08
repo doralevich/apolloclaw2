@@ -241,7 +241,7 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
               <FF label="First Name"><TInput value={d.first} onChange={v => set("first", v)} placeholder="Jane" /></FF>
               <FF label="Last Name"><TInput value={d.last} onChange={v => set("last", v)} placeholder="Smith" /></FF>
             </Row2>
-            {/* One email. There used to be a second "Personal Email — a backup contact, not
+            {/* One email. There used to be a second "Personal Email - a backup contact, not
                 used for login", which asked the very first question of the flow twice and had
                 to explain in a hint why the answer didn't matter. Nothing ever read it. */}
             <Row2>
@@ -320,7 +320,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={previewUrl} alt="Agent avatar preview" width={84} height={84} style={{ borderRadius: "50%", margin: "0 auto 20px", display: "block" }} />
         <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 8px" }}>Make it yours</h2>
-        <p style={{ fontSize: 14, color: TXM, margin: "0 0 28px" }}>Give your {agentLabel} a name and a face. Totally optional — skip either and we&apos;ll use a default.</p>
+        <p style={{ fontSize: 14, color: TXM, margin: "0 0 28px" }}>Give your {agentLabel} a name and a face. Totally optional - skip either and we&apos;ll use a default.</p>
 
         <div style={{ textAlign: "left", marginBottom: 24 }}>
           <FF label="What would you like to call your agent?">
@@ -519,7 +519,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
 
           <p style={{ textAlign: "center", fontSize: 12, color: TXD, marginTop: 14, lineHeight: 1.6 }}>
             Running it on your own hardware instead, or need something bespoke?{" "}
-            <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us first</a> — that
+            <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us first</a> - that
             is a different conversation and we will set it up for you.
           </p>
         </div>

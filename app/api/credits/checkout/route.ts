@@ -31,7 +31,7 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(
       500,
       "config_error",
-      "Credit packs aren't set up in Stripe yet — run the catalog sync and try again."
+      "Credit packs aren't set up in Stripe yet - run the catalog sync and try again."
     );
   }
 

@@ -180,7 +180,7 @@ export default function CfoPage() {
         </div>
       </section>
 
-      {/* What is an AI CFO Agent? — SEO Section */}
+      {/* What is an AI CFO Agent? - SEO Section */}
       <section style={{ background: CREAM }} className="py-20">
         <div className="container mx-auto max-w-3xl px-5 md:px-8">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>About</p>

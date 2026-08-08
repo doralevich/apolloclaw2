@@ -88,7 +88,7 @@ export async function runSchedule(row: ScheduleRow): Promise<string> {
   try {
     const result = await runTurn(
       row.agent37_id,
-      `Run your ${row.skill} skill now and give me the result. This is the scheduled run, so lead with the content — no preamble about it being scheduled.`,
+      `Run your ${row.skill} skill now and give me the result. This is the scheduled run, so lead with the content - no preamble about it being scheduled.`,
       // No session id: a scheduled brief starts clean rather than continuing yesterday's chat,
       // which would drag a week of unrelated context into every morning.
       null

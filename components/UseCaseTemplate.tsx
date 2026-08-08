@@ -18,7 +18,7 @@ interface UseCase {
 export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
   return (
     <>
-      {/* HERO — dark navy + grid */}
+      {/* HERO - dark navy + grid */}
       <section
         style={{ background: "#0B1729", color: "#ffffff" }}
         className="relative overflow-hidden"
@@ -99,7 +99,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
         </div>
       </section>
 
-      {/* CHALLENGES — cream */}
+      {/* CHALLENGES - cream */}
       <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-5xl">
           <ScrollReveal>
@@ -167,7 +167,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
         </div>
       </section>
 
-      {/* SOLUTIONS — dark navy */}
+      {/* SOLUTIONS - dark navy */}
       <section style={{ background: "#0B1729", color: "#ffffff" }} className="relative overflow-hidden">
         <div
           aria-hidden
@@ -239,7 +239,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
         </div>
       </section>
 
-      {/* RESULTS — cream */}
+      {/* RESULTS - cream */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-4xl">
           <ScrollReveal>

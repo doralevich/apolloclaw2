@@ -60,12 +60,12 @@ async function sendPrecallInvite(toEmail: string, toName: string): Promise<void>
         <span style="font-family:'Courier New',monospace;font-size:20px;font-weight:900;">Apollo<span style="color:#E8342A;">[</span>Claw<span style="color:#E8342A;">]</span></span>
       </div>
       <p style="font-size:15px;line-height:1.7;margin:0 0 16px;">Hi ${firstName},</p>
-      <p style="font-size:15px;line-height:1.7;margin:0 0 24px;">Looking forward to talking. Before we meet, take 2–3 minutes to fill out this quick questionnaire — it helps us come prepared and make the most of our time together.</p>
+      <p style="font-size:15px;line-height:1.7;margin:0 0 24px;">Looking forward to talking. Before we meet, take 2–3 minutes to fill out this quick questionnaire - it helps us come prepared and make the most of our time together.</p>
       <div style="text-align:center;margin:32px 0;">
         <a href="${PRECALL_URL}" style="display:inline-block;background:#E8342A;color:#ffffff;font-weight:800;font-size:15px;padding:14px 36px;border-radius:6px;text-decoration:none;">Complete Pre-Call Form →</a>
       </div>
       <p style="font-size:15px;line-height:1.7;margin:24px 0 0;">See you soon.</p>
-      <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">— David Oralevich, Apollo[Claw]</p>
+      <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">- David Oralevich, Apollo[Claw]</p>
       <p style="font-size:11px;color:#9da3af;margin-top:32px;border-top:1px solid #e0e0e0;padding-top:12px;">Apollo[Claw] AI Consulting | 69 Roslyn Road, Roslyn Heights, NY 11577</p>
     </div>`;
 
@@ -79,7 +79,7 @@ async function sendPrecallInvite(toEmail: string, toName: string): Promise<void>
         from_name: "David Oralevich",
         to: [{ email: toEmail, name: toName, type: "to" }],
         bcc_address: BCC_EMAIL,
-        subject: "Before our call — one quick form — Apollo[Claw]",
+        subject: "Before our call - one quick form - Apollo[Claw]",
         html,
         important: true,
       },
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
 
   // ── Dedup guard: prevent double-sends within 10 minutes ───────────────────
   if (isDuplicate(email)) {
-    console.log(`[calendly-webhook] Duplicate detected for ${email} — skipping`);
+    console.log(`[calendly-webhook] Duplicate detected for ${email} - skipping`);
     return NextResponse.json({ ok: true, skipped: "duplicate" });
   }
 
@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
 
   // 4. Legacy CRM entity (non-fatal, operational record only)
   try {
-    await findOrCreateCrmEntity(name, email, "prospect", `Booked via Calendly — call: ${callTime} ET`);
+    await findOrCreateCrmEntity(name, email, "prospect", `Booked via Calendly - call: ${callTime} ET`);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[calendly-webhook] CRM entity failed (non-fatal):", msg);

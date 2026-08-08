@@ -45,7 +45,7 @@ export const PUT = route(async (request: Request, { params }: Params) => {
     throw new ApiError(
       400,
       "no_saved_card",
-      "Buy a credit pack once first — that saves your card, which is what auto-recharge charges."
+      "Buy a credit pack once first - that saves your card, which is what auto-recharge charges."
     );
   }
 

@@ -31,7 +31,7 @@ export function GuideView() {
           <div>
             <h2 className="text-lg font-semibold">Things to say</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Click any of these to open the chat with it typed out — then edit it or send it as
+              Click any of these to open the chat with it typed out - then edit it or send it as
               is. {agentName} already knows your business, so you can talk the way you would to
               someone who works for you.
             </p>
@@ -53,7 +53,7 @@ export function GuideView() {
         ))}
 
         <p className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-          None of these are commands — there is no list of supported phrases. Ask in your own
+          None of these are commands - there is no list of supported phrases. Ask in your own
           words. The more you tell {agentName} about how you want things done, the less you have
           to explain next time.
         </p>

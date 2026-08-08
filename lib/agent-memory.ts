@@ -278,7 +278,7 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       id,
       name: id,
       outcome: "failed" as const,
-      detail: "not an agent of this dashboard — refusing to touch it",
+      detail: "not an agent of this dashboard - refusing to touch it",
     }));
 
   for (const id of requested.filter((i) => ours.has(i))) {

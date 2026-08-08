@@ -97,7 +97,7 @@ async function seedEntry(stripe: Stripe, entry: SeedEntry): Promise<SeedAction> 
     const owner = typeof current.product === "string" ? current.product : current.product.id;
     if (owner !== product.id) {
       throw new Error(
-        `lookup_key "${entry.catalogKey}" already belongs to foreign product ${owner} — ` +
+        `lookup_key "${entry.catalogKey}" already belongs to foreign product ${owner} - ` +
           `refusing to transfer it. Resolve the collision in the Stripe dashboard first.`
       );
     }

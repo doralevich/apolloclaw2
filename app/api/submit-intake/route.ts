@@ -65,7 +65,7 @@ async function sendIntakeSummaryToDavid(name: string, email: string, pdfBuffer: 
 
 async function sendSetupLinkEmail(email: string, firstName: string): Promise<void> {
   if (!MANDRILL_KEY) {
-    console.warn("[submit-intake] MANDRILL_API_KEY not set — skipping setup-link email");
+    console.warn("[submit-intake] MANDRILL_API_KEY not set - skipping setup-link email");
     return;
   }
   try {
@@ -81,7 +81,7 @@ async function sendSetupLinkEmail(email: string, firstName: string): Promise<voi
           from_name: "Apollo[Claw]",
           to: [{ email, name: firstName || email, type: "to" }],
           bcc_address: "david@apolloclaw.ai",
-          subject: "Last step: complete your Technical Setup — Apollo[Claw]",
+          subject: "Last step: complete your Technical Setup - Apollo[Claw]",
           important: true,
           merge_vars: [
             {
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
       ];
 
       await createCrmTask(token, {
-        title: `Intake Form — ${name}`,
+        title: `Intake Form - ${name}`,
         description: descLines.join("\n"),
         status: "pending",
         priority: "high",
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
     }
 
     await sendTelegram(
-      `<b>📝 Setup Form — Apollo[Claw]</b>
+      `<b>📝 Setup Form - Apollo[Claw]</b>
 <b>Name:</b> ${name}
 <b>Email:</b> ${data.email}
 ${Object.entries(data).filter(([k,v])=>!["firstName","lastName","email"].includes(k)&&v!==null&&v!==undefined&&v!==String()).map(([k,v])=>`<b>${k}:</b> ${Array.isArray(v)?v.join(", "):v}`).join("\n")}`,

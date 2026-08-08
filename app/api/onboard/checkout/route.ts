@@ -62,7 +62,7 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(
       500,
       "config_error",
-      "Pricing isn't set up yet — run the Stripe catalog sync and try again."
+      "Pricing isn't set up yet - run the Stripe catalog sync and try again."
     );
   }
 

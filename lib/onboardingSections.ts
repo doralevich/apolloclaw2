@@ -11,8 +11,8 @@ import type { PdfSectionInput } from "@/lib/pdf";
 const trackLabel: Record<string, string> = {
   business: "Business Owner / Executive",
   personal: "Personal CEO",
-  student: "Collegiate — Student",
-  admin: "Collegiate — Administrator",
+  student: "Collegiate - Student",
+  admin: "Collegiate - Administrator",
   agency: "Agency / Reseller",
 };
 

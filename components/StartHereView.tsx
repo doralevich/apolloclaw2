@@ -71,13 +71,13 @@ export function StartHereView() {
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               Hey{userFirstName ? " " : ""}
-              {/* The one coloured word on the page. Their name, not the agent's — the agent is
+              {/* The one coloured word on the page. Their name, not the agent's - the agent is
                   the one talking, so emphasising its own name would be the wrong voice. */}
               {userFirstName && <span className="text-primary">{userFirstName}</span>}, I&apos;m{" "}
               {agentName}.
             </h1>
             <p className="mt-3 text-muted-foreground">
-              I am built around your business rather than trained on it in general — your people,
+              I am built around your business rather than trained on it in general - your people,
               your stack, the things that keep going wrong. Three things make me useful, and
               they go in this order.
             </p>

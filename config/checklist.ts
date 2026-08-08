@@ -64,7 +64,7 @@ const AREA_ITEMS: Record<string, string> = {
     "Tell it how a lead reaches you and what happens next, so it can chase the ones going cold.",
   "Customer Support / Service":
     "Give it the questions you answer over and over, and let it draft the replies.",
-  "Operations / Admin": "Name the admin that eats your week — it is usually the first thing to go.",
+  "Operations / Admin": "Name the admin that eats your week - it is usually the first thing to go.",
   "Marketing & Content": "Tell it who you are writing for and hand it a first draft to react to.",
   "Invoicing & Finance":
     "Tell it your billing cycle and who is usually late. Chasing invoices is work nobody misses.",
@@ -77,7 +77,7 @@ const AREA_ITEMS: Record<string, string> = {
   "Vendor / Supplier Management": "List who you buy from and what you chase them about.",
   "Project Management": "Describe how work moves from idea to done here.",
   "Customer Onboarding": "Give it the steps a new customer goes through, in order.",
-  "Contracts & Proposals": "Upload one you are happy with — it becomes the template for the rest.",
+  "Contracts & Proposals": "Upload one you are happy with - it becomes the template for the rest.",
 };
 
 /** Lucide icon per broken area, so a list of handovers is scannable rather than fifteen grey rows. */
@@ -210,7 +210,7 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
         ? `You told us you use ${label}. Connecting it is one click and the agent can read it.`
         : // No curated slug: Composio may still carry it, so this points at the catalogue's own
           // search rather than promising a Connect button we cannot build a link for.
-          `You told us you use ${label}. Search for it in Connections — the catalogue runs well ` +
+          `You told us you use ${label}. Search for it in Connections - the catalogue runs well ` +
           `past the apps listed on the front page.`,
       category: "Connect your tools",
       href: "/dashboard/integrations",

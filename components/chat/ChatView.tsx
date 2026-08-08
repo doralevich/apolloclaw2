@@ -133,7 +133,7 @@ export function ChatView({
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-        {/* Date and time, from the mockup. The weather it also shows isn't here — see HeaderClock. */}
+        {/* Date and time, from the mockup. The weather it also shows isn't here - see HeaderClock. */}
         <HeaderClock />
         {/* What this conversation has left to spend, and a way to top it up from here. */}
         <HeaderCredit agentId={agentId} />
@@ -152,7 +152,7 @@ export function ChatView({
         </div>
       </header>
 
-      {/* Everything below the header is a row: the conversation, and — only on the empty state —
+      {/* Everything below the header is a row: the conversation, and - only on the empty state -
           the integrations rail beside it.
           The rail is a SIBLING of the conversation column rather than something inside it, so its
           appearing and disappearing never moves the composer within its parent. That matters: the
@@ -193,7 +193,7 @@ export function ChatView({
               {greeting && (
                 <>
                   <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">
-                    {/* Was split, with the address in the accent — that was the loudest part of
+                    {/* Was split, with the address in the accent - that was the loudest part of
                         the violet pass and it went with it. Weight carries the line instead. */}
                     {greeting.headline}
                   </h1>
@@ -212,10 +212,10 @@ export function ChatView({
         )}
       </div>
 
-      {/* Composer wrapper — the STABLE 2nd child. Its chrome (docked vs bare centered) is a
+      {/* Composer wrapper - the STABLE 2nd child. Its chrome (docked vs bare centered) is a
           className swap so the ChatComposer inside never changes tree position. */}
       <div className={cn("relative", showWelcome ? "w-full px-6 md:px-10" : "bg-background px-6 py-3 md:px-10 sm:py-4")}>
-        {/* No hard divider — a short fade dissolves the transcript into the composer instead. */}
+        {/* No hard divider - a short fade dissolves the transcript into the composer instead. */}
         {!showWelcome && (
           <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent" />
         )}
@@ -251,7 +251,7 @@ export function ChatView({
 
       {/* Bottom: balances the vertical spacing on the welcome state. */}
       {showWelcome && (
-        <div className="flex flex-1 flex-col items-center gap-4 px-4 pt-4">
+        <div className="flex flex-1 flex-col items-center gap-4 px-4 pt-7">
           {/* Four things to say, under the box you'd say them in. They fill the composer rather
               than sending: several want a name or a document swapped in first, and firing one off
               unedited produces exactly the weak first answer this is meant to prevent. */}

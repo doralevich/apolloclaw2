@@ -114,7 +114,7 @@ export async function POST(request: Request, { params }: Ctx) {
       const message = (e as Error).message;
       console.error("[channels:slack] turn failed", { agentId, message });
       await slack
-        .postMessage(config.token, channel, "Sorry — something went wrong on my end.")
+        .postMessage(config.token, channel, "Sorry - something went wrong on my end.")
         .catch(() => {});
       await upsertChannel(agentId, "slack", { state: "error", message }).catch(() => {});
     }

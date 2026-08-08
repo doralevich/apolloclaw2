@@ -149,7 +149,7 @@ export function ChannelsPanel({
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Chat anywhere</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Connect a chat app you already use, and your agent answers there — to you and
+                Connect a chat app you already use, and your agent answers there - to you and
                 nobody else.
               </p>
             </div>
@@ -275,7 +275,7 @@ function ChannelCard({
               </span>
             )}
           </div>
-          {/* Collapsed, this line is all anyone sees — so once connected it says who it's
+          {/* Collapsed, this line is all anyone sees - so once connected it says who it's
               connected AS, which is the fact worth having at a glance. */}
           <p className="mt-0.5 truncate text-sm text-muted-foreground">
             {connected && channel?.account ? `Connected as ${channel.account}` : def.tagline}
@@ -298,7 +298,7 @@ function ChannelCard({
             </p>
           )}
           {def.connectedNote && <p className="text-sm text-muted-foreground">{def.connectedNote}</p>}
-          {/* Still shown once connected — for Slack and WhatsApp this is the step AFTER
+          {/* Still shown once connected - for Slack and WhatsApp this is the step AFTER
               connecting, and hiding it the moment the credentials land would strand the setup
               half-done. */}
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
@@ -377,7 +377,7 @@ function CopyableValue({ label, value }: { label: string; value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       })
-      .catch(() => toast.error("Couldn't copy — select the text and copy it manually."));
+      .catch(() => toast.error("Couldn't copy - select the text and copy it manually."));
   };
 
   return (

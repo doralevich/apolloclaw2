@@ -87,7 +87,7 @@ export async function renderSectionsPdf(opts: {
 
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>apolloclaw.ai | david@apolloclaw.ai</Text>
-          <Text style={styles.footerText}>Confidential — Internal Use Only</Text>
+          <Text style={styles.footerText}>Confidential - Internal Use Only</Text>
         </View>
       </Page>
     </Document>

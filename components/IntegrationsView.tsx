@@ -450,7 +450,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
           </div>
         </div>
         <p className="max-w-xl text-sm text-muted-foreground">
-          Connect an app and your agent can work in it for you — reading your mail, adding to
+          Connect an app and your agent can work in it for you - reading your mail, adding to
           your calendar, finding a file.
         </p>
       </div>
@@ -661,7 +661,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                     ) : status === "connected" ? (
                       "Nothing connected in this category yet."
                     ) : (
-                      "Nothing left to connect in this category — you've got them all."
+                      "Nothing left to connect in this category - you've got them all."
                     )}
                   </p>
                   <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
@@ -681,7 +681,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 </p>
               )}
 
-              {/* The full catalog is only pageable when nothing narrows it — the remote list
+              {/* The full catalog is only pageable when nothing narrows it - the remote list
                   is popularity-ranked, not category-tagged, so paging it inside a category
                   would append apps that don't belong to that category. */}
               {!q && category === ALL && (
@@ -904,7 +904,7 @@ function IntegrationCard({
                 Not connected
               </span>
             )}
-            {/* Undefined for anything from the remote catalogue, which has no curated category —
+            {/* Undefined for anything from the remote catalogue, which has no curated category -
                 omitted rather than printed as "Other", which would claim a classification we
                 never made. */}
             {category && <span className="text-muted-foreground/70">{category}</span>}

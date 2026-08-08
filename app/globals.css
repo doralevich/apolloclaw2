@@ -7,7 +7,7 @@
 @theme {
   /* Colors */
   --color-background: hsl(45 20% 97%);
-  --color-foreground: hsl(0 0% 10%);
+  --color-foreground: hsl(0 0% 4%);
 
   --color-surface-alt: hsl(45 14% 93%);
   --color-surface-purple: hsl(45 10% 95%);
@@ -27,7 +27,7 @@
   --color-secondary-foreground: hsl(0 0% 15%);
 
   --color-muted: hsl(45 8% 88%);
-  --color-muted-foreground: hsl(0 0% 35%);
+  --color-muted-foreground: hsl(0 0% 24%);
   --color-muted-subtle: hsl(0 0% 55%);
 
   --color-accent: hsl(0 68% 51%);
@@ -189,6 +189,11 @@
    whichever is written later wins — and this rule is later, which meant these light greys were
    overriding the navy dark theme and the sidebar stayed white with the lights off. The dark
    palette is already cool; it needs neutralising by nobody. */
+/* Darker text throughout, David's call.
+   Secondary copy was the problem rather than headings: at 42% lightness a description under a
+   card title is legible but reads as disabled, and a page where most of the words are grey
+   looks like it is waiting to load. Body text lands near-black and muted text is dark enough
+   to be read rather than skimmed past. */
 .app-accent:not(.dark) {
   /* 95, not 97. Cards here are pure white, so the page behind them IS the separation — at 97
      that was a three-point step, and three points across a 1px border is not an edge. Panels
@@ -205,13 +210,13 @@
   --color-secondary: hsl(220 15% 93%);
   --color-secondary-foreground: hsl(220 12% 18%);
   --color-muted: hsl(220 15% 93%);
-  --color-muted-foreground: hsl(220 9% 42%);
+  --color-muted-foreground: hsl(220 12% 28%);
   --color-muted-subtle: hsl(220 8% 56%);
 
   /* Darker than the site's, deliberately. The dashboard is read all day at small sizes, and the
      old foreground/muted pair was the other half of "not enough contrast" — text that is fine in
      a hero is thin in a sidebar row. */
-  --color-foreground: hsl(222 24% 11%);
+  --color-foreground: hsl(222 30% 6%);
   /* Two points darker, for the same reason the background moved: a hairline is the only thing
      separating a white tile from the white panel it sits in, and at 88 it was doing that job
      on about a tenth of the available contrast. */

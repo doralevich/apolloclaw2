@@ -141,7 +141,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
-      {/* Single column since the Create Account card was removed — a lone card inside a
+      {/* Single column since the Create Account card was removed - a lone card inside a
           two-column grid sat off to one side of an empty half. */}
       <div className="w-full max-w-md space-y-8">
         <div className="space-y-3 text-center">

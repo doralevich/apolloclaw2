@@ -392,16 +392,16 @@ async function notifyLicensePurchase(o: {
   await sendTelegram(`${line}\nBuyer: ${o.name || o.email} <${o.email}>\nAccount created ✅\nOnboarding answers follow when they finish the form.`);
   await sendMandrillEmail({
     to: NOTIFY_EMAIL,
-    subject: `New ApolloClaw license${o.amount ? ` (${o.amount})` : ""} — ${o.name || o.email}`,
+    subject: `New ApolloClaw license${o.amount ? ` (${o.amount})` : ""} - ${o.name || o.email}`,
     html:
       `<h2 style="font-family:sans-serif;color:#0B1729">New license purchased</h2>` +
       `<table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">` +
-      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Buyer</td><td>${o.name || "—"}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Buyer</td><td>${o.name || "-"}</td></tr>` +
       `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Email</td><td>${o.email}</td></tr>` +
-      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Amount</td><td>${o.amount || "—"}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Amount</td><td>${o.amount || "-"}</td></tr>` +
       `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Session</td><td>${o.sessionId}</td></tr>` +
       `</table>` +
-      `<p style="font-family:sans-serif;color:#6b7280;font-size:13px">The account and workspace exist and a set-password email has been sent. Nothing is provisioned yet — the build follows from their onboarding answers, which arrive separately with a PDF when they finish the questionnaire.</p>`,
+      `<p style="font-family:sans-serif;color:#6b7280;font-size:13px">The account and workspace exist and a set-password email has been sent. Nothing is provisioned yet - the build follows from their onboarding answers, which arrive separately with a PDF when they finish the questionnaire.</p>`,
   });
 }
 
@@ -430,7 +430,7 @@ async function sendAgentWelcomeEmail(o: {
         `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
         `<h2 style="color:#0B1729">Your ${escapeHtml(o.label)} is ready${o.firstName ? `, ${escapeHtml(o.firstName)}` : ""}.</h2>` +
         `<p>Payment is confirmed and the agent has been created in your workspace. It is running, ` +
-        `but it does not know anything about your business yet — so right now it is a general ` +
+        `but it does not know anything about your business yet - so right now it is a general ` +
         `assistant rather than yours.</p>` +
         `<p>The setup questions are what change that. They ask how you work, who you serve, and ` +
         `what you want taken off your plate, and everything the agent does afterwards is built ` +
@@ -439,7 +439,7 @@ async function sendAgentWelcomeEmail(o: {
         // The reason this email exists at all: closing the Stripe tab used to lose the link.
         `<p style="color:#6b7280;font-size:13px">This link keeps working, so you can come back to ` +
         `it whenever suits. If anything in the questions does not make sense, reply to this email ` +
-        `and tell me which one — that is usually faster than guessing.</p>` +
+        `and tell me which one - that is usually faster than guessing.</p>` +
         `</div>`,
     });
   } catch (err) {
@@ -460,12 +460,12 @@ async function notifyPurchase(o: {
   await sendTelegram(`${line}\nBuyer: ${o.buyer}\nAgent: ${o.agentId}\nProvisioned ✅`);
   await sendMandrillEmail({
     to: NOTIFY_EMAIL,
-    subject: `New ApolloClaw sale — ${o.label}${o.amount ? ` (${o.amount})` : ""}`,
+    subject: `New ApolloClaw sale - ${o.label}${o.amount ? ` (${o.amount})` : ""}`,
     html:
       `<h2 style="font-family:sans-serif;color:#0B1729">New agent purchased</h2>` +
       `<table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">` +
       `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Agent</td><td>${o.label}</td></tr>` +
-      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Amount</td><td>${o.amount || "—"}</td></tr>` +
+      `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Amount</td><td>${o.amount || "-"}</td></tr>` +
       `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Buyer</td><td>${o.buyer}</td></tr>` +
       `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Agent ID</td><td>${o.agentId}</td></tr>` +
       `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">Session</td><td>${o.sessionId}</td></tr>` +

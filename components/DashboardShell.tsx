@@ -207,7 +207,7 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* Your conversations, under the nav — reachable from any page rather than only once
+      {/* Your conversations, under the nav - reachable from any page rather than only once
           you've opened Chat. The rail used to be a second column inside the chat page, which
           meant two sidebars on screen there and none anywhere else. */}
       <ChatSidebar onNavigate={onNavigate} />

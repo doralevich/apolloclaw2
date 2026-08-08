@@ -204,7 +204,7 @@ function ScheduleRow({
           else is either fine or already visible as a channel in an error state. */}
       {current?.lastStatus === "no_channel" && (
         <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-          This ran but had nowhere to go — connect a chat app above, and message it once so your
+          This ran but had nowhere to go - connect a chat app above, and message it once so your
           agent knows where to reach you.
         </p>
       )}

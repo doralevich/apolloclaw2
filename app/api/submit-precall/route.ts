@@ -296,7 +296,7 @@ export async function POST(req: NextRequest) {
             from_name: "David Oralevich | Apollo[Claw]",
             to: [{ email: data.email, name, type: "to" }],
             bcc_address: "david@apolloclaw.ai",
-            subject: "Looking forward to our call — Apollo[Claw]",
+            subject: "Looking forward to our call - Apollo[Claw]",
             html: clientHtml,
             important: true,
           },

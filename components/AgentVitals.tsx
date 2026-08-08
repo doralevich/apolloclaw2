@@ -102,10 +102,10 @@ export function AgentVitals({ agentId }: { agentId: string }) {
         </span>
         <div className="min-w-0">
           <div className="text-sm font-medium">Last conversation</div>
-          {/* Null covers both "no threads" and "a timestamp we could not trust" — see
+          {/* Null covers both "no threads" and "a timestamp we could not trust" - see
               session-time.ts. Neither is worth inventing a date for. */}
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {lastActive ?? (sessions.length === 0 ? "No conversations yet" : "—")}
+            {lastActive ?? (sessions.length === 0 ? "No conversations yet" : "-")}
           </p>
         </div>
       </div>
