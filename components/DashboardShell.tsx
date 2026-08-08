@@ -264,7 +264,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    // h-screen + overflow-hidden from md up, so the rail holds its own height and only <main>
+    // scrolls. It was min-h-screen, which lets the whole page grow with the content and take the
+    // rail's foot down with it — on a long Connections page, Settings and the account card ended
+    // up somewhere below the fold, which is the one place navigation must never be.
+    //
+    // Mobile keeps min-h-screen and a normal document scroll. The rail there is a drawer that
+    // overlays, not a column, so there is nothing to pin and a fixed viewport height would just
+    // fight the browser chrome.
+    <div className="flex min-h-screen flex-col md:h-screen md:min-h-0 md:flex-row md:overflow-hidden">
       {/* Mobile top bar */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4 md:hidden">
         <div className="flex items-center gap-2">
@@ -307,7 +315,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           pane it sits against resolve to the same token — without a hairline here the two merge
           and the layout loses its left edge entirely. */}
       <aside className="relative hidden w-[17rem] shrink-0 flex-col border-r bg-background p-4 md:flex">
-        <div className="relative flex min-h-0 flex-1 flex-col">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           <SidebarContent pathname={pathname} userEmail={userEmail} />
         </div>
       </aside>
