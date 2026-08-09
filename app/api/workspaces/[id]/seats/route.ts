@@ -118,6 +118,11 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
       userId: user.id,
       name: body.name?.trim() || undefined,
       allowTemplateFallback: true,
+      // A workspace holding two agents of the same type IS a seat — the office manager's and
+      // the founder's. The per-type cap predates this endpoint and made every seat purchase
+      // into an existing workspace fail on a 409, after the card was charged. See
+      // ProvisionInput.allowMultiple for why the cap stays on everywhere else.
+      allowMultiple: true,
       // No answers to write yet — the colleague fills in their own questionnaire on first
       // sign-in, and that is what personalises this instance.
       callerWritesContext: true,
