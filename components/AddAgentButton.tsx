@@ -40,7 +40,7 @@ import { Label } from "@/components/ui/label";
 // by default - a guard against an admin double-charging for a colleague by pressing twice. That
 // is an accident; this is the same request made deliberately, and the two are indistinguishable
 // at the API layer, so the caller has to say which it is.
-export function AddAgentButton() {
+export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) {
   const router = useRouter();
   const { current, userEmail } = useWorkspace();
   const { refresh, setActiveId } = useActiveAgent();
@@ -86,11 +86,16 @@ export function AddAgentButton() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      {/* The default trigger is the labelled button on Settings > My Agent. The sidebar passes
+          its own - an icon beside the agent's name, where David asked for it - because that rail
+          has no room for a five-word button and the dialog states the charge either way. */}
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Plus className="h-4 w-4" />
-          Add another agent
-        </Button>
+        {trigger ?? (
+          <Button variant="outline" size="sm">
+            <Plus className="h-4 w-4" />
+            Add another agent
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
