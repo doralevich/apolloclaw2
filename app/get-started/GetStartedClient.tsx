@@ -19,7 +19,7 @@ export default function GetStartedClient() {
       <div className="w-full max-w-2xl">
         <div
           className="calendly-inline-widget rounded-lg overflow-hidden"
-          data-url="https://calendly.com/therealdaveo/apolloai"
+          data-url="https://calendly.com/apolloclaw/30-minute-meeting-clone"
           style={{ minWidth: "320px", height: "700px" }}
         />
 
