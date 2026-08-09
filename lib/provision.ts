@@ -705,6 +705,28 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
   // may already be sitting in agent_setup if they finished onboarding before this ran.
   const pending = await lookupPendingPersonalization(db, workspaceId, type.id);
 
+  // Two names, two audiences — David's rule, restored after "Iris" turned up in his ops list.
+  //
+  // The PERSONA name (Iris, Max, Atlas) is what the customer calls their agent, chosen at the
+  // Personalize step. It lives in OUR agents table and nowhere else. The INSTANCE name is what
+  // David reads in the Agent37 dashboard at 2am when a box is misbehaving, and "Iris" answers
+  // none of the questions he has there: whose is it, which workspace, who to email. For a while
+  // this call sent the persona as the instance name, which is how a row named Iris ended up
+  // beside "Steve Cronin's Workspace" - same list, two naming schemes, one of them a riddle.
+  //
+  // So the instance is named after the workspace, with the persona appended only as a
+  // disambiguator - a workspace can hold several agents now (seats), and two rows both reading
+  // "Acme's Workspace" would trade one riddle for another.
+  const personaName = input.name?.trim() || pending.name?.trim() || "";
+  const { data: ws } = await db
+    .from("workspaces")
+    .select("name")
+    .eq("id", workspaceId)
+    .maybeSingle();
+  const instanceName = [ws?.name?.trim() || type.label, personaName || null]
+    .filter(Boolean)
+    .join(" - ");
+
   const agent = await agent37.createAgent({
     template,
     // Every instance, every type, both runtimes — one size, from config/agents.ts. This is
@@ -712,7 +734,7 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     // a different shape could come in through.
     resources: { ...INSTANCE_RESOURCES },
     user: userId,
-    name: input.name?.trim() || pending.name?.trim() || type.label,
+    name: instanceName,
     metadata: { app_workspace: workspaceId, agent_type: type.id },
     budget: { monthly_cap_micros: usdToMicros(type.monthlyCapUsd) },
   });
@@ -720,7 +742,9 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
   const { error } = await db.from("agents").insert({
     agent37_id: agent.id,
     workspace_id: workspaceId,
-    name: agent.name || null,
+    // The persona, NOT agent.name. agent.name is now the ops label above, and echoing it back
+    // here would greet the customer with "Acme's Workspace - Iris" in their own sidebar.
+    name: personaName || null,
     avatar_url: pending.avatarUrl || null,
     status: agent.status,
     template: agent.template,
