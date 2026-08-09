@@ -45,26 +45,8 @@ export interface PortfolioMeta {
 //
 // Ownership moved to its own question below, so someone can be a non-owner COO or an
 // owner who never touches operations, and we learn both instead of guessing from one word.
-const ROLE_OPTIONS = [
-  "Owner / Founder",
-  "CEO",
-  "President",
-  "COO / Head of Operations",
-  "CFO / Head of Finance",
-  "Managing Partner",
-  "Partner",
-  "General Manager",
-  "Practice Manager",
-  "Office Manager",
-  "Head of Sales",
-  "Head of Marketing",
-  "Head of People / HR",
-  "Chief of Staff",
-  "Director / Department Head",
-  "Investor / Board",
-  "Advisor / Consultant",
-  "Other",
-];
+// ROLE_OPTIONS is gone - the role is an open text field now. roleOther stays on the Company
+// type so in-flight state saved under the dropdown shape still parses; nothing renders it.
 
 const STRUCTURE_OPTIONS = [
   "Holding company / umbrella",
@@ -233,32 +215,20 @@ export default function CompanyRepeater({
                   options={INDUSTRY_OPTIONS}
                 />
               </Field>
+              {/* Open text, at David's call - this was a seventeen-option dropdown with the
+                  real answer hiding behind "Other" for anyone whose title was not on it. A role
+                  is a thing people know how to type, and "Clinical Director" typed directly
+                  beats "Other" plus a second field that only appeared after the wrong pick. */}
               <Field label="Your role" required>
-                <Select
-                  value={company.role}
-                  onChange={(v) =>
-                    updateCompany(i, {
-                      role: v,
-                      // keep any write-in only while "Other" stays selected
-                      roleOther: v === "Other" ? company.roleOther : "",
-                    })
-                  }
-                  options={ROLE_OPTIONS}
-                />
-              </Field>
-            </div>
-
-            {company.role === "Other" && (
-              <Field label="Tell us your role" required>
                 <input
                   type="text"
-                  value={company.roleOther}
-                  placeholder="e.g. Clinical Director, Head of Studio, Franchise Owner"
-                  onChange={(e) => updateCompany(i, { roleOther: e.target.value })}
+                  value={company.role}
+                  placeholder="e.g. Owner, CEO, Office Manager, Clinical Director"
+                  onChange={(e) => updateCompany(i, { role: e.target.value })}
                   style={inputStyle}
                 />
               </Field>
-            )}
+            </div>
 
             {/* "Your stake" was here and is gone at David's call. It asked how much of the
                 business someone owned in order to infer how much the agent could decide alone -
