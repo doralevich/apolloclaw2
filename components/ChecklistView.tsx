@@ -157,7 +157,21 @@ export function ChecklistView() {
                   cannot drift. Doubly load-bearing now the Channels tab is off the rail: for
                   most customers this panel is the only route to Telegram setup that remains. */}
               {cat === "Connect your tools" && (
-                <div className="mt-2">
+                <div className="mt-8">
+                  {/* Its own break and its own words, at David's call: without them the channel
+                      cards read as three more apps that failed to load a Connect button. They
+                      are a different kind of thing - where the agent ANSWERS you, set up with a
+                      token rather than an OAuth click - and the heading says so before the
+                      cards have to. */}
+                  <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5 pt-2">
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      Where your agent answers you
+                    </h2>
+                  </div>
+                  <p className="mb-3 px-1 text-sm text-muted-foreground">
+                    Pick a chat app and your agent messages you there - these connect with a few
+                    setup steps, not a Connect button. Open a card for its walkthrough.
+                  </p>
                   <ChannelsPanel agentId={agentId} showHeading={false} />
                 </div>
               )}

@@ -29,6 +29,9 @@ const TOOL_SLUGS: Record<string, string> = {
   // forever; labels are not; the lookup has to remember both.
   "Google Workspace": "gmail",
   "Office 365": "outlook",
+  // In the curated catalogue all along and never mapped - David hit the "go and search for it"
+  // card for an app one click away.
+  "Microsoft Teams": "microsoft_teams",
   Zoom: "zoom",
   "Google Meet": "googlemeet",
   Notion: "notion",
@@ -76,7 +79,7 @@ for (const [label, slug] of Object.entries(TOOL_SLUGS)) {
  * bot token, not an OAuth connection. Sending somebody to Connections to look for Slack would
  * be sending them somewhere it will never appear.
  */
-const CHANNEL_TOOLS = new Set(["Slack", "Telegram"]);
+const CHANNEL_TOOLS = new Set(["Slack", "Telegram", "WhatsApp"]);
 
 /** Selections that mean "none" — never turned into an item. */
 const NEGATIVE = new Set(["No CRM currently", "No PM tool", "None", "Other", "None / Not applicable"]);
