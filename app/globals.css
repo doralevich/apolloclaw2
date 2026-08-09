@@ -218,11 +218,10 @@
    looks like it is waiting to load. Body text lands near-black and muted text is dark enough
    to be read rather than skimmed past. */
 .app-accent:not(.dark) {
-  /* 95, not 97. Cards here are pure white, so the page behind them IS the separation — at 97
-     that was a three-point step, and three points across a 1px border is not an edge. Panels
-     read as one continuous sheet with faint lines drawn on it, which is what "not crisp" was.
-     Five points is enough to see where a panel starts without the surround going grey. */
-  --color-background: hsl(0 0% 97%);
+  /* Pure white, at David's call - "make the background white". The grey step (97, then 95) was
+     there so the page behind the cards separated them; with page and card both white, the 1px
+     borders do that job alone, which is exactly the crispness he keeps asking for. */
+  --color-background: hsl(0 0% 100%);
   --color-surface-alt: hsl(0 0% 94%);
   --color-surface-purple: hsl(0 0% 96%);
   --color-surface-teal: hsl(0 0% 93%);
@@ -437,6 +436,13 @@ section::before {
   background-size: 24px 24px;
   pointer-events: none;
   z-index: 0;
+}
+
+/* The dot grid above is marketing texture, and `section` is a bare element selector - so it was
+   landing on every <section> in the dashboard too (the checklist renders one per category),
+   which on a white page reads as dust on the screen rather than as texture. The app opts out. */
+.app-accent section::before {
+  content: none;
 }
 
 @layer base {
