@@ -199,6 +199,68 @@ function ScaleRow({ label, hint, low, high, value, onChange }: { label?: string;
     </FF>
   );
 }
+// Questionnaire label -> Composio logo slug, for the tech-stack tiles.
+//
+// FOR LOGOS ONLY. config/checklist.ts's TOOL_SLUGS decides what can actually connect and is
+// checked against the catalogue at build time; this map only decides which tile gets a real
+// product mark, and a wrong slug here costs nothing - the <img> errors, the fallback initial
+// shows, nobody dead-ends. That asymmetry is why this list can afford to guess broadly where
+// TOOL_SLUGS cannot.
+const STACK_LOGOS: Record<string, string> = {
+  Salesforce: "salesforce", HubSpot: "hubspot", "Microsoft Dynamics 365": "dynamics365",
+  "Oracle NetSuite CRM": "netsuite", "Zoho CRM": "zoho", Pipedrive: "pipedrive", Attio: "attio",
+  Copper: "copper", Freshsales: "freshworks_crm", Outreach: "outreach", Salesloft: "salesloft",
+  Gong: "gong", "Apollo.io": "apollo",
+  "Google Mail": "gmail", "Google Calendar": "googlecalendar", "Office 365": "outlook",
+  Slack: "slack", "Microsoft Teams": "microsoft_teams", "Google Meet": "googlemeet",
+  WhatsApp: "whatsapp", Telegram: "telegram",
+  "Microsoft Word": "microsoft_word", "Microsoft Excel": "excel", "Microsoft PowerPoint": "powerpoint",
+  "Google Docs": "googledocs", "Google Sheets": "googlesheets", "Google Slides": "google_slides",
+  "Google Drive": "googledrive", "OneDrive / SharePoint": "one_drive", Dropbox: "dropbox", Box: "box",
+  Notion: "notion", Asana: "asana", ClickUp: "clickup", Trello: "trello", "Monday.com": "monday",
+  "Jira / Linear": "jira",
+  "QuickBooks Online": "quickbooks", "QuickBooks Desktop": "quickbooks", Xero: "xero",
+  FreshBooks: "freshbooks", NetSuite: "netsuite", "Bill.com": "bill", "Ramp / Brex": "ramp",
+  Stripe: "stripe", Square: "square", PayPal: "paypal",
+};
+
+// A stack tile: real product logo where we know one, the option's initial where we don't, the
+// same multi-select behaviour as CheckGroup either way. David's call, pointing at the
+// Connections page: fifteen grey checkboxes read as a form, fifteen logos read as "which of
+// these is yours" - and recognising a mark is faster than reading its name.
+function LogoTile({ opt, on, onToggle }: { opt: string; on: boolean; onToggle: () => void }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const slug = STACK_LOGOS[opt];
+  const showLogo = slug && !imgFailed;
+  return (
+    <button type="button" onClick={onToggle} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: on ? 600 : 400, fontFamily: "inherit", background: on ? "rgba(215,43,43,0.08)" : SRF2, border: `1.5px solid ${on ? R : BDR}`, color: TX, transition: "all 0.15s", position: "relative" }}>
+      <span style={{ width: 26, height: 26, borderRadius: 6, flexShrink: 0, background: "#fff", border: `1px solid ${BDR}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+        {showLogo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={`https://logos.composio.dev/api/${slug}`} alt="" loading="lazy" onError={() => setImgFailed(true)} style={{ width: 18, height: 18, objectFit: "contain" }} />
+        ) : (
+          <span style={{ fontSize: 11, fontWeight: 700, color: TXD }}>{opt[0]}</span>
+        )}
+      </span>
+      <span style={{ lineHeight: 1.3, minWidth: 0 }}>{opt}</span>
+      {on && (
+        <span style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: 9, background: R, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </span>
+      )}
+    </button>
+  );
+}
+
+function LogoCheckGroup({ options, value = [], onChange }: { options: string[]; value: string[]; onChange: (v: string[]) => void }) {
+  const toggle = (opt: string) => onChange(value.includes(opt) ? value.filter(v => v !== opt) : [...value, opt]);
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 190px), 1fr))", gap: 8 }}>
+      {options.map(opt => <LogoTile key={opt} opt={opt} on={value.includes(opt)} onToggle={() => toggle(opt)} />)}
+    </div>
+  );
+}
+
 function FF({ label, required, hint, children }: { label?: string; required?: boolean; hint?: string; children: React.ReactNode }) {
   return (
     <div>
@@ -1108,19 +1170,19 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
     <Stack key="s2stack">
       <SHead stepNum={3} total={0} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
       <Divider label="Sales & CRM" />
-      <CheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} cols={2} />
+      <LogoCheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} />
       {s2.crm.includes("Other") && <FF label="Which CRM?"><TInput value={s2.crmOther || ""} onChange={v => f2("crmOther", v)} placeholder="Name the tool" /></FF>}
       <Divider label="Communication" />
-      <CheckGroup options={STACK_COMMS} value={s2.comms} onChange={v => f2("comms", v)} cols={2} />
+      <LogoCheckGroup options={STACK_COMMS} value={s2.comms} onChange={v => f2("comms", v)} />
       {s2.comms.includes("Other") && <FF label="Which tool?"><TInput value={s2.commsOther || ""} onChange={v => f2("commsOther", v)} placeholder="Name the tool" /></FF>}
       <Divider label="Documents & Files" />
-      <CheckGroup options={STACK_DOCS} value={s2.docs} onChange={v => f2("docs", v)} cols={2} />
+      <LogoCheckGroup options={STACK_DOCS} value={s2.docs} onChange={v => f2("docs", v)} />
       {s2.docs.includes("Other") && <FF label="Which tool?"><TInput value={s2.docsOther || ""} onChange={v => f2("docsOther", v)} placeholder="Name the tool" /></FF>}
       <Divider label="Projects & Operations" />
-      <CheckGroup options={STACK_PM} value={s2.pm} onChange={v => f2("pm", v)} cols={2} />
+      <LogoCheckGroup options={STACK_PM} value={s2.pm} onChange={v => f2("pm", v)} />
       {s2.pm.includes("Other") && <FF label="Which tool?"><TInput value={s2.pmOther || ""} onChange={v => f2("pmOther", v)} placeholder="Name the tool" /></FF>}
       <Divider label="Finance & Billing" />
-      <CheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} cols={2} />
+      <LogoCheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
       {/* Moved here from Final Details at David's call. Who can touch the stack after launch is
           a fact about the stack, and asking it beside the tools it applies to gets a truer
