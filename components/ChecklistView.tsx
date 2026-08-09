@@ -9,6 +9,7 @@ import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
 import { CHECKLIST_CATEGORIES, connectHref, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
 import { SchedulePanel } from "@/components/SchedulePanel";
+import { ChannelsPanel } from "@/components/ChannelsView";
 import { HelpFooter } from "@/components/HelpFooter";
 import { cn } from "@/lib/utils";
 
@@ -148,17 +149,16 @@ export function ChecklistView() {
                   ))}
               </div>
 
-              {/* Says why the apps are missing rather than leaving a gap. Only under Connect, and
-                  only when nothing was on file — an agent built outside the licence questionnaire
-                  has no answers to read, which is otherwise invisible and reads as a bug. */}
-              {cat === "Connect your tools" && !personalized && (
-                <div className="mt-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
-                  No apps came through from your onboarding answers, so there is nothing to list
-                  here yet.{" "}
-                  <Link href="/dashboard/integrations" className="font-medium text-primary hover:underline">
-                    Browse Connections
-                  </Link>{" "}
-                  to connect whatever you use.
+              {/* The channel cards, under the app grid - the layout David pointed back at.
+                  These left once already and he asked where they went, which settles the
+                  question of whether they earn the space: where the agent ANSWERS you is part
+                  of connecting your tools, and the cards expand into their own setup steps.
+                  Same reuse rule as ever - the Channels page's own panel, so the two surfaces
+                  cannot drift. Doubly load-bearing now the Channels tab is off the rail: for
+                  most customers this panel is the only route to Telegram setup that remains. */}
+              {cat === "Connect your tools" && (
+                <div className="mt-2">
+                  <ChannelsPanel agentId={agentId} showHeading={false} />
                 </div>
               )}
 

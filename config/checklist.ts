@@ -22,6 +22,12 @@ const TOOL_SLUGS: Record<string, string> = {
   // which meant calendar was never implied by anything the customer actually ticked.
   "Google Mail": "gmail",
   "Google Calendar": "googlecalendar",
+  // LEGACY. Off the questionnaire since the split above, but the split only renamed the
+  // options - it could not rename the answers already stored. Every customer who ticked the
+  // old checkbox has "Google Workspace" in agent_setup.answers, and without this row their
+  // checklist demoted a one-click Connect Gmail into "go and search for it". Answers are
+  // forever; labels are not; the lookup has to remember both.
+  "Google Workspace": "gmail",
   "Office 365": "outlook",
   Zoom: "zoom",
   "Google Meet": "googlemeet",
@@ -191,15 +197,45 @@ const MAX_ITEMS = 12;
  * their questionnaire posts to /api/intake and lands in the CRM project, so nothing about it
  * reaches this database. They get a short generic list rather than a wrong personal one.
  */
+// The floor under "Connect your tools": mail and files, both vendors, from the Essentials
+// shelf's own reasoning — these are the connections that change whether an agent can do
+// anything at all.
+//
+// "Only what they picked at onboarding" had a hole: an agent provisioned outside the licence
+// questionnaire has no answers, and a customer who skipped the stack page has answers naming
+// nothing — both landed on an empty section with an apology in a dashed box. David's call,
+// pointing at the original layout: show the essentials instead. Four cards somebody might not
+// need beat zero cards nobody can use, and every one of these is worth connecting anyway.
+const ESSENTIAL_FALLBACK_SLUGS = ["gmail", "googledrive", "outlook", "one_drive"];
+
+function essentialItems(): ChecklistItem[] {
+  return ESSENTIAL_FALLBACK_SLUGS.flatMap((slug) => {
+    const t = DEFAULT_INTEGRATION_TOOLKITS.find((tk) => tk.slug === slug);
+    if (!t) return [];
+    return [
+      {
+        id: `tool:${slug}`,
+        title: `Connect ${t.name}`,
+        // The catalogue's own line ("Gmail is Google's email service."), not "you told us" -
+        // these are offered, not remembered, and the copy must not claim otherwise. The
+        // description is nullable in the catalogue type; every curated entry has one, but the
+        // fallback keeps the card honest rather than the build red if that ever changes.
+        body: t.description ?? `Connect ${t.name} so your agent can reach it.`,
+        category: "Connect your tools" as const,
+        href: "/dashboard/integrations",
+        cta: "Connect",
+        icon: { kind: "logo" as const, src: composioLogoUrl(slug) },
+        toolkitSlug: slug,
+        derived: `toolkit:${slug}` as const,
+      },
+    ];
+  });
+}
+
 export function buildChecklist(answers: Record<string, unknown> | null): ChecklistItem[] {
-  // No answers means no apps. David's rule: the only things under "Connect your tools" are the
-  // ones somebody actually picked at onboarding.
-  //
-  // The alternative was a default shelf of Gmail/Outlook/Drive, and it was wrong for the reason
-  // the whole feature exists — a list that guesses is the generic list with extra steps, and
-  // showing six apps nobody named makes "built from what you told us" a lie on the same screen
-  // that claims it. An empty section says something true: we have nothing on file for you.
-  if (!answers) return [];
+  // No answers: the essentials, nothing personal claimed. This is the white-glove and lead
+  // cohort, whose questionnaire lands in the CRM project rather than this database.
+  if (!answers) return essentialItems();
 
   const items: ChecklistItem[] = [];
 
@@ -239,6 +275,13 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
       toolkitSlug: slug,
       derived: slug ? (`toolkit:${slug}` as const) : undefined,
     });
+  }
+
+  // Answered the questionnaire but named no apps — ticked "None", or skipped the stack page.
+  // Same fallback as no answers at all: the essentials are still worth connecting, and an
+  // empty section under a heading that counts to zero reads as broken rather than as honest.
+  if (!items.some((i) => i.category === "Connect your tools")) {
+    items.push(...essentialItems());
   }
 
   // ── What they said is broken ─────────────────────────────────────────────────────────────

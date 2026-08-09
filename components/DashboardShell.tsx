@@ -386,15 +386,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           around a conversation they would put the composer in a box in the middle of the room. */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <DashboardHeader />
-        {/* The lavender-and-rose bloom below is on every page now, not only the chat welcome.
-            It was written for that one screen and applied there alone, so David - looking at
-            Welcome - reasonably reported it missing. Same wash: two radials at the bottom, felt
-            before it is noticed, and it is what stops a pure-white page reading as blank rather
-            than as clean. `relative` because .chat-wash paints through a ::before at inset-0. */}
+        {/* No wash here any more - David's final call, looking at the checklist: "make the
+            background white." The lavender-and-rose bloom went onto every page for a while and
+            came straight back off; it survives only on the chat WELCOME state (ChatView), the
+            screen it was designed for, where there is nothing to read underneath it. */}
         {isChat ? (
           <div className="min-h-0 flex-1">{children}</div>
         ) : (
-          <main className="chat-wash relative min-h-0 flex-1 overflow-y-auto">
+          <main className="relative min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
           </main>
         )}
