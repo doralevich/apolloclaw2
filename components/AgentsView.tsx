@@ -11,6 +11,7 @@ import { AgentVitals } from "@/components/AgentVitals";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { AddAgentButton } from "@/components/AddAgentButton";
 import { SetupBanner } from "@/components/SetupPrompt";
+import { WorkspaceRoster } from "@/components/WorkspaceRoster";
 
 // My Agent reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
 // lifecycle actions here — create/start/stop/delete/rename — immediately update Chat,
@@ -131,6 +132,11 @@ export function AgentsView() {
               says the container is running; these say whether it is about to run out of credit
               and whether anybody is actually talking to it. */}
           {agents.length === 1 && <AgentVitals agentId={agents[0].agent37_id} />}
+
+          {/* The admin's roster, under their own cards: whose agent is whose, by first and last
+              name, and whether each seat's questionnaire was ever finished. Renders nothing for
+              members and nothing below two agents - see the component. */}
+          <WorkspaceRoster role={role} />
 
         </div>
       )}

@@ -47,11 +47,18 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
   const { busy, run } = useAsyncAction();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  // Two presses to charge, same as the Members seat checkbox - see the note there. The price
+  // being on screen is not the same as being asked "charge it?".
+  const [chargeArmed, setChargeArmed] = useState(false);
 
   if (!current) return null;
 
   function submit() {
     if (!current) return;
+    if (!chargeArmed) {
+      setChargeArmed(true);
+      return;
+    }
     return run(async () => {
       const res = await apiFetch<{ agent_id: string }>(`/api/workspaces/${current.id}/seats`, {
         method: "POST",
@@ -68,6 +75,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
 
       setOpen(false);
       setName("");
+      setChargeArmed(false);
       await refresh();
       if (res.agent_id) setActiveId(res.agent_id);
       toast.success("Your new agent is building");
@@ -85,7 +93,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setChargeArmed(false); }}>
       {/* The default trigger is the labelled button on Settings > My Agent. The sidebar passes
           its own - an icon beside the agent's name, where David asked for it - because that rail
           has no room for a five-word button and the dialog states the charge either way. */}
@@ -129,12 +137,22 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
           </p>
         </div>
 
+        {chargeArmed && (
+          <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
+            <strong>Pressing again charges your card.</strong>{" "}
+            <span className="text-muted-foreground">
+              $189/month, pro-rated from today, and the agent starts building immediately.
+              Cancel costs nothing.
+            </span>
+          </div>
+        )}
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+          <Button variant="outline" onClick={() => { setOpen(false); setChargeArmed(false); }} disabled={busy}>
             Cancel
           </Button>
           <Button onClick={submit} disabled={busy}>
-            {busy ? "Building..." : "Add agent - $189/mo"}
+            {busy ? "Building..." : chargeArmed ? "Confirm - charge $189/mo" : "Add agent - $189/mo"}
           </Button>
         </DialogFooter>
       </DialogContent>
