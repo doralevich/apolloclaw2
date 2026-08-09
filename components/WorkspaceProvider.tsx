@@ -15,6 +15,8 @@ interface WorkspaceContextValue {
   /** The reader's first name for greetings, or null when the account hasn't got a usable one.
    *  Derived server-side from auth user_metadata (config/greetings.ts). */
   userFirstName: string | null;
+  /** First and last together, for the header's Welcome row. Null when nothing usable. */
+  userFullName: string | null;
   /** The signed-in person's own picture, for their messages in chat. Empty when unset. */
   userAvatarUrl: string;
   /** Platform admin (config/admins.ts), resolved server-side in the dashboard layout.
@@ -29,6 +31,7 @@ export function WorkspaceProvider({
   initialWorkspaces,
   userEmail,
   userFirstName = null,
+  userFullName = null,
   userAvatarUrl = "",
   isPlatformAdmin,
   children,
@@ -36,6 +39,7 @@ export function WorkspaceProvider({
   initialWorkspaces: WorkspaceWithRole[];
   userEmail: string;
   userFirstName?: string | null;
+  userFullName?: string | null;
   userAvatarUrl?: string;
   isPlatformAdmin: boolean;
   children: React.ReactNode;
@@ -69,7 +73,7 @@ export function WorkspaceProvider({
   );
 
   return (
-    <WorkspaceContext.Provider value={{ workspaces, current, setCurrentId, refresh, userEmail, userFirstName, userAvatarUrl, isPlatformAdmin }}>
+    <WorkspaceContext.Provider value={{ workspaces, current, setCurrentId, refresh, userEmail, userFirstName, userFullName, userAvatarUrl, isPlatformAdmin }}>
       {children}
     </WorkspaceContext.Provider>
   );

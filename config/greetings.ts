@@ -103,6 +103,24 @@ export function pickGreeting({
  * "sales.team.2024@" and anything with digits get nothing, because "Hi Info2024." is worse than
  * "Hi there."
  */
+/**
+ * First and last, for the header's "Welcome" row - where a full name reads as an account label
+ * rather than a greeting. Same sources and the same caution as displayFirstName: metadata
+ * first, the email local part only when it plausibly reads as a name, null over a guess.
+ */
+export function displayFullName(
+  metadata: Record<string, unknown> | null | undefined,
+  email: string | null | undefined
+): string | null {
+  const meta = metadata ?? {};
+  const first = pickString(meta.first_name) ?? pickString(meta.given_name);
+  const last = pickString(meta.last_name) ?? pickString(meta.family_name);
+  if (first || last) return [first, last].filter((v): v is string => !!v).map(capitalize).join(" ");
+  const full = pickString(meta.full_name) ?? pickString(meta.name);
+  if (full) return full;
+  return displayFirstName(metadata, email);
+}
+
 export function displayFirstName(
   metadata: Record<string, unknown> | null | undefined,
   email: string | null | undefined

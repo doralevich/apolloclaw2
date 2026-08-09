@@ -2,8 +2,10 @@
 
 import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import Link from "next/link";
+import { Plus, Settings } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { HeaderClock } from "@/components/chat/HeaderClock";
@@ -40,6 +42,7 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { active } = useActiveAgent();
+  const { userFullName, userFirstName, current } = useWorkspace();
   const { sessions, activeSessionId, startNewChat } = useChatContext();
 
   const onChat = pathname.startsWith("/dashboard/chat");
@@ -67,6 +70,23 @@ export function DashboardHeader() {
       <h1 className="min-w-0 truncate text-base font-semibold text-foreground">{title}</h1>
 
       <div className="flex shrink-0 items-center gap-3">
+        {/* Who is signed in, and as what - David's ask, after losing track of which account he
+            was testing as. The name says whose session this is; the Admin/Member tag answers
+            the question that actually confused him, since the two roles see different
+            sidebars and only one of them can spend money. Hidden on narrow screens where the
+            title and New Chat matter more. */}
+        {(userFullName || userFirstName) && (
+          <span className="hidden items-baseline gap-2 lg:flex">
+            <span className="text-sm text-muted-foreground">
+              Welcome, <span className="font-medium text-foreground">{userFullName || userFirstName}</span>
+            </span>
+            {current && (
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {current.role === "admin" ? "Admin" : "Member"}
+              </span>
+            )}
+          </span>
+        )}
         {/* Date and time, from the mockup. The weather it also shows isn't here - see HeaderClock. */}
         <HeaderClock />
         {/* Only with an agent to ask about. Every other page in the dashboard survives without
@@ -76,6 +96,16 @@ export function DashboardHeader() {
         {/* Light/dark at the top of the screen, where you are when you decide you want it. The
             three-way preference (including "follow my device") stays in Settings. */}
         <ThemeToggle />
+        {/* Settings, up here where David asked for it - beside the name it configures. The
+            sidebar's own Settings entry stays; a door this important can have two handles. */}
+        <Link
+          href="/dashboard/settings"
+          title="Settings"
+          aria-label="Settings"
+          className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          <Settings className="h-4 w-4" />
+        </Link>
         <button
           type="button"
           onClick={newChat}
