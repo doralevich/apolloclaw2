@@ -89,6 +89,24 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
   });
 
   if (data.length === 0) {
+    // OpenClaw's router aliases, not models. An instance whose gateway has no vendor models
+    // configured reports "openclaw", "openclaw/default", "openclaw/main" - names for whatever
+    // its one configured model happens to be. David's composer showed exactly that list, and a
+    // menu of internal aliases is not a choice, it is noise wearing a dropdown.
+    const aliasOnly = (response.data ?? []).every((m) => /^openclaw([/:].*)?$/i.test(m.id));
+    if (aliasOnly) {
+      // No menu at all: the composer hides the switcher when the list is empty, sends no model
+      // id, and the instance runs its default - which is what every one of those aliases
+      // resolves to anyway. The menu disappearing loses the customer nothing.
+      console.warn(
+        "[chat-models] instance reports only OpenClaw router aliases - hiding the model menu.",
+        "reported:",
+        (response.data ?? []).map((m) => m.id).join(", ")
+      );
+      return { default_model: response.default_model, default_provider: response.default_provider, data: [] };
+    }
+    // Real ids we simply do not recognise (an instance on a newer build): the raw list is
+    // still a genuine choice, so offering it beats an empty menu that reads as broken.
     console.warn(
       "[chat-models] no approved model matched this instance - falling back to the full list.",
       "reported:",
