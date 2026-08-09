@@ -74,8 +74,12 @@ const SETTINGS_NAV = [
       // label that flips between singular and plural reads as a bug.
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
       { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
-      { href: "/dashboard/settings/billing", label: "Billing & Credits", icon: CreditCard, exact: false },
-      { href: "/dashboard/settings/usage", label: "Usage", icon: ChartNoAxesColumn, exact: false },
+      // Two money pages, two scopes, both named for what they answer. Plan is the WORKSPACE's
+      // subscription - seats, invoices, the card. Credits is one AGENT's wallet, with its usage
+      // folded in beneath; the old separate Usage entry repeated the wallet's headline number a
+      // rail-entry lower.
+      { href: "/dashboard/settings/plan", label: "Plan", icon: CreditCard, exact: false },
+      { href: "/dashboard/settings/billing", label: "Credits", icon: ChartNoAxesColumn, exact: false },
       { href: "/dashboard/settings/members", label: "Members", icon: Users, exact: false },
     ],
   },

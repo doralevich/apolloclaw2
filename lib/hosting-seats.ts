@@ -123,4 +123,17 @@ export async function hostingSeatCount(workspaceId: string): Promise<number | nu
   return seat?.quantity ?? null;
 }
 
+/**
+ * The Stripe customer this workspace bills to, for the billing-portal handoff. Resolved the
+ * same way findHostingSeat resolves everything - owner email, then the customer holding our
+ * subscription - so the portal can never open on a different customer than the one the seat
+ * changes bill. Null for white-glove workspaces with no subscription.
+ */
+export async function findStripeCustomerId(workspaceId: string): Promise<string | null> {
+  const seat = await findHostingSeat(workspaceId);
+  if (!seat) return null;
+  const sub = await getStripe().subscriptions.retrieve(seat.subscriptionId);
+  return typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+}
+
 export type { Stripe };
