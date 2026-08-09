@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
-import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,118 +20,229 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// "Another agent, for me."
+// Add an agent — for a colleague, or for yourself.
 //
-// The third of three ways to end up with an agent, and the last one missing:
-//   * a colleague gets one through Members, as a seat;
-//   * somebody who deleted theirs rebuilds from Welcome, at zero agents;
-//   * and this - you already have one and want a second, for different work.
+// Reworked at David's call after he walked the flow: creating an agent for someone else is an
+// INVITATION, so the dialog reads like one. Their email, then a subject and body already
+// written and fully editable, then Send — and afterwards you are back on your dashboard,
+// because the questionnaire that follows is THEIRS to answer on accept, not yours to be
+// dropped into. (The old flow pushed the admin straight into the new agent's questionnaire,
+// which was right for a second agent of your own and wrong for every other case.)
+//
+// Typing your own address still works and skips the compose — there is nobody to write to —
+// and it no longer redirects either: the welcome email carries the questionnaire link, and the
+// setup banner on the dashboard nags until it is done.
 //
 // It runs through the SEATS endpoint rather than POST /api/agents, and that is the whole point.
 // /api/agents provisions without touching billing, which is right for a rebuild (they are
-// already paying for one) and wrong here: a second agent is a second VPS with its own token
-// budget, and it has to appear on the bill the moment it appears in the sidebar. Seats already
-// bills, provisions, rolls back a failed build and assigns an owner; pointing it at yourself
-// instead of an invitee is the only difference.
-//
-// `additional: true` is required because that endpoint refuses to give somebody a second agent
-// by default - a guard against an admin double-charging for a colleague by pressing twice. That
-// is an accident; this is the same request made deliberately, and the two are indistinguishable
-// at the API layer, so the caller has to say which it is.
+// already paying for one) and wrong here: another agent is another VPS, and it has to appear on
+// the bill the moment it appears anywhere else. Seats bills, provisions, rolls back a failed
+// build, assigns the owner, and sends the mail.
 export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) {
-  const router = useRouter();
-  const { current, userEmail } = useWorkspace();
+  const { current, userEmail, userFirstName } = useWorkspace();
   const { refresh, setActiveId } = useActiveAgent();
   const { busy, run } = useAsyncAction();
   const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  // Two presses to charge, same as the Members seat checkbox - see the note there. The price
-  // being on screen is not the same as being asked "charge it?".
+  const [subject, setSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [subjectTouched, setSubjectTouched] = useState(false);
+  const [bodyTouched, setBodyTouched] = useState(false);
+  // Two presses to charge - see the note in MembersView. The price being on screen is not the
+  // same as being asked "charge it?".
   const [chargeArmed, setChargeArmed] = useState(false);
+  // Set when the server said the address is outside the company. The next press sends
+  // allow_external - a confirm, not a wall, same as the Members flow.
+  const [externalWarning, setExternalWarning] = useState("");
 
   if (!current) return null;
 
+  const forSelf = email.trim().toLowerCase() === userEmail.trim().toLowerCase();
+
+  // Prefilled but never overwriting something the admin typed. Recomputed as defaults so the
+  // preview always has words in it, stored only once edited.
+  const defaultSubject = "I set up an AI agent for you";
+  const defaultBody =
+    `Hi,\n\n` +
+    `I've set up your own AI agent for you at ${current.name}. It's already built and running - ` +
+    `accept below, choose a password, and a short questionnaire will personalise it to how you work.\n\n` +
+    `${userFirstName || ""}`.trimEnd();
+  const effectiveSubject = subjectTouched ? subject : defaultSubject;
+  const effectiveBody = bodyTouched ? emailBody : defaultBody;
+
+  const disarm = () => {
+    setChargeArmed(false);
+    setExternalWarning("");
+  };
+
+  const resetAll = () => {
+    setEmail("");
+    setName("");
+    setSubject("");
+    setEmailBody("");
+    setSubjectTouched(false);
+    setBodyTouched(false);
+    disarm();
+  };
+
   function submit() {
     if (!current) return;
+    if (!email.trim()) {
+      toast.error("Enter the email address this agent is for.");
+      return;
+    }
     if (!chargeArmed) {
       setChargeArmed(true);
       return;
     }
     return run(async () => {
-      const res = await apiFetch<{ agent_id: string }>(`/api/workspaces/${current.id}/seats`, {
-        method: "POST",
-        body: JSON.stringify({
-          // Your own address: this is an agent for you, so there is no invitation and no
-          // handover - the endpoint finds you as an existing member and assigns it directly.
-          email: userEmail,
-          name: name.trim() || undefined,
-          additional: true,
-          // Your own domain by definition, so the outside-company confirm can never apply.
-          allow_external: true,
-        }),
-      });
+      try {
+        const res = await apiFetch<{ agent_id: string; invited: boolean }>(
+          `/api/workspaces/${current.id}/seats`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: email.trim(),
+              name: name.trim() || undefined,
+              // Your own address is a deliberate second agent; a colleague's first agent needs
+              // no such override, and sending it anyway would defeat the double-charge guard.
+              additional: forSelf,
+              allow_external: !!externalWarning,
+              ...(forSelf
+                ? {}
+                : { invite_subject: effectiveSubject, invite_body: effectiveBody }),
+            }),
+          }
+        );
 
-      setOpen(false);
-      setName("");
-      setChargeArmed(false);
-      await refresh();
-      if (res.agent_id) setActiveId(res.agent_id);
-      toast.success("Your new agent is building");
-
-      // Straight into its own questionnaire, carrying the agent id.
-      //
-      // The id matters here in a way it never did before: this workspace now holds two agents of
-      // the same type, so "the agent of this type" has stopped being a single answer. Without it
-      // these answers would land on whichever row the lookup found first - which is the older
-      // agent, and would overwrite the answers it was built from.
-      router.push(
-        `/onboard/${LICENSE_AGENT_TYPE_ID}?ws=${encodeURIComponent(current.id)}&agent=${encodeURIComponent(res.agent_id)}`
-      );
+        setOpen(false);
+        resetAll();
+        await refresh();
+        if (forSelf && res.agent_id) setActiveId(res.agent_id);
+        // Back to the dashboard, both ways - the compose WAS the task. No redirect: the
+        // invitee's questionnaire is theirs, and your own arrives by email and setup banner.
+        toast.success(
+          forSelf
+            ? "Your new agent is building - setup link is in your email"
+            : `Invitation sent to ${email.trim()}`
+        );
+      } catch (e) {
+        const err = e as Error & { code?: string };
+        if (err.code === "external_domain") {
+          // Re-arm required: the next press is a different promise than the one they made.
+          setExternalWarning(err.message);
+          setChargeArmed(false);
+          return;
+        }
+        throw e;
+      }
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setChargeArmed(false); }}>
-      {/* The default trigger is the labelled button on Settings > My Agent. The sidebar passes
-          its own - an icon beside the agent's name, where David asked for it - because that rail
-          has no room for a five-word button and the dialog states the charge either way. */}
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) resetAll();
+      }}
+    >
+      {/* The default trigger is the labelled button on Settings > My Agents. The sidebar's
+          "Your team" row passes its own. */}
       <DialogTrigger asChild>
         {trigger ?? (
           <Button variant="outline" size="sm">
             <Plus className="h-4 w-4" />
-            Add another agent
+            Add agent
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add another agent</DialogTitle>
+          <DialogTitle>Add an agent</DialogTitle>
           <DialogDescription>
-            A second agent of your own, with its own connections, its own chat history and its own
-            credit. Useful when the work is genuinely separate - a different business, or a
-            different job you would not want sharing a mailbox.
+            A dedicated agent with its own connections, chat history and credit. Enter a
+            colleague&apos;s email to send them an invitation, or your own for a second agent of
+            your own.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-1.5">
-          <Label htmlFor="new-agent-name">Name it (optional)</Label>
+          <Label htmlFor="seat-email">Who is this agent for?</Label>
           <Input
-            id="new-agent-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="You can change this later"
+            id="seat-email"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              disarm();
+            }}
+            placeholder="colleague@yourcompany.com"
             autoComplete="off"
           />
         </div>
 
-        {/* The charge, stated before the button that makes it. This and the seat checkbox in
-            Members are the only two controls in the dashboard that bill a card, and neither
-            should ever be pressed without the number in view. */}
+        <div className="space-y-1.5">
+          <Label htmlFor="seat-agent-name">Name the agent (optional)</Label>
+          <Input
+            id="seat-agent-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="They can change this later"
+            autoComplete="off"
+          />
+        </div>
+
+        {/* The invitation, written and editable — David's flow. Subject and body prefilled so
+            Send works untouched, editable so it arrives in the admin's voice rather than ours.
+            The Accept button is appended by the server, so no edit can lose the link. */}
+        {!forSelf && email.trim() && (
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor="seat-subject">Email subject</Label>
+              <Input
+                id="seat-subject"
+                value={effectiveSubject}
+                onChange={(e) => {
+                  setSubjectTouched(true);
+                  setSubject(e.target.value);
+                }}
+                autoComplete="off"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="seat-body">Email message</Label>
+              <textarea
+                id="seat-body"
+                value={effectiveBody}
+                onChange={(e) => {
+                  setBodyTouched(true);
+                  setEmailBody(e.target.value);
+                }}
+                rows={6}
+                className="w-full rounded-md border bg-transparent px-3 py-2 text-sm leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <p className="text-xs text-muted-foreground">
+                The &quot;Accept your invitation&quot; button is added under your message
+                automatically.
+              </p>
+            </div>
+          </>
+        )}
+
+        {externalWarning && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+            {externalWarning} Press send again to go ahead.
+          </div>
+        )}
+
+        {/* The charge, stated before the button that makes it. */}
         <div className="rounded-lg border border-dashed bg-secondary/40 p-3 text-sm">
           <p className="font-medium text-foreground">Adds $189/month to your hosting</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Pro-rated from today, on the same subscription and the same invoice - one line that
-            goes up by one. No second licence fee: you have already bought that.
+            goes up by one. No second licence fee.
           </p>
         </div>
 
@@ -141,18 +250,33 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
           <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
             <strong>Pressing again charges your card.</strong>{" "}
             <span className="text-muted-foreground">
-              $189/month, pro-rated from today, and the agent starts building immediately.
-              Cancel costs nothing.
+              $189/month, pro-rated from today. The agent builds immediately
+              {forSelf ? "" : " and the invitation is sent"}. Cancel costs nothing.
             </span>
           </div>
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => { setOpen(false); setChargeArmed(false); }} disabled={busy}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setOpen(false);
+              resetAll();
+            }}
+            disabled={busy}
+          >
             Cancel
           </Button>
-          <Button onClick={submit} disabled={busy}>
-            {busy ? "Building..." : chargeArmed ? "Confirm - charge $189/mo" : "Add agent - $189/mo"}
+          <Button onClick={submit} disabled={busy || !email.trim()}>
+            {busy
+              ? forSelf
+                ? "Building..."
+                : "Sending..."
+              : chargeArmed
+                ? "Confirm - charge $189/mo"
+                : forSelf
+                  ? "Add agent - $189/mo"
+                  : "Send invitation - $189/mo"}
           </Button>
         </DialogFooter>
       </DialogContent>

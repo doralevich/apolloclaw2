@@ -61,6 +61,14 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
      * which it is, and only the Add-another button on Settings > My Agent sets this.
      */
     additional?: boolean;
+    /**
+     * The admin's own words for the invitation email, from the compose step in AddAgentButton.
+     * Optional - absent (the Members checkbox path) the stock subject and body send. The accept
+     * button is appended server-side either way, so an admin editing the text can never edit
+     * away the one link the email exists to deliver.
+     */
+    invite_subject?: string;
+    invite_body?: string;
   }>(request);
   const email = (typeof body.email === "string" ? body.email : "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -204,16 +212,25 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // a seat being billed for an empty chair.
   const acceptUrl = inviteUrl(request, invite.token);
   const inviterName = ((user.user_metadata ?? {}) as { first_name?: string }).first_name || user.email || "A colleague";
+
+  // The admin's words when they wrote some, ours when they did not. Custom body is plain text
+  // from a textarea: escaped, then line breaks honoured - never interpreted as HTML, so nothing
+  // an admin pastes can inject markup into mail we sign.
+  const customSubject = (body.invite_subject ?? "").trim().slice(0, 200);
+  const customBody = (body.invite_body ?? "").trim().slice(0, 5000);
+  const bodyHtml = customBody
+    ? `<p>${escapeHtml(customBody).replace(/\n/g, "<br />")}</p>`
+    : `<h2 style="color:#0B1729">${escapeHtml(inviterName)} set up an AI agent for you.</h2>` +
+      `<p>It is already built and running. Accept the invitation, choose a password, and ` +
+      `it is yours - a short questionnaire personalises it to how you work.</p>`;
   after(async () => {
     try {
       await sendMandrillEmail({
         to: email,
-        subject: "An AI agent is waiting for you",
+        subject: customSubject || "An AI agent is waiting for you",
         html:
           `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
-          `<h2 style="color:#0B1729">${escapeHtml(inviterName)} set up an AI agent for you.</h2>` +
-          `<p>It is already built and running. Accept the invitation, choose a password, and ` +
-          `it is yours - a short questionnaire personalises it to how you work.</p>` +
+          bodyHtml +
           `<p><a href="${acceptUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Accept your invitation</a></p>` +
           `<p style="color:#6b7280;font-size:13px">If you were not expecting this, you can ignore this email.</p>` +
           `</div>`,
