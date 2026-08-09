@@ -126,7 +126,7 @@ export async function extractUploadedDocs(uploads: RawUpload[]): Promise<Extract
         out.push({
           name,
           text: "",
-          note: `uploaded as ${mime || "an unrecognised format"} - ask your owner to send the content as PDF or text if you need it`,
+          note: `uploaded as ${mime || "an unrecognized format"} - ask your owner to send the content as PDF or text if you need it`,
         });
         continue;
       }

@@ -136,7 +136,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
       // ProvisionInput.allowMultiple for why the cap stays on everywhere else.
       allowMultiple: true,
       // No answers to write yet — the colleague fills in their own questionnaire on first
-      // sign-in, and that is what personalises this instance.
+      // sign-in, and that is what personalizes this instance.
       callerWritesContext: true,
     });
     agentId = agent.id;
@@ -157,7 +157,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     await db.from("agents").update({ owner_id: member.user_id }).eq("agent37_id", agentId);
 
     // The email David noticed was missing. Every OTHER way an agent comes to exist sends one -
-    // the Stripe webhook mails licence buyers and agent buyers - but a seat is billed as a
+    // the Stripe webhook mails license buyers and agent buyers - but a seat is billed as a
     // quantity change, no checkout session ever completes, so no webhook fires and this path
     // was silent. The person who just added an agent got a toast that vanished and an invoice
     // later, with nothing in between.
@@ -222,7 +222,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     ? `<p>${escapeHtml(customBody).replace(/\n/g, "<br />")}</p>`
     : `<h2 style="color:#0B1729">${escapeHtml(inviterName)} set up an AI agent for you.</h2>` +
       `<p>It is already built and running. Accept the invitation, choose a password, and ` +
-      `it is yours - a short questionnaire personalises it to how you work.</p>`;
+      `it is yours - a short questionnaire personalizes it to how you work.</p>`;
   after(async () => {
     try {
       await sendMandrillEmail({

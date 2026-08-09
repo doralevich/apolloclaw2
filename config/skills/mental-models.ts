@@ -136,7 +136,7 @@ obstacles rather than the stated ones.
 
 Day 2 is stasis dressed up as maturity: process for its own sake, decisions made by proxy,
 customers discussed rather than listened to. Ask which day the business is operating on, and name
-the specific behaviour that shows it.
+the specific behavior that shows it.
 `,
   },
   {
@@ -186,13 +186,13 @@ have it, it is just stubbornness with better branding.
     slug: "munger-model",
     emoji: "🧠",
     description:
-      "Incentives first, several models at once. Use when behaviour looks irrational.",
+      "Incentives first, several models at once. Use when behavior looks irrational.",
     body: `
 # Think like Charlie Munger
 
 ## Look at incentives first
 
-**"Show me the incentive and I'll show you the outcome."** When behaviour looks irrational, the
+**"Show me the incentive and I'll show you the outcome."** When behavior looks irrational, the
 usual explanation is that it is entirely rational for someone whose incentives you have not
 mapped.
 
@@ -487,7 +487,7 @@ wrong lesson from both.
 
 When reviewing something that went badly: **was the process wrong, or was this the 20% landing?**
 Those need opposite responses. Changing a sound process because of one bad result is how
-organisations get worse by trying to learn.
+organizations get worse by trying to learn.
 
 ## In practice
 

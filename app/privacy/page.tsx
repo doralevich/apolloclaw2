@@ -74,7 +74,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "We share personal information only with service providers that help us operate, each of which processes it on our instructions. We do not sell personal information or share it for cross-context behavioural advertising.",
+        text: "We share personal information only with service providers that help us operate, each of which processes it on our instructions. We do not sell personal information or share it for cross-context behavioral advertising.",
       },
       {
         kind: "table",

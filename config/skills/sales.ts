@@ -259,7 +259,7 @@ ${OWNER_DECIDES}
 
 ## What makes one persuasive
 
-A reader recognising their own situation in the opening paragraph. Everything else is secondary,
+A reader recognizing their own situation in the opening paragraph. Everything else is secondary,
 which means the client's problem - not the work - is where it starts.
 
 ## Structure
@@ -317,7 +317,7 @@ The three questions that separate real partnerships from announcements:
 
 1. **What specifically does each side do?** "Refer each other" is not an action. "Introduce any
    client who mentions X, by email, within a week" is.
-2. **What triggers a referral?** A named situation, so it is recognisable in the moment.
+2. **What triggers a referral?** A named situation, so it is recognizable in the moment.
 3. **Is anything paid?** Decide up front, in writing, including the rate and when it is owed.
    Money discussed after the first referral poisons the relationship.
 
