@@ -57,16 +57,13 @@ const NAV = [
 // and put one obvious way back at the top.
 const SETTINGS_NAV = [
   {
-    title: "Agent",
-    items: [
-      // "My Agent", singular, because that is what a customer has: one, arriving with their
-      // licence. Pluralises only if a workspace somehow holds more than one.
-      { href: "/dashboard/settings/agent", label: "My Agent", icon: LayoutGrid, exact: false },
-    ],
-  },
-  {
     title: "Workspace",
     items: [
+      // One group, at David's call - "Agent" as a heading for a single row made the rail read
+      // as two areas when the customer thinks of it as one. "My Agent(s)" with the optional
+      // plural spelled out, because a workspace can genuinely hold several since seats and a
+      // label that flips between singular and plural reads as a bug.
+      { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
       { href: "/dashboard/settings/billing", label: "Billing & Credits", icon: CreditCard, exact: false },
       { href: "/dashboard/settings/usage", label: "Usage", icon: ChartNoAxesColumn, exact: false },

@@ -1,45 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { ListChecks, MessageSquare } from "lucide-react";
+import { Check, MessageSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { useChatContext } from "@/components/chat/ChatProvider";
+import { useChecklist } from "@/lib/useChecklist";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
-import { SetupChecklist } from "@/components/SetupChecklist";
 import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
 import { Button } from "@/components/ui/button";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
+import { cn } from "@/lib/utils";
 
-// The permanent landing page for the active agent — shown every time "Start Here" is clicked,
-// not just once after provisioning. BuildScreen sends a freshly-provisioned customer here first
-// (instead of straight to the Agents table) so their first look at the dashboard is a greeting
-// for the agent they just built, not a table row.
+// The Welcome page, in The College Agent's shape - FOR REAL this time.
 //
-// Laid out after The College Agent's version, at David's request: one card, the agent
-// introducing itself by name, then three numbered steps in the order somebody actually does
-// them. What that shape buys over the previous pile of cards is a stated ORDER. Before, the
-// page offered several equal-weight things and left the sequencing to the reader — so the
-// commonest outcome was opening chat first and asking an agent with nothing connected to do
-// something it had no way to do.
+// David asked for that page three times, and what he kept getting was its ingredients
+// rearranged: a greeting, then a progress bar and a "next three items" digest that read as a
+// dashboard widget. The College page is not a widget. It is one card that talks: the agent
+// introduces itself, walks you through three numbered steps separated by hairlines, and ends
+// with a single Open Chat button, centred, inside the card. That shape is what this now is.
 //
-// The three steps live in SetupChecklist, which ticks them off against real state. They were
-// static prose here first — a list that does not know what you have done is a poster, not a
-// checklist, and it would have told somebody to connect their tools a week after they did.
-//
-// It is also what points at Channels now: the channels panel used to sit on this page and
-// David has taken it off, so the checklist's second item is the only route to it from here.
+// The one thing kept from the digest era: the steps still tick themselves against real state
+// (questionnaire answered, a tool connected, a first conversation) rather than being static
+// prose. A numbered circle becomes a filled check when its step is done - the College page
+// never needed that because its steps were instructions, but ours double as progress, and a
+// page that tells you to do something you did last week reads as broken.
 export function StartHereView() {
   const { current, userFirstName } = useWorkspace();
   const { agents, active, loading } = useActiveAgent();
+  const { sessions } = useChatContext();
+  // Same source as the Checklist page, so the two can never disagree about what counts as done.
+  const { items } = useChecklist(active?.agent37_id ?? "", sessions.length);
 
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
 
-  // Reached two ways, and this used to describe only one of them: a new customer waiting for
-  // provisioning, and somebody who deleted their agent to start over. The second was told their
-  // agent "is created for you once your license purchase is complete" - which they had done
-  // months ago - beside a button that, until now, rendered nothing at all.
+  // Reached two ways: a new customer waiting for provisioning, and somebody who deleted their
+  // agent to start over. Both get the build button.
   if (agents.length === 0 || !active) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
@@ -58,12 +56,46 @@ export function StartHereView() {
   const type = active.agent_type ? getAgentType(active.agent_type) : undefined;
   const agentName = active.name?.trim() || type?.label || "your agent";
 
+  const setupUrl = active.agent_type
+    ? `/onboard/${encodeURIComponent(active.agent_type)}?ws=${encodeURIComponent(current.id)}&agent=${encodeURIComponent(active.agent37_id)}`
+    : "/dashboard/checklist";
+
+  // The three steps, each judged from live state.
+  const steps: { title: string; body: string; href: string; done: boolean }[] = [
+    {
+      title: "Tell me about your business",
+      body:
+        "The setup questions - who you serve, what you run on, what should land on my desk " +
+        "instead of yours. Everything I do afterwards is built from these answers, and you can " +
+        "come back and change them any time.",
+      href: setupUrl,
+      done: active.setup_completed === true,
+    },
+    {
+      title: "Connect your tools",
+      body:
+        "Your checklist has a Connect button for each app you told us you use - email, " +
+        "calendar, files, your CRM. One click each, and I can read what you read.",
+      href: "/dashboard/checklist",
+      // Done the moment any real connection exists — the point of the step is crossing from
+      // zero to one, and the checklist page owns the long tail.
+      done: items.some((i) => i.derived?.startsWith("toolkit:") && i.done),
+    },
+    {
+      title: "Ask me something real",
+      body:
+        "Once email or calendar is connected, try “What's on my calendar this week?” " +
+        "and watch. Talk to me the way you'd talk to someone who works for you.",
+      href: "/dashboard/chat",
+      done: sessions.length > 0,
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div className="rounded-xl border bg-card p-6 sm:p-8">
+      <div className="rounded-2xl border bg-card p-6 sm:p-10">
+        {/* The greeting: face left, words right, the customer's name the one coloured word. */}
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-7">
-          {/* Still the picker, not a static illustration. The picture used to be a one-shot
-              choice made during the questionnaire, before anyone had spoken to their agent. */}
           <div className="shrink-0">
             <AgentAvatarPicker
               agentId={active.agent37_id}
@@ -72,57 +104,58 @@ export function StartHereView() {
               size="lg"
             />
           </div>
-
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Hey{userFirstName ? " " : ""}
-              {/* The one coloured word on the page. Their name, not the agent's - the agent is
-                  the one talking, so emphasising its own name would be the wrong voice. */}
               {userFirstName && <span className="text-primary">{userFirstName}</span>}, I&apos;m{" "}
               {agentName}.
             </h1>
-            {/* "Three things make me useful, and they go in this order" used to end this
-                paragraph, and it was wrong on screen: the checklist below is generated from each
-                customer's own answers, so it is as often four or nine items as three. A greeting
-                that miscounts the list directly under it is the first thing somebody notices. */}
-            <p className="mt-3 text-muted-foreground">
-              I am built around your business rather than trained on it in general - your people,
-              your stack, the things that keep going wrong. Here is what will make me useful,
-              in the order worth doing it.
+            <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
+              I&apos;m built around your business rather than trained on it in general - your
+              people, your stack, the things that keep going wrong.
             </p>
           </div>
         </div>
 
-        <SetupChecklist agentId={active.agent37_id} />
-      </div>
+        {/* The numbered steps, College style: circle chip, bold title, muted body, a hairline
+            between each. The chip fills with a check once the step's real-world state says done. */}
+        <div className="mt-8">
+          {steps.map((step, i) => (
+            <Link
+              key={step.title}
+              href={step.href}
+              className="group -mx-3 flex items-start gap-4 rounded-lg border-t px-3 py-6 transition-colors first:border-t-0 hover:bg-secondary/40"
+            >
+              <span
+                className={cn(
+                  "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+                  step.done
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground"
+                )}
+              >
+                {step.done ? <Check className="size-4" /> : i + 1}
+              </span>
+              <span className="min-w-0">
+                <span className={cn("block text-base font-semibold", step.done && "text-muted-foreground line-through decoration-1")}>
+                  {step.title}
+                </span>
+                <span className="mt-1 block text-[15px] leading-relaxed text-muted-foreground">
+                  {step.body}
+                </span>
+              </span>
+            </Link>
+          ))}
+        </div>
 
-      {/* Two buttons, because there are two honest next moves and the page should not pretend
-          otherwise: finish setting up, or start talking to it. Chat stays primary - the product
-          works before the list is done - and the checklist gets equal billing rather than the
-          small text link it had inside the card. */}
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button asChild size="lg">
+        {/* One button, centred, inside the card - the College page's ending, kept exactly. */}
+        <div className="mt-6 flex justify-center border-t pt-8">
+          <Button asChild size="lg" className="px-10">
             <Link href="/dashboard/chat">
               <MessageSquare /> Open Chat
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/dashboard/checklist">
-              <ListChecks /> Open Checklist
-            </Link>
-          </Button>
         </div>
-        <p className="text-center text-sm text-muted-foreground">
-          {/* Explicit {" "} around the name. The source had a plain space and production still
-              rendered "Talk to Cherisethe way" - I could not reproduce it here, so rather than
-              leave a space whose survival depends on how the JSX is folded, it is now a node of
-              its own that nothing can collapse. */}
-          Talk to{" "}
-          {agentName}{" "}
-          the way you&apos;d talk to someone who works for you. The more you say about how you
-          want things done, the less you&apos;ll have to repeat yourself.
-        </p>
       </div>
 
       <HelpFooter />
