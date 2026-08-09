@@ -18,9 +18,10 @@ import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration
 /** Curated-catalogue slug for a questionnaire stack option, where one exists. */
 const TOOL_SLUGS: Record<string, string> = {
   HubSpot: "hubspot",
-  // The suite, anchored on mail. Calendar and Drive are separate Composio connections and get
-  // their own items from the essentials list rather than being implied by this one.
-  "Google Workspace": "gmail",
+  // Two options, two connections. These were one "Google Workspace" checkbox anchored on mail,
+  // which meant calendar was never implied by anything the customer actually ticked.
+  "Google Mail": "gmail",
+  "Google Calendar": "googlecalendar",
   "Office 365": "outlook",
   Zoom: "zoom",
   "Google Meet": "googlemeet",

@@ -15,6 +15,13 @@ function mcHeaders() {
 export async function upsertMailchimpContact(email: string, firstName: string, lastName: string = ""): Promise<void> {
   if (!MC_API_KEY) return;
   const emailHash = createHash("md5").update(email.toLowerCase()).digest("hex");
+  // Only send a name we actually have. An empty FNAME is not "no opinion" to Mailchimp - it is
+  // a value, and it overwrites. That did not matter while every caller was a form with a
+  // required name field; it matters now that registrations sync from auth metadata, where the
+  // name is often missing and the audience may already hold a good one from an intake form.
+  const merge_fields: Record<string, string> = {};
+  if (firstName) merge_fields.FNAME = firstName;
+  if (lastName) merge_fields.LNAME = lastName;
   try {
     await fetch(`https://${MC_SERVER}.api.mailchimp.com/3.0/lists/${MC_LIST_ID}/members/${emailHash}`, {
       method: "PUT",
@@ -22,15 +29,50 @@ export async function upsertMailchimpContact(email: string, firstName: string, l
       body: JSON.stringify({
         email_address: email,
         status_if_new: "subscribed",
-        merge_fields: {
-          FNAME: firstName,
-          LNAME: lastName,
-        },
+        merge_fields,
       }),
     });
   } catch (err) {
     console.error("[mailchimp] upsertContact failed:", err);
   }
+}
+
+/**
+ * The tag every ApolloClaw account carries, applied the moment the account exists.
+ *
+ * Named for what was bought rather than for a funnel stage: an ApolloClaw customer gets a VPS,
+ * and that is what separates them in the audience from the intake and setup tags the marketing
+ * forms apply. Somebody can be `ac-intake-submitted` for months without ever registering.
+ */
+export const REGISTRATION_TAG = "VPS-Registration";
+
+/**
+ * A registration, into the audience.
+ *
+ * Until this existed the storefront put NOBODY in Mailchimp. The contact writes all lived in the
+ * marketing routes — intake, pre-call, setup — so a person who arrived, paid and got an account
+ * was in Supabase and Stripe and nowhere a campaign could reach them. That is backwards: the
+ * paying customer is the one contact you would least want to be missing.
+ *
+ * Best effort by construction. Both halves already swallow their own errors, and this is called
+ * from paths where the account is the deliverable - a Mailchimp outage must never fail a
+ * checkout webhook into a Stripe retry, or leave somebody staring at an error on an invitation
+ * they have in fact accepted.
+ *
+ * Idempotent: the upsert is a PUT on the email hash and tagging is additive, so the repeat
+ * deliveries these callers are built to tolerate cost nothing here either.
+ */
+export async function syncMailchimpRegistration(o: {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  /** Applied ON TOP of REGISTRATION_TAG - e.g. which flow they came in through. */
+  extraTags?: string[];
+}): Promise<void> {
+  const email = o.email.trim().toLowerCase();
+  if (!email) return;
+  await upsertMailchimpContact(email, o.firstName?.trim() || "", o.lastName?.trim() || "");
+  await tagMailchimpContact(email, [REGISTRATION_TAG, ...(o.extraTags ?? [])]);
 }
 
 // Apply one or more tags to a contact
