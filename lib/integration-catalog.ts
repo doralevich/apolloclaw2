@@ -138,14 +138,22 @@ export function categoryForSlug(slug: string): string | undefined {
 //
 // The messaging half of this shelf is gone with the chat apps (see the note above the catalog).
 // Microsoft Teams came off the pin with them rather than standing alone as the sole survivor of
-// a group that no longer exists; it is still in Meetings. Notion, Zoom, HubSpot, LinkedIn,
-// Sheets, Asana and Trello likewise stay in their own categories — good apps, but none of them
-// is the first connection anyone should make.
+// a group that no longer exists; it is still in Meetings. Notion, Zoom, HubSpot, LinkedIn, Asana
+// and Trello likewise stay in their own categories — good apps, but none of them is the first
+// connection anyone should make.
+//
+// Docs and Sheets are pinned at David's call, alongside the questionnaire's new Documents &
+// Files section. They were left off when this was "mail, calendar, files" on the reasoning that
+// Drive covers the documents — true for finding a file, false for reading one, and reading is
+// the whole point. A contract, a rate card or a model the agent cannot open is a file it can
+// only see the name of.
 export const ESSENTIAL_INTEGRATION_SLUGS: string[] = [
   "gmail",
   "outlook",
   "googlecalendar",
   "googledrive",
+  "googledocs",
+  "googlesheets",
   "one_drive",
   "dropbox",
 ];
