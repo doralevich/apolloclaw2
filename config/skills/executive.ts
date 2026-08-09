@@ -42,7 +42,7 @@ tense, no adjectives that could apply to a competitor.
 
 **Vision** — what is true in three to five years if this works. Specific enough to be wrong.
 
-**Values** — three to five, each with the behaviour it implies and, crucially, **the cost of
+**Values** — three to five, each with the behavior it implies and, crucially, **the cost of
 holding it**. A value with no cost is a preference. "We answer within the hour" costs evenings;
 "we do great work" costs nothing and means nothing.
 

@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Blocks, ClipboardCheck, MessageSquare } from "lucide-react";
+import { Blocks, ClipboardCheck, MessageSquare, Trash2, UserRound } from "lucide-react";
+import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { statusVariant } from "@/lib/format";
 import { getAgentType } from "@/config/agent-types";
 import type { IntegrationConnectionsResult, MergedAgent, Role } from "@/lib/types";
@@ -30,12 +33,28 @@ export function AgentCard({
   role,
   isPlatformAdmin,
   onChanged,
+  owner,
 }: {
   agent: MergedAgent;
   role: Role;
   isPlatformAdmin: boolean;
   onChanged: () => void;
+  /** Who this agent belongs to, resolved by the admin roster. Absent for members, who only
+   *  ever see their own. Replaces the separate roster TABLE that repeated every card's facts
+   *  one screen lower - one surface, with the missing column added, instead of two. */
+  owner?: { first_name: string; last_name: string; email: string } | null;
 }) {
+  const { active, setActiveId } = useActiveAgent();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function removeAgent() {
+    await apiFetch(`/api/agents/${agent.agent37_id}`, { method: "DELETE" });
+    toast.success(`${name} deleted`);
+    // Clear the selection if the deleted agent was the active one - leaving the dead id in
+    // place would keep Chat and Connections pointed at an instance that no longer exists.
+    if (active?.agent37_id === agent.agent37_id) setActiveId("");
+    onChanged();
+  }
   const typeLabel = agent.agent_type ? getAgentType(agent.agent_type)?.label : undefined;
   const name = agent.name?.trim() || typeLabel || "Your agent";
 
@@ -103,6 +122,16 @@ export function AgentCard({
                   : `${connected} app${connected === 1 ? "" : "s"} connected`}
               </Link>
             )}
+            {/* The roster's one useful column, where the rest of the facts already were: whose
+                agent this is, by name. Admin-only by construction - the roster endpoint that
+                resolves names refuses members. */}
+            {owner && (
+              <span className="inline-flex items-center gap-1.5">
+                <UserRound className="size-3.5" />
+                {[owner.first_name, owner.last_name].filter(Boolean).join(" ") || owner.email}
+                {owner.email && <span className="text-muted-subtle">· {owner.email}</span>}
+              </span>
+            )}
           </div>
         </div>
 
@@ -121,6 +150,36 @@ export function AgentCard({
           />
         </div>
       </div>
+
+      {/* Delete, ON the card it deletes - stage 2 of the settings rework. The old
+          DeleteAgentSection sat on Settings > General and deleted whichever agent the hidden
+          sidebar switcher happened to have active, which in a two-agent workspace was a
+          roulette wheel. Here there is no ambiguity to have: the card names the agent, the
+          confirm names it again, and the seat-credit behavior is stated before the button. */}
+      {role === "admin" && (
+        <>
+          <div className="mt-4 flex justify-end border-t pt-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="size-3.5" />
+              Delete {name}
+            </Button>
+          </div>
+          <ConfirmDialog
+            open={confirmDelete}
+            onOpenChange={setConfirmDelete}
+            title={`Delete ${name}?`}
+            description={`Permanently tears down ${name} - its memory of the business, its app connections, its chat history. If this workspace still has another agent afterwards, the $189/month hosting seat is credited back automatically. This cannot be undone.`}
+            confirmText={`Delete ${name}`}
+            destructive
+            onConfirm={removeAgent}
+          />
+        </>
+      )}
 
       {/* The machine, for us. A customer cannot act on vCPU/RAM/disk and should not have to
           read it; we need it constantly when something is misbehaving. */}

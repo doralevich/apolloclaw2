@@ -13,7 +13,13 @@ function mcHeaders() {
 
 // Upsert a contact into the Apollo Claw audience
 export async function upsertMailchimpContact(email: string, firstName: string, lastName: string = ""): Promise<void> {
-  if (!MC_API_KEY) return;
+  // Loudly, not silently. This no-op used to be invisible, which cost an evening: David
+  // searched the audience for a contact the code had "sent" on a deployment that never had
+  // the key, and nothing anywhere said so.
+  if (!MC_API_KEY) {
+    console.warn("[mailchimp] MAILCHIMP_API_KEY not set - skipping upsert for", email);
+    return;
+  }
   const emailHash = createHash("md5").update(email.toLowerCase()).digest("hex");
   // Only send a name we actually have. An empty FNAME is not "no opinion" to Mailchimp - it is
   // a value, and it overwrites. That did not matter while every caller was a form with a
@@ -23,7 +29,7 @@ export async function upsertMailchimpContact(email: string, firstName: string, l
   if (firstName) merge_fields.FNAME = firstName;
   if (lastName) merge_fields.LNAME = lastName;
   try {
-    await fetch(`https://${MC_SERVER}.api.mailchimp.com/3.0/lists/${MC_LIST_ID}/members/${emailHash}`, {
+    const res = await fetch(`https://${MC_SERVER}.api.mailchimp.com/3.0/lists/${MC_LIST_ID}/members/${emailHash}`, {
       method: "PUT",
       headers: mcHeaders(),
       body: JSON.stringify({
@@ -32,6 +38,12 @@ export async function upsertMailchimpContact(email: string, firstName: string, l
         merge_fields,
       }),
     });
+    // fetch only throws on network failure. A 401 from a bad key or a 404 from the wrong
+    // datacenter "succeeds" as far as the promise is concerned, so without this check every
+    // auth failure was invisible - the exact shape of "test7 is not anywhere in Mailchimp".
+    if (!res.ok) {
+      console.error("[mailchimp] upsert failed:", email, res.status, (await res.text()).slice(0, 300));
+    }
   } catch (err) {
     console.error("[mailchimp] upsertContact failed:", err);
   }
@@ -77,16 +89,23 @@ export async function syncMailchimpRegistration(o: {
 
 // Apply one or more tags to a contact
 export async function tagMailchimpContact(email: string, tags: string[]): Promise<void> {
-  if (!MC_API_KEY || !tags.length) return;
+  if (!tags.length) return;
+  if (!MC_API_KEY) {
+    console.warn("[mailchimp] MAILCHIMP_API_KEY not set - skipping tags for", email);
+    return;
+  }
   const emailHash = createHash("md5").update(email.toLowerCase()).digest("hex");
   try {
-    await fetch(`https://${MC_SERVER}.api.mailchimp.com/3.0/lists/${MC_LIST_ID}/members/${emailHash}/tags`, {
+    const res = await fetch(`https://${MC_SERVER}.api.mailchimp.com/3.0/lists/${MC_LIST_ID}/members/${emailHash}/tags`, {
       method: "POST",
       headers: mcHeaders(),
       body: JSON.stringify({
         tags: tags.map((name) => ({ name, status: "active" })),
       }),
     });
+    if (!res.ok) {
+      console.error("[mailchimp] tagging failed:", email, res.status, (await res.text()).slice(0, 300));
+    }
   } catch (err) {
     console.error("[mailchimp] tagContact failed:", err);
   }

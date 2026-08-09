@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { WorkspaceLogoUpload } from "@/components/WorkspaceLogoUpload";
 import { ThemePicker } from "@/components/ThemePicker";
-import { DeleteAgentSection } from "@/components/DeleteAgentSection";
 
 export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
@@ -102,7 +101,10 @@ export function SettingsView() {
           {/* The agent first: deleting one is the recoverable-ish mistake (buy another,
               answer the questionnaire again), and deleting the workspace takes everything
               including this agent with it. */}
-          <DeleteAgentSection />
+          {/* Delete agent left this page in stage 2 of the settings rework. It deleted
+              whichever agent the HIDDEN sidebar switcher had active - in a two-agent
+              workspace, a roulette wheel. It lives on each agent's own card now, where the
+              card names what the button destroys. */}
 
           <div className="rounded-lg border border-destructive/40 p-4">
             <h2 className="text-sm font-medium">Delete workspace</h2>

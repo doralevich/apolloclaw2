@@ -42,9 +42,9 @@ export function StartHereView() {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
         <p className="text-sm text-muted-foreground">
-          There is no agent in this workspace right now. If you have just bought a licence, yours
+          There is no agent in this workspace right now. If you have just bought a license, yours
           is built as soon as the questionnaire is in. If you deleted the last one, you can build
-          a fresh one here - your licence and hosting are unchanged.
+          a fresh one here - your license and hosting are unchanged.
         </p>
         <div className="mt-4 flex justify-center">
           <CreateAgentModal />

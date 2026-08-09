@@ -52,7 +52,7 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
     // Anything else is a client writing an arbitrary URL into a column we render as an <img>.
     const preset = body.avatar_preset;
     const ok = isAvatarPresetPath(preset) || (preset.startsWith("data:image/") && preset.length <= 20_000);
-    if (!ok) throw new ApiError(400, "invalid_request", "Unrecognised avatar");
+    if (!ok) throw new ApiError(400, "invalid_request", "Unrecognized avatar");
     update.avatar_url = preset;
   }
 

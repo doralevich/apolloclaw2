@@ -22,7 +22,7 @@ Before writing anything, read the voice section of AGENTS.md and the owner's wri
 USER.md: how they describe their own voice, the brands they admire, the words they like, and the
 words they hate. Those were collected for exactly this moment.
 
-Match sentence length and rhythm, not just vocabulary - that is what makes writing recognisable.
+Match sentence length and rhythm, not just vocabulary - that is what makes writing recognizable.
 If they write in short declaratives, do not produce balanced two-clause sentences because they
 read as more professional.
 
@@ -312,7 +312,7 @@ ${DRAFT_RULE}
     body: `
 # Document formatting
 
-Content is done. This is about making it look like it came from one organisation that pays
+Content is done. This is about making it look like it came from one organization that pays
 attention.
 
 ## Establish the standard first

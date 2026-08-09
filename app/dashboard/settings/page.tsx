@@ -1,26 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
 import { SettingsView } from "@/components/SettingsView";
-import { ProfileNameCard } from "@/components/ProfileNameCard";
 
-// Server component so the name can be read straight out of auth metadata, which is only
-// readable here — the same reason the dashboard layout resolves userFirstName rather than the
-// browser doing it.
-export default async function Page() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const meta = (data.user?.user_metadata ?? {}) as Record<string, unknown>;
-  const str = (v: unknown) => (typeof v === "string" ? v : "");
-
+// General is the WORKSPACE page now, nothing else. The name-and-picture block that used to sit
+// above it - unlabeled, and about a different owner entirely - moved to Settings > My Account
+// in the settings rework: a page must be able to answer "whose setting is this?" in one glance,
+// and this one could not while it opened with you and continued with the workspace.
+export default function Page() {
   return (
-    <div className="max-w-xl space-y-8">
-      <ProfileNameCard
-        initialFirst={str(meta.first_name)}
-        initialLast={str(meta.last_name)}
-        initialAvatar={str(meta.avatar_url)}
-      />
-      <div className="border-t pt-8">
-        <SettingsView />
-      </div>
+    <div className="max-w-xl">
+      <SettingsView />
     </div>
   );
 }

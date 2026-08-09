@@ -66,7 +66,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
   const defaultBody =
     `Hi,\n\n` +
     `I've set up your own AI agent for you at ${current.name}. It's already built and running - ` +
-    `accept below, choose a password, and a short questionnaire will personalise it to how you work.\n\n` +
+    `accept below, choose a password, and a short questionnaire will personalize it to how you work.\n\n` +
     `${userFirstName || ""}`.trimEnd();
   const effectiveSubject = subjectTouched ? subject : defaultSubject;
   const effectiveBody = bodyTouched ? emailBody : defaultBody;
@@ -242,7 +242,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
           <p className="font-medium text-foreground">Adds $189/month to your hosting</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Pro-rated from today, on the same subscription and the same invoice - one line that
-            goes up by one. No second licence fee.
+            goes up by one. No second license fee.
           </p>
         </div>
 

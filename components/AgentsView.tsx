@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -11,14 +11,37 @@ import { AgentVitals } from "@/components/AgentVitals";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { AddAgentButton } from "@/components/AddAgentButton";
 import { SetupBanner } from "@/components/SetupPrompt";
-import { WorkspaceRoster } from "@/components/WorkspaceRoster";
 
 // My Agent reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
 // lifecycle actions here — create/start/stop/delete/rename — immediately update Chat,
 // Integrations, and Credits too. The provider also owns the transitional-status poll.
+type RosterOwner = { first_name: string; last_name: string; email: string } | null;
+
 export function AgentsView() {
   const { current, isPlatformAdmin } = useWorkspace();
   const { agents, role, loading, error, refresh } = useActiveAgent();
+
+  // Whose agent is whose, folded INTO the cards. The roster used to be a separate table
+  // underneath, repeating every card's facts one screen lower with one extra column; the
+  // extra column moved onto the cards and the table went. Admins only - the endpoint that
+  // resolves names from auth metadata refuses members, and members only see their own agents
+  // anyway.
+  const [owners, setOwners] = useState<Record<string, RosterOwner>>({});
+  useEffect(() => {
+    if (!current || role !== "admin") return;
+    let cancelled = false;
+    apiFetch<{ agents: { agent37_id: string; owner: RosterOwner }[] }>(
+      `/api/workspaces/${current.id}/roster`
+    )
+      .then((res) => {
+        if (cancelled) return;
+        setOwners(Object.fromEntries(res.agents.map((a) => [a.agent37_id, a.owner])));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [current, role, agents.length]);
 
   // Storefront deep link (/agents -> /dashboard?buy=cfo, surviving login): as soon as the
   // workspace is known, start checkout for the requested type and hand off to Stripe. The
@@ -132,6 +155,7 @@ export function AgentsView() {
               role={role}
               isPlatformAdmin={isPlatformAdmin}
               onChanged={refresh}
+              owner={owners[a.agent37_id]}
             />
           ))}
 
@@ -139,11 +163,6 @@ export function AgentsView() {
               says the container is running; these say whether it is about to run out of credit
               and whether anybody is actually talking to it. */}
           {agents.length === 1 && <AgentVitals agentId={agents[0].agent37_id} />}
-
-          {/* The admin's roster, under their own cards: whose agent is whose, by first and last
-              name, and whether each seat's questionnaire was ever finished. Renders nothing for
-              members and nothing below two agents - see the component. */}
-          <WorkspaceRoster role={role} />
 
         </div>
       )}

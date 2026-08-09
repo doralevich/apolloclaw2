@@ -54,7 +54,7 @@ const SECTIONS: LegalSection[] = [
       },
       {
         kind: "prose",
-        text: "We use analytics only in aggregate, to understand traffic. We do not use it to build advertising profiles, and we have not enabled Google Ads features, ad personalisation, or ad data sharing.",
+        text: "We use analytics only in aggregate, to understand traffic. We do not use it to build advertising profiles, and we have not enabled Google Ads features, ad personalization, or ad data sharing.",
       },
     ],
   },

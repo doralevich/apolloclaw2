@@ -225,9 +225,9 @@ const STACK_LOGOS: Record<string, string> = {
 };
 
 // A stack tile: real product logo where we know one, the option's initial where we don't, the
-// same multi-select behaviour as CheckGroup either way. David's call, pointing at the
+// same multi-select behavior as CheckGroup either way. David's call, pointing at the
 // Connections page: fifteen grey checkboxes read as a form, fifteen logos read as "which of
-// these is yours" - and recognising a mark is faster than reading its name.
+// these is yours" - and recognizing a mark is faster than reading its name.
 function LogoTile({ opt, on, onToggle }: { opt: string; on: boolean; onToggle: () => void }) {
   const [imgFailed, setImgFailed] = useState(false);
   const slug = STACK_LOGOS[opt];
@@ -448,7 +448,7 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
                   the Create button that is now waiting on Welcome for any workspace with zero
                   agents. The route existed; the sign did not. */}
               <p style={{ margin: "0 0 12px" }}>
-                There is nothing to buy here - the licence is already yours. Log in and your
+                There is nothing to buy here - the license is already yours. Log in and your
                 dashboard picks up where you left off, and if there is no agent on it yet you can
                 build one from the Welcome page.
               </p>
