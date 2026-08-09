@@ -55,6 +55,11 @@ export function MembersView() {
   // this warns rather than refuses.
   const [externalWarning, setExternalWarning] = useState("");
   const [withAgent, setWithAgent] = useState(false);
+  // The charge is two presses, at David's call. He went through this flow and it "just went to
+  // payment" - the price was on screen, but stating a price and asking permission to charge it
+  // are different acts, and the second one deserves its own press. First press arms; the box
+  // below says exactly what the next press does; anything that changes the order disarms.
+  const [chargeArmed, setChargeArmed] = useState(false);
   const { busy, run } = useAsyncAction();
 
   const load = useCallback(async () => {
@@ -82,6 +87,10 @@ export function MembersView() {
 
   function createInvite() {
     if (!current) return;
+    if (withAgent && !chargeArmed) {
+      setChargeArmed(true);
+      return;
+    }
     return run(async () => {
       try {
         // Two endpoints, because they are two different acts. /seats charges the card and
@@ -220,7 +229,7 @@ export function MembersView() {
                   type="checkbox"
                   checked={withAgent}
                   disabled={!inviteEmail.trim()}
-                  onChange={(e) => setWithAgent(e.target.checked)}
+                  onChange={(e) => { setWithAgent(e.target.checked); setChargeArmed(false); }}
                   className="mt-0.5 size-4 shrink-0 accent-primary"
                 />
                 <span className="min-w-0">
@@ -234,6 +243,14 @@ export function MembersView() {
                   </span>
                 </span>
               </label>
+
+              {chargeArmed && (
+                <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs leading-relaxed">
+                  <strong className="text-foreground">Pressing again charges your card.</strong>{" "}
+                  $189/month added to your hosting subscription, pro-rated from today, and their
+                  agent starts building immediately. Cancel costs nothing.
+                </div>
+              )}
 
               {/* Member is the default and deliberately listed first. Admin used to be the only
                   option — inviting anyone handed them the workspace. */}
@@ -256,7 +273,7 @@ export function MembersView() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={busy}>
+                <Button variant="outline" onClick={() => { setInviteOpen(false); setChargeArmed(false); }} disabled={busy}>
                   Cancel
                 </Button>
                 <Button onClick={createInvite} disabled={busy}>
@@ -267,7 +284,9 @@ export function MembersView() {
                     : externalWarning
                       ? "Invite anyway"
                       : withAgent
-                        ? "Add seat - $189/mo"
+                        ? chargeArmed
+                          ? "Confirm - charge $189/mo"
+                          : "Add seat - $189/mo"
                         : "Create invite link"}
                 </Button>
               </DialogFooter>
