@@ -44,6 +44,21 @@ export interface ProvisionInput {
    *  than the stored answers (the in-memory uploads). Suppresses our own enrichment pass so
    *  the two don't race on the same file. */
   callerWritesContext?: boolean;
+  /**
+   * Skip the one-agent-per-type-per-workspace cap.
+   *
+   * The cap predates seats and, once seats existed, was wrong for them: a company buying an
+   * agent for the office manager and one for the founder is two agents of the SAME type in one
+   * workspace, which is the entire product. Every seat purchase into a workspace that already
+   * had an agent - i.e. all of them - died on a 409 reading "Each workspace can have one agent
+   * per type", after the card had already been charged.
+   *
+   * Only the seats endpoint sets this, and the cap stays on everywhere else on purpose. The
+   * Stripe webhook RELIES on that 409 for idempotency: a duplicate delivery is treated as
+   * "already provisioned" and acknowledged. Take the cap away globally and a Stripe retry
+   * silently mints a second VPS.
+   */
+  allowMultiple?: boolean;
 }
 
 // Where the agent keeps the files it reads about itself and its owner. This is NOT one
@@ -650,7 +665,7 @@ async function resolveProvisionTemplate(
 }
 
 export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent> {
-  const { type, workspaceId, userId, allowTemplateFallback = false } = input;
+  const { type, workspaceId, userId, allowTemplateFallback = false, allowMultiple = false } = input;
 
   // Service-role client: callers have already authorized the request (member+entitled
   // gates on the API route; a verified Stripe signature + paid session on the webhook).
@@ -659,7 +674,9 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
   // Cap: one agent of each type per workspace. Keyed on agent_type with a template
   // fallback for legacy rows that predate the column. Best-effort — two simultaneous
   // creates could race past it, but the UI disables the card once the list refreshes.
-  const { data: existing, error: capError } = await db
+  const { data: existing, error: capError } = allowMultiple
+    ? { data: null, error: null }
+    : await db
     .from("agents")
     .select("agent37_id")
     .eq("workspace_id", workspaceId)

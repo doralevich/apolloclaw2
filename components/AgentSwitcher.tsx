@@ -1,12 +1,9 @@
 "use client";
 
-import { Bot, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { Bot, Check, ChevronsUpDown } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
-import { useWorkspace } from "@/components/WorkspaceProvider";
-import { AddAgentButton } from "@/components/AddAgentButton";
 import { isTransitional } from "@/lib/format";
 import type { MergedAgent } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -55,16 +52,11 @@ function AgentAvatar({ agent, className }: { agent: MergedAgent | null; classNam
 // rather than as a control that grew.
 export function AgentSwitcher() {
   const { agents, active, setActiveId, loading } = useActiveAgent();
-  const { current } = useWorkspace();
 
   // No agents at all: nothing to name. Welcome handles that state with a build button.
   if (!agents.length || !active) return null;
 
   const many = agents.length > 1;
-
-  // Adding an agent bills the workspace, and only an admin can call the seats endpoint. Showing
-  // a member a button that answers 403 is worse than not showing it.
-  const canAdd = current?.role === "admin";
 
   const identity = (
     <span className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
@@ -118,24 +110,6 @@ export function AgentSwitcher() {
         <div className="flex min-w-0 flex-1 items-center px-2 py-1.5">{identity}</div>
       )}
 
-      {/* Add another, here — where David's arrow pointed. It opens the same dialog as the button
-          on Settings > My Agent, which states the $189/month before the button that commits it,
-          so this icon opens a decision rather than making one. */}
-      {canAdd && (
-        <AddAgentButton
-          trigger={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0 text-muted-foreground"
-              aria-label="Add another agent"
-              title="Add another agent"
-            >
-              <Plus className="size-4" />
-            </Button>
-          }
-        />
-      )}
     </div>
   );
 }

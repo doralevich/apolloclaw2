@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Radio, Settings, SlidersHorizontal, Users, X } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
-import { CHANNELS_ENABLED } from "@/config/channels";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
+import { AddAgentButton } from "@/components/AddAgentButton";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
@@ -36,13 +36,13 @@ const NAV = [
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
-  // Sits next to Connections because the two answer the neighbouring questions — what the agent
-  // can reach, and where it answers you. Absent entirely until the runtime endpoints are
-  // confirmed (config/channels.ts): a rail item that leads somewhere broken is worse than one
-  // that isn't there yet.
-  ...(CHANNELS_ENABLED
-    ? [{ href: "/dashboard/channels", label: "Channels", icon: Radio, exact: false }]
-    : []),
+  // Channels is OFF the rail at David's call - the same call that took the channel cards off
+  // the checklist. The page itself still exists and still works at /dashboard/channels; only
+  // the tab is gone, so nothing is deleted and putting it back is one line.
+  //
+  // Worth knowing what that costs: Channels is where a customer connects Telegram, and Telegram
+  // is how most of them actually talk to their agent. With no tab, the only routes left are the
+  // direct URL and whatever we send them in email. If people stop connecting it, this is why.
   // Sits directly under Chat's neighbours: it is the answer to "what do I say to this thing",
   // which is a question people have while looking at the chat, not while looking for account
   // options.
@@ -81,6 +81,11 @@ type NavItem = { href: string; label: string; icon: LucideIcon; exact: boolean }
 
 // One row, used by the app rail, the Settings rail, and the Settings entry itself, so the
 // active treatment can't drift between them.
+// Same shape as a NavLink, never "active" - these open a dialog or jump into Settings rather
+// than being a destination the rail highlights.
+const SIDE_ACTION_CLASS =
+  "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground";
+
 function NavLink({
   item,
   pathname,
@@ -136,6 +141,7 @@ function SidebarContent({
 
   const { current, workspaces } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;
+  const isWorkspaceAdmin = current?.role === "admin";
   const logoUrl = current?.logo_url || branding.logoUrl;
   // The logo stands alone now, so it has to carry its own name for anyone who can't see it.
   const logoAlt = current?.logo_url ? current.name : branding.appName;
@@ -225,6 +231,34 @@ function SidebarContent({
           <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
         ))}
       </nav>
+
+      {/* Growing the account: another agent, or another person. Both were buried - Add another
+          agent lived on Settings > My Agent, Members lived on Settings, and the first attempt at
+          fixing it put a bare + beside the agent's name, which David quite rightly read as
+          nothing at all. They are labelled rows here, above the chat list, because an icon is
+          only obvious to whoever drew it.
+
+          Admins only. Both actions end at endpoints that require it, and a member who presses
+          either gets a 403 - so a row that is going to refuse is a row not worth showing. */}
+      {isWorkspaceAdmin && (
+        <div className="mt-6 flex flex-col gap-1">
+          <span className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Your team
+          </span>
+          <AddAgentButton
+            trigger={
+              <button type="button" className={SIDE_ACTION_CLASS}>
+                <Plus className="h-4 w-4" />
+                Add agent
+              </button>
+            }
+          />
+          <Link href="/dashboard/settings/members" onClick={onNavigate} className={SIDE_ACTION_CLASS}>
+            <UserPlus className="h-4 w-4" />
+            Invite a member
+          </Link>
+        </div>
+      )}
 
       {/* Your conversations, under the nav - reachable from any page rather than only once
           you've opened Chat. The rail used to be a second column inside the chat page, which
