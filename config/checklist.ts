@@ -31,6 +31,22 @@ const TOOL_SLUGS: Record<string, string> = {
   // One option, two products. Jira is the commoner of the pair among the businesses this sells
   // to; somebody on Linear lands on the Connections page and finds it in one search.
   "Jira / Linear": "jira",
+
+  // ── Documents & files ──────────────────────────────────────────────────────
+  // Where the documents live gets a real connection; the editors mostly do not.
+  //
+  // Word, Excel, PowerPoint and Google Slides are deliberately ABSENT. There is no toolkit for
+  // them in the curated catalogue, and inventing a slug to fill the gap is the one failure this
+  // file exists to prevent - a Connect button that dead-ends on "Could not connect app". Left
+  // unmapped they still produce a checklist row, pointing at the Connections search instead of
+  // promising a handshake we cannot perform. That is also honest about how the files work:
+  // an Office document is reached through OneDrive or SharePoint, not through Word.
+  "Google Docs": "googledocs",
+  "Google Sheets": "googlesheets",
+  "Google Drive": "googledrive",
+  "OneDrive / SharePoint": "one_drive",
+  Dropbox: "dropbox",
+  Box: "box",
 };
 
 // Every slug above must exist in the curated catalogue, checked at import. A slug that is not
@@ -193,6 +209,7 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
     ...answerList(answers, "commsTools"),
     ...answerList(answers, "pmTools"),
     ...answerList(answers, "billingTools"),
+    ...answerList(answers, "docsTools"),
   ];
   const seenTools = new Set<string>();
   for (const label of stack) {
