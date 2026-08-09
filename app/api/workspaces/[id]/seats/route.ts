@@ -1,4 +1,8 @@
+import { after } from "next/server";
 import { requireAdmin, requireEntitled, requireUser } from "@/lib/auth";
+import { sendMandrillEmail } from "@/lib/email";
+import { escapeHtml } from "@/lib/onboardingSections";
+import { publicSiteOrigin } from "@/lib/site-url";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { changeHostingSeats, hostingSeatCount } from "@/lib/hosting-seats";
 import { inviteUrl } from "@/lib/invites";
@@ -107,9 +111,9 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   }
 
   // ── 2. Build ───────────────────────────────────────────────────────────────
+  const type = licenseAgentType();
   let agentId: string;
   try {
-    const type = licenseAgentType();
     const agent = await provisionTypedAgent({
       type,
       workspaceId: id,
@@ -143,6 +147,37 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // the membership, with claimSeatFor() below attaching the agent on first sign-in.
   if (member) {
     await db.from("agents").update({ owner_id: member.user_id }).eq("agent37_id", agentId);
+
+    // The email David noticed was missing. Every OTHER way an agent comes to exist sends one -
+    // the Stripe webhook mails licence buyers and agent buyers - but a seat is billed as a
+    // quantity change, no checkout session ever completes, so no webhook fires and this path
+    // was silent. The person who just added an agent got a toast that vanished and an invoice
+    // later, with nothing in between.
+    //
+    // After the response, best effort: the agent exists and is billed either way, and a mail
+    // failure must not turn a successful build into an error screen.
+    const setupUrl = `${publicSiteOrigin()}/onboard/${encodeURIComponent(type.id)}?ws=${encodeURIComponent(id)}&agent=${encodeURIComponent(agentId)}`;
+    after(async () => {
+      try {
+        await sendMandrillEmail({
+          to: email,
+          subject: "Your new agent is building",
+          html:
+            `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
+            `<h2 style="color:#0B1729">Your new agent is on its way.</h2>` +
+            `<p>It has been created and is building now. Hosting for it was added to your ` +
+            `subscription - one line, pro-rated from today.</p>` +
+            `<p>Its setup questions are what turn it from a general assistant into yours: how ` +
+            `this work is different, who it deals with, what it should take off your plate.</p>` +
+            `<p><a href="${setupUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Set up your new agent</a></p>` +
+            `<p style="color:#6b7280;font-size:13px">This link keeps working - come back to it whenever suits.</p>` +
+            `</div>`,
+        });
+      } catch (err) {
+        console.error("[seats] welcome email failed:", email, err);
+      }
+    });
+
     return json({ agent_id: agentId, seats, email, invited: false }, 201);
   }
 
@@ -163,8 +198,33 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // claimSeat() in lib/seats.ts hands it over on accept.
   await db.from("agents").update({ owner_id: user.id }).eq("agent37_id", agentId);
 
+  // Mail the invitation. The URL is still returned below - the admin watching the dialog can
+  // copy it into Slack - but "the invitee finds out" must not depend on the admin remembering
+  // to do that: their agent is already built and waiting, and an invitation nobody delivers is
+  // a seat being billed for an empty chair.
+  const acceptUrl = inviteUrl(request, invite.token);
+  const inviterName = ((user.user_metadata ?? {}) as { first_name?: string }).first_name || user.email || "A colleague";
+  after(async () => {
+    try {
+      await sendMandrillEmail({
+        to: email,
+        subject: "An AI agent is waiting for you",
+        html:
+          `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
+          `<h2 style="color:#0B1729">${escapeHtml(inviterName)} set up an AI agent for you.</h2>` +
+          `<p>It is already built and running. Accept the invitation, choose a password, and ` +
+          `it is yours - a short questionnaire personalises it to how you work.</p>` +
+          `<p><a href="${acceptUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Accept your invitation</a></p>` +
+          `<p style="color:#6b7280;font-size:13px">If you were not expecting this, you can ignore this email.</p>` +
+          `</div>`,
+      });
+    } catch (err) {
+      console.error("[seats] invite email failed:", email, err);
+    }
+  });
+
   return json(
-    { agent_id: agentId, seats, email, invited: true, url: inviteUrl(request, invite.token) },
+    { agent_id: agentId, seats, email, invited: true, url: acceptUrl },
     201
   );
 });

@@ -49,6 +49,20 @@ export const INDUSTRY_OPTIONS: string[] = [
   "Non-profit",
   "Consulting",
   "Media / Entertainment",
+  // The second wave, from David's "are we missing any industries?" pass. Each is a business
+  // type that was landing on "Other" often enough to deserve its own row - and Staffing was an
+  // outright embarrassment: the site sells a recruiting agent on its own use-case page while
+  // the questionnaire had no way to say you run a staffing firm. None of these has an
+  // industry-branch page yet (industryConfig below), which is fine - an option without a branch
+  // just skips the industry step, same as Non-profit always has.
+  "Automotive / Dealership",
+  "Beauty / Personal Care",
+  "Fitness / Wellness",
+  "Home Services",
+  "Insurance",
+  "IT Services / MSP",
+  "Staffing / Recruiting",
+  "Travel / Tourism",
   "Other",
 ];
 

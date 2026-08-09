@@ -884,7 +884,23 @@ function IndustryStep({ branch, values, onChange, otherLabel }: { branch: Indust
         const val = values[f.key];
         const str = typeof val === "string" ? val : "";
         const arr = Array.isArray(val) ? val : [];
-        if (f.type === "dropdown") return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><TSelect value={str} onChange={v => onChange(f.key, v)} options={f.options ?? []} /></FF>;
+        // Same rule as the multiselect below, David's: "Other" is never a dead end - picking it
+        // always opens somewhere to say what the other thing IS. A dropdown that ends at
+        // "Other" collects nothing.
+        if (f.type === "dropdown") {
+          const ddOtherKey = `${f.key}_other`;
+          const ddOtherVal = values[ddOtherKey];
+          return (
+            <Fragment key={f.key}>
+              <FF label={f.label} required={f.required} hint={f.helper}><TSelect value={str} onChange={v => onChange(f.key, v)} options={f.options ?? []} /></FF>
+              {str === "Other" && (
+                <FF label="Please specify">
+                  <TInput value={typeof ddOtherVal === "string" ? ddOtherVal : ""} onChange={v => onChange(ddOtherKey, v)} placeholder="Tell us more" />
+                </FF>
+              )}
+            </Fragment>
+          );
+        }
         if (f.type === "multiselect") {
           const otherKey = `${f.key}_other`;
           const otherVal = values[otherKey];
@@ -953,9 +969,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", docs: [] as string[], docsOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
   const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
   const [s4, setS4] = useState({ marital: "", partnerName: "", kids: "", kidsDetails: "", household: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
-  const [s5, setS5] = useState({ decStyle: [] as string[], stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[] });
+  const [s5, setS5] = useState({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
   const [s6, setS6] = useState({ tone: [] as string[], writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
-  const [s7, setS7] = useState({ goals: [] as string[], metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
+  const [s7, setS7] = useState({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
   const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
   const [keyPeople, setKeyPeople] = useState<KeyPerson[]>([{ name: "", role: "" }]);
   const [companies, setCompanies] = useState<Company[]>([emptyCompany()]);
@@ -988,13 +1004,13 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, aiGoalsOther: s7.goalsOther, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
       if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
       if (p.industry === "Other" && !p.industryOther?.trim()) return "Please tell us the primary business industry.";
-      if (p.role === "Other" && !p.roleOther?.trim()) return "Please tell us your role.";
+      // Role is free text now - the "Other" branch this used to check cannot occur.
       // No ownership check: the field it guarded has been removed, and leaving this would
       // block every submission on a question nobody can answer any more.
       for (const c of companies) { if (c.name.trim() && !c.industry) return "Each business you add needs an industry."; }
@@ -1076,11 +1092,13 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
       <SHead stepNum={5} total={0} title={`Executive Profile for ${primaryName}`} subtitle="The strategic picture - how you think, where you're stuck, and what a win is worth." badge="Business" />
       <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
       <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={2} split />
+      {s5.growthBottleneck.includes("Other") && <FF label="What's the bottleneck?"><TInput value={s5.growthBottleneckOther} onChange={v => f5("growthBottleneckOther", v)} placeholder="In your words" /></FF>}
       {/* Moved here from Your Voice at David's call, and it reads as an oversight corrected:
           how you weigh a decision belongs beside your goal and your bottleneck, not beside
           your tone of voice. It also governs how much the agent decides alone versus brings
           to you, which is an executive question. */}
       <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={2} split />
+      {s5.decStyle.includes("Other") && <FF label="How do you decide?"><TInput value={s5.decStyleOther} onChange={v => f5("decStyleOther", v)} placeholder="In your words" /></FF>}
     </Stack>
     ) },
     ...(branch ? [{ key: "industry", label: "Industry", node: (
@@ -1259,6 +1277,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submi
     <Stack key="s7scope">
       <SHead stepNum={9} total={0} title="What your agent should take on" subtitle="The work you want off your desk, and what a win looks like." badge="Business" />
       <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+      {s7.goals.includes("Other") && <FF label="What else should it manage?"><TInput value={s7.goalsOther} onChange={v => f7("goalsOther", v)} placeholder="Name the task" /></FF>}
       {/* `split` removed at David's call. It bolded everything before the dash and greyed the
           rest, so "Save time" and "Increase revenue" shouted while the clause that carried the
           actual meaning receded. Plain sentences, read as written.
