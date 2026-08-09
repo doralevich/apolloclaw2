@@ -7,7 +7,6 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { publicSiteOrigin } from "@/lib/site-url";
 import { POST_AUTH_LANDING } from "@/lib/routes";
 import { toast } from "sonner";
 
@@ -17,12 +16,6 @@ function safeNext(raw: string | null): string {
 }
 
 // /auth/callback exchanges the email link for a session, then redirects to `next`.
-function callbackUrl(next: string): string {
-  const url = new URL("/auth/callback", publicSiteOrigin(window.location.origin));
-  url.searchParams.set("next", next);
-  return url.toString();
-}
-
 // ?reset=1 opens the reset panel directly, and ?email= fills the address in.
 //
 // Onboarding sends people here when the address they typed already has an account: the useful
@@ -92,13 +85,26 @@ export default function LoginPage() {
     const mail = resetEmail.trim();
     if (!mail) return;
 
-    const supabase = createClient();
+    // Our own route, not supabase.auth.resetPasswordForEmail - the difference is whose name is
+    // on the email. Supabase's mailer sends as Supabase; /api/auth/reset-password mints the
+    // same recovery link and Mandrill delivers it as Apollo Claw, from a domain whose DKIM and
+    // SPF we control. Same link, same /reset-password landing, our envelope.
     setResetLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(mail, {
-      redirectTo: callbackUrl("/reset-password"),
-    });
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: mail }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error?.message || "Could not send the reset email. Please try again.");
+      }
+    } catch (err) {
+      setResetLoading(false);
+      return toast.error(err instanceof Error ? err.message : "Could not send the reset email.");
+    }
     setResetLoading(false);
-    if (error) return toast.error(error.message);
     setResetSent(true);
   }
 
