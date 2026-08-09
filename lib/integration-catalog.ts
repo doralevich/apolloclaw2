@@ -84,6 +84,9 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
   {
     title: "Sales & marketing",
     toolkits: [
+      // Added the day a customer picked it at onboarding and hit "go and search for it" -
+      // Salesforce is the biggest CRM there is, and the one CRM the catalogue did not carry.
+      toolkit("salesforce", "Salesforce", "Salesforce manages accounts, opportunities, and the sales pipeline."),
       toolkit("hubspot", "HubSpot", "HubSpot manages CRM, marketing, and sales workflows."),
       toolkit("linkedin", "LinkedIn", "LinkedIn for networking, hiring, and your company's presence."),
       toolkit("youtube", "YouTube", "YouTube hosts and manages video content."),

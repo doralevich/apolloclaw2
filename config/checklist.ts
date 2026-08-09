@@ -17,6 +17,7 @@ import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration
 
 /** Curated-catalogue slug for a questionnaire stack option, where one exists. */
 const TOOL_SLUGS: Record<string, string> = {
+  Salesforce: "salesforce",
   HubSpot: "hubspot",
   // Two options, two connections. These were one "Google Workspace" checkbox anchored on mail,
   // which meant calendar was never implied by anything the customer actually ticked.
