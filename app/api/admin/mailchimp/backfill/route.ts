@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { json, route } from "@/lib/http";
 import { REGISTRATION_TAG, syncMailchimpRegistration } from "@/lib/mailchimp";
@@ -60,8 +61,19 @@ const backfill = route(async (request: Request) => {
   // Stated rather than assumed. Without the key syncMailchimpRegistration returns silently —
   // correct in a webhook, where a marketing sync must never fail a purchase, and useless here
   // where "0 failed" would read as success on a run that wrote nothing at all.
-  if (!process.env.MAILCHIMP_API_KEY) {
+  const key = process.env.MAILCHIMP_API_KEY;
+  if (!key) {
     return json({ error: "MAILCHIMP_API_KEY is not set on this deployment." }, 500);
+  }
+
+  // The datacenter comes from the key's suffix; a key without one produces a garbage hostname
+  // and every call fails with a network error nobody sees. Diagnosed here, in the response.
+  const dc = key.split("-").pop() ?? "";
+  if (!/^[a-z]{2,4}\d+$/.test(dc)) {
+    return json(
+      { error: `MAILCHIMP_API_KEY has no datacenter suffix (expected something like "-us1"; got "...${dc.slice(-6)}").` },
+      500
+    );
   }
 
   const dry = new URL(request.url).searchParams.get("dry") === "1";
@@ -71,25 +83,59 @@ const backfill = route(async (request: Request) => {
     return json({
       dry_run: true,
       tag: REGISTRATION_TAG,
+      datacenter: dc,
       count: users.length,
       emails: users.map((u) => u.email),
     });
   }
 
+  // DIRECT calls, not syncMailchimpRegistration. The lib helpers swallow HTTP failures by
+  // design - a marketing sync must never fail a purchase webhook - which made this route
+  // report "synced: 7" for seven rejections and cost David an evening of searching an audience
+  // the writes never reached. An admin diagnostic wants the opposite contract: every Mailchimp
+  // answer, verbatim, in the response the admin is already looking at.
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Basic ${Buffer.from(`anystring:${key}`).toString("base64")}`,
+  };
+  const listId = "8faa1558b2"; // Apollo Claw - The AI Edge, confirmed against the account
+  const base = `https://${dc}.api.mailchimp.com/3.0/lists/${listId}/members`;
+
   // Sequential on purpose. Mailchimp rate-limits per account, and a backfill that runs once is
   // not worth the failure mode of firing a few hundred concurrent writes at it.
   let synced = 0;
-  const failed: { email: string; message: string }[] = [];
+  const failed: { email: string; step: string; status?: number; message: string }[] = [];
   for (const u of users) {
+    const hash = createHash("md5").update(u.email.toLowerCase()).digest("hex");
+    const merge_fields: Record<string, string> = {};
+    if (u.first) merge_fields.FNAME = u.first;
+    if (u.last) merge_fields.LNAME = u.last;
     try {
-      await syncMailchimpRegistration({ email: u.email, firstName: u.first, lastName: u.last });
+      const put = await fetch(`${base}/${hash}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ email_address: u.email, status_if_new: "subscribed", merge_fields }),
+      });
+      if (!put.ok) {
+        failed.push({ email: u.email, step: "upsert", status: put.status, message: (await put.text()).slice(0, 400) });
+        continue;
+      }
+      const tag = await fetch(`${base}/${hash}/tags`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ tags: [{ name: REGISTRATION_TAG, status: "active" }] }),
+      });
+      if (!tag.ok) {
+        failed.push({ email: u.email, step: "tag", status: tag.status, message: (await tag.text()).slice(0, 400) });
+        continue;
+      }
       synced++;
     } catch (err) {
-      failed.push({ email: u.email, message: (err as Error).message });
+      failed.push({ email: u.email, step: "network", message: (err as Error).message });
     }
   }
 
-  return json({ tag: REGISTRATION_TAG, total: users.length, synced, failed });
+  return json({ tag: REGISTRATION_TAG, datacenter: dc, total: users.length, synced, failed });
 });
 
 export const POST = backfill;

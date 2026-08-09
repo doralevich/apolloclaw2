@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Copy, Trash2, UserPlus } from "lucide-react";
+import { Copy, Trash2, UserPlus, Send } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -84,6 +84,18 @@ export function MembersView() {
   }, [load]);
 
   const isAdmin = role === "admin";
+
+  function resendInvite(token: string, email: string) {
+    if (!current) return;
+    return run(async () => {
+      try {
+        await apiFetch(`/api/workspaces/${current.id}/invitations/${token}/resend`, { method: "POST" });
+        toast.success(`Invitation resent to ${email}`);
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
+    });
+  }
 
   function createInvite() {
     if (!current) return;
@@ -346,7 +358,7 @@ export function MembersView() {
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
                     <tr>
-                      <th className="px-4 py-2.5 font-medium">Invite link</th>
+                      <th className="px-4 py-2.5 font-medium">Invited</th>
                       <th className="px-4 py-2.5 font-medium">Joins as</th>
                       <th className="px-4 py-2.5 font-medium">Created</th>
                       <th className="px-4 py-2.5" />
@@ -355,8 +367,21 @@ export function MembersView() {
                   <tbody>
                     {invitations.map((inv) => (
                       <tr key={inv.token} className="border-t">
-                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                          …/invite/{inv.token.slice(0, 8)}
+                        {/* WHO, not a token stub - David's review: an admin scanning this
+                            table is asking "did Sarah get hers?", and eight hex characters
+                            answer nothing. Link-only invitations keep the stub, honestly:
+                            they have no recipient to name. */}
+                        <td className="px-4 py-3">
+                          {inv.email ? (
+                            <span className="inline-flex items-center gap-2">
+                              {inv.email}
+                              {inv.with_agent && <Badge variant="default">Agent seat</Badge>}
+                            </span>
+                          ) : (
+                            <span className="font-mono text-xs text-muted-foreground">
+                              …/invite/{inv.token.slice(0, 8)}
+                            </span>
+                          )}
                         </td>
                         {/* A link already out in the world carries a role decided when it was
                             made, so it has to be visible before someone opens it. */}
@@ -367,6 +392,20 @@ export function MembersView() {
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.created_at)}</td>
                         <td className="px-4 py-3 text-right">
+                          {/* Resend, only where there is somewhere to send to. Spam folders
+                              happen, and the alternative was revoke-and-reinvite - which for
+                              a seat invitation tears down billing state to fix a lost email. */}
+                          {inv.email && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="Resend invitation email"
+                              title="Resend email"
+                              onClick={() => resendInvite(inv.token, inv.email!)}
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"

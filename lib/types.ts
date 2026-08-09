@@ -31,6 +31,10 @@ export interface Invitation {
   expires_at: string;
   // Full shareable link, computed server-side (honors NEXT_PUBLIC_SITE_URL).
   url: string;
+  /** Who it was sent to. Null for the old copy-a-link invitations, which have no recipient. */
+  email: string | null;
+  /** A paid agent seat rides on this invitation (built and billed at invite time). */
+  with_agent: boolean | null;
 }
 
 export interface AgentRow {
