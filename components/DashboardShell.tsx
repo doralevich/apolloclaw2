@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -56,6 +56,15 @@ const NAV = [
 // same trade every settings screen worth copying makes: give the section the whole sidebar
 // and put one obvious way back at the top.
 const SETTINGS_NAV = [
+  {
+    // The scope the rest of the rework hangs off: settings about YOU, before settings about the
+    // workspace and (eventually) the agents. Named groups are what let a customer answer
+    // "whose setting is this?" before they click.
+    title: "Account",
+    items: [
+      { href: "/dashboard/settings/account", label: "My Account", icon: CircleUser, exact: false },
+    ],
+  },
   {
     title: "Workspace",
     items: [
