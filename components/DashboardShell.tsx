@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -63,8 +63,8 @@ const SETTINGS_NAV = [
       // as two areas when the customer thinks of it as one. "My Agent(s)" with the optional
       // plural spelled out, because a workspace can genuinely hold several since seats and a
       // label that flips between singular and plural reads as a bug.
-      { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
+      { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
       { href: "/dashboard/settings/billing", label: "Billing & Credits", icon: CreditCard, exact: false },
       { href: "/dashboard/settings/usage", label: "Usage", icon: ChartNoAxesColumn, exact: false },
       { href: "/dashboard/settings/members", label: "Members", icon: Users, exact: false },
@@ -262,14 +262,11 @@ function SidebarContent({
           meant two sidebars on screen there and none anywhere else. */}
       <ChatSidebar onNavigate={onNavigate} />
 
-      {/* Settings sits below the chat list with the account controls, not among the five
-          things you do daily — it is a door into another area, not a sixth destination. */}
+      {/* The Settings NavLink that lived here is gone at David's call - the header's cog is
+          the door now, and two identical doors ten centimetres apart made the rail longer
+          without making anything easier to find. The account card stays: it is who you are,
+          not where you go. */}
       <div className="mt-auto space-y-2 pt-4">
-        <NavLink
-          item={{ href: SETTINGS_ROOT, label: "Settings", icon: Settings, exact: false }}
-          pathname={pathname}
-          onNavigate={onNavigate}
-        />
         <AccountCard userEmail={userEmail} />
       </div>
     </>

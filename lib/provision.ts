@@ -745,6 +745,12 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     // The persona, NOT agent.name. agent.name is now the ops label above, and echoing it back
     // here would greet the customer with "Acme's Workspace - Iris" in their own sidebar.
     name: personaName || null,
+    // Stamped at birth. Only the seats route used to set an owner (after the fact), so every
+    // agent born through purchase or rebuild had owner NULL - which the list endpoint treats
+    // as "workspace-wide, predates seats" and shows to every member. David found a member
+    // looking at three agents, two of them nobody had given her. userId is who the agent is
+    // FOR; the seats route still reassigns to the invitee on top of this.
+    owner_id: userId,
     avatar_url: pending.avatarUrl || null,
     status: agent.status,
     template: agent.template,
