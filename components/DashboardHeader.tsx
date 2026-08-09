@@ -27,9 +27,9 @@ import { HeaderCredit } from "@/components/chat/HeaderCredit";
 const TITLES: Array<[string, string]> = [
   ["/dashboard/settings/account", "My Account"],
   ["/dashboard/settings/agent", "My Agents"],
-  ["/dashboard/settings/billing", "Billing & Credits"],
+  ["/dashboard/settings/plan", "Plan"],
+  ["/dashboard/settings/billing", "Credits"],
   ["/dashboard/settings/members", "Members"],
-  ["/dashboard/settings/usage", "Usage"],
   ["/dashboard/settings", "Settings"],
   ["/dashboard/start-here", "Welcome"],
   ["/dashboard/checklist", "Checklist"],

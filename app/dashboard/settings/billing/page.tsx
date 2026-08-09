@@ -1,7 +1,17 @@
 import { CreditsView } from "@/components/CreditsView";
+import { UsageView } from "@/components/UsageView";
 
-// Balance, monthly cap and usage for the active agent. Lives under Settings rather than in
-// the app rail: you check it when something looks wrong or a renewal is due, not daily.
+// Credits: the active agent's wallet, and directly beneath it, where that wallet went.
+//
+// Usage was its own page one rail-entry down, repeating this page's headline number - "a child
+// pretending to be a peer", in David's settings review. One agent's money is one page now. The
+// path stays /settings/billing because every low-credit surface in the product (the header
+// widget, the chat banner, the warning emails) already points here.
 export default function Page() {
-  return <CreditsView />;
+  return (
+    <div className="space-y-10">
+      <CreditsView />
+      <UsageView />
+    </div>
+  );
 }

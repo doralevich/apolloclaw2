@@ -185,7 +185,7 @@ function Header({ agentName }: { agentName?: string }) {
 }
 
 function CreditsCards({ data }: { data: CreditsData }) {
-  const { budget, usage } = data;
+  const { budget } = data;
   const monthlyRemaining = budget.monthly_remaining_micros ?? 0;
   // Runtime shape varies by Agent37 build; either field may be absent.
   const credit = budget.credit_remaining_micros ?? budget.topup_remaining_micros ?? 0;
@@ -227,17 +227,10 @@ function CreditsCards({ data }: { data: CreditsData }) {
           urgency, and stacking both in one scroll meant the top-up controls sat below a
           table nobody was reading at that moment. One line out to it, rather than a silent
           removal — this page used to be where people found it. */}
-      <div className="flex items-center justify-between gap-3 rounded-xl border bg-card p-6">
-        <div>
-          <div className="text-sm font-medium">Where it went</div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {usd(usage.total_micros)} spent in {monthLabel(usage.period)}, split by what it bought.
-          </p>
-        </div>
-        <Button asChild variant="outline" size="sm" className="shrink-0">
-          <Link href="/dashboard/settings/usage">View usage</Link>
-        </Button>
-      </div>
+      {/* "Where it went" used to be a card linking to a separate Usage page that repeated
+          this page's own headline number - a child pretending to be a peer, in David's
+          settings review. The breakdown renders directly below now, and the card went with
+          the page. */}
     </div>
   );
 }
