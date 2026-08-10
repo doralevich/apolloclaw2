@@ -183,6 +183,40 @@ export interface SessionListResponse {
 
 // ---- Platform admin god-view (/admin) ----
 
+// One row in the Accounts tab: an auth user plus everything that hangs off them, enough to
+// tell a paying customer from a leftover test account without leaving the page.
+export interface AdminAccount {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+  is_platform_admin: boolean;
+  entitlement: string | null;
+  workspaces: { id: string; name: string; role: string; member_count: number; agent_count: number }[];
+  agents_owned: { agent37_id: string; name: string | null }[];
+}
+
+// One row in the Agents tab: the database's view and Agent37's, compared. "ok" means both
+// systems agree the agent exists; "ghost" is a database row whose instance is gone; "orphan"
+// is an instance with no database row; "unknown" means Agent37 couldn't be reached to judge.
+export interface AdminAgentOverview {
+  agent37_id: string;
+  name: string | null;
+  presence: "ok" | "ghost" | "orphan" | "unknown";
+  live_status: string | null;
+  db_status: string | null;
+  workspace_id: string | null;
+  workspace_name: string | null;
+  owner_email: string | null;
+  /** Owned by someone other than the workspace owner - an added seat, shown nested. */
+  is_member_agent: boolean;
+  avatar_url: string | null;
+  agent_type: string | null;
+  created_at: string | null;
+}
+
 // One row in the all-workspaces table. Counts are computed server-side across every
 // tenant via the service-role client (RLS would otherwise hide other people's data).
 export interface AdminWorkspaceSummary {
