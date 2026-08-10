@@ -43,8 +43,8 @@ export const GET = route(async () => {
   const db = createAdminClient();
 
   const [agentsRes, wsRes, live] = await Promise.all([
-    db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, owner_id, created_at"),
-    db.from("workspaces").select("id, name"),
+    db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, avatar_url, owner_id, created_at"),
+    db.from("workspaces").select("id, name, owner_id"),
     // Live truth, or null when Agent37 is unreachable - in which case presence can't be judged
     // and every row is reported as such rather than guessed at.
     agent37.listAgents().then(
@@ -55,11 +55,17 @@ export const GET = route(async () => {
   if (agentsRes.error) throw new ApiError(500, "db_error", agentsRes.error.message);
   if (wsRes.error) throw new ApiError(500, "db_error", wsRes.error.message);
 
-  const wsName = new Map((wsRes.data ?? []).map((w) => [w.id as string, w.name as string]));
-  const emails = await resolveEmails(db, (agentsRes.data ?? []).map((a) => a.owner_id));
+  const workspaces = new Map(
+    (wsRes.data ?? []).map((w) => [w.id as string, { name: w.name as string, owner_id: w.owner_id as string }])
+  );
+  const emails = await resolveEmails(db, [
+    ...(agentsRes.data ?? []).map((a) => a.owner_id),
+    ...(wsRes.data ?? []).map((w) => w.owner_id),
+  ]);
 
   const rows: AdminAgentOverview[] = (agentsRes.data ?? []).map((a) => {
     const instance = live?.get(a.agent37_id) ?? null;
+    const ws = workspaces.get(a.workspace_id) ?? null;
     return {
       agent37_id: a.agent37_id as string,
       name: (a.name as string | null) ?? instance?.name ?? null,
@@ -67,8 +73,13 @@ export const GET = route(async () => {
       live_status: instance?.status ?? null,
       db_status: (a.status as string | null) ?? null,
       workspace_id: a.workspace_id as string,
-      workspace_name: wsName.get(a.workspace_id) ?? a.workspace_id,
+      workspace_name: ws?.name ?? a.workspace_id,
       owner_email: emails.get(a.owner_id as string) ?? null,
+      // A MEMBER agent is one owned by someone other than the workspace's owner - a seat that
+      // was added for a colleague. The owner's own agents (and legacy rows with no owner
+      // stamped) are the workspace's main agents; member agents nest under them in the UI.
+      is_member_agent: Boolean(a.owner_id && ws && a.owner_id !== ws.owner_id),
+      avatar_url: (a.avatar_url as string | null) ?? null,
       agent_type: (a.agent_type as string | null) ?? null,
       created_at: a.created_at as string,
     };
@@ -87,6 +98,8 @@ export const GET = route(async () => {
         workspace_id: null,
         workspace_name: null,
         owner_email: null,
+        is_member_agent: false,
+        avatar_url: null,
         agent_type: null,
         // Agent37 timestamps are epoch numbers of undocumented resolution; >1e12 means ms.
         created_at: instance.created

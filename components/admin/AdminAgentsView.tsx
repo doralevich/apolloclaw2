@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { CornerDownRight, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
@@ -16,8 +16,12 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 // The two systems drift: an instance deleted in the Agent37 dashboard leaves a GHOST row that
 // answers "Instance not found" to every button in the product, and a swept database row whose
 // VPS delete was missed leaves an ORPHAN instance that nothing shows but hosting still runs.
-// Both burned an afternoon each before this page existed. The presence column names the case,
+// Both burned an afternoon each before this page existed. The presence badge names the case,
 // and one Delete handles all of them - it removes whichever halves exist.
+//
+// Cards grouped by workspace rather than a table, per David: each workspace is a section with
+// its main agents as full cards and member-seat agents nested beneath them - so "whose seat is
+// that" is visible in the shape of the page, not deduced from a column.
 
 const PRESENCE: Record<
   AdminAgentOverview["presence"],
@@ -75,12 +79,32 @@ export function AdminAgentsView() {
     await load();
   }
 
+  // One section per workspace (name-sorted), instances outside any workspace last.
+  const groups = new Map<string, { name: string; owner: string | null; rows: AdminAgentOverview[] }>();
+  for (const a of agents ?? []) {
+    const key = a.workspace_id ?? "__none__";
+    const group = groups.get(key) ?? {
+      name: a.workspace_name ?? "Not in any workspace",
+      owner: null,
+      rows: [],
+    };
+    if (!a.is_member_agent && a.owner_email) group.owner = group.owner ?? a.owner_email;
+    group.rows.push(a);
+    groups.set(key, group);
+  }
+  const sections = [...groups.entries()].sort(([ka, a], [kb, b]) => {
+    if (ka === "__none__") return 1;
+    if (kb === "__none__") return -1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
         <p className="text-sm text-muted-foreground">
-          Every agent across the platform, checked against Agent37. Delete removes whichever
+          Every agent across the platform, checked against Agent37, grouped by workspace.
+          Member seats nest under the workspace&apos;s main agent. Delete removes whichever
           halves exist - instance, records, or both.
         </p>
         {!liveChecked && (
@@ -97,64 +121,31 @@ export function AdminAgentsView() {
           <p className="text-sm text-muted-foreground">No agents anywhere.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 font-medium">Agent</th>
-                <th className="px-4 py-2 font-medium">Presence</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium">Workspace</th>
-                <th className="px-4 py-2 font-medium">Owner</th>
-                <th className="px-4 py-2 font-medium">Created</th>
-                <th className="px-4 py-2 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agents.map((a) => {
-                const presence = PRESENCE[a.presence];
-                return (
-                  <tr key={a.agent37_id} className="border-t [&>td]:align-middle">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{a.name || "Untitled agent"}</div>
-                      <div className="font-mono text-xs text-muted-foreground">{a.agent37_id}</div>
-                      {a.agent_type && (
-                        <div className="text-xs text-muted-foreground">
-                          {getAgentType(a.agent_type)?.label ?? a.agent_type}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span title={presence.hint}>
-                        <Badge variant={presence.variant}>{presence.label}</Badge>
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={statusVariant(a.live_status ?? a.db_status)}>
-                        {a.live_status ?? a.db_status ?? "unknown"}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{a.workspace_name ?? "-"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{a.owner_email ?? "-"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {a.created_at ? formatDate(a.created_at) : "-"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setDeleting(a)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="space-y-8">
+          {sections.map(([key, group]) => {
+            const main = group.rows.filter((a) => !a.is_member_agent);
+            const members = group.rows.filter((a) => a.is_member_agent);
+            return (
+              <section key={key}>
+                <div className="mb-2 flex items-baseline gap-2">
+                  <h2 className="font-semibold">{group.name}</h2>
+                  {group.owner && <span className="text-xs text-muted-foreground">{group.owner}</span>}
+                </div>
+                <div className="space-y-3">
+                  {main.map((a) => (
+                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} />
+                  ))}
+                  {members.length > 0 && (
+                    <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
+                      {members.map((a) => (
+                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
 
@@ -177,6 +168,59 @@ export function AdminAgentsView() {
           onConfirm={() => destroy(deleting)}
         />
       )}
+    </div>
+  );
+}
+
+function AgentCard({
+  agent,
+  member = false,
+  onDelete,
+}: {
+  agent: AdminAgentOverview;
+  member?: boolean;
+  onDelete: () => void;
+}) {
+  const presence = PRESENCE[agent.presence];
+  const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4">
+      {member && <CornerDownRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      {agent.avatar_url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- storage URLs and data: URIs; next/image adds nothing here
+        <img src={agent.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full border object-cover" />
+      ) : (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-muted font-semibold text-muted-foreground">
+          {initial}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-medium">{agent.name || "Untitled agent"}</span>
+          {member && <Badge variant="secondary">Member seat</Badge>}
+          <span title={presence.hint}>
+            <Badge variant={presence.variant}>{presence.label}</Badge>
+          </span>
+          <Badge variant={statusVariant(agent.live_status ?? agent.db_status)}>
+            {agent.live_status ?? agent.db_status ?? "unknown"}
+          </Badge>
+        </div>
+        <div className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+          <span className="font-mono">{agent.agent37_id}</span>
+          {agent.agent_type && <span>{getAgentType(agent.agent_type)?.label ?? agent.agent_type}</span>}
+          {agent.owner_email && <span>{agent.owner_email}</span>}
+          {agent.created_at && <span>Created {formatDate(agent.created_at)}</span>}
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="shrink-0 text-destructive hover:text-destructive"
+        onClick={onDelete}
+      >
+        <Trash2 className="h-4 w-4" />
+        Delete
+      </Button>
     </div>
   );
 }

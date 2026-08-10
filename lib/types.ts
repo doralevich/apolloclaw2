@@ -210,6 +210,9 @@ export interface AdminAgentOverview {
   workspace_id: string | null;
   workspace_name: string | null;
   owner_email: string | null;
+  /** Owned by someone other than the workspace owner - an added seat, shown nested. */
+  is_member_agent: boolean;
+  avatar_url: string | null;
   agent_type: string | null;
   created_at: string | null;
 }
