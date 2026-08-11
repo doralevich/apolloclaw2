@@ -179,6 +179,14 @@ export default function LegalPage() {
           <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             The Law Agent handles the administrative layer: intake, communication, deadline tracking, document routing, so your team spends time on legal work, not operational overhead.
           </p>
+          <div className="mx-auto mt-10 max-w-2xl rounded-xl p-6 text-left" style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.09)" }}>
+            <p className="font-body text-base leading-relaxed" style={{ color: "rgba(11,23,41,0.75)" }}>
+              Personal injury firm?{" "}
+              <a href="/industries/personal-injury-law" className="font-bold underline underline-offset-4" style={{ color: RED }}>
+                See how Apollo Claw handles intake and case management for PI practices specifically.
+              </a>
+            </p>
+          </div>
         </div>
       </section>
 
