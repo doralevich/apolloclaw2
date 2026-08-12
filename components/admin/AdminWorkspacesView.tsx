@@ -7,7 +7,7 @@ import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
 import { getAgentType } from "@/config/agent-types";
 import { runtimeForTemplate } from "@/config/agents";
-import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
+import type { AdminAgentDetail, AdminWorkspaceSummary, Budget } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
@@ -303,9 +303,27 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
                 {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
               </td>
               <td className="px-3 py-2 text-muted-foreground">
-                {a.budget
-                  ? `${usd(a.budget.monthly_consumed_micros)} / ${usd(a.budget.monthly_cap_micros)}`
-                  : "-"}
+                {a.budget ? (
+                  <>
+                    {usd(a.budget.monthly_consumed_micros)} / {usd(a.budget.monthly_cap_micros)}
+                    {/* Purchased credit lives in its OWN bucket - addCredit tops up the credit
+                        balance, not the monthly cap - so a delivered top-up showed nowhere here
+                        and read as "my $25 vanished". Surface it. The runtime renamed the field
+                        (topup_remaining_micros -> credit_remaining_micros) and instances answer
+                        with either, so read both, newer first, exactly like lib/budget.ts. */}
+                    {(() => {
+                      const b = a.budget as Budget & { credit_remaining_micros?: number };
+                      const credit = b.credit_remaining_micros ?? b.topup_remaining_micros ?? 0;
+                      return credit > 0 ? (
+                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                          + {usd(credit)} credit
+                        </div>
+                      ) : null;
+                    })()}
+                  </>
+                ) : (
+                  "-"
+                )}
               </td>
               <td className="px-3 py-2 text-muted-foreground">
                 {a.usage ? `${usd(a.usage.total_micros)} (${a.usage.period})` : "-"}
