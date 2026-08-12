@@ -271,7 +271,8 @@ function Toggle({
       className={cn(
         "relative h-6 w-11 shrink-0 rounded-full border transition-colors",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        on ? "border-foreground bg-foreground" : "bg-muted"
+        // Red for off, green for on - David's ask, so the state reads at a glance.
+        on ? "border-emerald-500 bg-emerald-500" : "border-red-500 bg-red-500"
       )}
     >
       <span

@@ -8,7 +8,6 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { HeaderClock } from "@/components/chat/HeaderClock";
 import { HeaderCredit } from "@/components/chat/HeaderCredit";
 
 // The dashboard's top bar, on every page.
@@ -79,7 +78,7 @@ export function DashboardHeader() {
         {(userFullName || userFirstName) && (
           <span className="hidden items-baseline gap-2 lg:flex">
             <span className="text-sm text-muted-foreground">
-              Welcome, <span className="font-medium text-foreground">{userFullName || userFirstName}</span>
+              Welcome, <span className="font-medium text-foreground">{userFirstName || userFullName}</span>
             </span>
             {/* Platform admins outrank the workspace role: David's account says Super Admin
                 wherever it is, because the workspace tag never answered which HAT he was
@@ -100,8 +99,6 @@ export function DashboardHeader() {
             ) : null}
           </span>
         )}
-        {/* Date and time, from the mockup. The weather it also shows isn't here - see HeaderClock. */}
-        <HeaderClock />
         {/* Only with an agent to ask about. Every other page in the dashboard survives without
             one - Start Here prompts you to build it - so a balance widget that errored on a
             missing agent would be the one thing that could not. */}
