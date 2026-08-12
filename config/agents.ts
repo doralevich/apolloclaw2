@@ -11,10 +11,16 @@
 // create time. Resizing one is a deliberate act through /api/agents/[id]/resize.
 export const INSTANCE_RESOURCES = { cpu: 2, memory: 4, disk: 6 } as const;
 
+// $25/mo to match the paid Apollo agent (config/agent-types.ts PAID_AGENT) and the hosting we
+// sell as including "$25/mo of token usage". The live provisioning cap already comes from the
+// agent TYPE, not from here — this const only supplies the template-name fallback today — but it
+// is named DEFAULT_AGENT and read as "the default a new box gets", so it must not say $5 while
+// the product is $25. Keeping the two in step means a future caller that ever wires this into the
+// cap can't silently under-provision a customer to a fifth of what they paid for.
 export const DEFAULT_AGENT = {
   template: "agent37-openclaw",
   ...INSTANCE_RESOURCES,
-  monthlyCapUsd: 5,
+  monthlyCapUsd: 25,
 } as const;
 
 export const PORTS = {

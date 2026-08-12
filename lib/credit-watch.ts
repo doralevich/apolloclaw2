@@ -2,6 +2,7 @@ import "server-only";
 import { agent37 } from "@/lib/agent37";
 import { availableMicros } from "@/lib/budget";
 import { deliverCredit, recordCreditPurchase } from "@/lib/credits";
+import { syncInstanceCredit } from "@/lib/instance-credit";
 import {
   listWatchedAgents,
   type CreditSettings,
@@ -342,6 +343,19 @@ export async function sweepCredits(): Promise<SweepResult> {
   const result: SweepResult = { checked: 0, warned: 0, recharged: 0, failed: 0, skipped: 0 };
 
   for (const settings of watched) {
+    // Deplete and self-heal the credit ledger FIRST, on the hourly schedule, for every instance
+    // — not just the ones whose owner happens to open the dashboard. syncInstanceCredit banks
+    // last month's over-base spend as permanent `drawn` at rollover and re-asserts the cap; it's
+    // a no-op (one cheap read) for instances that were never credited. Without this, a customer
+    // who lives in Telegram and never visits Credits would carry purchased credit forever,
+    // because the depletion only ran on a dashboard read they never made. Errors here must not
+    // stop the sweep — the balance read below still runs, and the ledger self-heals next hour.
+    try {
+      await syncInstanceCredit(settings.agent37Id);
+    } catch (err) {
+      console.error("[credit-watch] credit sync failed", settings.agent37Id, err);
+    }
+
     let balance: number;
     try {
       const budget = await agent37.getBudget(settings.agent37Id);
