@@ -243,7 +243,17 @@ export const agent37 = {
     id: string,
     fields: { monthly_cap_micros: number; topup_micros: number }
   ): Promise<Budget> => {
-    const body = JSON.stringify(fields);
+    // The runtime renamed the credit field topup_* -> credit_* : getBudget now reports
+    // `credit_remaining_micros` and no longer returns `topup_remaining_micros` at all. The WRITE
+    // side moved with it, so a body carrying only `topup_micros` set NOTHING - which is why a
+    // delivered $25 top-up read back as credit_remaining_micros: 0 and never reached the customer.
+    // Send both spellings, same value: the runtime honours the one it knows and ignores the other,
+    // so this is correct on the new build and harmless on any old one.
+    const body = JSON.stringify({
+      monthly_cap_micros: fields.monthly_cap_micros,
+      topup_micros: fields.topup_micros,
+      credit_micros: fields.topup_micros,
+    });
     const attempt = async (method: BudgetVerb): Promise<Budget> => {
       const result = await call<Budget>(`/instances/${id}/budget`, { method, body });
       if (acceptedBudgetVerb !== method) {
