@@ -2,7 +2,7 @@ import { after } from "next/server";
 import { timingSafeEqual } from "crypto";
 import * as telegram from "@/lib/channels/telegram";
 import { getChannelConfig, upsertChannel } from "@/lib/channels/store";
-import { answerFrom, runTurn } from "@/lib/channels/turn";
+import { answerFrom, incompleteReason, runTurn } from "@/lib/channels/turn";
 
 type Ctx = { params: Promise<{ agentId: string }> };
 
@@ -104,6 +104,20 @@ export async function POST(request: Request, { params }: Ctx) {
           state: "connected",
           message: null,
         });
+      }
+
+      // A turn can come back 200 yet carry no answer - status not "completed", or completed with
+      // empty text, and no error message to explain it. The customer still gets a reply, but WHY
+      // was invisible: the fallback swallowed it, which is how Russell's bot could fail every
+      // message with nothing in our records to point at. Record the reason on the channel so the
+      // next occurrence is a fact in the row, diagnosable the way the 409 session_busy was.
+      const reason = incompleteReason(result);
+      if (reason) {
+        console.error("[channels:telegram] turn produced no answer", { agentId, reason });
+        await upsertChannel(agentId, "telegram", {
+          state: "error",
+          message: `no answer: ${reason}`,
+        }).catch(() => {});
       }
 
       await telegram.sendMessage(config.token, update.chatId, answerFrom(result));

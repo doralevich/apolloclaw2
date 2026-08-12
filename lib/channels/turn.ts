@@ -86,3 +86,18 @@ export function answerFrom(result: TurnResult): string {
   if (result.error?.message) return `Sorry - that didn't work: ${result.error.message}`;
   return "Sorry, I couldn't finish that one. Try again?";
 }
+
+/**
+ * Why a turn produced no answer, in a few words, or empty string when it completed with text.
+ *
+ * The 200-but-no-answer case - status not "completed", or completed with empty output, and no
+ * error message to explain it - is the one answerFrom papers over: the customer gets "I couldn't
+ * finish that one" and our records get nothing. This is what a receiver stores on the channel so
+ * the reason survives past the reply, the way the 409 session_busy did. A repeated reason across
+ * every message (Russell's case) is then a fact in the row rather than a guess.
+ */
+export function incompleteReason(result: TurnResult): string {
+  if (result.status === "completed" && result.output_text?.trim()) return "";
+  if (result.error?.message) return result.error.message;
+  return `status=${result.status ?? "unknown"}, no output text`;
+}
