@@ -8,7 +8,7 @@ import ChatWidget from '@/components/ChatWidget';
 // Marketing pages that render without the marketing nav/footer (but keep chat).
 const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard'];
 // Dashboard surfaces render their own chrome — no marketing nav/footer/chat.
-const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite'];
+const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite', '/admin'];
 
 const matches = (pathname: string, routes: string[]) =>
   routes.some((r) => pathname === r || pathname.startsWith(r + '/'));
