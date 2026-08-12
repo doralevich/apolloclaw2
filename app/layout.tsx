@@ -235,7 +235,7 @@ export default function RootLayout({
             values are duplicated from components/ThemeProvider.tsx — change one, change both. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(!location.pathname.startsWith("/dashboard"))return;var m=localStorage.getItem("apolloclaw-theme")||"system";if(m==="dark"||(m==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})()`,
+            __html: `(function(){try{if(!location.pathname.startsWith("/dashboard"))return;var m=localStorage.getItem("apolloclaw-theme")||"light";if(m==="dark"||(m==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})()`,
           }}
         />
         <link
