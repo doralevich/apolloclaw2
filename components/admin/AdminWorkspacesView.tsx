@@ -1,7 +1,7 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
@@ -14,6 +14,10 @@ import { CreateAgentButton } from "@/components/CreateAgentButton";
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
 
+// One card per workspace, per David - the table rows read as long lines, and a card gives
+// each customer a shape: who they are on the left, what they have in the middle, what you can
+// do on the right. Expanding a card still reveals its instances (the dense diagnostics stay a
+// table - budget, usage, skills are columns of numbers and belong in one).
 export function AdminWorkspacesView() {
   const [workspaces, setWorkspaces] = useState<AdminWorkspaceSummary[] | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -57,7 +61,7 @@ export function AdminWorkspacesView() {
           next.delete(workspaceId);
         } else {
           next.add(workspaceId);
-          // Fetch detail the first time a row opens; afterwards we keep the cached rows.
+          // Fetch detail the first time a card opens; afterwards we keep the cached rows.
           if (!details[workspaceId]) void loadDetail(workspaceId);
         }
         return next;
@@ -81,7 +85,7 @@ export function AdminWorkspacesView() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
         <p className="text-sm text-muted-foreground">
-          All workspaces across the platform (newest 50). Expand a row to see its instances.
+          All workspaces across the platform (newest 50). Expand a card to see its instances.
         </p>
       </div>
 
@@ -92,80 +96,73 @@ export function AdminWorkspacesView() {
           <p className="text-sm text-muted-foreground">No workspaces yet.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 font-medium">Workspace</th>
-                <th className="px-4 py-2 font-medium">Owner</th>
-                <th className="px-4 py-2 font-medium">Members</th>
-                <th className="px-4 py-2 font-medium">Agents</th>
-                <th className="px-4 py-2 font-medium">Created</th>
-                <th className="px-4 py-2 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workspaces.map((w) => {
-                const isOpen = expanded.has(w.id);
-                const detail = details[w.id];
-                return (
-                  <Fragment key={w.id}>
-                    <tr className="border-t [&>td]:align-middle">
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => toggle(w.id)}
-                          className="flex items-center gap-2 text-left font-medium hover:text-primary"
-                          aria-expanded={isOpen}
-                        >
-                          {isOpen ? (
-                            <ChevronDown className="h-4 w-4 shrink-0" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 shrink-0" />
-                          )}
-                          <span className="truncate">{w.name}</span>
-                        </button>
-                        <div className="pl-6 font-mono text-xs text-muted-foreground">{w.id}</div>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{w.owner_email ?? "-"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{w.member_count}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {w.agent_count === 0 ? (
-                          "0"
-                        ) : (
-                          <span>
-                            {w.agent_count}
-                            <span className="text-xs"> ({w.running_count} running)</span>
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(w.created_at)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end">
-                          <CreateAgentButton
-                            workspaceId={w.id}
-                            onCreated={() => onCreated(w.id)}
-                            label="Create Apollo Agent"
-                            size="sm"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-
-                    {isOpen && (
-                      <tr className="border-t bg-muted/30">
-                        <td colSpan={6} className="px-4 py-3">
-                          <InstanceList detail={detail} />
-                        </td>
-                      </tr>
+        <div className="space-y-3">
+          {workspaces.map((w) => {
+            const isOpen = expanded.has(w.id);
+            const detail = details[w.id];
+            return (
+              <div key={w.id} className="rounded-xl border bg-card">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 p-5">
+                  <button
+                    type="button"
+                    onClick={() => toggle(w.id)}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left hover:text-primary"
+                    aria-expanded={isOpen}
+                  >
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">{w.name}</span>
+                      <span className="block truncate font-mono text-xs font-normal text-muted-foreground">
+                        {w.id}
+                      </span>
+                    </span>
+                  </button>
+
+                  <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+                    <Stat label="Owner" value={w.owner_email ?? "-"} />
+                    <Stat label="Members" value={String(w.member_count)} />
+                    <Stat
+                      label="Agents"
+                      value={
+                        w.agent_count === 0
+                          ? "0"
+                          : `${w.agent_count}${w.running_count ? ` (${w.running_count} running)` : ""}`
+                      }
+                    />
+                    <Stat label="Created" value={formatDate(w.created_at)} />
+                  </div>
+
+                  <CreateAgentButton
+                    workspaceId={w.id}
+                    onCreated={() => onCreated(w.id)}
+                    label="Create Apollo Agent"
+                    size="sm"
+                  />
+                </div>
+
+                {isOpen && (
+                  <div className="border-t bg-muted/30 p-4">
+                    <InstanceList detail={detail} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm">{value}</p>
     </div>
   );
 }
@@ -179,7 +176,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-md border bg-background">
+    <div className="overflow-x-auto rounded-md border bg-background">
       <table className="w-full text-xs">
         <thead className="bg-muted/50 text-left text-muted-foreground">
           <tr>
@@ -191,6 +188,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
             <th className="px-3 py-2 font-medium">Usage (period)</th>
             <th className="px-3 py-2 font-medium">Created</th>
             <th className="px-3 py-2 font-medium">Skills</th>
+            <th className="px-3 py-2 font-medium">Open</th>
           </tr>
         </thead>
         <tbody>
@@ -241,11 +239,42 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
               <td className="px-3 py-2">
                 <SkillsCell agentId={a.agent37_id} />
               </td>
+              <td className="px-3 py-2">
+                <OpenInstanceButton agentId={a.agent37_id} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+// Log into this instance's OpenClaw dashboard as its user sees it - signed URL plus the
+// gateway token, minted by the admin open route and audit-logged there. Built for white-glove
+// setup checks: a client signs up, and David confirms the intake configured what it should.
+function OpenInstanceButton({ agentId }: { agentId: string }) {
+  const [busy, setBusy] = useState(false);
+
+  async function open() {
+    setBusy(true);
+    try {
+      const { url } = await apiFetch<{ url: string }>(`/api/admin/agents/${agentId}/open`, {
+        method: "POST",
+      });
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button variant="outline" size="sm" onClick={open} disabled={busy}>
+      <ExternalLink className="h-3.5 w-3.5" />
+      {busy ? "Opening..." : "Open"}
+    </Button>
   );
 }
 

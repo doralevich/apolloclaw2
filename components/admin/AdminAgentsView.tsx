@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, Trash2 } from "lucide-react";
+import { CornerDownRight, ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
@@ -183,6 +183,23 @@ function AgentCard({
 }) {
   const presence = PRESENCE[agent.presence];
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
+  const [opening, setOpening] = useState(false);
+
+  // Log into this customer's instance: signed URL + OpenClaw token, audit-logged server-side.
+  // A ghost has no instance to open; anything else is worth trying and errors surface as toasts.
+  async function open() {
+    setOpening(true);
+    try {
+      const { url } = await apiFetch<{ url: string }>(`/api/admin/agents/${agent.agent37_id}/open`, {
+        method: "POST",
+      });
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setOpening(false);
+    }
+  }
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4">
       {member && <CornerDownRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
@@ -212,15 +229,23 @@ function AgentCard({
           {agent.created_at && <span>Created {formatDate(agent.created_at)}</span>}
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="shrink-0 text-destructive hover:text-destructive"
-        onClick={onDelete}
-      >
-        <Trash2 className="h-4 w-4" />
-        Delete
-      </Button>
+      <div className="flex shrink-0 items-center gap-1">
+        {agent.presence !== "ghost" && (
+          <Button variant="outline" size="sm" onClick={open} disabled={opening}>
+            <ExternalLink className="h-4 w-4" />
+            {opening ? "Opening..." : "Open"}
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </Button>
+      </div>
     </div>
   );
 }
