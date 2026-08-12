@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
+import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -149,7 +149,7 @@ function SidebarContent({
     item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item
   );
 
-  const { current, workspaces } = useWorkspace();
+  const { current, workspaces, isPlatformAdmin } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;
   const isWorkspaceAdmin = current?.role === "admin";
   const logoUrl = current?.logo_url || branding.logoUrl;
@@ -267,6 +267,23 @@ function SidebarContent({
             <UserPlus className="h-4 w-4" />
             Invite a member
           </Link>
+        </div>
+      )}
+
+      {/* The god-view, for the people who run the PLATFORM rather than a workspace. /admin was
+          a secret URL nothing linked to, which meant remembering it - and the whole point of
+          the Super Admin area is that David shouldn't have to remember anything. Plain <a>,
+          not <Link>: /admin renders outside the dashboard shell, so a full navigation is
+          honest about the context switch. Platform admins only; everyone else never sees it. */}
+      {isPlatformAdmin && (
+        <div className="mt-6 flex flex-col gap-1">
+          <span className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Platform
+          </span>
+          <a href="/admin" className={SIDE_ACTION_CLASS}>
+            <ShieldCheck className="h-4 w-4" />
+            Super Admin
+          </a>
         </div>
       )}
 
