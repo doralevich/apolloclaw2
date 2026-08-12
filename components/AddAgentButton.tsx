@@ -49,12 +49,12 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
   const [emailBody, setEmailBody] = useState("");
   const [subjectTouched, setSubjectTouched] = useState(false);
   const [bodyTouched, setBodyTouched] = useState(false);
+  // An optional promotion code, applied to the one-time agent fee. Validated server-side; a bad
+  // one fails the add with a toast rather than charging.
+  const [coupon, setCoupon] = useState("");
   // Two presses to charge - see the note in MembersView. The price being on screen is not the
   // same as being asked "charge it?".
   const [chargeArmed, setChargeArmed] = useState(false);
-  // Set when the server said the address is outside the company. The next press sends
-  // allow_external - a confirm, not a wall, same as the Members flow.
-  const [externalWarning, setExternalWarning] = useState("");
 
   if (!current) return null;
 
@@ -73,7 +73,6 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
 
   const disarm = () => {
     setChargeArmed(false);
-    setExternalWarning("");
   };
 
   const resetAll = () => {
@@ -81,6 +80,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
     setName("");
     setSubject("");
     setEmailBody("");
+    setCoupon("");
     setSubjectTouched(false);
     setBodyTouched(false);
     disarm();
@@ -97,46 +97,35 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
       return;
     }
     return run(async () => {
-      try {
-        const res = await apiFetch<{ agent_id: string; invited: boolean }>(
-          `/api/workspaces/${current.id}/seats`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              email: email.trim(),
-              name: name.trim() || undefined,
-              // Your own address is a deliberate second agent; a colleague's first agent needs
-              // no such override, and sending it anyway would defeat the double-charge guard.
-              additional: forSelf,
-              allow_external: !!externalWarning,
-              ...(forSelf
-                ? {}
-                : { invite_subject: effectiveSubject, invite_body: effectiveBody }),
-            }),
-          }
-        );
-
-        setOpen(false);
-        resetAll();
-        await refresh();
-        if (forSelf && res.agent_id) setActiveId(res.agent_id);
-        // Back to the dashboard, both ways - the compose WAS the task. No redirect: the
-        // invitee's questionnaire is theirs, and your own arrives by email and setup banner.
-        toast.success(
-          forSelf
-            ? "Your new agent is building - setup link is in your email"
-            : `Invitation sent to ${email.trim()}`
-        );
-      } catch (e) {
-        const err = e as Error & { code?: string };
-        if (err.code === "external_domain") {
-          // Re-arm required: the next press is a different promise than the one they made.
-          setExternalWarning(err.message);
-          setChargeArmed(false);
-          return;
+      const res = await apiFetch<{ agent_id: string; invited: boolean }>(
+        `/api/workspaces/${current.id}/seats`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email: email.trim(),
+            name: name.trim() || undefined,
+            coupon: coupon.trim() || undefined,
+            // Your own address is a deliberate second agent; a colleague's first agent needs
+            // no such override, and sending it anyway would defeat the double-charge guard.
+            additional: forSelf,
+            ...(forSelf
+              ? {}
+              : { invite_subject: effectiveSubject, invite_body: effectiveBody }),
+          }),
         }
-        throw e;
-      }
+      );
+
+      setOpen(false);
+      resetAll();
+      await refresh();
+      if (forSelf && res.agent_id) setActiveId(res.agent_id);
+      // Back to the dashboard, both ways - the compose WAS the task. No redirect: the
+      // invitee's questionnaire is theirs, and your own arrives by email and setup banner.
+      toast.success(
+        forSelf
+          ? "Your new agent is building - setup link is in your email"
+          : `Invitation sent to ${email.trim()}`
+      );
     });
   }
 
@@ -231,11 +220,16 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
           </>
         )}
 
-        {externalWarning && (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-            {externalWarning} Press send again to go ahead.
-          </div>
-        )}
+        <div className="space-y-1.5">
+          <Label htmlFor="seat-coupon">Coupon code (optional)</Label>
+          <Input
+            id="seat-coupon"
+            value={coupon}
+            onChange={(e) => setCoupon(e.target.value)}
+            placeholder="Applied to the one-time agent fee"
+            autoComplete="off"
+          />
+        </div>
 
         {/* The charge, stated before the button that makes it. $449 matches the Basic license
             tier (lib/pricing/catalog.ts) - hardcoded here because the catalog is server-only,

@@ -146,8 +146,17 @@ export interface PendingAgentFee {
  * Amount + description rather than the license price id: the tier's Stripe price is a checkout
  * price for the product, and pinning invoice items to it would couple this to how the seed
  * script models one-time prices. The catalog is still the single source of the number.
+ *
+ * `couponId`, when given, discounts THIS fee only - the one-time agent charge, never the
+ * recurring hosting line a subscription-level discount would touch. The reduction is computed
+ * here and baked straight into the item's amount rather than attached as a Stripe discount, so
+ * the number we charge is the number we can reverse to the penny if the build then fails (see
+ * reverseAgentFee). The returned amountCents is that net, which the caller hands to the reversal.
  */
-export async function stageAgentFee(workspaceId: string): Promise<PendingAgentFee | null> {
+export async function stageAgentFee(
+  workspaceId: string,
+  couponId?: string
+): Promise<PendingAgentFee | null> {
   const seat = await findHostingSeat(workspaceId);
   if (!seat) return null;
 
@@ -155,14 +164,39 @@ export async function stageAgentFee(workspaceId: string): Promise<PendingAgentFe
   const sub = await stripe.subscriptions.retrieve(seat.subscriptionId);
   const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
 
+  let amount = AGENT_FEE_CENTS;
+  let note = "";
+  if (couponId) {
+    const coupon = await stripe.coupons.retrieve(couponId);
+    amount = netAfterCoupon(AGENT_FEE_CENTS, coupon);
+    note = ` (coupon ${coupon.name || coupon.id})`;
+  }
+
   const item = await stripe.invoiceItems.create({
     customer,
     subscription: seat.subscriptionId,
-    amount: AGENT_FEE_CENTS,
+    amount,
     currency: "usd",
-    description: `${AGENT_FEE_TIER.name} — additional agent (one-time)`,
+    description: `${AGENT_FEE_TIER.name} — additional agent (one-time)${note}`,
   });
-  return { invoiceItemId: item.id, amountCents: AGENT_FEE_CENTS };
+  return { invoiceItemId: item.id, amountCents: amount };
+}
+
+/**
+ * Cents left after a coupon, floored at zero.
+ *
+ * `percent_off` is currency-agnostic. A fixed `amount_off` is only honoured when it is in the
+ * fee's own currency (usd) - we cannot convert one currency's discount onto another - and an
+ * off-currency coupon falls through to full price rather than guessing.
+ */
+function netAfterCoupon(amountCents: number, coupon: Stripe.Coupon): number {
+  if (coupon.percent_off) {
+    return Math.max(0, Math.round(amountCents * (1 - coupon.percent_off / 100)));
+  }
+  if (coupon.amount_off && (!coupon.currency || coupon.currency.toLowerCase() === "usd")) {
+    return Math.max(0, amountCents - coupon.amount_off);
+  }
+  return amountCents;
 }
 
 /** Remove a staged fee that has NOT been invoiced yet - the pre-charge failure path. */
@@ -175,8 +209,17 @@ export async function discardStagedAgentFee(fee: PendingAgentFee): Promise<void>
  * amount, which offsets the customer's next invoice. The same shape as the seat rollback
  * (create_prorations credits the account rather than refunding cash), used when provisioning
  * fails after the charge went through.
+ *
+ * `amountCents` is what was actually charged - stageAgentFee returns it net of any coupon, so a
+ * discounted fee is credited by exactly what the customer paid rather than the full face value.
+ * A fully-discounted (zero) fee has nothing to reverse.
  */
-export async function reverseAgentFee(workspaceId: string): Promise<void> {
+export async function reverseAgentFee(
+  workspaceId: string,
+  amountCents: number = AGENT_FEE_CENTS
+): Promise<void> {
+  if (amountCents <= 0) return;
+
   const seat = await findHostingSeat(workspaceId);
   if (!seat) return;
 
@@ -187,7 +230,7 @@ export async function reverseAgentFee(workspaceId: string): Promise<void> {
   await stripe.invoiceItems.create({
     customer,
     subscription: seat.subscriptionId,
-    amount: -AGENT_FEE_CENTS,
+    amount: -amountCents,
     currency: "usd",
     description: `${AGENT_FEE_TIER.name} — additional agent fee reversal (agent build failed)`,
   });

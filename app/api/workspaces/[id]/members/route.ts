@@ -44,8 +44,6 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     email?: string;
     /** Give this person an agent of their own. Costs money — see below. */
     with_agent?: boolean;
-    /** Set by the client after the admin confirms an out-of-company address. */
-    allow_external?: boolean;
   }>(request).catch(() => ({}) as Record<string, never>);
   const role: Role = body.role === "admin" ? "admin" : "member";
 
@@ -57,22 +55,18 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(400, "invalid_request", "That doesn't look like an email address.");
   }
 
-  // The same-domain rule, as a question rather than a wall.
+  // External domains are BLOCKED - David's call. An outside address on an invitation is a typo
+  // far more often than a deliberate cross-company invite; the rare genuine case is handled by
+  // hand rather than waved through here.
   //
-  // David asked for invitations to be restricted to the inviter's domain. Enforced absolutely
-  // it would block a fractional CFO, an agency, a company with two domains, or any admin whose
-  // own address is gmail.com — and it stops nobody determined, since an admin can invite
-  // whoever they like anyway. So an outside address needs a deliberate second press
-  // (allow_external) instead of being refused, and the 409 says exactly what is unusual.
-  if (email && !body.allow_external) {
-    const verdict = domainVerdict(user.email ?? "", email);
-    if (verdict === "different") {
-      throw new ApiError(
-        409,
-        "external_domain",
-        `${email} is outside ${emailDomain(user.email ?? "")}. Confirm if you meant to invite someone from another company.`
-      );
-    }
+  // "different" only - a public-mailbox address on either side is "unverifiable", not external,
+  // and blocking those would lock out any admin whose own address is gmail.com. See lib/seats.ts.
+  if (email && domainVerdict(user.email ?? "", email) === "different") {
+    throw new ApiError(
+      403,
+      "external_domain",
+      `${email} is outside ${emailDomain(user.email ?? "")}. You can only invite people from your own company.`
+    );
   }
 
   // with_agent is recorded here, on the ADMIN's request, and never read from the invitee at

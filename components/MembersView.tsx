@@ -50,11 +50,10 @@ export function MembersView() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteRole, setInviteRole] = useState<Role>("member");
   const [inviteEmail, setInviteEmail] = useState("");
-  // Set when the server has said the address is outside the inviter's company. The next press
-  // sends allow_external and goes through — a confirm, not a wall. See lib/seats.ts for why
-  // this warns rather than refuses.
-  const [externalWarning, setExternalWarning] = useState("");
   const [withAgent, setWithAgent] = useState(false);
+  // An optional promotion code for the agent seat, applied to the one-time agent fee. Validated
+  // server-side; a bad one fails the add with a toast rather than charging.
+  const [coupon, setCoupon] = useState("");
   // The charge is two presses, at David's call. He went through this flow and it "just went to
   // payment" - the price was on screen, but stating a price and asking permission to charge it
   // are different acts, and the second one deserves its own press. First press arms; the box
@@ -104,48 +103,38 @@ export function MembersView() {
       return;
     }
     return run(async () => {
-      try {
-        // Two endpoints, because they are two different acts. /seats charges the card and
-        // builds a VPS; /members writes an invitation row. Folding them together would make a
-        // checkbox the difference between a free action and a recurring bill inside one
-        // handler, which is exactly the kind of thing that gets refactored wrong later.
-        const path = withAgent
-          ? `/api/workspaces/${current.id}/seats`
-          : `/api/workspaces/${current.id}/members`;
-        const { url } = await apiFetch<{ url?: string }>(path, {
-          method: "POST",
-          body: JSON.stringify({
-            role: inviteRole,
-            // Optional on /members: an invite with no address is the old copy-a-link
-            // behaviour, still the only option when you do not know where they read mail.
-            // Required on /seats, which is why the checkbox is disabled without one.
-            ...(inviteEmail.trim() ? { email: inviteEmail.trim() } : {}),
-            allow_external: !!externalWarning,
-          }),
-        });
-        if (url) await navigator.clipboard.writeText(url).catch(() => {});
-        toast.success(
-          withAgent
-            ? "Seat added - their agent is building now"
-            : url
-              ? "Invite link created and copied"
-              : "Invitation created"
-        );
-        setInviteOpen(false);
-        setInviteEmail("");
-        setExternalWarning("");
-        setWithAgent(false);
-        load();
-      } catch (e) {
-        // 409 external_domain is a question, not a failure: show what is unusual about the
-        // address and let the same button mean "yes, I meant that".
-        const err = e as { code?: string; message?: string };
-        if (err?.code === "external_domain") {
-          setExternalWarning(err.message || "That address is outside your company.");
-          return;
-        }
-        throw e;
-      }
+      // Two endpoints, because they are two different acts. /seats charges the card and
+      // builds a VPS; /members writes an invitation row. Folding them together would make a
+      // checkbox the difference between a free action and a recurring bill inside one
+      // handler, which is exactly the kind of thing that gets refactored wrong later.
+      const path = withAgent
+        ? `/api/workspaces/${current.id}/seats`
+        : `/api/workspaces/${current.id}/members`;
+      const { url } = await apiFetch<{ url?: string }>(path, {
+        method: "POST",
+        body: JSON.stringify({
+          role: inviteRole,
+          // Optional on /members: an invite with no address is the old copy-a-link
+          // behaviour, still the only option when you do not know where they read mail.
+          // Required on /seats, which is why the checkbox is disabled without one.
+          ...(inviteEmail.trim() ? { email: inviteEmail.trim() } : {}),
+          // Only the /seats path charges, so only it reads a coupon.
+          ...(withAgent && coupon.trim() ? { coupon: coupon.trim() } : {}),
+        }),
+      });
+      if (url) await navigator.clipboard.writeText(url).catch(() => {});
+      toast.success(
+        withAgent
+          ? "Seat added - their agent is building now"
+          : url
+            ? "Invite link created and copied"
+            : "Invitation created"
+      );
+      setInviteOpen(false);
+      setInviteEmail("");
+      setCoupon("");
+      setWithAgent(false);
+      load();
     });
   }
 
@@ -206,12 +195,7 @@ export function MembersView() {
                   id="invite-email"
                   type="email"
                   value={inviteEmail}
-                  onChange={(e) => {
-                    setInviteEmail(e.target.value);
-                    // Editing the address retracts the confirmation — otherwise a second,
-                    // different outside address would ride through on the first one's approval.
-                    setExternalWarning("");
-                  }}
+                  onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="colleague@yourcompany.com"
                   autoComplete="off"
                 />
@@ -219,12 +203,6 @@ export function MembersView() {
                   Optional. Leave it empty for a link you share yourself.
                 </p>
               </div>
-
-              {externalWarning && (
-                <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-                  {externalWarning} Press invite again to go ahead.
-                </div>
-              )}
 
               {/* An agent of their own, and what it costs, on the screen where the decision is
                   made. This is the one control in the dashboard that both charges the card and
@@ -255,6 +233,19 @@ export function MembersView() {
                   </span>
                 </span>
               </label>
+
+              {withAgent && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="invite-coupon">Coupon code (optional)</Label>
+                  <Input
+                    id="invite-coupon"
+                    value={coupon}
+                    onChange={(e) => setCoupon(e.target.value)}
+                    placeholder="Applied to the one-time agent fee"
+                    autoComplete="off"
+                  />
+                </div>
+              )}
 
               {chargeArmed && (
                 <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs leading-relaxed">
@@ -293,13 +284,11 @@ export function MembersView() {
                     ? withAgent
                       ? "Adding seat..."
                       : "Creating..."
-                    : externalWarning
-                      ? "Invite anyway"
-                      : withAgent
-                        ? chargeArmed
-                          ? "Confirm - charge $449 + $189/mo"
-                          : "Add seat - $449 + $189/mo"
-                        : "Create invite link"}
+                    : withAgent
+                      ? chargeArmed
+                        ? "Confirm - charge $449 + $189/mo"
+                        : "Add seat - $449 + $189/mo"
+                      : "Create invite link"}
                 </Button>
               </DialogFooter>
             </DialogContent>

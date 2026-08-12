@@ -15,6 +15,7 @@ import { inviteUrl } from "@/lib/invites";
 import { licenseAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
 import { domainVerdict, emailDomain } from "@/lib/seats";
+import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // POST /api/workspaces/{id}/seats — add an agent for someone in the office.
@@ -57,7 +58,12 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   const body = await readJson<{
     email?: string;
     name?: string;
-    allow_external?: boolean;
+    /**
+     * A promotion code the admin typed, applied to the one-time additional-agent fee. Optional.
+     * Empty or absent means full price. Validated against Stripe below before any card is
+     * touched, so a mistyped code stops the add rather than being silently ignored.
+     */
+    coupon?: string;
     /**
      * Deliberately adding ANOTHER agent for someone who already has one.
      *
@@ -81,13 +87,39 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(400, "invalid_request", "A valid email address is required.");
   }
 
-  // Same confirm-don't-refuse rule as the plain invitation. See lib/seats.ts.
-  if (!body.allow_external && domainVerdict(user.email ?? "", email) === "different") {
+  // External domains are BLOCKED - David's call. This endpoint charges the workspace's card and
+  // builds a VPS the instant it is pressed, and an address at another company is a mistyped one
+  // far more often than an agency deliberately provisioning for a client. Refuse it outright
+  // rather than charging on a confirm; the rare genuine cross-company case is handled by hand.
+  //
+  // "different" only - a public-mailbox address on either side is "unverifiable", not external,
+  // and blocking those would lock out any admin whose own address is gmail.com. See lib/seats.ts.
+  if (domainVerdict(user.email ?? "", email) === "different") {
     throw new ApiError(
-      409,
+      403,
       "external_domain",
-      `${email} is outside ${emailDomain(user.email ?? "")}. Confirm if you meant to add a seat for someone at another company.`
+      `${email} is outside ${emailDomain(user.email ?? "")}. Agents can only be added for people at your own company.`
     );
+  }
+
+  // Resolve the coupon BEFORE anything bills, so a bad code fails the add cleanly. A promotion
+  // code is what the admin types; it wraps the coupon that actually carries the discount.
+  let couponId: string | undefined;
+  const couponCode = (typeof body.coupon === "string" ? body.coupon : "").trim();
+  if (couponCode) {
+    const { data: promos } = await getStripe().promotionCodes.list({
+      code: couponCode,
+      active: true,
+      limit: 1,
+    });
+    // active:true already filters to codes whose coupon is still valid; the coupon rides on the
+    // promotion, expanded or as a bare id depending on the API's mood, so handle both.
+    const promo = promos[0];
+    const coup = promo?.promotion.coupon;
+    couponId = typeof coup === "string" ? coup : coup?.id;
+    if (!promo || !couponId) {
+      throw new ApiError(400, "invalid_coupon", `The coupon code "${couponCode}" isn't valid.`);
+    }
   }
 
   const db = createAdminClient();
@@ -117,7 +149,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // that bills the pro-rated seat sweeps it onto the same invoice. null means there is no
   // subscription to add to. Refused rather than quietly provisioning a free agent: an instance
   // nobody is billed for is a leak that only shows up as an infra invoice months later.
-  const fee = await stageAgentFee(id);
+  const fee = await stageAgentFee(id, couponId);
   if (fee === null) {
     throw new ApiError(
       409,
@@ -178,7 +210,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     await changeHostingSeats(id, -1).catch((rollbackErr) => {
       console.error("[seats] rollback failed - workspace is billed for an unbuilt seat:", id, rollbackErr);
     });
-    await reverseAgentFee(id).catch((rollbackErr) => {
+    await reverseAgentFee(id, fee.amountCents).catch((rollbackErr) => {
       console.error("[seats] agent fee reversal failed - workspace is billed for an unbuilt agent:", id, rollbackErr);
     });
     throw err;

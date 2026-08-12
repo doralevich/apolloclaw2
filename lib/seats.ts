@@ -38,16 +38,15 @@ export type DomainVerdict = "same" | "different" | "unverifiable";
 /**
  * Does this invitation stay inside the inviter's company?
  *
- * David asked for invitations to be restricted to the same domain. This ANSWERS that question
- * rather than enforcing it, because a hard rule breaks cases that arrive early and often: a
- * fractional CFO on their own domain, an agency, a company with two domains, or an admin whose
- * own address is gmail.com. It also stops nobody determined — anyone holding an admin seat can
- * invite whoever they like regardless.
+ * David asked for invitations to be restricted to the same domain, and the callers now enforce
+ * exactly that: a "different" verdict is REFUSED outright (403), not confirmed. This function
+ * only answers the question; the block lives in the seats and members routes.
  *
- * So the caller warns and requires a deliberate confirm on "different", and refuses nothing.
- * `unverifiable` is its own answer rather than being folded into "same": with a public mailbox
- * on either side there is no company to be inside of, and claiming the domains match would be a
- * reassurance we have not earned.
+ * The three-way answer is what makes a hard block safe. `unverifiable` — a public mailbox on
+ * either side, where there is no company to be inside of — is deliberately NOT "different", so
+ * an admin whose own address is gmail.com is never locked out of inviting anyone. Only a
+ * confirmed cross-company address ("different") is blocked; the rare genuine agency or
+ * two-domain case is handled by hand rather than by a checkbox here.
  */
 export function domainVerdict(inviterEmail: string, inviteeEmail: string): DomainVerdict {
   const from = emailDomain(inviterEmail);
