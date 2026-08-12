@@ -97,15 +97,36 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
     // gateway exposes the real Anthropic models, the block above matches them and this never runs.
     const aliasOnly = (response.data ?? []).every((m) => /^(openclaw|agent37)([/:].*)?$/i.test(m.id));
     if (aliasOnly) {
-      // No menu at all: the composer hides the switcher when the list is empty, sends no model
-      // id, and the instance runs its default - which is what every one of those aliases
-      // resolves to anyway. The menu disappearing loses the customer nothing.
+      // The instance is on the metered gateway, which reports ONE internal alias rather than the
+      // vendor models behind it. David's call: a business owner should still get to pick a model
+      // by name - "Claude Sonnet 5", not a hidden menu or a raw "Agent/37". So offer the Anthropic
+      // line we sell as a stable product menu, Sonnet 5 first, synthesized rather than read from
+      // the instance.
+      //
+      // The gateway routes the managed models, and the vendor-prefixed id is what it expects on a
+      // turn - so enabling the Anthropic models on the gateway is the half that makes a PICK
+      // actually RUN. Deploy this only once that is done: a selected model the gateway does not
+      // accept would fail the turn. (An unspecified turn still falls to the instance default, so
+      // leaving the default selected is no worse than today.)
       console.warn(
-        "[chat-models] instance reports only gateway router aliases - hiding the model menu.",
+        "[chat-models] instance reports only gateway router aliases - offering the Anthropic product menu.",
         "reported:",
         (response.data ?? []).map((m) => m.id).join(", ")
       );
-      return { default_model: response.default_model, default_provider: response.default_provider, data: [] };
+      const synthesized: AgentModel[] = APPROVED_MODELS.filter(
+        (m) => m.displayProvider === "anthropic"
+      ).map((m, index) => ({
+        id: m.ids[0],
+        label: m.label,
+        owned_by: m.displayProvider,
+        display_provider: m.displayProvider,
+        is_default: index === 0,
+      }));
+      return {
+        default_model: synthesized[0]?.id ?? response.default_model,
+        default_provider: "anthropic",
+        data: synthesized,
+      };
     }
     // Real ids we simply do not recognise (an instance on a newer build): the raw list is
     // still a genuine choice, so offering it beats an empty menu that reads as broken.
