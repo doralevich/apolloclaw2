@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -75,11 +75,11 @@ const SETTINGS_NAV = [
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
       { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
       // Two money pages, two scopes, both named for what they answer. Plan is the WORKSPACE's
-      // subscription - seats, invoices, the card. Credits is one AGENT's wallet, with its usage
-      // folded in beneath; the old separate Usage entry repeated the wallet's headline number a
-      // rail-entry lower.
+      // subscription - seats, invoices, the card. Credits is one AGENT's wallet; Usage sits
+      // directly beneath it (David's call) - where the wallet went, one row down from what's left.
       { href: "/dashboard/settings/plan", label: "Plan", icon: CreditCard, exact: false },
       { href: "/dashboard/settings/billing", label: "Credits", icon: ChartNoAxesColumn, exact: false },
+      { href: "/dashboard/settings/usage", label: "Usage", icon: Activity, exact: false },
       { href: "/dashboard/settings/members", label: "Members", icon: Users, exact: false },
     ],
   },

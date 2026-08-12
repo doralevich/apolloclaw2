@@ -177,7 +177,7 @@ function Header({ agentName }: { agentName?: string }) {
       <h1 className="text-2xl font-semibold tracking-tight">Billing & Credits</h1>
       <p className="text-sm text-muted-foreground">
         {agentName
-          ? `What ${agentName} has left to spend. The Usage tab shows where it went.`
+          ? `What ${agentName} has left to spend. The Usage page shows where it went.`
           : "Balance and top-ups for your agent."}
       </p>
     </div>
