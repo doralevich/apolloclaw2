@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 import type { MergedAgent } from "@/lib/types";
 
 // Post-submit screen for the paid onboarding flow: polls the workspace's agent list
@@ -16,21 +17,10 @@ const SRF = "#F2F1ED";
 const BDR = "rgba(0,0,0,0.08)";
 const TX = "#1A1A1A";
 const TXM = "#555555";
-const TXD = "#888888";
 
-function ApolloWordmark({ size = 18, sublabel = "Agent Build" }: { size?: number; sublabel?: string }) {
-  const subtitleSize = Math.max(8, Math.round(size * 0.44));
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <span style={{ fontWeight: 800, fontSize: size, color: TX }}>Apollo</span>
-        <span style={{ fontWeight: 800, fontSize: size, color: R }}>[</span>
-        <span style={{ fontWeight: 800, fontSize: size, color: TX }}>Claw</span>
-        <span style={{ fontWeight: 800, fontSize: size, color: R }}>]</span>
-      </div>
-      <div style={{ fontSize: subtitleSize, fontWeight: 600, letterSpacing: "0.25em", color: TXD, textTransform: "uppercase", marginTop: 1 }}>{sublabel}</div>
-    </div>
-  );
+// The real wordmark, matching the questionnaire and the rest of the site (was styled text).
+function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
+  return <ApolloClawLogo ink={TX} height={Math.round(size * 1.5)} />;
 }
 
 function StepRow({ state, label }: { state: "done" | "active" | "pending"; label: string }) {

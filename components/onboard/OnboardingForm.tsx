@@ -1,6 +1,7 @@
 "use client";
 import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
@@ -48,19 +49,12 @@ const BDR = "rgba(0,0,0,0.08)";
 const TX = "#000000";
 const TXM = "#1A1A1A";
 const TXD = "#4A4A4A";
-function ApolloWordmark({ size = 18, sublabel = "AI Consulting" }: { size?: number; sublabel?: string }) {
-  const subtitleSize = Math.max(8, Math.round(size * 0.44));
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <span style={{ fontWeight: 800, fontSize: size, color: TX }}>Apollo</span>
-        <span style={{ fontWeight: 800, fontSize: size, color: R }}>[</span>
-        <span style={{ fontWeight: 800, fontSize: size, color: TX }}>Claw</span>
-        <span style={{ fontWeight: 800, fontSize: size, color: R }}>]</span>
-      </div>
-      <div style={{ fontSize: subtitleSize, fontWeight: 600, letterSpacing: "0.25em", color: TXD, textTransform: "uppercase", marginTop: 1 }}>{sublabel}</div>
-    </div>
-  );
+// The REAL wordmark, per David - this used to render "Apollo[Claw]" as styled text, which was
+// close but wasn't the logo the rest of the site wears. Same component the navbar and footer
+// use; `size` was the old font size, so the glyph height scales from it to keep every existing
+// call site's proportions.
+function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
+  return <ApolloClawLogo ink={TX} height={Math.round(size * 1.5)} />;
 }
 // ════════════════════════════════════════════════════════════
 // OPTION LISTS

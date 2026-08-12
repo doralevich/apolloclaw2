@@ -113,13 +113,12 @@ function NavLink({
       onClick={onNavigate}
       className={cn(
         "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-        // Black label on the selected row, David's call. It was text-primary on bg-primary/10,
-        // and since the accent went black earlier today "primary at 10%" is a pale grey pill -
-        // so the selected row was grey text on grey, which is the exact thing the tint was
-        // introduced to avoid. Full-strength foreground and a heavier weight carry it now, and
-        // the pill stays as the shape rather than as the signal.
+        // A BLACK pill on the selected row, David's call - the grey bg-secondary pill it
+        // replaced read as barely-selected. Full-strength primary (black since the accent
+        // change) with its own foreground keeps the pair legible in dark mode too, where
+        // primary and its foreground swap together.
         active
-          ? "bg-secondary font-semibold text-foreground"
+          ? "bg-primary font-semibold text-primary-foreground"
           : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
       )}
     >
@@ -152,9 +151,13 @@ function SidebarContent({
   const { current, workspaces, isPlatformAdmin } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;
   const isWorkspaceAdmin = current?.role === "admin";
-  const logoUrl = current?.logo_url || branding.logoUrl;
+  // Always the ApolloClaw wordmark, per David - the rail used to prefer the workspace's
+  // uploaded logo (current.logo_url), which meant support visits and multi-workspace admins
+  // saw the CUSTOMER'S brand where the product's belongs. The upload feature is retired;
+  // stored logo_url values are simply no longer read here.
+  const logoUrl = branding.logoUrl;
   // The logo stands alone now, so it has to carry its own name for anyone who can't see it.
-  const logoAlt = current?.logo_url ? current.name : branding.appName;
+  const logoAlt = branding.appName;
 
   // Inside Settings the rail belongs to Settings: no workspace/agent switchers, no chat list,
   // no app nav — those are the things you came here to stop looking at. One way back, at the

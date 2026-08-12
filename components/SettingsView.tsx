@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { WorkspaceLogoUpload } from "@/components/WorkspaceLogoUpload";
 import { ThemePicker } from "@/components/ThemePicker";
 
 export function SettingsView() {
@@ -55,8 +54,8 @@ export function SettingsView() {
         <p className="text-sm text-muted-foreground">{current.name}</p>
       </div>
 
-      <WorkspaceLogoUpload />
-
+      {/* The logo-upload card that lived here is retired at David's call: the rail always
+          shows the ApolloClaw mark now, so a customer logo had nowhere to appear. */}
       <ThemePicker />
 
       <div className="space-y-2">
