@@ -1424,6 +1424,12 @@ export interface OnboardingFormProps {
   justPaid?: boolean;
   /** Stripe checkout session id, from the success URL. Lead mode only. */
   sessionId?: string;
+  /** Customer mode only: the signed-in account, resolved server-side. When present the
+   *  contact gate is SKIPPED - the gate exists to identify strangers, and a logged-in
+   *  customer pressing "Finish setup" is already identified. Its email check would refuse
+   *  their own address ("already has an account, log in") in the one flow where being
+   *  logged in is the starting condition. */
+  signedInUser?: { first: string; last: string; email: string };
 }
 
 // Stripe takes the buyer off-site, so the "Start Here" answers have to survive a full page
@@ -1485,8 +1491,10 @@ function clearStoredGate(): void {
   }
 }
 
-export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId }: OnboardingFormProps) {
+export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
+  // The gate is bypassed when the account already answers everything it would ask.
+  const skipGate = isCustomer && !!signedInUser?.email;
   // White glove submits down the same unauthenticated /api/intake path as the plain lead
   // form. The difference is what it means: these people have already been sold, offline, so
   // the copy addresses them as clients and the submission is tagged so David can tell the two
@@ -1540,10 +1548,17 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       // skipped, since justPaid is what gates it.
       : justPaid
         ? "confirm"
-        : "gate");
+        // A signed-in customer finishing setup starts at naming the agent, not at contact
+        // fields their account already holds (see signedInUser on the props).
+        : skipGate
+          ? "personalize"
+          : "gate");
 
   const [enteredGate, setGate] = useState<GateData | null>(null);
-  const gate = enteredGate ?? restored ?? EMPTY_GATE;
+  const gate =
+    enteredGate ??
+    restored ??
+    (signedInUser ? { ...EMPTY_GATE, ...signedInUser } : EMPTY_GATE);
   const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: "", avatarFile: null, avatarPresetColor: null, avatarPresetImage: null });
   const [buildingWorkspaceId, setBuildingWorkspaceId] = useState<string | undefined>(workspaceId);
   // Naming/avatar is a paid-customer thing (matches The College Agent: personalization
@@ -1648,7 +1663,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       alert("Something went wrong submitting your application. Please try again.");
     }
   };
-  if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase("gate")} />;
+  if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase(skipGate ? "personalize" : "gate")} />;
   if (phase === "gate") return (
     <Gatekeeper
       onPass={handleGate}
