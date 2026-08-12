@@ -12,6 +12,8 @@ import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { AddAgentButton } from "@/components/AddAgentButton";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { useChatContext } from "@/components/chat/ChatProvider";
+import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,10 +33,11 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 // former.
 const NAV = [
   { href: "/dashboard/start-here", label: "Welcome", icon: Compass, exact: false },
-  // Between Start Here and Chat, which is the order somebody works through them: the greeting
-  // points at the checklist, and the checklist's last item is to go and ask the thing something.
-  { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
+  // Chat sits directly under Welcome, above Checklist — David's call. Talking to the agent is
+  // the thing people come back for every day; the checklist is a first-week errand. The daily
+  // surface goes higher than the once-through one.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
+  { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
   // Channels is OFF the rail at David's call - the same call that took the channel cards off
   // the checklist. The page itself still exists and still works at /dashboard/channels; only
@@ -143,9 +146,16 @@ function SidebarContent({
   // leave a freshly-signed-in customer on a page missing from their own sidebar.
   const inSettings = pathname.startsWith(SETTINGS_ROOT);
 
-  const { agents } = useActiveAgent();
-  const nav = NAV.map((item) =>
-    item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item
+  const { agents, active } = useActiveAgent();
+  const { sessions } = useChatContext();
+  // Once setup is answered, a tool is connected and there's been a first conversation, the
+  // Welcome greeting has served its purpose — David's call to drop it off the rail then. The
+  // page stays reachable by URL; only the tab goes. Same source Start Here reads, so the tab
+  // vanishes on exactly the state that ticks all three steps there. While the checklist is
+  // still loading allDone is false, so the tab holds rather than flickering out and back.
+  const { allDone: welcomeDone } = useWelcomeComplete(active, sessions.length);
+  const nav = NAV.filter((item) => !(item.href === "/dashboard/start-here" && welcomeDone)).map(
+    (item) => (item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item)
   );
 
   const { current, workspaces, isPlatformAdmin } = useWorkspace();
@@ -187,6 +197,37 @@ function SidebarContent({
               </nav>
             </div>
           ))}
+
+          {/* Your team — the two "grow the workspace" actions, moved here off the main rail
+              (David's call). Admins only: both end at endpoints that require it, so a row that
+              would only 403 is a row not worth showing. Add agent opens the create dialog in
+              place; Invite a member goes to the Members page above, which is the browse-and-
+              manage view this is the quick shortcut into. */}
+          {isWorkspaceAdmin && (
+            <div>
+              <div className="px-3 pb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Your Team
+              </div>
+              <nav className="flex flex-col gap-1">
+                <AddAgentButton
+                  trigger={
+                    <button type="button" className={SIDE_ACTION_CLASS}>
+                      <Plus className="h-4 w-4" />
+                      Add agent
+                    </button>
+                  }
+                />
+                <Link
+                  href="/dashboard/settings/members"
+                  onClick={onNavigate}
+                  className={SIDE_ACTION_CLASS}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite a member
+                </Link>
+              </nav>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto space-y-2 pt-4">
@@ -245,33 +286,10 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* Growing the account: another agent, or another person. Both were buried - Add another
-          agent lived on Settings > My Agent, Members lived on Settings, and the first attempt at
-          fixing it put a bare + beside the agent's name, which David quite rightly read as
-          nothing at all. They are labelled rows here, above the chat list, because an icon is
-          only obvious to whoever drew it.
-
-          Admins only. Both actions end at endpoints that require it, and a member who presses
-          either gets a 403 - so a row that is going to refuse is a row not worth showing. */}
-      {isWorkspaceAdmin && (
-        <div className="mt-6 flex flex-col gap-1">
-          <span className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Your team
-          </span>
-          <AddAgentButton
-            trigger={
-              <button type="button" className={SIDE_ACTION_CLASS}>
-                <Plus className="h-4 w-4" />
-                Add agent
-              </button>
-            }
-          />
-          <Link href="/dashboard/settings/members" onClick={onNavigate} className={SIDE_ACTION_CLASS}>
-            <UserPlus className="h-4 w-4" />
-            Invite a member
-          </Link>
-        </div>
-      )}
+      {/* "Your team" (Add agent, Invite a member) used to live here on the main rail. Moved into
+          Settings (David's call) — growing the workspace is a configure-once errand, not a daily
+          surface, so it belongs with the other account settings rather than above the chat list.
+          Rendered by YourTeamBlock inside the Settings rail below. */}
 
       {/* The god-view, for the people who run the PLATFORM rather than a workspace. /admin was
           a secret URL nothing linked to, which meant remembering it - and the whole point of

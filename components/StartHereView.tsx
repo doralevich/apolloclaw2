@@ -5,7 +5,7 @@ import { Check, MessageSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
-import { useChecklist } from "@/lib/useChecklist";
+import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
@@ -30,8 +30,9 @@ export function StartHereView() {
   const { current, userFirstName } = useWorkspace();
   const { agents, active, loading } = useActiveAgent();
   const { sessions } = useChatContext();
-  // Same source as the Checklist page, so the two can never disagree about what counts as done.
-  const { items } = useChecklist(active?.agent37_id ?? "", sessions.length);
+  // Same source the sidebar reads to decide whether to keep showing the Welcome tab, and the
+  // same checklist the Checklist page uses — so the three can never disagree about what's done.
+  const { setupDone, toolDone, chatDone } = useWelcomeComplete(active, sessions.length);
 
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
@@ -69,7 +70,7 @@ export function StartHereView() {
         "instead of yours. Everything I do afterwards is built from these answers, and you can " +
         "come back and change them any time.",
       href: setupUrl,
-      done: active.setup_completed === true,
+      done: setupDone,
     },
     {
       title: "Connect your tools",
@@ -79,7 +80,7 @@ export function StartHereView() {
       href: "/dashboard/checklist",
       // Done the moment any real connection exists — the point of the step is crossing from
       // zero to one, and the checklist page owns the long tail.
-      done: items.some((i) => i.derived?.startsWith("toolkit:") && i.done),
+      done: toolDone,
     },
     {
       title: "Ask me something real",
@@ -87,7 +88,7 @@ export function StartHereView() {
         "Once email or calendar is connected, try “What's on my calendar this week?” " +
         "and watch. Talk to me the way you'd talk to someone who works for you.",
       href: "/dashboard/chat",
-      done: sessions.length > 0,
+      done: chatDone,
     },
   ];
 
