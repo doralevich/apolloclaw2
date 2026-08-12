@@ -43,14 +43,27 @@ export async function runTurn(
   input: string,
   sessionId: string | null
 ): Promise<TurnResult> {
+  // Prefer Sonnet 5, but not every instance's gateway accepts a vendor model id: the metered
+  // OpenClaw build rejects one with 400 "Invalid `model`. Use `openclaw`...". Naming Sonnet 5
+  // unconditionally broke exactly those instances (Russell's among them). So ask for Sonnet 5,
+  // and if the instance refuses the id, resend WITHOUT a model so it runs its own default - the
+  // channel gets the better model where it's available and a working answer everywhere else.
   const attempt = async (sid: string | null) => {
-    const res = await agent37.createResponse(agentId, {
-      input,
-      model: DEFAULT_CHAT_MODEL_ID,
-      ...(sid ? { session_id: sid } : {}),
-      stream: false,
-    });
-    return { res, text: await res.text() };
+    const send = (withModel: boolean) =>
+      agent37.createResponse(agentId, {
+        input,
+        ...(withModel ? { model: DEFAULT_CHAT_MODEL_ID } : {}),
+        ...(sid ? { session_id: sid } : {}),
+        stream: false,
+      });
+
+    let res = await send(true);
+    let text = await res.text();
+    if (res.status === 400 && /invalid/i.test(text) && /model/i.test(text)) {
+      res = await send(false);
+      text = await res.text();
+    }
+    return { res, text };
   };
 
   let { res, text } = await attempt(sessionId);
