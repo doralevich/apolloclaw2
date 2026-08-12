@@ -1,11 +1,18 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { DEFAULT_CHAT_MODEL_ID } from "@/config/chat-models";
 
 // Running one turn on the instance, shared by every channel receiver.
 //
 // This is the part that is identical whichever chat app the message arrived from: text in, an
 // answer out, on a session that persists so the conversation continues. Everything channel-
 // specific — how the message is authenticated, how the reply is delivered — stays in the route.
+//
+// EVERY channel turn names the model, the same Sonnet 5 the web composer defaults to. A channel
+// has no model picker, so left unspecified it fell to the instance's own default - the metered
+// gateway's alias - which is the path that answered Russell "I couldn't finish that one" while
+// the web chat (which does name a real model) worked. Naming it makes Sonnet 5 the default for
+// everyone, web and chat apps alike, and takes the channels off the alias for good.
 
 export interface TurnResult {
   session_id?: string;
@@ -39,6 +46,7 @@ export async function runTurn(
   const attempt = async (sid: string | null) => {
     const res = await agent37.createResponse(agentId, {
       input,
+      model: DEFAULT_CHAT_MODEL_ID,
       ...(sid ? { session_id: sid } : {}),
       stream: false,
     });
