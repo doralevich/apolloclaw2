@@ -4,13 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserPlus, Users, X, Plus } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
-import { AddAgentButton } from "@/components/AddAgentButton";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
@@ -197,37 +196,6 @@ function SidebarContent({
               </nav>
             </div>
           ))}
-
-          {/* Your team — the two "grow the workspace" actions, moved here off the main rail
-              (David's call). Admins only: both end at endpoints that require it, so a row that
-              would only 403 is a row not worth showing. Add agent opens the create dialog in
-              place; Invite a member goes to the Members page above, which is the browse-and-
-              manage view this is the quick shortcut into. */}
-          {isWorkspaceAdmin && (
-            <div>
-              <div className="px-3 pb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Your Team
-              </div>
-              <nav className="flex flex-col gap-1">
-                <AddAgentButton
-                  trigger={
-                    <button type="button" className={SIDE_ACTION_CLASS}>
-                      <Plus className="h-4 w-4" />
-                      Add agent
-                    </button>
-                  }
-                />
-                <Link
-                  href="/dashboard/settings/members"
-                  onClick={onNavigate}
-                  className={SIDE_ACTION_CLASS}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Invite a member
-                </Link>
-              </nav>
-            </div>
-          )}
         </div>
 
         <div className="mt-auto space-y-2 pt-4">
@@ -286,10 +254,11 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* "Your team" (Add agent, Invite a member) used to live here on the main rail. Moved into
-          Settings (David's call) — growing the workspace is a configure-once errand, not a daily
-          surface, so it belongs with the other account settings rather than above the chat list.
-          Rendered by YourTeamBlock inside the Settings rail below. */}
+      {/* "Your team" (Add agent, Invite a member) used to live here on the main rail. Retired
+          (David's call): the two actions were redundant with Settings, where My Agent(s) already
+          holds "add another agent" and Members is the invite-and-manage page. A labelled shortcut
+          block sitting a few rows above two nav entries that do the same thing is clutter, not a
+          convenience — so the rail loses the block and Settings keeps the real destinations. */}
 
       {/* The god-view, for the people who run the PLATFORM rather than a workspace. /admin was
           a secret URL nothing linked to, which meant remembering it - and the whole point of
