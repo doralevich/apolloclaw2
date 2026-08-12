@@ -85,7 +85,8 @@ export function PlanView() {
       <div className="rounded-xl border bg-card p-5">
         <h2 className="font-semibold">ApolloClaw Agent License</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Owned. Paid once - it does not renew, and adding agents never charges it again.
+          Owned. Paid once - it does not renew. Each additional agent carries its own one-time
+          $449 agent license.
         </p>
       </div>
 
@@ -114,8 +115,9 @@ export function PlanView() {
           )}
         </div>
         <p className="mt-3 border-t pt-3 text-xs leading-relaxed text-muted-foreground">
-          Each seat includes $25/mo of usage credit. Adding an agent adds a seat pro-rated from
-          that day; deleting one credits the seat back automatically.
+          Each seat includes $25/mo of usage credit. Adding an agent bills a one-time $449 agent
+          license plus a seat pro-rated from that day, on one invoice; deleting an agent credits
+          its seat back automatically.
         </p>
       </div>
 

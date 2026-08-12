@@ -4,7 +4,13 @@ import { sendMandrillEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/onboardingSections";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { ApiError, json, readJson, route } from "@/lib/http";
-import { changeHostingSeats, hostingSeatCount } from "@/lib/hosting-seats";
+import {
+  changeHostingSeats,
+  discardStagedAgentFee,
+  hostingSeatCount,
+  reverseAgentFee,
+  stageAgentFee,
+} from "@/lib/hosting-seats";
 import { inviteUrl } from "@/lib/invites";
 import { licenseAgentType } from "@/config/agent-types";
 import { provisionTypedAgent } from "@/lib/provision";
@@ -106,11 +112,35 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   }
 
   // ── 1. Bill ────────────────────────────────────────────────────────────────
-  // null means there is no subscription to add to. Refused rather than quietly provisioning a
-  // free agent: an instance nobody is billed for is a leak that only shows up as an infra
-  // invoice months later.
-  const seats = await changeHostingSeats(id, +1);
+  // Two lines, one invoice: the one-time additional-agent fee (David's call - the Basic
+  // license price, $449) is staged as a pending invoice item FIRST, so the always_invoice run
+  // that bills the pro-rated seat sweeps it onto the same invoice. null means there is no
+  // subscription to add to. Refused rather than quietly provisioning a free agent: an instance
+  // nobody is billed for is a leak that only shows up as an infra invoice months later.
+  const fee = await stageAgentFee(id);
+  if (fee === null) {
+    throw new ApiError(
+      409,
+      "no_subscription",
+      "This workspace has no hosting subscription to add a seat to. Talk to us and we'll set it up."
+    );
+  }
+
+  let seats: number | null;
+  try {
+    seats = await changeHostingSeats(id, +1);
+  } catch (err) {
+    // The fee is still pending - nothing has been invoiced - so it can simply be discarded.
+    await discardStagedAgentFee(fee).catch((cleanupErr) => {
+      console.error("[seats] discarding staged agent fee failed - it will bill on the next invoice:", id, cleanupErr);
+    });
+    throw err;
+  }
   if (seats === null) {
+    // The subscription vanished between the two lookups - cancelled mid-request. Clean up.
+    await discardStagedAgentFee(fee).catch((cleanupErr) => {
+      console.error("[seats] discarding staged agent fee failed - it will bill on the next invoice:", id, cleanupErr);
+    });
     throw new ApiError(
       409,
       "no_subscription",
@@ -142,9 +172,14 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     agentId = agent.id;
   } catch (err) {
     // Charged but not built. Give the money back before surfacing the failure, so a retry does
-    // not stack a second seat onto the bill.
+    // not stack a second seat onto the bill. Both lines: the seat quantity comes back down
+    // (a proration credit), and the one-time fee - already swept onto the paid invoice by the
+    // seat change - is offset by a matching credit on the next invoice.
     await changeHostingSeats(id, -1).catch((rollbackErr) => {
       console.error("[seats] rollback failed - workspace is billed for an unbuilt seat:", id, rollbackErr);
+    });
+    await reverseAgentFee(id).catch((rollbackErr) => {
+      console.error("[seats] agent fee reversal failed - workspace is billed for an unbuilt agent:", id, rollbackErr);
     });
     throw err;
   }
@@ -173,8 +208,8 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
           html:
             `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
             `<h2 style="color:#0B1729">Your new agent is on its way.</h2>` +
-            `<p>It has been created and is building now. Hosting for it was added to your ` +
-            `subscription - one line, pro-rated from today.</p>` +
+            `<p>It has been created and is building now. Your invoice carries the one-time ` +
+            `agent license and its hosting seat, pro-rated from today.</p>` +
             `<p>Its setup questions are what turn it from a general assistant into yours: how ` +
             `this work is different, who it deals with, what it should take off your plate.</p>` +
             `<p><a href="${setupUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Set up your new agent</a></p>` +

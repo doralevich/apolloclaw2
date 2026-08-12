@@ -43,7 +43,7 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { active } = useActiveAgent();
-  const { userFullName, userFirstName, current } = useWorkspace();
+  const { userFullName, userFirstName, current, isPlatformAdmin } = useWorkspace();
   const { sessions, activeSessionId, startNewChat } = useChatContext();
 
   const onChat = pathname.startsWith("/dashboard/chat");
@@ -81,11 +81,23 @@ export function DashboardHeader() {
             <span className="text-sm text-muted-foreground">
               Welcome, <span className="font-medium text-foreground">{userFullName || userFirstName}</span>
             </span>
-            {current && (
+            {/* Platform admins outrank the workspace role: David's account says Super Admin
+                wherever it is, because the workspace tag never answered which HAT he was
+                wearing. The tag links to /admin for the same reason the rail does - the
+                god-view's front door, not a secret URL. */}
+            {isPlatformAdmin ? (
+              <a
+                href="/admin"
+                title="Open the Super Admin area"
+                className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary transition-colors hover:bg-primary/20"
+              >
+                Super Admin
+              </a>
+            ) : current ? (
               <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {current.role === "admin" ? "Admin" : "Member"}
               </span>
-            )}
+            ) : null}
           </span>
         )}
         {/* Date and time, from the mockup. The weather it also shows isn't here - see HeaderClock. */}

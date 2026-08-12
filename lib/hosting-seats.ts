@@ -1,6 +1,6 @@
 import "server-only";
 import type Stripe from "stripe";
-import { HOSTING_PLAN } from "@/lib/pricing/catalog";
+import { HOSTING_PLAN, LICENSE_TIERS } from "@/lib/pricing/catalog";
 import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -121,6 +121,76 @@ export async function changeHostingSeats(workspaceId: string, delta: number): Pr
 export async function hostingSeatCount(workspaceId: string): Promise<number | null> {
   const seat = await findHostingSeat(workspaceId);
   return seat?.quantity ?? null;
+}
+
+// ── The one-time additional-agent fee ────────────────────────────────────────
+//
+// David's call: every agent added after the first carries the Basic license price ($449) as a
+// one-time charge, on top of its monthly hosting seat. The fee is staged as a PENDING invoice
+// item bound to the hosting subscription BEFORE the seat quantity changes, because the seat
+// change bills with always_invoice - and the invoice Stripe generates for that proration sweeps
+// in pending items on the same subscription. One button press, one invoice, both lines on it.
+
+const AGENT_FEE_TIER = LICENSE_TIERS.find((t) => t.id === "basic")!;
+export const AGENT_FEE_CENTS = AGENT_FEE_TIER.amountCents;
+
+export interface PendingAgentFee {
+  invoiceItemId: string;
+  amountCents: number;
+}
+
+/**
+ * Stage the fee on the workspace's hosting subscription. Null when there is no subscription -
+ * the same white-glove case where seat changes are a conversation, not a proration.
+ *
+ * Amount + description rather than the license price id: the tier's Stripe price is a checkout
+ * price for the product, and pinning invoice items to it would couple this to how the seed
+ * script models one-time prices. The catalog is still the single source of the number.
+ */
+export async function stageAgentFee(workspaceId: string): Promise<PendingAgentFee | null> {
+  const seat = await findHostingSeat(workspaceId);
+  if (!seat) return null;
+
+  const stripe = getStripe();
+  const sub = await stripe.subscriptions.retrieve(seat.subscriptionId);
+  const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+
+  const item = await stripe.invoiceItems.create({
+    customer,
+    subscription: seat.subscriptionId,
+    amount: AGENT_FEE_CENTS,
+    currency: "usd",
+    description: `${AGENT_FEE_TIER.name} — additional agent (one-time)`,
+  });
+  return { invoiceItemId: item.id, amountCents: AGENT_FEE_CENTS };
+}
+
+/** Remove a staged fee that has NOT been invoiced yet - the pre-charge failure path. */
+export async function discardStagedAgentFee(fee: PendingAgentFee): Promise<void> {
+  await getStripe().invoiceItems.del(fee.invoiceItemId);
+}
+
+/**
+ * Reverse a fee that already landed on a paid invoice: a negative invoice item for the same
+ * amount, which offsets the customer's next invoice. The same shape as the seat rollback
+ * (create_prorations credits the account rather than refunding cash), used when provisioning
+ * fails after the charge went through.
+ */
+export async function reverseAgentFee(workspaceId: string): Promise<void> {
+  const seat = await findHostingSeat(workspaceId);
+  if (!seat) return;
+
+  const stripe = getStripe();
+  const sub = await stripe.subscriptions.retrieve(seat.subscriptionId);
+  const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+
+  await stripe.invoiceItems.create({
+    customer,
+    subscription: seat.subscriptionId,
+    amount: -AGENT_FEE_CENTS,
+    currency: "usd",
+    description: `${AGENT_FEE_TIER.name} — additional agent fee reversal (agent build failed)`,
+  });
 }
 
 /**
