@@ -91,6 +91,10 @@ export async function getChannelConfig(
   token: string;
   secret: string | null;
   sessionId: string | null;
+  /** When the row was last written (ms), i.e. the last message on this channel. Null if never.
+   *  Used to decide whether the stored session is still live or has gone cold — see
+   *  sessionToContinue in lib/channels/turn.ts. */
+  updatedAt: number | null;
   ownerChatId: string | null;
   externalId: string | null;
   verifyToken: string | null;
@@ -102,6 +106,7 @@ export async function getChannelConfig(
     token,
     secret: decryptSecret(row.secret),
     sessionId: row.session_id,
+    updatedAt: row.updated_at ? Date.parse(row.updated_at) : null,
     ownerChatId: row.owner_chat_id,
     externalId: row.external_id,
     verifyToken: decryptSecret(row.verify_token),

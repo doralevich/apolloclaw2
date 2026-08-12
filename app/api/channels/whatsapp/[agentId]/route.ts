@@ -2,7 +2,7 @@ import { after } from "next/server";
 import { timingSafeEqual } from "crypto";
 import * as whatsapp from "@/lib/channels/whatsapp";
 import { getChannelConfig, upsertChannel } from "@/lib/channels/store";
-import { answerFrom, runTurn } from "@/lib/channels/turn";
+import { answerFrom, runTurn, sessionToContinue } from "@/lib/channels/turn";
 
 type Ctx = { params: Promise<{ agentId: string }> };
 
@@ -85,7 +85,7 @@ export async function POST(request: Request, { params }: Ctx) {
         });
       }
 
-      const result = await runTurn(agentId, message.text, config.sessionId);
+      const result = await runTurn(agentId, message.text, sessionToContinue(config.sessionId, config.updatedAt));
 
       if (result.session_id && result.session_id !== config.sessionId) {
         await upsertChannel(agentId, "whatsapp", {

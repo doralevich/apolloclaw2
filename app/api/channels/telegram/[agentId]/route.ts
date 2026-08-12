@@ -2,7 +2,7 @@ import { after } from "next/server";
 import { timingSafeEqual } from "crypto";
 import * as telegram from "@/lib/channels/telegram";
 import { getChannelConfig, upsertChannel } from "@/lib/channels/store";
-import { answerFrom, incompleteReason, runTurn } from "@/lib/channels/turn";
+import { answerFrom, incompleteReason, runTurn, sessionToContinue } from "@/lib/channels/turn";
 
 type Ctx = { params: Promise<{ agentId: string }> };
 
@@ -94,7 +94,11 @@ export async function POST(request: Request, { params }: Ctx) {
 
       await telegram.sendTyping(config.token, update.chatId);
 
-      const result = await runTurn(agentId, update.text, config.sessionId);
+      const result = await runTurn(
+        agentId,
+        update.text,
+        sessionToContinue(config.sessionId, config.updatedAt)
+      );
 
       // Remember the session so the next message continues the same conversation instead of
       // starting a fresh one that knows nothing about the last.

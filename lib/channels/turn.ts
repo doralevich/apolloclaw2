@@ -21,6 +21,37 @@ export interface TurnResult {
   error?: { message?: string } | null;
 }
 
+// How long a channel session may sit idle before the next message starts a FRESH one instead of
+// continuing it.
+//
+// A channel reuses one session so the conversation carries across messages — but nothing ever
+// ended it, so the session grew for the life of the bot and every turn re-billed the entire
+// accumulated history as input. That is the shape of Grace's bill: 13M input tokens against 50K
+// output, a 260:1 ratio that only a huge, ever-growing context per turn produces. Left unbounded
+// it gets worse every message, forever.
+//
+// Six hours is the "this is a new conversation" line. Within a working session, gaps stay under
+// it and the thread continues as before; come back the next morning and the agent starts clean
+// rather than re-reading yesterday on every reply. Nothing important is lost on a reset — durable
+// facts live in the instance's own memory (MEMORY.md), which a new session still reads; only the
+// expendable scrollback is shed. Tune here.
+export const CHANNEL_SESSION_MAX_IDLE_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * The session id to continue on this turn, or null to start fresh.
+ *
+ * Continues the stored session while the conversation is live, and drops it once it has gone cold
+ * — so history can't accumulate across days into a context that costs more to re-read every turn
+ * than the answer it produces. Passing null makes runTurn open a new session; the receiver then
+ * persists the new id exactly as it already persisted the old one.
+ */
+export function sessionToContinue(sessionId: string | null, lastActivityMs: number | null): string | null {
+  if (!sessionId) return null;
+  if (lastActivityMs == null) return sessionId;
+  if (Date.now() - lastActivityMs > CHANNEL_SESSION_MAX_IDLE_MS) return null;
+  return sessionId;
+}
+
 // The running-response id out of a 409 session_busy body, so it can be cancelled. The field
 // name isn't documented, so a few likely spellings are tried; a miss just means we fall back to
 // a fresh session instead of reclaiming the wedged one.
