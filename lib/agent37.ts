@@ -243,18 +243,13 @@ export const agent37 = {
     id: string,
     fields: { monthly_cap_micros: number; topup_micros: number }
   ): Promise<Budget> => {
-    // Setting purchased credit is undocumented and the field was renamed at least once: getBudget
-    // now reports `credit_remaining_micros` (no `topup_remaining_micros`), and a write of
-    // `topup_micros` - then `credit_micros` - both returned 2xx but left credit at 0. The runtime
-    // silently ignores fields it doesn't recognise (those writes never 400'd), so send every
-    // plausible spelling at once, same value: the one the build honours lands, the rest are inert.
-    // Trim to the confirmed name once the raw budget shows which took.
+    // Only the cap is actually writable per instance. Purchased credit does NOT go through here -
+    // the runtime ignores every credit/topup field on this endpoint (confirmed empirically) - so
+    // credit is delivered by raising monthly_cap_micros and tracked in our own agent_credit ledger
+    // (lib/instance-credit.ts). topup_micros is kept only because the write is a full replace.
     const body = JSON.stringify({
       monthly_cap_micros: fields.monthly_cap_micros,
       topup_micros: fields.topup_micros,
-      credit_micros: fields.topup_micros,
-      credit_remaining_micros: fields.topup_micros,
-      topup_remaining_micros: fields.topup_micros,
     });
     const attempt = async (method: BudgetVerb): Promise<Budget> => {
       const result = await call<Budget>(`/instances/${id}/budget`, { method, body });

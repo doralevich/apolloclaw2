@@ -1,6 +1,6 @@
 import "server-only";
-import { agent37 } from "@/lib/agent37";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { captureBaseIfFirstCredit, syncInstanceCredit } from "@/lib/instance-credit";
 import { creditPackForCatalogKey, type CreditPack } from "@/lib/pricing/catalog";
 
 // Purchased API credits: the money half lives here, the balance itself lives on the Agent37
@@ -72,11 +72,19 @@ export async function deliverCredit(rowId: number): Promise<boolean> {
   if (row.status === "delivered") return true;
 
   try {
-    await agent37.addCredit(row.agent37_id as string, Number(row.amount_micros));
+    // Capture the base allowance BEFORE this purchase is counted, so the ledger's base is the plan
+    // amount rather than a cap we've already raised. Then mark delivered - which is what makes the
+    // purchase count toward credit (credit = Σ delivered - drawn) - and re-assert the instance cap
+    // to base + credit. If the cap write fails here it self-heals on the next budget read, so it
+    // must not fail the delivery.
+    await captureBaseIfFirstCredit(row.agent37_id as string);
     await db
       .from("wallet_transactions")
       .update({ status: "delivered", delivered_at: new Date().toISOString(), last_error: null, updated_at: new Date().toISOString() })
       .eq("id", rowId);
+    await syncInstanceCredit(row.agent37_id as string).catch((e) => {
+      console.error("[credits] cap sync after delivery failed (self-heals on next read):", rowId, e instanceof Error ? e.message : e);
+    });
     return true;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
