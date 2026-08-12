@@ -89,17 +89,19 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
   });
 
   if (data.length === 0) {
-    // OpenClaw's router aliases, not models. An instance whose gateway has no vendor models
-    // configured reports "openclaw", "openclaw/default", "openclaw/main" - names for whatever
-    // its one configured model happens to be. David's composer showed exactly that list, and a
-    // menu of internal aliases is not a choice, it is noise wearing a dropdown.
-    const aliasOnly = (response.data ?? []).every((m) => /^openclaw([/:].*)?$/i.test(m.id));
+    // Router aliases, not models. An instance whose gateway has no vendor models configured
+    // reports a single internal alias - "openclaw"/"openclaw/default", or "agent37"/"agent37/
+    // default" on the metered gateway - a name for whatever its one configured model happens to
+    // be. David saw exactly this: the composer showing "Agent/37" as if it were a model to pick.
+    // A menu of internal aliases is not a choice, it is noise wearing a dropdown. Once the
+    // gateway exposes the real Anthropic models, the block above matches them and this never runs.
+    const aliasOnly = (response.data ?? []).every((m) => /^(openclaw|agent37)([/:].*)?$/i.test(m.id));
     if (aliasOnly) {
       // No menu at all: the composer hides the switcher when the list is empty, sends no model
       // id, and the instance runs its default - which is what every one of those aliases
       // resolves to anyway. The menu disappearing loses the customer nothing.
       console.warn(
-        "[chat-models] instance reports only OpenClaw router aliases - hiding the model menu.",
+        "[chat-models] instance reports only gateway router aliases - hiding the model menu.",
         "reported:",
         (response.data ?? []).map((m) => m.id).join(", ")
       );
