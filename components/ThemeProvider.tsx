@@ -15,6 +15,10 @@ export type ThemeMode = "light" | "dark" | "system";
 export const THEME_STORAGE_KEY = "apolloclaw-theme";
 
 // Kept in sync with the inline pre-paint script in app/layout.tsx. Change one, change both.
+//
+// The default is LIGHT, not system, per David: someone whose OS is dark should still meet the
+// dashboard bright the first time. Dark and follow-the-OS stay one click away in the picker -
+// this only decides what an account that never chose gets.
 export function resolveStoredTheme(): ThemeMode {
   try {
     const v = localStorage.getItem(THEME_STORAGE_KEY);
@@ -22,11 +26,11 @@ export function resolveStoredTheme(): ThemeMode {
   } catch {
     // Safari in private mode, or storage disabled entirely. Fall through to the default.
   }
-  return "system";
+  return "light";
 }
 
 const ThemeContext = createContext<{ mode: ThemeMode; setMode: (m: ThemeMode) => void }>({
-  mode: "system",
+  mode: "light",
   setMode: () => {},
 });
 
@@ -62,7 +66,7 @@ function getSnapshot(): ThemeMode {
 }
 
 function getServerSnapshot(): ThemeMode {
-  return "system";
+  return "light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

@@ -32,7 +32,7 @@ async function resolveEmails(
 }
 
 export const GET = route(async () => {
-  await requirePlatformAdmin();
+  const { user } = await requirePlatformAdmin();
   const admin = createAdminClient();
 
   const { data: workspaces, error } = await admin
@@ -69,8 +69,12 @@ export const GET = route(async () => {
   if (agentsRes.error) throw new ApiError(500, "db_error", agentsRes.error.message);
 
   const memberCount = new Map<string, number>();
+  // Workspaces the CALLING admin already belongs to - the UI offers "Leave" there instead of
+  // "join", so a support session can be closed out from the same card that opened it.
+  const mine = new Set<string>();
   for (const m of membersRes.data ?? []) {
     memberCount.set(m.workspace_id, (memberCount.get(m.workspace_id) ?? 0) + 1);
+    if (m.user_id === user.id) mine.add(m.workspace_id);
   }
 
   const agentCount = new Map<string, number>();
@@ -92,6 +96,7 @@ export const GET = route(async () => {
     member_count: memberCount.get(w.id) ?? 0,
     agent_count: agentCount.get(w.id) ?? 0,
     running_count: runningCount.get(w.id) ?? 0,
+    you_are_member: mine.has(w.id),
   }));
 
   return json({ workspaces: summaries });

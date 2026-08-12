@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronRight, DoorOpen, ExternalLink, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
@@ -11,6 +11,19 @@ import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
+import { STORAGE_KEY } from "@/components/WorkspaceProvider";
+
+// Support access: become an admin member of the customer's workspace (idempotent,
+// audit-logged), point the dashboard's stored workspace at it, and open the ApolloClaw
+// dashboard in a new tab - landing inside THEIR workspace with the whole product available:
+// checklist, integrations, skills, channels. This is how "help the client with their setup"
+// actually happens; the OpenClaw button next to it is the raw instance for when the product
+// isn't the surface you need.
+export async function openWorkspaceInApolloClaw(workspaceId: string): Promise<void> {
+  await apiFetch(`/api/admin/workspaces/${workspaceId}/join`, { method: "POST" });
+  localStorage.setItem(STORAGE_KEY, workspaceId);
+  window.open("/dashboard", "_blank", "noopener");
+}
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
 
@@ -136,12 +149,18 @@ export function AdminWorkspacesView() {
                     <Stat label="Created" value={formatDate(w.created_at)} />
                   </div>
 
-                  <CreateAgentButton
-                    workspaceId={w.id}
-                    onCreated={() => onCreated(w.id)}
-                    label="Create Apollo Agent"
-                    size="sm"
-                  />
+                  <div className="flex items-center gap-2">
+                    <OpenWorkspaceButton workspaceId={w.id} />
+                    {w.you_are_member && (
+                      <LeaveWorkspaceButton workspaceId={w.id} name={w.name} onLeft={loadWorkspaces} />
+                    )}
+                    <CreateAgentButton
+                      workspaceId={w.id}
+                      onCreated={() => onCreated(w.id)}
+                      label="Create Apollo Agent"
+                      size="sm"
+                    />
+                  </div>
                 </div>
 
                 {isOpen && (
@@ -164,6 +183,62 @@ function Stat({ label, value }: { label: string; value: string }) {
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm">{value}</p>
     </div>
+  );
+}
+
+function OpenWorkspaceButton({ workspaceId }: { workspaceId: string }) {
+  const [busy, setBusy] = useState(false);
+
+  async function open() {
+    setBusy(true);
+    try {
+      await openWorkspaceInApolloClaw(workspaceId);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button variant="outline" size="sm" onClick={open} disabled={busy}>
+      <DoorOpen className="h-4 w-4" />
+      {busy ? "Opening..." : "Open in ApolloClaw"}
+    </Button>
+  );
+}
+
+// Close out a support session: remove the admin's own membership so the customer's Members
+// page goes back to showing only their people.
+function LeaveWorkspaceButton({
+  workspaceId,
+  name,
+  onLeft,
+}: {
+  workspaceId: string;
+  name: string;
+  onLeft: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  async function leave() {
+    setBusy(true);
+    try {
+      await apiFetch(`/api/admin/workspaces/${workspaceId}/join`, { method: "DELETE" });
+      toast.success(`Left "${name}".`);
+      onLeft();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button variant="ghost" size="sm" onClick={leave} disabled={busy} title="Remove your support membership">
+      <LogOut className="h-4 w-4" />
+      {busy ? "Leaving..." : "Leave"}
+    </Button>
   );
 }
 

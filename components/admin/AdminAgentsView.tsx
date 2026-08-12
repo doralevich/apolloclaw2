@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, ExternalLink, Trash2 } from "lucide-react";
+import { CornerDownRight, DoorOpen, ExternalLink, Trash2 } from "lucide-react";
+import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
@@ -183,12 +184,26 @@ function AgentCard({
 }) {
   const presence = PRESENCE[agent.presence];
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
-  const [opening, setOpening] = useState(false);
+  const [opening, setOpening] = useState<"apolloclaw" | "instance" | null>(null);
 
-  // Log into this customer's instance: signed URL + OpenClaw token, audit-logged server-side.
-  // A ghost has no instance to open; anything else is worth trying and errors surface as toasts.
-  async function open() {
-    setOpening(true);
+  // Two doors into a customer's agent. "Open" is the ApolloClaw dashboard - support access
+  // via workspace membership, where product gets installed and the checklist lives. "Instance"
+  // is the raw OpenClaw Control UI (signed URL + token, audit-logged server-side) for when the
+  // product isn't the surface you need. A ghost has neither; an orphan has only the instance.
+  async function openApolloClaw() {
+    if (!agent.workspace_id) return;
+    setOpening("apolloclaw");
+    try {
+      await openWorkspaceInApolloClaw(agent.workspace_id);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setOpening(null);
+    }
+  }
+
+  async function openInstance() {
+    setOpening("instance");
     try {
       const { url } = await apiFetch<{ url: string }>(`/api/admin/agents/${agent.agent37_id}/open`, {
         method: "POST",
@@ -197,7 +212,7 @@ function AgentCard({
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
-      setOpening(false);
+      setOpening(null);
     }
   }
   return (
@@ -230,10 +245,16 @@ function AgentCard({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {agent.workspace_id && (
+          <Button variant="outline" size="sm" onClick={openApolloClaw} disabled={opening !== null}>
+            <DoorOpen className="h-4 w-4" />
+            {opening === "apolloclaw" ? "Opening..." : "Open"}
+          </Button>
+        )}
         {agent.presence !== "ghost" && (
-          <Button variant="outline" size="sm" onClick={open} disabled={opening}>
+          <Button variant="ghost" size="sm" onClick={openInstance} disabled={opening !== null}>
             <ExternalLink className="h-4 w-4" />
-            {opening ? "Opening..." : "Open"}
+            {opening === "instance" ? "Opening..." : "Instance"}
           </Button>
         )}
         <Button

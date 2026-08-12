@@ -228,6 +228,8 @@ export interface AdminWorkspaceSummary {
   member_count: number;
   agent_count: number;
   running_count: number;
+  /** The calling platform admin already holds a membership (support access is open). */
+  you_are_member: boolean;
 }
 
 // One instance inside an expanded workspace row, enriched with live agent37 state plus
