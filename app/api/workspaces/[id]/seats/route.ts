@@ -102,9 +102,12 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     );
   }
 
+  const db = createAdminClient();
+
   // Resolve the coupon BEFORE anything bills, so a bad code fails the add cleanly. A promotion
   // code is what the admin types; it wraps the coupon that actually carries the discount.
   let couponId: string | undefined;
+  let couponPromoId: string | undefined;
   const couponCode = (typeof body.coupon === "string" ? body.coupon : "").trim();
   if (couponCode) {
     const { data: promos } = await getStripe().promotionCodes.list({
@@ -120,9 +123,29 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     if (!promo || !couponId) {
       throw new ApiError(400, "invalid_coupon", `The coupon code "${couponCode}" isn't valid.`);
     }
-  }
+    couponPromoId = promo.id;
 
-  const db = createAdminClient();
+    // Redemption cap. We compute this discount ourselves rather than letting Stripe apply it (so
+    // the fee reverses to the penny if the build fails), which means Stripe never counts a
+    // dashboard use. So the cap is checked against BOTH counts: Stripe's times_redeemed (the
+    // public-checkout uses Stripe does apply) plus our own ledger of dashboard uses. A shared
+    // code is capped across both surfaces; a dashboard-only code by the ledger alone.
+    if (promo.max_redemptions != null) {
+      const { count, error: countErr } = await db
+        .from("coupon_redemptions")
+        .select("id", { count: "exact", head: true })
+        .eq("promotion_code_id", promo.id);
+      // Fail CLOSED on a count error - a cap we cannot verify is a cap we must not overrun. The
+      // add is refused, not silently uncapped.
+      if (countErr) {
+        throw new ApiError(503, "coupon_check_failed", "Could not verify the coupon right now. Try again in a moment.");
+      }
+      const used = (promo.times_redeemed ?? 0) + (count ?? 0);
+      if (used >= promo.max_redemptions) {
+        throw new ApiError(409, "coupon_exhausted", `The coupon code "${couponCode}" has been fully redeemed.`);
+      }
+    }
+  }
 
   // Already a member with an agent of their own? Adding a second would charge for a seat they
   // already have, and this endpoint is one press away from doing that twice.
@@ -214,6 +237,24 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
       console.error("[seats] agent fee reversal failed - workspace is billed for an unbuilt agent:", id, rollbackErr);
     });
     throw err;
+  }
+
+  // Record the coupon redemption now that the agent is built AND billed - not at resolve time,
+  // so a build that fails and reverses the fee does not also burn a redemption against the cap.
+  // Best effort: a lost row would at worst let the code be used once more than its cap, never
+  // charge anyone or block a legitimate add.
+  if (couponPromoId) {
+    const { error: ledgerErr } = await db.from("coupon_redemptions").insert({
+      promotion_code_id: couponPromoId,
+      code: couponCode,
+      coupon_id: couponId,
+      workspace_id: id,
+      agent37_id: agentId,
+      redeemed_by: user.id,
+    });
+    if (ledgerErr) {
+      console.error("[seats] recording coupon redemption failed - cap may under-count:", couponPromoId, ledgerErr);
+    }
   }
 
   // ── 3. Hand it to them ─────────────────────────────────────────────────────
