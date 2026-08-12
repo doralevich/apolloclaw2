@@ -106,7 +106,7 @@ export default function PersonalInjuryLawPage() {
             client informed from sign-up to settlement.
           </p>
           <div style={{ marginTop: 36 }}>
-            <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
+            <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
               Schedule Your Consultation
             </a>
           </div>
@@ -174,7 +174,7 @@ export default function PersonalInjuryLawPage() {
             firm&apos;s case criteria, intake volume, and systems - pricing is discussed during your
             consultation.
           </p>
-          <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
+          <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
             Schedule Your Consultation
           </a>
         </div>

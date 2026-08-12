@@ -1,7 +1,7 @@
 import { BodyLarge, BracketLabel, H2, NAVY, PAPER_MUTED, RED, Section, TAN } from "@/components/home/ui";
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
 
-const CONSULT_URL = "https://calendly.com/apolloclaw/30-minute-meeting-clone";
+const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
 
 // The two standing bands that sit above the footer on every marketing page, per David's call
 // that they should be consistent sitewide rather than each page ending differently. Rendered

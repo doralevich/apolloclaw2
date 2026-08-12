@@ -251,7 +251,7 @@ export default function ContactClient() {
                 <p className="font-body text-sm text-muted-foreground mb-4">
                   Schedule a free 30-minute consultation and we&apos;ll walk through your needs together.
                 </p>
-                <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer">
+                <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer">
                   <Button variant="cta" size="default" className="w-full">Schedule Today</Button>
                 </a>
               </div>

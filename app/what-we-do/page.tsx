@@ -58,7 +58,7 @@ export default function WhatWeDoPage() {
         title="Everything Your"
         titleAccent="Bot Can Do"
         description="Every Apollo[Claw] bot is built from a menu of proven integrations. We pick the right combination for your business and wire it all together."
-        cta={{ label: "Book a Free Call", href: "https://calendly.com/apolloclaw/30-minute-meeting-clone" }}
+        cta={{ label: "Book a Free Call", href: "https://cal.com/therealdaveo/apollo-claw" }}
       />
 
       {(services as any[]).map((group, gi) => (

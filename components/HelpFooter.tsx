@@ -15,7 +15,7 @@ import { CalendarCheck, ExternalLink, Mail } from "lucide-react";
 // A server component on purpose: two links and no state, so it costs nothing on any page that
 // carries it.
 
-const CALENDLY = "https://calendly.com/apolloclaw/30-minute-meeting-clone";
+const CALENDLY = "https://cal.com/therealdaveo/apollo-claw";
 const SUPPORT_EMAIL = "hello@apolloclaw.ai";
 
 export function HelpFooter({ className = "" }: { className?: string }) {

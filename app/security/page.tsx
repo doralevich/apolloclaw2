@@ -28,7 +28,7 @@ const RED = "#D72B2B";
 const MUTED = "#555555";
 const LABEL = "#888888";
 const BORDER = "rgba(0,0,0,0.08)";
-const CALENDLY = "https://calendly.com/apolloclaw/30-minute-meeting-clone";
+const CALENDLY = "https://cal.com/therealdaveo/apollo-claw";
 
 function Kicker({ children }: { children: React.ReactNode }) {
   return (

@@ -2,7 +2,7 @@ import HeroAssistantInput from "@/components/HeroAssistantInput";
 import { HeroAssistantDemo } from "@/components/home/HeroAssistantDemo";
 import { NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, TextureBackground } from "@/components/home/ui";
 
-const CONSULT_URL = "https://calendly.com/apolloclaw/30-minute-meeting-clone";
+const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
 
 // Side-by-side layout matching the structure of the current live hero (copy widened on the
 // left, the Apollo[Claw] Assistant card on the right), per David's direct request, still the

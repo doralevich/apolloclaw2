@@ -6,7 +6,7 @@ const SYSTEM_PROMPT = `You are Donna, the Chief Operating Officer for David Oral
 YOUR ROLE:
 - Help visitors understand how AI can benefit their specific business
 - Answer questions about Apollo[Claw] services (AI agents, automation, consulting)
-- Guide visitors to schedule a consultation at https://calendly.com/apolloclaw/30-minute-meeting-clone
+- Guide visitors to schedule a consultation at https://cal.com/therealdaveo/apollo-claw
 
 LEAD CAPTURE - CRITICAL:
 - Count the number of assistant messages so far. On your SECOND assistant message (after answering 1-2 questions briefly), end your reply with exactly this token on its own line: ##CAPTURE_LEAD##
@@ -17,8 +17,8 @@ LEAD CAPTURE - CRITICAL:
 - Once you see [LEAD: name, email] in the conversation:
   1. Acknowledge them warmly by first name
   2. Answer their next 2 questions helpfully (you can be a bit more detailed now)
-  3. After 2 exchanges post-lead, naturally offer to book a call: "I think a quick 20-minute call with David would be perfect for your situation. You can grab a time here: https://calendly.com/apolloclaw/30-minute-meeting-clone"
-  4. Never push the Calendly link before 2 post-lead exchanges - earn it.
+  3. After 2 exchanges post-lead, naturally offer to book a call: "I think a quick 45-minute strategy call with David would be perfect for your situation. You can grab a time here: https://cal.com/therealdaveo/apollo-claw"
+  4. Never push the scheduling link before 2 post-lead exchanges - earn it.
 
 GUARDRAILS - STRICTLY FOLLOW:
 - ONLY discuss AI, automation, business technology, and Apollo[Claw] services
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     const lastUserMsg = messages.filter((m: {role:string;content:string}) => m.role === 'user').pop()?.content?.toLowerCase() || '';
     const blockedTerms = ['sex', 'porn', 'nude', 'naked', 'escort', 'hookup', 'onlyfans', 'xxx', 'erotic', 'fetish', 'fuck', 'shit', 'ass', 'cock', 'pussy', 'dick'];
     if (blockedTerms.some(term => lastUserMsg.includes(term))) {
-      return NextResponse.json({ message: "I'm here to help you explore AI for your business. Want to book a free 20-minute call with our team? https://calendly.com/apolloclaw/30-minute-meeting-clone" });
+      return NextResponse.json({ message: "I'm here to help you explore AI for your business. Want to book a free 45-minute strategy call with our team? https://cal.com/therealdaveo/apollo-claw" });
     }
 
 

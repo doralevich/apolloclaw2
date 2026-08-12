@@ -176,7 +176,7 @@ export default async function BlogPostPage({
               <p className="font-body text-muted-foreground mb-6">
                 Schedule a consultation and let&apos;s talk about your business.
               </p>
-              <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer">
+              <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer">
                 <Button variant="cta" size="lg">Schedule Today</Button>
               </a>
             </div>
@@ -218,7 +218,7 @@ export default async function BlogPostPage({
               <div className="font-mono text-xs text-primary uppercase tracking-widest mb-2">Free Consultation</div>
               <h3 className="font-display text-base text-foreground mb-2">See AI working in your business</h3>
               <p className="font-body text-xs text-muted-foreground mb-4">30 minutes. No obligation.</p>
-              <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer" className="block">
+              <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer" className="block">
                 <Button variant="cta" size="sm" className="w-full">Schedule Today</Button>
               </a>
             </div>

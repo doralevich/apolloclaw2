@@ -12,7 +12,7 @@ import {
   SecondaryButton,
 } from "@/components/home/ui";
 
-const CONSULT_URL = "https://calendly.com/apolloclaw/30-minute-meeting-clone";
+const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
 
 // Reframed around where the agent runs rather than who builds it, per David's call, and the
 // per-agent price came off both cards: every path now routes to a consultation instead.

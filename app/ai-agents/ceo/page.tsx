@@ -178,7 +178,7 @@ export default function CeoPage() {
             The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.
           </p>
           <div style={{ marginTop: 36 }}>
-            <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
+            <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
               Schedule Your Consultation
             </a>
           </div>
@@ -316,7 +316,7 @@ export default function CeoPage() {
             Every CEO Bot deployment is custom-scoped to your organization. Pricing is discussed during your consultation based on your workflows, integrations, and team size.
           </p>
           <a
-            href="https://calendly.com/apolloclaw/30-minute-meeting-clone"
+            href="https://cal.com/therealdaveo/apollo-claw"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"

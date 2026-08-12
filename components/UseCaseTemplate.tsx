@@ -78,7 +78,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
           </p>
           <div style={{ marginTop: 36 }}>
             <a
-              href="https://calendly.com/apolloclaw/30-minute-meeting-clone"
+              href="https://cal.com/therealdaveo/apollo-claw"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"

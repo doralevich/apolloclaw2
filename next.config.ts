@@ -46,16 +46,17 @@ const CSP_DIRECTIVES = [
   // 'unsafe-inline' is required today by the inline GA config script and the JSON-LD blocks in
   // app/layout.tsx; 'unsafe-eval' by the Next.js runtime. Tightening these to a nonce is a
   // follow-up, and is the reason this ships report-only first.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://assets.calendly.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
   // This codebase styles almost everything with inline `style={{...}}`, so 'unsafe-inline' here
   // is structural rather than incidental.
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   // cdn.sanity.io: blog imagery. logos.composio.dev: the integration globe and marquee.
   "img-src 'self' data: blob: https://cdn.sanity.io https://logos.composio.dev https://www.googletagmanager.com https://www.google-analytics.com",
-  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com https://calendly.com`,
-  // Calendly's inline booking widget on /get-started. 'self' covers the /demo.html lightbox.
-  "frame-src 'self' https://calendly.com https://assets.calendly.com",
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com`,
+  // Scheduling is a link-out to cal.com (opens in a new tab), not an embed, so no third-party
+  // frame is needed. 'self' covers the /demo.html lightbox.
+  "frame-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

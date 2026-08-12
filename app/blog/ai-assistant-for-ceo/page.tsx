@@ -295,7 +295,7 @@ export default function AiAssistantForCeoPost() {
                 Book a 30-minute consultation. We&apos;ll show you exactly how the CEO Agent would be
                 configured for your organization: your systems, your workflows, your priorities.
               </p>
-              <a href="https://calendly.com/apolloclaw/30-minute-meeting-clone" target="_blank" rel="noopener noreferrer">
+              <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer">
                 <Button variant="cta" size="lg">Schedule Today</Button>
               </a>
             </div>
@@ -344,7 +344,7 @@ export default function AiAssistantForCeoPost() {
                 30 minutes. No obligation.
               </p>
               <a
-                href="https://calendly.com/apolloclaw/30-minute-meeting-clone"
+                href="https://cal.com/therealdaveo/apollo-claw"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"

@@ -50,7 +50,7 @@ const resourceLinks = [
   { label: "Contact", to: "/contact" },
   {
     label: "Get Started",
-    to: "https://calendly.com/apolloclaw/30-minute-meeting-clone",
+    to: "https://cal.com/therealdaveo/apollo-claw",
     external: true,
   },
 ];
@@ -213,7 +213,7 @@ export default function Footer() {
               </a>
               <div className="mt-5">
                 <a
-                  href="https://calendly.com/apolloclaw/30-minute-meeting-clone"
+                  href="https://cal.com/therealdaveo/apollo-claw"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"

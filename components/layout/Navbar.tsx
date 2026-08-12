@@ -53,7 +53,7 @@ const COMPANY = [
   { label: "Security", to: "/security" },
 ];
 
-const CONSULT_URL = "https://calendly.com/apolloclaw/30-minute-meeting-clone";
+const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
 
 interface NavGroup {
   kind: "group";
