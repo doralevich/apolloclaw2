@@ -55,6 +55,18 @@ export function sessionToContinue(sessionId: string | null, lastActivityMs: numb
 // The running-response id out of a 409 session_busy body, so it can be cancelled. The field
 // name isn't documented, so a few likely spellings are tried; a miss just means we fall back to
 // a fresh session instead of reclaiming the wedged one.
+// Does this response body carry the metered gateway's "pick a different model" refusal?
+//
+// The refusal text is `Invalid model. Use openclaw or openclaw/<agentId>.` It arrives two ways
+// depending on the instance: as an HTTP 400 on our own call, OR — the case that kept breaking
+// live bots — as an HTTP 200 whose BODY is a failed turn wrapping that same 400 ("OpenClaw POST
+// /v1/responses → 400: ...Invalid model..."). Matching on our call's status alone missed the
+// second entirely, so we look in the body and catch both. Requiring all three of invalid+model
+// +openclaw keeps ordinary message text from ever tripping it.
+function rejectsModel(text: string): boolean {
+  return /invalid/i.test(text) && /model/i.test(text) && /openclaw/i.test(text);
+}
+
 function parseBusyResponseId(text: string): string | null {
   try {
     const body = JSON.parse(text) as { error?: Record<string, unknown> };
@@ -75,10 +87,14 @@ export async function runTurn(
   sessionId: string | null
 ): Promise<TurnResult> {
   // Prefer Sonnet 5, but not every instance's gateway accepts a vendor model id: the metered
-  // OpenClaw build rejects one with 400 "Invalid `model`. Use `openclaw`...". Naming Sonnet 5
-  // unconditionally broke exactly those instances (Russell's among them). So ask for Sonnet 5,
-  // and if the instance refuses the id, resend WITHOUT a model so it runs its own default - the
-  // channel gets the better model where it's available and a working answer everywhere else.
+  // OpenClaw build refuses one with "Invalid `model`. Use `openclaw`...". Naming Sonnet 5
+  // unconditionally broke exactly those instances. So ask for Sonnet 5, and if the instance
+  // refuses the id, resend WITHOUT a model so it runs its own default - the channel gets the
+  // better model where it's available and a working answer everywhere else.
+  //
+  // Crucially the refusal is caught from the RESPONSE BODY, not our call's HTTP status: those
+  // instances return 200 with the 400 wrapped inside a failed turn, so a status-only check (the
+  // first version of this) never fired and the bots stayed broken. rejectsModel reads the body.
   const attempt = async (sid: string | null) => {
     const send = (withModel: boolean) =>
       agent37.createResponse(agentId, {
@@ -90,7 +106,7 @@ export async function runTurn(
 
     let res = await send(true);
     let text = await res.text();
-    if (res.status === 400 && /invalid/i.test(text) && /model/i.test(text)) {
+    if (rejectsModel(text)) {
       res = await send(false);
       text = await res.text();
     }
