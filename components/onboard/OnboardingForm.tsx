@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
@@ -1020,20 +1020,69 @@ function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) =>
     </div>
   );
 }
-function BizTrack({ gate, submitLabel, onDone, onExit }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void; onExit?: () => void }) {
+// ════════════════════════════════════════════════════════════
+// PRE-FILL (true edit): rebuild the questionnaire's state from a stored answers blob
+// ════════════════════════════════════════════════════════════
+// When a customer reopens setup to CHANGE something, the form shows what they said last time
+// rather than a blank page. buildData() below is the forward map (state -> answer keys); this
+// is its inverse. Only fields buildData actually persists can come back — a few "Other"
+// free-text boxes were never in its output, so they hydrate blank, which is correct: we can't
+// restore what was never saved. companies / key people / portfolio / industry details are
+// stored verbatim, so they round-trip exactly.
+//
+// KEEP IN SYNC WITH buildData: add a field there, add it here, or that field silently resets to
+// blank on every edit.
+type PrefillAnswers = Record<string, unknown>;
+const pfStr = (v: unknown): string => (typeof v === "string" ? v : "");
+const pfArr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+const pfNum = (v: unknown): number | null => (typeof v === "number" ? v : null);
+
+const emptyS2 = () => ({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", docs: [] as string[], docsOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
+const emptyS3 = () => ({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
+const emptyS4 = () => ({ marital: "", partnerName: "", kids: "", kidsDetails: "", household: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
+const emptyS5 = () => ({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
+const emptyS6 = () => ({ tone: [] as string[], writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
+const emptyS7 = () => ({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
+const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
+
+function hydrateGate(a: PrefillAnswers): GateData {
+  return { first: pfStr(a.firstName), last: pfStr(a.lastName), email: pfStr(a.email), phone: pfStr(a.phone), linkedin: pfStr(a.linkedin), company: pfStr(a.companyName) };
+}
+
+function hydrateBizState(a: PrefillAnswers) {
+  return {
+    s2: { ...emptyS2(), biz: pfStr(a.companyName), url: pfStr(a.website), industry: pfStr(a.industry), size: pfStr(a.companySize), revenue: pfStr(a.revenue), age: pfStr(a.businessAge), model: pfStr(a.businessModel), crm: pfArr(a.crmTools), crmOther: pfStr(a.crmToolsOther), ecom: pfArr(a.ecomTools), comms: pfArr(a.commsTools), pm: pfArr(a.pmTools), billing: pfArr(a.billingTools), docs: pfArr(a.docsTools), docsOther: pfStr(a.docsToolsOther), mktg: pfArr(a.mktgTools), auto: pfArr(a.autoTools), support: pfArr(a.supportTools), webplat: pfStr(a.webPlatform), desc: pfStr(a.businessDescription), differentiate: pfStr(a.differentiator), web_presence: pfStr(a.webPresence) },
+    s3: { ...emptyS3(), pain: pfStr(a.mainPain), depts: pfArr(a.brokenAreas), hours: pfStr(a.manualHours), duration: pfStr(a.painDuration), hate: pfStr(a.hatedTasks), tried: pfArr(a.triedBefore), costImpact: pfStr(a.costImpact), opsVolume: pfStr(a.opsVolume) },
+    s4: { ...emptyS4(), marital: pfStr(a.maritalStatus), partnerName: pfStr(a.partnerName), kids: pfStr(a.children), kidsDetails: pfStr(a.childrenDetails), household: pfStr(a.household), kidsAges: pfArr(a.childrenAges), caretaking: pfArr(a.caretaking), homeLife: pfStr(a.homeLife), protect: pfArr(a.protecting), lifeStage: pfStr(a.lifeStage), timeline3yr: pfArr(a.threeYearGoals), personalGoal: pfStr(a.personalGoal) },
+    s5: { ...emptyS5(), decStyle: pfArr(a.decisionStyle), decStyleOther: pfStr(a.decisionStyleOther), stressResp: pfStr(a.stressResponse), motivators: pfArr(a.motivators), blockers: pfArr(a.blockers), moneyMind: pfStr(a.moneyMindset), agencyHist: pfStr(a.agencyHistory), techTrust: pfNum(a.techTrust), controlComfort: pfNum(a.controlComfort), worthIt: pfStr(a.worthIt), strategicBet: pfStr(a.strategicBet), growthBottleneck: pfArr(a.growthBottleneck), growthBottleneckOther: pfStr(a.growthBottleneckOther) },
+    s6: { ...emptyS6(), tone: pfArr(a.writingTone), writingComf: pfStr(a.writingComfort), brandLike: pfStr(a.brandVoiceLike), brandLikeOther: pfStr(a.brandVoiceLikeOther), voiceStyle: pfArr(a.voiceDescription), loveWords: pfStr(a.loveWords), hateWords: pfStr(a.hateWords), socialActive: pfStr(a.socialPresence), platforms: pfArr(a.platforms), sample: pfStr(a.writingSample) },
+    s7: { ...emptyS7(), goals: pfArr(a.aiGoals), goalsOther: pfStr(a.aiGoalsOther), metric: pfArr(a.successMetric), metricOther: pfStr(a.successMetricOther), prior: pfStr(a.priorAI), past: pfStr(a.pastExperience), aiThoughts: pfStr(a.aiThoughts), aiStartup: pfStr(a.aiStartup), teamSent: pfStr(a.teamSentiment), horizon3: pfStr(a.horizon3Months), horizon6: pfStr(a.horizon6Months), horizon12: pfStr(a.horizon12Months) },
+    s8: { ...emptyS8(), hosting: pfArr(a.hosting), os: pfStr(a.os), security: pfArr(a.securityMeasures), data: pfArr(a.dataTypes), comply: pfArr(a.compliance), budget: pfStr(a.budgetRange ?? a.budget), timeline: pfStr(a.timeline), engagement: pfStr(a.engagement), internalTech: pfStr(a.internalTech), constraints: pfStr(a.constraints), decisionAuthority: pfStr(a.decisionAuthority), agree: true },
+    keyPeople: Array.isArray(a.keyPeople) && a.keyPeople.length ? (a.keyPeople as KeyPerson[]) : [{ name: "", role: "" }],
+    companies: Array.isArray(a.companies) && a.companies.length ? (a.companies as Company[]) : [emptyCompany()],
+    primaryIndex: typeof a.primaryCompanyIndex === "number" ? a.primaryCompanyIndex : 0,
+    portfolio: a.portfolio && typeof a.portfolio === "object" ? (a.portfolio as PortfolioMeta) : emptyPortfolio(),
+    industryDetails: a.industryDetails && typeof a.industryDetails === "object" ? (a.industryDetails as Record<string, string | string[]>) : {},
+  };
+}
+
+function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void; onExit?: () => void; initialAnswers?: Record<string, unknown> }) {
+  // On a true edit, `seed` rebuilds every field from the stored answers; on first-time setup
+  // initialAnswers is absent and each field falls back to its blank factory.
+  const seed = useMemo(() => (initialAnswers ? hydrateBizState(initialAnswers) : null), [initialAnswers]);
   const [step, setStep] = useState(0);
-  const [s2, setS2] = useState({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", docs: [] as string[], docsOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
-  const [s3, setS3] = useState({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
-  const [s4, setS4] = useState({ marital: "", partnerName: "", kids: "", kidsDetails: "", household: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
-  const [s5, setS5] = useState({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
-  const [s6, setS6] = useState({ tone: [] as string[], writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
-  const [s7, setS7] = useState({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
-  const [s8, setS8] = useState({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
-  const [keyPeople, setKeyPeople] = useState<KeyPerson[]>([{ name: "", role: "" }]);
-  const [companies, setCompanies] = useState<Company[]>([emptyCompany()]);
-  const [primaryIndex, setPrimaryIndex] = useState(0);
-  const [portfolio, setPortfolio] = useState<PortfolioMeta>(emptyPortfolio());
-  const [industryDetails, setIndustryDetails] = useState<Record<string, string | string[]>>({});
+  const [s2, setS2] = useState(() => seed?.s2 ?? emptyS2());
+  const [s3, setS3] = useState(() => seed?.s3 ?? emptyS3());
+  const [s4, setS4] = useState(() => seed?.s4 ?? emptyS4());
+  const [s5, setS5] = useState(() => seed?.s5 ?? emptyS5());
+  const [s6, setS6] = useState(() => seed?.s6 ?? emptyS6());
+  const [s7, setS7] = useState(() => seed?.s7 ?? emptyS7());
+  const [s8, setS8] = useState(() => seed?.s8 ?? emptyS8());
+  const [keyPeople, setKeyPeople] = useState<KeyPerson[]>(() => seed?.keyPeople ?? [{ name: "", role: "" }]);
+  const [companies, setCompanies] = useState<Company[]>(() => seed?.companies ?? [emptyCompany()]);
+  const [primaryIndex, setPrimaryIndex] = useState(() => seed?.primaryIndex ?? 0);
+  const [portfolio, setPortfolio] = useState<PortfolioMeta>(() => seed?.portfolio ?? emptyPortfolio());
+  const [industryDetails, setIndustryDetails] = useState<Record<string, string | string[]>>(() => seed?.industryDetails ?? {});
   const [agreeErr, setAgreeErr] = useState(false);
   const [vErr, setVErr] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -1424,6 +1473,13 @@ export interface OnboardingFormProps {
    *  their own address ("already has an account, log in") in the one flow where being
    *  logged in is the starting condition. */
   signedInUser?: { first: string; last: string; email: string };
+  /** Customer mode only: the answers this agent's setup was last saved with. Present turns the
+   *  questionnaire into a TRUE EDIT — every field pre-filled, opening straight on the questions
+   *  rather than a blank re-run. Absent on first-time setup. */
+  initialAnswers?: Record<string, unknown>;
+  /** Customer mode only: the agent's current name, carried through so an edit that never opens
+   *  the naming step doesn't blank it on re-submit. */
+  initialAgentName?: string;
 }
 
 // Stripe takes the buyer off-site, so the "Start Here" answers have to survive a full page
@@ -1485,8 +1541,11 @@ function clearStoredGate(): void {
   }
 }
 
-export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser }: OnboardingFormProps) {
+export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser, initialAnswers, initialAgentName }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
+  // A returning customer changing existing answers, not a first-time setup. Drives straight to
+  // the pre-filled questionnaire and seeds the contact/name fields from what was saved.
+  const isEditing = isCustomer && !!initialAnswers && !justPaid;
   // The gate is bypassed when the account already answers everything it would ask.
   const skipGate = isCustomer && !!signedInUser?.email;
   // White glove submits down the same unauthenticated /api/intake path as the plain lead
@@ -1533,7 +1592,12 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   const [chosenPhase, setPhase] = useState<"splash" | "gate" | "paywall" | "confirm" | "personalize" | "form" | "submitting" | "done" | "building" | null>(null);
   const phase =
     chosenPhase ??
-    (isCustomer && justPaid
+    (isEditing
+      ? // A true edit skips splash/gate/personalize and opens on the questions themselves,
+        // already filled in. The name carries through initialAgentName, the avatar is left
+        // untouched, so nothing is lost by not walking those steps again.
+        "form"
+      : isCustomer && justPaid
       ? "splash"
       // Back from Stripe: acknowledge the payment before asking for anything else. What
       // follows the confirmation depends on whether the stash survived — normally straight
@@ -1552,8 +1616,12 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   const gate =
     enteredGate ??
     restored ??
+    // On an edit, the stored answers already hold name/email/phone/linkedin/company — seed from
+    // them so a re-submit preserves phone/linkedin/company instead of blanking what the skipped
+    // gate would have carried.
+    (initialAnswers ? hydrateGate(initialAnswers) : null) ??
     (signedInUser ? { ...EMPTY_GATE, ...signedInUser } : EMPTY_GATE);
-  const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: "", avatarFile: null, avatarPresetColor: null, avatarPresetImage: null });
+  const [personalize, setPersonalize] = useState<PersonalizeData>({ agentName: initialAgentName ?? "", avatarFile: null, avatarPresetColor: null, avatarPresetImage: null });
   const [buildingWorkspaceId, setBuildingWorkspaceId] = useState<string | undefined>(workspaceId);
   // Naming/avatar is a paid-customer thing (matches The College Agent: personalization
   // happens post-payment, never on the free lead form).
@@ -1698,6 +1766,6 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
   // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
   // sending them back there would silently drop it, so they keep no Back on step 0.
-  if (phase === "form") return <BizTrack gate={gate} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
+  if (phase === "form") return <BizTrack gate={gate} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
   return null;
 }

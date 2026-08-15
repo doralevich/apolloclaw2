@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getAgentType } from "@/config/agent-types";
 import { getSession } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import OnboardingForm from "@/components/onboard/OnboardingForm";
 
 // Post-purchase setup: Stripe's success URL lands here (/onboard/cfo?ws=...&paid=1) while
@@ -53,6 +54,48 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
       }
     : undefined;
 
+  // TRUE EDIT: if this workspace + type already has a saved questionnaire, load it so the form
+  // opens pre-filled instead of blank. agent_setup is RLS-on-no-policy, so this reads with the
+  // service role — but only AFTER confirming the signed-in user belongs to the workspace, so the
+  // form can never be seeded with someone else's answers. A workspace passed in the URL is
+  // membership-checked; absent, we fall back to the user's own first workspace.
+  let initialAnswers: Record<string, unknown> | undefined;
+  let initialAgentName: string | undefined;
+  {
+    const db = createAdminClient();
+    let workspaceId: string | undefined = ws;
+    if (workspaceId) {
+      const { data: member } = await db
+        .from("memberships")
+        .select("workspace_id")
+        .eq("user_id", user.id)
+        .eq("workspace_id", workspaceId)
+        .maybeSingle();
+      if (!member) workspaceId = undefined;
+    } else {
+      const { data: first } = await db
+        .from("memberships")
+        .select("workspace_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      workspaceId = (first?.workspace_id as string) ?? undefined;
+    }
+    if (workspaceId) {
+      const { data: setup } = await db
+        .from("agent_setup")
+        .select("answers, agent_name")
+        .eq("workspace_id", workspaceId)
+        .eq("agent_type", type.id)
+        .maybeSingle();
+      const answers = setup?.answers as Record<string, unknown> | null | undefined;
+      if (answers && Object.keys(answers).length > 0) {
+        initialAnswers = answers;
+        initialAgentName = (setup?.agent_name as string | null) ?? undefined;
+      }
+    }
+  }
+
   return (
     <OnboardingForm
       mode="customer"
@@ -62,6 +105,8 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
       agent37Id={agent37Id}
       justPaid={paid === "1"}
       signedInUser={signedInUser}
+      initialAnswers={initialAnswers}
+      initialAgentName={initialAgentName}
     />
   );
 }
