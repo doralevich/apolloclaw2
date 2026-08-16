@@ -136,13 +136,10 @@ const nextConfig: NextConfig = {
         destination: "/contact",
         permanent: true,
       },
-      // /create-an-agent retired too (David's call). It was in the sitemap at priority 0.9, so
-      // it may well be indexed; commercial intent, same destination as the storefront.
-      {
-        source: "/create-an-agent",
-        destination: "/contact",
-        permanent: true,
-      },
+      // /create-an-agent is LIVE again — it now serves the "Create an Agent" landing page
+      // (app/create-an-agent/page.tsx), the destination for the email mailer. Its old 301 to
+      // /contact was removed so the route resolves to the page; re-add a redirect here only if
+      // the page is retired again.
       // /membership deleted (David: "not needed, just noise"). It was linked from the footer
       // Resources column, so it has been crawled. /contact is the honest destination: anyone
       // who landed there was looking for a way to work with us.
