@@ -141,7 +141,7 @@ export default function CreateAnAgentPage() {
               className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
               style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
             >
-              Book a 45-minute call
+              Schedule a Consultation
             </a>
             <Link
               href="/onboard"
@@ -168,18 +168,33 @@ export default function CreateAnAgentPage() {
               From your business to a working agent, in four steps.
             </h2>
           </ScrollReveal>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {STEPS.map((step, i) => (
-              <ScrollReveal key={step.n} delay={i * 100}>
-                <div className="bauhaus-card p-8 h-full flex gap-5">
-                  <span className="font-display text-3xl font-extrabold text-primary leading-none">{step.n}</span>
-                  <div>
-                    <h3 className="font-display text-xl text-foreground mb-2">{step.title}</h3>
-                    <p className="font-body text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+            {/* Steps, stacked down the left */}
+            <div className="flex flex-col gap-5">
+              {STEPS.map((step, i) => (
+                <ScrollReveal key={step.n} delay={i * 80}>
+                  <div className="bauhaus-card p-7 flex gap-5">
+                    <span className="font-display text-3xl font-extrabold text-primary leading-none">{step.n}</span>
+                    <div>
+                      <h3 className="font-display text-xl text-foreground mb-2">{step.title}</h3>
+                      <p className="font-body text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                    </div>
                   </div>
-                </div>
-              </ScrollReveal>
-            ))}
+                </ScrollReveal>
+              ))}
+            </div>
+            {/* Visual on the right — sticks alongside the steps as you scroll */}
+            <ScrollReveal delay={120}>
+              <div className="lg:sticky lg:top-32">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://mcusercontent.com/0c9dc301e682518434131678a/images/393abb6e-6cd5-0c23-be28-5e1e247e60f3.png"
+                  alt="How your Apollo[Claw] agent is built"
+                  className="w-full h-auto rounded-2xl border border-border"
+                  loading="lazy"
+                />
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -314,7 +329,7 @@ export default function CreateAnAgentPage() {
                   className="mt-8 inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
                   style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
                 >
-                  Book a call
+                  Schedule a Call
                 </a>
               </div>
             </ScrollReveal>

@@ -52,7 +52,9 @@ const CSP_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   // cdn.sanity.io: blog imagery. logos.composio.dev: the integration globe and marquee.
-  "img-src 'self' data: blob: https://cdn.sanity.io https://logos.composio.dev https://www.googletagmanager.com https://www.google-analytics.com",
+  // mcusercontent.com is Mailchimp's image CDN: the /create-an-agent landing page (the mailer's
+  // destination) shows an illustration hosted there, the same CDN the mailer itself uses.
+  "img-src 'self' data: blob: https://cdn.sanity.io https://logos.composio.dev https://mcusercontent.com https://www.googletagmanager.com https://www.google-analytics.com",
   `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com`,
   // 'self' covers the /demo.html lightbox. The YouTube domains are allowed so /karan.html can
   // embed the intro video (sent to Karan at Composio) inline via the YouTube player; scheduling
