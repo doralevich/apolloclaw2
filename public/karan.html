@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>A Note for Karan</title>
+<style>
+  /* ── Palette ─────────────────────────────────────────────────────────────
+     Apollo[Claw]'s own kit: a warm off-white ground, warm near-black ink, and
+     the single brand red that lives in the bracket of the wordmark. Neutrals
+     carry a faint warm bias so the grey reads as chosen, not defaulted. */
+  :root {
+    --bg: #FAF8F4;
+    --surface: #F1EEE8;
+    --ink: #17130F;
+    --muted: #6E665B;
+    --faint: #A79E90;
+    --border: rgba(23, 19, 15, 0.10);
+    --accent: #D72B2B;
+    --accent-deep: #B21F1F;
+    --frame-1: #211C17;
+    --frame-2: #322A22;
+    --ring: rgba(215, 43, 43, 0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141210;
+      --surface: #1E1A16;
+      --ink: #F6F1E9;
+      --muted: #A79E90;
+      --faint: #6E665B;
+      --border: rgba(246, 241, 233, 0.12);
+      --accent: #E84040;
+      --accent-deep: #F05555;
+      --frame-1: #0E0C0A;
+      --frame-2: #241E19;
+      --ring: rgba(232, 64, 64, 0.40);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* A whisper of texture on the ground: two very soft warm glows, never a hero. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(60vw 50vh at 82% -8%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+      radial-gradient(50vw 40vh at 6% 108%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%);
+    z-index: 0;
+  }
+
+  .shell {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 24px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Wordmark ─────────────────────────────────────────────────────────── */
+  .brand {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .brand .b { color: var(--accent); }
+
+  /* ── Centre block ─────────────────────────────────────────────────────── */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 0;
+    gap: 24px;
+  }
+
+  .eyebrow {
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(32px, 6.6vw, 50px);
+    line-height: 1.03;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+  h1 .name { color: var(--accent); }
+
+  .lede {
+    margin: 0;
+    max-width: 48ch;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  /* ── Video frame ──────────────────────────────────────────────────────── */
+  .videowrap {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: linear-gradient(150deg, var(--frame-2), var(--frame-1));
+    box-shadow: 0 24px 60px -28px rgba(23, 19, 15, 0.5);
+  }
+  .videowrap .strip {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+  }
+  .videowrap .strip .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.72);
+  }
+  .videowrap .strip .lbl .b { color: var(--accent); }
+  .videowrap .strip .tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.45);
+  }
+  .ratio {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+  .ratio iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* ── Below the video ──────────────────────────────────────────────────── */
+  .below {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 18px;
+  }
+  .caption {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .caption strong { color: var(--ink); font-weight: 600; }
+  .fallback {
+    font-size: 13px;
+    color: var(--faint);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+    transition: color 160ms, border-color 160ms;
+  }
+  .fallback:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── Sign-off ─────────────────────────────────────────────────────────── */
+  footer {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 22px 24px 30px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  footer .sign { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 480px) {
+    main { padding: 24px 0; gap: 20px; }
+    footer { flex-direction: column; gap: 4px; }
+  }
+
+  /* Entrance, quiet, and only for those who want motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .rise { opacity: 0; transform: translateY(12px); animation: rise 620ms cubic-bezier(.2,.7,.2,1) forwards; }
+    .rise.d1 { animation-delay: 60ms; }
+    .rise.d2 { animation-delay: 130ms; }
+    .rise.d3 { animation-delay: 210ms; }
+    .rise.d4 { animation-delay: 300ms; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="brand rise">Apollo<span class="b">[</span>Claw<span class="b">]</span></div>
+
+    <main>
+      <div class="eyebrow rise d1"><span class="dot"></span> For Karan &middot; Composio</div>
+
+      <h1 class="rise d1">Karan, good to<br>meet you<span class="name">.</span></h1>
+
+      <p class="lede rise d2">
+        A short introduction, rather than another cold email. Two minutes on who we
+        are, what we&rsquo;re building on top of Composio, and why I think there&rsquo;s
+        something worth talking about.
+      </p>
+
+      <div class="videowrap rise d3">
+        <div class="strip">
+          <span class="lbl">Apollo<span class="b">[</span>Claw<span class="b">]</span></span>
+          <span class="tag">INTRODUCTION</span>
+        </div>
+        <div class="ratio">
+          <iframe
+            src="https://drive.google.com/file/d/1t_SfdmAZyWM-qFAL-U1hl_G5LvIY-xee/preview"
+            title="Karan Introduction"
+            allow="autoplay; fullscreen"
+            allowfullscreen
+            loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <div class="below rise d4">
+        <span class="caption"><strong>Karan Introduction</strong> &middot; a quick hello from David at Apollo[Claw]</span>
+        <a class="fallback" href="https://drive.google.com/file/d/1t_SfdmAZyWM-qFAL-U1hl_G5LvIY-xee/view?usp=drivesdk" target="_blank" rel="noopener">Video not loading? Open it in Google Drive</a>
+      </div>
+    </main>
+
+    <footer>
+      <span>From <span class="sign">David</span>, Apollo[Claw]</span>
+      <span>daveo@apolloclaw.ai</span>
+    </footer>
+  </div>
+</body>
+</html>
