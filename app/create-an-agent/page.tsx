@@ -15,7 +15,7 @@ import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 // Tailwind tokens (text-primary = brand red), and section-dividers between bands.
 
 export const metadata: Metadata = {
-  title: { absolute: "Create an AI Agent for Your Business | Apollo[Claw]" },
+  title: { absolute: "Create Your Agent | Apollo[Claw]" },
   description:
     "Get a private AI agent built around your business: your people, your stack, the work you keep meaning to hand off. See how it works, what it does, and how to start.",
 };
@@ -125,21 +125,32 @@ export default function CreateAnAgentPage() {
   return (
     <>
       <PageHero
-        title="An AI agent built around"
-        titleAccent="your business."
+        title="Create Your"
+        titleAccent="Agent"
         description="Not a chatbot, and not a generic assistant. A private agent built from your answers: your people, your stack, the work you keep meaning to hand off. Here is how you get one."
-        cta={{ label: "Book a 45-minute call", href: SCHEDULE_CONSULT_URL }}
       />
 
-      {/* Secondary path, right under the hero, so the ready-to-go can skip the call. */}
-      <section className="bg-background py-6">
-        <div className="container mx-auto px-4 md:px-8 max-w-6xl text-center">
-          <p className="font-body text-sm text-muted-foreground">
-            Prefer to set it up yourself?{" "}
-            <Link href="/onboard" className="font-semibold text-primary hover:underline">
+      {/* Both CTAs together, side by side, right under the hero: book a call, or set it up yourself. */}
+      <section className="bg-background py-8">
+        <div className="container mx-auto px-4 md:px-8 max-w-6xl">
+          <div className="flex flex-wrap gap-4 justify-center">
+            <a
+              href={SCHEDULE_CONSULT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+              style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
+            >
+              Book a 45-minute call
+            </a>
+            <Link
+              href="/onboard"
+              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:bg-foreground/5"
+              style={{ background: "transparent", color: "#1A1A1A", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", border: "1px solid rgba(26,26,26,0.25)" }}
+            >
               Start now
             </Link>
-          </p>
+          </div>
         </div>
       </section>
 
