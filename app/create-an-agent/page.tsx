@@ -311,43 +311,6 @@ export default function CreateAnAgentPage() {
         </div>
       </section>
 
-      {/* CLOSING CTA — navy band to match the hero, both paths offered */}
-      <section style={{ background: "#0B1729", color: "#fff" }} className="relative overflow-hidden">
-        <div
-          aria-hidden
-          style={{
-            position: "absolute", inset: 0,
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-            backgroundSize: "40px 40px", pointerEvents: "none",
-          }}
-        />
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 text-center max-w-4xl relative z-10">
-          <h2 className="font-display leading-[1.08] tracking-tight" style={{ fontSize: "clamp(30px, 4vw, 52px)", fontWeight: 800, textWrap: "balance", margin: 0 }}>
-            Ready to get your agent?
-          </h2>
-          <p className="font-body" style={{ fontSize: 17, lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 640, margin: "20px auto 0" }}>
-            Book a 45-minute call and we will scope it with you, or start setting one up right now.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-4 justify-center">
-            <a
-              href={SCHEDULE_CONSULT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-              style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.1em", padding: "15px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}
-            >
-              Book a 45-minute call
-            </a>
-            <Link
-              href="/onboard"
-              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:bg-white/10"
-              style={{ background: "transparent", color: "#fff", fontSize: 13, letterSpacing: "0.1em", padding: "15px 32px", borderRadius: 4, textDecoration: "none", border: "1px solid rgba(255,255,255,0.35)" }}
-            >
-              Start now
-            </Link>
-          </div>
-        </div>
-      </section>
     </>
   );
 }
