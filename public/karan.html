@@ -3,40 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
 <title>A Note for Karan</title>
 <style>
   /* ── Palette ─────────────────────────────────────────────────────────────
-     Apollo[Claw]'s own kit: a warm off-white ground, warm near-black ink, and
-     the single brand red that lives in the bracket of the wordmark. Neutrals
-     carry a faint warm bias so the grey reads as chosen, not defaulted. */
+     A single, committed dark world (David's call — this reads better dark).
+     Warm near-black ground, warm off-white ink, and the brand red carried from
+     the logo's bracket. Painted explicitly, no theme switching, so the page
+     holds its look on any host. Neutrals carry a faint warm bias so the grey
+     reads as chosen, not defaulted. */
   :root {
-    --bg: #FAF8F4;
-    --surface: #F1EEE8;
-    --ink: #17130F;
-    --muted: #6E665B;
-    --faint: #A79E90;
-    --border: rgba(23, 19, 15, 0.10);
-    --accent: #D72B2B;
-    --accent-deep: #B21F1F;
-    --frame-1: #211C17;
-    --frame-2: #322A22;
-    --ring: rgba(215, 43, 43, 0.35);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #141210;
-      --surface: #1E1A16;
-      --ink: #F6F1E9;
-      --muted: #A79E90;
-      --faint: #6E665B;
-      --border: rgba(246, 241, 233, 0.12);
-      --accent: #E84040;
-      --accent-deep: #F05555;
-      --frame-1: #0E0C0A;
-      --frame-2: #241E19;
-      --ring: rgba(232, 64, 64, 0.40);
-    }
+    --bg: #121110;
+    --surface: #1E1A16;
+    --ink: #F6F1E9;
+    --muted: #A79E90;
+    --faint: #6E665B;
+    --border: rgba(246, 241, 233, 0.12);
+    --accent: #E84040;
+    --accent-deep: #F05555;
+    --frame-1: #0E0C0A;
+    --frame-2: #221D18;
+    --ring: rgba(232, 64, 64, 0.40);
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
@@ -78,14 +67,11 @@
   }
 
   /* ── Wordmark ─────────────────────────────────────────────────────────── */
-  .brand {
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink);
+  .brandmark {
+    display: block;
+    height: 26px;
+    width: auto;
   }
-  .brand .b { color: var(--accent); }
 
   /* ── Centre block ─────────────────────────────────────────────────────── */
   main {
@@ -263,7 +249,7 @@
 </head>
 <body>
   <div class="shell">
-    <div class="brand rise">Apollo<span class="b">[</span>Claw<span class="b">]</span></div>
+    <img class="brandmark rise" src="/brand/apollo-claw-logo-light.svg" alt="Apollo[Claw]" width="182" height="26">
 
     <main>
       <div class="eyebrow rise d1"><span class="dot"></span> For Karan at Composio</div>
