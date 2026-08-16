@@ -190,7 +190,7 @@ export default function CreateAnAgentPage() {
                 <img
                   src="https://mcusercontent.com/0c9dc301e682518434131678a/images/393abb6e-6cd5-0c23-be28-5e1e247e60f3.png"
                   alt="How your Apollo[Claw] agent is built"
-                  className="w-full h-auto rounded-2xl border border-border"
+                  className="w-full lg:w-1/2 lg:mx-auto h-auto rounded-2xl border border-border"
                   loading="lazy"
                 />
               </div>
