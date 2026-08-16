@@ -54,10 +54,10 @@ const CSP_DIRECTIVES = [
   // cdn.sanity.io: blog imagery. logos.composio.dev: the integration globe and marquee.
   "img-src 'self' data: blob: https://cdn.sanity.io https://logos.composio.dev https://www.googletagmanager.com https://www.google-analytics.com",
   `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com`,
-  // 'self' covers the /demo.html lightbox. drive.google.com is allowed so /karan.html can embed
-  // a Google Drive video player inline (the intro page sent to Karan at Composio); scheduling
+  // 'self' covers the /demo.html lightbox. The YouTube domains are allowed so /karan.html can
+  // embed the intro video (sent to Karan at Composio) inline via the YouTube player; scheduling
   // stays a link-out to cal.com, so no cal frame is needed here.
-  "frame-src 'self' https://drive.google.com",
+  "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
