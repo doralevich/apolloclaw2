@@ -177,28 +177,43 @@
     display: block;
   }
 
-  /* ── Below the video ──────────────────────────────────────────────────── */
-  .below {
+  /* ── Call to action ───────────────────────────────────────────────────── */
+  .cta-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .cta-line {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink);
+    font-weight: 500;
+    max-width: 44ch;
+  }
+  .contacts {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 6px 18px;
+    gap: 12px;
   }
-  .caption {
-    font-size: 14px;
-    color: var(--muted);
-  }
-  .caption strong { color: var(--ink); font-weight: 600; }
-  .fallback {
-    font-size: 13px;
-    color: var(--faint);
+  .contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
     text-decoration: none;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 1px;
-    transition: color 160ms, border-color 160ms;
+    font-size: 15px;
+    font-weight: 550;
+    font-variant-numeric: tabular-nums;
+    transition: transform 160ms, border-color 160ms, color 160ms;
   }
-  .fallback:hover { color: var(--accent); border-color: var(--accent); }
+  .contact:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+  .contact:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  .contact svg { width: 17px; height: 17px; color: var(--accent); flex: none; }
 
   /* ── Sign-off ─────────────────────────────────────────────────────────── */
   footer {
@@ -209,14 +224,26 @@
     margin: 0 auto;
     padding: 22px 24px 30px;
     border-top: 1px solid var(--border);
+  }
+  .sig {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    font-size: 13.5px;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .sig-name {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .sig-org {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--muted);
   }
-  footer .sign { color: var(--ink); font-weight: 600; }
+  .sig-org .b { color: var(--accent); }
 
   @media (max-width: 480px) {
     main { padding: 24px 0; gap: 20px; }
@@ -239,12 +266,12 @@
     <div class="brand rise">Apollo<span class="b">[</span>Claw<span class="b">]</span></div>
 
     <main>
-      <div class="eyebrow rise d1"><span class="dot"></span> For Karan &middot; Composio</div>
+      <div class="eyebrow rise d1"><span class="dot"></span> For Karan at Composio</div>
 
       <h1 class="rise d1">Karan, good to<br>meet you<span class="name">.</span></h1>
 
       <p class="lede rise d2">
-        A short introduction, rather than another cold email. Two minutes on who we
+        A short introduction, rather than another cold email. Under a minute on who we
         are, what we&rsquo;re building on top of Composio, and why I think there&rsquo;s
         something worth talking about.
       </p>
@@ -256,7 +283,7 @@
         </div>
         <div class="ratio">
           <iframe
-            src="https://www.youtube-nocookie.com/embed/0LOlGmrHsVE?rel=0"
+            src="https://www.youtube-nocookie.com/embed/JDZBH0evIoA?rel=0"
             title="Karan Introduction"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerpolicy="strict-origin-when-cross-origin"
@@ -265,15 +292,22 @@
         </div>
       </div>
 
-      <div class="below rise d4">
-        <span class="caption"><strong>Karan Introduction</strong> &middot; a quick hello from David at Apollo[Claw]</span>
-        <a class="fallback" href="https://youtu.be/0LOlGmrHsVE" target="_blank" rel="noopener">Video not loading? Watch on YouTube</a>
+      <div class="cta-block rise d4">
+        <p class="cta-line">If any of this lands, I&rsquo;d love to talk. Reach me directly.</p>
+        <div class="contacts">
+          <a class="contact" href="mailto:daveo@apolloclaw.ai">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+            <span class="c-label">daveo@apolloclaw.ai</span>
+          </a>
+        </div>
       </div>
     </main>
 
     <footer>
-      <span>From <span class="sign">David</span>, Apollo[Claw]</span>
-      <span>daveo@apolloclaw.ai</span>
+      <div class="sig">
+        <span class="sig-name">David Oralevich</span>
+        <span class="sig-org">Apollo<span class="b">[</span>Claw<span class="b">]</span></span>
+      </div>
     </footer>
   </div>
 </body>
