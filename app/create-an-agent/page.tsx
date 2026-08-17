@@ -310,7 +310,7 @@ export default function CreateAnAgentPage() {
                   Recommended
                 </span>
                 <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">Custom Setup</span>
-                <p className="font-display text-2xl text-foreground mt-3">We set it up with you, on a call.</p>
+                <p className="font-display text-2xl text-foreground mt-3">We set it up with you, on a Zoom around your business.</p>
                 <div className="mt-6">
                   <span className="font-display text-2xl font-extrabold text-foreground">Contact us for custom setup.</span>
                 </div>

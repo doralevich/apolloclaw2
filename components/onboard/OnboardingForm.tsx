@@ -749,7 +749,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
                 its CTA goes straight to the consultation calendar. */}
             <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: "transparent", border: `1px solid ${BDR}`, borderRadius: 10, padding: "20px 18px" }}>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>Custom Setup</p>
-              <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>We set it up with you, on a call, around your business.</p>
+              <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>We set it up with you, on a Zoom around your business.</p>
               <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>Contact us for setup</p>
               <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
                 {[
