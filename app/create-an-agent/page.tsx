@@ -106,7 +106,7 @@ const SELF_SERVE_INCLUDES = [
 ];
 
 const WHITE_GLOVE_INCLUDES = [
-  "Everything in Self-Serve",
+  "Everything in Standard Setup",
   "Setup calls where we connect your apps and channels with you",
   "Configured around how your business actually runs",
   "We stay on it until it is doing real work",
@@ -275,7 +275,7 @@ export default function CreateAnAgentPage() {
             {/* Self-Serve */}
             <ScrollReveal>
               <div className="bauhaus-card p-9 h-full flex flex-col">
-                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">Self-Serve</span>
+                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">Standard Setup</span>
                 <p className="font-display text-2xl text-foreground mt-3">You set it up, in your own time.</p>
                 <div className="mt-6">
                   <span className="font-display text-4xl font-extrabold text-foreground">$449</span>
@@ -292,7 +292,7 @@ export default function CreateAnAgentPage() {
                 </ul>
                 <Link
                   href="/onboard"
-                  className="mt-8 inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                  className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
                   style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
                 >
                   Start now
@@ -309,10 +309,10 @@ export default function CreateAnAgentPage() {
                 >
                   Recommended
                 </span>
-                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">White-Glove</span>
+                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">Custom Setup</span>
                 <p className="font-display text-2xl text-foreground mt-3">We set it up with you, on a call.</p>
                 <div className="mt-6">
-                  <span className="font-display text-2xl font-extrabold text-foreground">Contact us for custom white-glove service.</span>
+                  <span className="font-display text-2xl font-extrabold text-foreground">Contact us for custom setup.</span>
                 </div>
                 <p className="font-body text-xs text-muted-foreground mt-1">Priced to your business. Book a call and we will scope it with you.</p>
                 <ul className="mt-7 flex flex-col gap-3 flex-1">
@@ -326,7 +326,7 @@ export default function CreateAnAgentPage() {
                   href={SCHEDULE_CONSULT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-8 inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                  className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
                   style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
                 >
                   Schedule a Call

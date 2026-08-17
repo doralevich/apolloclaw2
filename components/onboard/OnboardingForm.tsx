@@ -9,8 +9,6 @@ import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import {
   DEFAULT_LICENSE_TIER,
   resolveLicenseTier,
-  type LicenseTier,
-  type LicenseTierId,
 } from "@/lib/pricing/catalog";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { apiFetch } from "@/lib/api";
@@ -669,57 +667,13 @@ function Success({ nextStep }: { nextStep?: boolean }) {
 // drop-off here is still a lead we have), then payment, then the questionnaire. The buyer
 // has no account at this point and does not need one — /api/onboard/checkout is anonymous
 // and the account is created from the completed checkout by the Stripe webhook.
-// One tier card on the paywall. Module scope, not defined inside Paywall: a component created
-// during render is a fresh type on every render, which remounts its subtree.
-//
-// The whole card is the control, and it is a real <button> rather than a div with an onClick —
-// so it is reachable by keyboard and announces its pressed state without any of that being
-// reimplemented here.
-function TierCard({ tier, selected, disabled, onSelect }: { tier: LicenseTier; selected: boolean; disabled: boolean; onSelect: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      disabled={disabled}
-      aria-pressed={selected}
-      style={{
-        flex: "1 1 260px", textAlign: "left", fontFamily: "inherit", cursor: disabled ? "default" : "pointer",
-        background: selected ? "rgba(215,43,43,0.05)" : "transparent",
-        border: `1px solid ${selected ? R : BDR}`,
-        boxShadow: selected ? `0 0 0 1px ${R}` : "none",
-        borderRadius: 10, padding: "20px 18px", position: "relative", transition: "border-color .15s, background .15s",
-      }}
-    >
-      {tier.recommended && (
-        <span style={{ position: "absolute", top: -9, right: 16, background: R, color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 8px", borderRadius: 4 }}>
-          Recommended
-        </span>
-      )}
-      <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>{tier.label}</p>
-      <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>{tier.tagline}</p>
-      {/* Both numbers, always. The license alone reads as the whole price, and a monthly
-          somebody only meets on the Stripe page is the kind of surprise that becomes a
-          chargeback rather than a customer. */}
-      <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{tier.priceLabel}</p>
-      <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7 }}>
-        {tier.includes.map((line) => (
-          <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
-            <span aria-hidden style={{ color: R, fontWeight: 800, flexShrink: 0 }}>✓</span>
-            {line}
-          </li>
-        ))}
-      </ul>
-    </button>
-  );
-}
 
 function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
-  // Pre-selected rather than blank. A picker with nothing chosen adds a decision before the
-  // decision, and the default is the tier we steer to anyway.
-  const [tierId, setTierId] = useState<LicenseTierId>(DEFAULT_LICENSE_TIER);
-  const tier = resolveLicenseTier(tierId);
+  // Standard Setup is the only self-serve tier now (Custom Setup books a call instead of
+  // checking out), so there is nothing to pick — the buy is always the Basic license.
+  const tier = resolveLicenseTier(DEFAULT_LICENSE_TIER);
 
   const go = async () => {
     setErr("");
@@ -733,7 +687,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
           last: gate.last,
           email: gate.email,
           phone: gate.phone,
-          tier: tierId,
+          tier: DEFAULT_LICENSE_TIER,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -763,21 +717,43 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
-          {/* Two ways in. Basic is the self-serve buy on the left; White Label Custom on the
-              right is not a checkout — it books a call. Wraps to one column under ~600px, where
-              two cards side by side would each be too narrow to read the includes list in. */}
+          {/* Two ways in, symmetric cards each with its OWN same-size button: Standard Setup is
+              the self-serve buy; Custom Setup books a call instead of a checkout. Wraps to one
+              column under ~600px, where two side by side would each be too narrow to read the
+              includes list in. */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
-            <TierCard tier={tier} selected disabled={loading} onSelect={() => setTierId("basic")} />
+            {/* Standard Setup — self-serve buy; the button runs checkout. */}
+            <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: "rgba(215,43,43,0.04)", border: `1px solid ${R}`, borderRadius: 10, padding: "20px 18px" }}>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>Standard Setup</p>
+              <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>You set it up, in your own time.</p>
+              <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{tier.priceLabel}</p>
+              <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
+                {tier.includes.map((line) => (
+                  <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
+                    <span aria-hidden style={{ color: R, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={go}
+                disabled={loading}
+                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
+              >
+                {loading ? "Taking you to checkout…" : "Get Started"}
+              </button>
+            </div>
 
-            {/* White-Glove — the former $2,500 tier, now a call-for-setup path. No checkout:
+            {/* Custom Setup — the former $2,500 tier, now a call-for-setup path. No checkout:
                 its CTA goes straight to the consultation calendar. */}
             <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: "transparent", border: `1px solid ${BDR}`, borderRadius: 10, padding: "20px 18px" }}>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>White-Glove</p>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>Custom Setup</p>
               <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>We set it up with you, on a call, around your business.</p>
               <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>Contact us for setup</p>
               <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
                 {[
-                  "Everything in Basic",
+                  "Everything in Standard Setup",
                   "Setup calls - we connect your apps and channels with you",
                   "Your agent configured around how your business actually runs",
                   "We stay on it until it is doing real work, not just answering",
@@ -793,7 +769,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
                 href={SCHEDULE_CONSULT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ marginTop: 16, display: "block", textAlign: "center", background: R, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
+                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: R, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
               >
                 Schedule a Call
               </a>
@@ -814,10 +790,7 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
 
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
 
-          <button type="button" onClick={go} disabled={loading} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "15px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1, letterSpacing: "0.01em" }}>
-            {loading ? "Taking you to checkout…" : `Continue with ${tier.label} - ${tier.priceLabel} →`}
-          </button>
-          <button type="button" onClick={onBack} disabled={loading} style={{ width: "100%", marginTop: 10, background: "transparent", border: "none", color: TXD, fontFamily: "inherit", fontSize: 13, padding: "8px", cursor: loading ? "default" : "pointer" }}>
+          <button type="button" onClick={onBack} disabled={loading} style={{ width: "100%", marginTop: 20, background: "transparent", border: "none", color: TXD, fontFamily: "inherit", fontSize: 13, padding: "8px", cursor: loading ? "default" : "pointer" }}>
             ← Back
           </button>
 
