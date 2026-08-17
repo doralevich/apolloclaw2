@@ -120,7 +120,11 @@ export const LICENSE_TIERS: readonly LicenseTier[] = [
 // `apollo_license` deliberately keeps its original key on the Advanced tier. That key is
 // stamped on the live Stripe product and on every license already sold through it; renaming it
 // would mint a second product and orphan the history.
-export const DEFAULT_LICENSE_TIER: LicenseTierId = "advanced";
+// Self-serve checkout now sells BASIC only. The Advanced/$2,500 tier became a "call for setup"
+// White-Label / Custom path — booked as a consultation from the paywall, not charged through a
+// bare checkout. The tier definition stays above (its Stripe product and sales history are real
+// and still referenced by the catalog seed), it is simply no longer offered as a self-serve buy.
+export const DEFAULT_LICENSE_TIER: LicenseTierId = "basic";
 
 export function licenseTierFor(id: string | undefined | null): LicenseTier | undefined {
   return LICENSE_TIERS.find((t) => t.id === id);
@@ -129,9 +133,9 @@ export function licenseTierFor(id: string | undefined | null): LicenseTier | und
 /**
  * The tier a bare checkout means.
  *
- * Anything unrecognised resolves to Advanced rather than to the cheaper tier: a caller can put
- * whatever it likes in the request body, and a typo that silently sells $2,500 of work for $449
- * is the expensive direction to be wrong in.
+ * Resolves to Basic for anything unrecognised or missing. That is now the SAFE direction: the
+ * paywall only ever posts "basic", and the $2,500 tier is a call-for-setup path rather than a
+ * self-serve purchase, so an odd request body can no longer land someone in a $2,500 charge.
  */
 export function resolveLicenseTier(id: string | undefined | null): LicenseTier {
   return licenseTierFor(id) ?? licenseTierFor(DEFAULT_LICENSE_TIER)!;

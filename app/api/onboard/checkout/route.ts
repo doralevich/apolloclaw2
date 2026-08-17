@@ -26,7 +26,8 @@ interface CheckoutBody {
   email?: string;
   personalEmail?: string;
   phone?: string;
-  /** "basic" or "advanced". Anything else resolves to Advanced — see resolveLicenseTier. */
+  /** The self-serve paywall only sends "basic" now (Advanced became a call-for-setup path, not a
+   *  bare checkout). Anything missing or unrecognised resolves to Basic — see resolveLicenseTier. */
   tier?: string;
 }
 

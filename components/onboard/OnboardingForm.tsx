@@ -8,11 +8,11 @@ import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import {
   DEFAULT_LICENSE_TIER,
-  LICENSE_TIERS,
   resolveLicenseTier,
   type LicenseTier,
   type LicenseTierId,
 } from "@/lib/pricing/catalog";
+import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { apiFetch } from "@/lib/api";
 
 // The single business-onboarding questionnaire, shared by three entry points:
@@ -763,18 +763,41 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
-          {/* Two ways to buy the same agent. Wraps to a single column under ~600px, where two
-              cards side by side would each be too narrow to read the includes list in. */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6 }}>
-            {LICENSE_TIERS.map((t) => (
-              <TierCard
-                key={t.id}
-                tier={t}
-                selected={t.id === tierId}
-                disabled={loading}
-                onSelect={() => setTierId(t.id)}
-              />
-            ))}
+          {/* Two ways in. Basic is the self-serve buy on the left; White Label Custom on the
+              right is not a checkout — it books a call. Wraps to one column under ~600px, where
+              two cards side by side would each be too narrow to read the includes list in. */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
+            <TierCard tier={tier} selected disabled={loading} onSelect={() => setTierId("basic")} />
+
+            {/* White Label Custom — the former $2,500 tier, now a call-for-setup path. No
+                checkout: its CTA goes straight to the consultation calendar. */}
+            <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: "transparent", border: `1px solid ${BDR}`, borderRadius: 10, padding: "20px 18px" }}>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>White Label Custom</p>
+              <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>We build and set it up around your business, with you.</p>
+              <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>Contact us for setup</p>
+              <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
+                {[
+                  "Everything in Basic",
+                  "Setup calls - we connect your apps and channels with you",
+                  "Your agent configured around how your business actually runs",
+                  "We stay on it until it is doing real work, not just answering",
+                  "Direct access to David after launch",
+                ].map((line) => (
+                  <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
+                    <span aria-hidden style={{ color: R, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={SCHEDULE_CONSULT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginTop: 16, display: "block", textAlign: "center", background: R, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
+              >
+                Schedule a Call
+              </a>
+            </div>
           </div>
 
           {/* Said once, under both, because it is identical on both. Repeating it inside each
