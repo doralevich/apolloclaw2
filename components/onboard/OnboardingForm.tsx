@@ -631,17 +631,21 @@ function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLas
 // ════════════════════════════════════════════════════════════
 // Three endings. `payUrl` (a Stripe Payment Link passed as ?pay= on the white-glove URL) turns
 // the finish into "now pay" — how David closes a custom, offline-priced deal: the client fills
-// the questionnaire, then pays at the end. Otherwise `nextStep` continues the white-glove
-// journey into the technical setup form at /setup. The plain lead form has neither — nobody has
-// bought anything yet — so it keeps the "return to the site" ending.
+// the questionnaire, then pays at the end. Otherwise `nextStep` (a white-glove finish with no
+// payment link) is a warm close — "thank you, we'll be in touch" — since the technical setup is
+// handled on David's side now. The plain lead form keeps its own "return to the site" ending.
+// (The /setup form still exists and is reachable directly for any build that needs it.)
 function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) {
   const message = "This is one of the most comprehensive applications we receive. That tells us you're serious - and we take that seriously.";
+  // The plain white-glove finish (no payment link) is a warm close now, so its header greets
+  // rather than restates "Application Submitted" (which the body would otherwise repeat).
+  const headline = nextStep && !payUrl ? "Thank You" : "Application Submitted";
   return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
       <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 24px" }}>
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>
-      <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>Application Submitted</h2>
+      <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>{headline}</h2>
       {payUrl ? (
         <>
           <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto 26px" }}>
@@ -652,14 +656,10 @@ function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) 
         </>
       ) : nextStep ? (
         <>
-          <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto 6px" }}>
-            We have everything we need about your business. One step left: the technical setup, where
-            you tell us about the machine your agent will run on and connect the accounts it needs.
+          <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto 26px" }}>
+            Your application has been submitted. We&apos;ll get back to you shortly with our next steps.
           </p>
-          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 26px" }}>
-            It takes about five minutes. You can also come back to it later at apolloclaw.ai/setup.
-          </p>
-          <a href="/setup" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Continue to Technical Setup →</a>
+          <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
         </>
       ) : (
         <>
