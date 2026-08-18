@@ -162,6 +162,13 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      // Clean URL for the cold-email intro page. The page is a standalone static file at
+      // /public/hello.html; this serves it at /hello so the mailer link has no extension.
+      { source: "/hello", destination: "/hello.html" },
+    ];
+  },
 };
 
 export default nextConfig;
