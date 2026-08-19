@@ -97,14 +97,16 @@ export async function POST(request: Request, { params }: Ctx) {
       const result = await runTurn(
         agentId,
         update.text,
-        sessionToContinue(config.sessionId, config.updatedAt)
+        sessionToContinue(config.sessionId, config.updatedAt, config.sessionStartedAt)
       );
 
       // Remember the session so the next message continues the same conversation instead of
-      // starting a fresh one that knows nothing about the last.
+      // starting a fresh one that knows nothing about the last. A changed id means a fresh
+      // session opened, so stamp its start time for the age cap in sessionToContinue.
       if (result.session_id && result.session_id !== config.sessionId) {
         await upsertChannel(agentId, "telegram", {
           sessionId: result.session_id,
+          sessionStartedAt: new Date().toISOString(),
           state: "connected",
           message: null,
         });

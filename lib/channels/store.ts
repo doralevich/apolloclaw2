@@ -23,6 +23,8 @@ export interface ChannelRow {
   secret: string | null;
   /** The agent session this channel talks in, so the thread continues across messages. */
   session_id: string | null;
+  /** When the current session was opened, for the age cap in sessionToContinue. */
+  session_started_at: string | null;
   /** Bound on the first message. Anyone else talking to the bot is ignored. */
   owner_chat_id: string | null;
   /** Provider-side id a reply must be addressed through. WhatsApp's Phone Number ID. */
@@ -95,6 +97,8 @@ export async function getChannelConfig(
    *  Used to decide whether the stored session is still live or has gone cold — see
    *  sessionToContinue in lib/channels/turn.ts. */
   updatedAt: number | null;
+  /** When the current session was opened (ms), for the age cap. Null if never/untracked. */
+  sessionStartedAt: number | null;
   ownerChatId: string | null;
   externalId: string | null;
   verifyToken: string | null;
@@ -107,6 +111,7 @@ export async function getChannelConfig(
     secret: decryptSecret(row.secret),
     sessionId: row.session_id,
     updatedAt: row.updated_at ? Date.parse(row.updated_at) : null,
+    sessionStartedAt: row.session_started_at ? Date.parse(row.session_started_at) : null,
     ownerChatId: row.owner_chat_id,
     externalId: row.external_id,
     verifyToken: decryptSecret(row.verify_token),
@@ -121,6 +126,7 @@ export async function upsertChannel(
     account?: string | null;
     secret?: string | null;
     sessionId?: string | null;
+    sessionStartedAt?: string | null;
     ownerChatId?: string | null;
     externalId?: string | null;
     verifyToken?: string | null;
@@ -144,6 +150,7 @@ export async function upsertChannel(
   // and anyone who guesses it, so it gets the same envelope as the bot token.
   if (fields.secret !== undefined) payload.secret = encryptForStorage(fields.secret);
   if (fields.sessionId !== undefined) payload.session_id = fields.sessionId;
+  if (fields.sessionStartedAt !== undefined) payload.session_started_at = fields.sessionStartedAt;
   if (fields.ownerChatId !== undefined) payload.owner_chat_id = fields.ownerChatId;
   if (fields.externalId !== undefined) payload.external_id = fields.externalId;
   // Encrypted too: anyone holding it could pass Meta's verification for this agent and point the
