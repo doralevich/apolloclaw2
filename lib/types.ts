@@ -194,6 +194,8 @@ export interface AdminAccount {
   last_sign_in_at: string | null;
   is_platform_admin: boolean;
   entitlement: string | null;
+  /** When set and in the future, the account is in its post-cancellation grace window. */
+  grace_until: string | null;
   workspaces: { id: string; name: string; role: string; member_count: number; agent_count: number }[];
   agents_owned: { agent37_id: string; name: string | null }[];
 }

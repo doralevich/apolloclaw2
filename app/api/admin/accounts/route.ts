@@ -62,7 +62,7 @@ export const GET = route(async () => {
     db.from("memberships").select("workspace_id, user_id, role"),
     db.from("workspaces").select("id, name"),
     db.from("agents").select("agent37_id, workspace_id, name, owner_id"),
-    db.from("entitlements").select("email, user_id, status"),
+    db.from("entitlements").select("email, user_id, status, grace_until"),
   ]);
   for (const res of [memsRes, wsRes, agentsRes, entsRes]) {
     if (res.error) throw new ApiError(500, "db_error", res.error.message);
@@ -90,6 +90,7 @@ export const GET = route(async () => {
       last_sign_in_at: u.last_sign_in_at,
       is_platform_admin: isAdminEmail(u.email),
       entitlement: (ent?.status as string | undefined) ?? null,
+      grace_until: (ent?.grace_until as string | null | undefined) ?? null,
       workspaces: memberships.map((m) => ({
         id: m.workspace_id as string,
         name: wsName.get(m.workspace_id) ?? m.workspace_id,

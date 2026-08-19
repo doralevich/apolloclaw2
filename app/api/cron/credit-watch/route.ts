@@ -1,4 +1,5 @@
 import { sweepCredits } from "@/lib/credit-watch";
+import { expireGracePeriods } from "@/lib/entitlement-sweep";
 import { json, route } from "@/lib/http";
 import { NextResponse } from "next/server";
 
@@ -26,5 +27,9 @@ export const GET = route(async (request: Request) => {
   }
 
   const result = await sweepCredits();
-  return json({ ok: true, ...result });
+  // Piggy-back the grace sweep on the same hourly tick: any account whose grace window has
+  // closed is flipped to 'inactive' so the admin Accounts view reads honestly. The dashboard
+  // gate already denies a past-grace account regardless, so this is bookkeeping, not the lock.
+  const graceExpired = await expireGracePeriods();
+  return json({ ok: true, ...result, graceExpired });
 });
