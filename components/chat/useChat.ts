@@ -247,10 +247,18 @@ export function useChat({ agentId, sessionId, onSessionCreated, onActivity }: Us
                 break;
               }
               case "response.tool_call.started":
-                patchAssistant((m) => ({
-                  ...m,
-                  tools: [...(m.tools ?? []), { tool: str(data.tool) ?? "tool", status: "running", label: str(data.label) }],
-                }));
+                patchAssistant((m) => {
+                  // Text typed before a tool call is working narration, not the answer. Fold it
+                  // into `steps` and clear `content`, so the next text segment streams fresh as
+                  // the (provisional) answer and only the trailing segment survives as the reply.
+                  const narration = m.content.trim();
+                  return {
+                    ...m,
+                    steps: narration ? (m.steps ? `${m.steps}\n\n${m.content}` : m.content) : m.steps,
+                    content: narration ? "" : m.content,
+                    tools: [...(m.tools ?? []), { tool: str(data.tool) ?? "tool", status: "running", label: str(data.label) }],
+                  };
+                });
                 break;
               case "response.tool_call.completed":
                 patchAssistant((m) => ({
@@ -263,7 +271,10 @@ export function useChat({ agentId, sessionId, onSessionCreated, onActivity }: Us
                 break;
               case "response.completed": {
                 const final = str(data.output_text);
-                if (final) patchAssistant((m) => ({ ...m, content: final }));
+                // Only fill from the final payload when nothing streamed (a stream that sent no
+                // text deltas). Otherwise keep the streamed answer segment: `output_text` is the
+                // whole turn, and overwriting with it would drag the folded-away narration back in.
+                if (final) patchAssistant((m) => (m.content.trim() ? m : { ...m, content: final }));
                 break;
               }
               case "response.failed": {

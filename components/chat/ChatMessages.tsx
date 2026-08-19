@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Check, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
+import { Bot, Check, ChevronDown, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { cn } from "@/lib/utils";
@@ -110,6 +110,42 @@ function ToolChip({ tool }: { tool: ToolEvent }) {
   );
 }
 
+// The agent's work, tucked away. While it runs a task it narrates ("let me open the page…") and
+// fires tools; none of that is the answer, so it lives behind a single collapsed line the reader
+// can expand if they want to see what happened. Collapsed by default, on purpose — the point of
+// this is that a customer sees the reply, not the play-by-play.
+function AgentSteps({ steps, tools, working }: { steps?: string; tools: ToolEvent[]; working: boolean }) {
+  const [open, setOpen] = useState(false);
+  const hasSteps = !!steps && steps.trim().length > 0;
+  if (!hasSteps && tools.length === 0) return null;
+
+  return (
+    <div className="mb-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex items-center gap-1.5 rounded-lg border border-border/70 bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {working ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wrench className="h-3.5 w-3.5" />}
+        <span className="font-medium">{working ? "Working" : "Steps"}</span>
+        {tools.length > 0 && <span className="tabular-nums opacity-70">&middot; {tools.length}</span>}
+        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2 border-l-2 border-border/50 pl-3">
+          {tools.map((t, k) => (
+            <ToolChip key={`${t.tool}-${k}`} tool={t} />
+          ))}
+          {hasSteps && (
+            <div className="whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">{steps}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Bigger, higher-contrast "..." with a staggered bounce — visible the whole time the agent is
 // generating, until the first content chunk arrives.
 function TypingDots() {
@@ -172,13 +208,7 @@ export function ChatMessages({
           <div key={m.id} className="flex items-start justify-start gap-2.5">
             <AgentBadge />
             <div className="min-w-0 flex-1">
-              {tools.length > 0 && (
-                <div className="mb-3 space-y-2">
-                  {tools.map((t, k) => (
-                    <ToolChip key={`${t.tool}-${k}`} tool={t} />
-                  ))}
-                </div>
-              )}
+              <AgentSteps steps={m.steps} tools={tools} working={lastAssistant && isStreaming} />
               {m.content ? <Markdown content={m.content} /> : null}
               {showDots && (
                 <div className={tools.length > 0 ? "mt-2" : undefined}>
