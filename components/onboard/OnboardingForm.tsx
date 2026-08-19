@@ -1114,7 +1114,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   //
   // It stays a literal because the handlers below close over it and allPages is built from
   // state further down; the assertion is what makes the duplication safe.
-  const pageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(cfoBranch ? ["cfo"] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "horizon", "scope"];
+  // The CFO agent gets a role-specific, trimmed intake: company basics, what the business does,
+  // the finance deep-dive, and the final details/agreement. Everything off-role for a fractional
+  // CFO (exec profile, industry branch, tech stack, ops pain, family/life, brand voice, writing
+  // sample, generic AI goals, horizons) is dropped. Both the key list and the page list below are
+  // filtered to this same set, so the step-order assertion stays satisfied.
+  const CFO_PAGE_KEYS = ["biz", "whatyoudo", "cfo", "scope"];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(cfoBranch ? ["cfo"] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "horizon", "scope"];
+  const pageKeys = cfoBranch ? allPageKeys.filter(k => CFO_PAGE_KEYS.includes(k)) : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
@@ -1185,7 +1192,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // brandLike predates the switch to a multi-select and still initialises as "", so older
   // in-flight state can be either shape. Normalised once here rather than at each use.
   const brandLike = Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : []);
-  const allPages: { key: string; label: string; node: React.ReactNode }[] = [
+  const allPagesFull: { key: string; label: string; node: React.ReactNode }[] = [
     { key: "biz", label: "Your Business", node: (
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
@@ -1458,6 +1465,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     </Stack>
     ) },
   ];
+  // Trim to the CFO set when it's the CFO agent, mirroring the pageKeys filter above so the two
+  // stay in lockstep. Filtering preserves order, so the CFO flow reads biz -> whatyoudo -> cfo -> scope.
+  const allPages = cfoBranch ? allPagesFull.filter(p => CFO_PAGE_KEYS.includes(p.key)) : allPagesFull;
   // The check that makes the duplication above safe. A page added without a key - or a key
   // without a page - is a questionnaire that quietly stops advancing partway through, which is
   // the worst kind of bug this form can have: the customer sees a Continue button that does
