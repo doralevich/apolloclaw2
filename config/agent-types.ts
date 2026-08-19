@@ -132,6 +132,29 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "Bot",
   },
+  // The CFO Agent — an off-the-rack finance persona, sold WHITE-GLOVE. Unlike the generic
+  // Apollo agent (whatever the questionnaire makes it), this one ships as a role: its
+  // persona (config/personas.ts -> `cfo`, applied automatically by personaForAgentType at
+  // provision) makes a stock OpenClaw box behave like a fractional CFO out of the box.
+  //
+  // Sold on /ai-agents/cfo, which is a "Schedule Your Consultation" page — the deal is scoped
+  // and priced per engagement, and payment is taken white-glove (a Stripe payment link), so
+  // there is deliberately NO `planKey`: it never goes through self-serve checkout. `internal`
+  // keeps it out of a customer's create-agent modal; a platform admin still sees it there
+  // (CreateAgentModal: `isPlatformAdmin || !internal`), which is how David provisions one for
+  // a client after closing. Same stock template and $25 hosting cap as every other agent.
+  {
+    id: "cfo",
+    label: "The CFO Agent",
+    description:
+      "A fractional CFO agent: budgets and cash-flow forecasts, financial models, board-ready reporting, and fundraising prep - set up for one business, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Wallet",
+  },
 ];
 
 export function getAgentType(id: string): AgentType | undefined {

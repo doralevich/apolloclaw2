@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Stethoscope,
   TrendingUp,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -47,6 +48,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   ShieldCheck,
   Home,
   TrendingUp,
+  Wallet,
 };
 
 // Self-serve "Create Agent" dialog: one card per registry type. Free types (College
