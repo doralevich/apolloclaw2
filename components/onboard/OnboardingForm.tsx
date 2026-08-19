@@ -1133,12 +1133,17 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
-      if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
-      if (p.industry === "Other" && !p.industryOther?.trim()) return "Please tell us the primary business industry.";
-      // Role is free text now - the "Other" branch this used to check cannot occur.
-      // No ownership check: the field it guarded has been removed, and leaving this would
-      // block every submission on a question nobody can answer any more.
-      for (const c of companies) { if (c.name.trim() && !c.industry) return "Each business you add needs an industry."; }
+      // The CFO intake hides the Industry field (cfoBranch), so it is not required there.
+      if (cfoBranch) {
+        if (!p?.name?.trim() || !p?.role) return "Please fill in the primary business name and your role.";
+      } else {
+        if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
+        if (p.industry === "Other" && !p.industryOther?.trim()) return "Please tell us the primary business industry.";
+        // Role is free text now - the "Other" branch this used to check cannot occur.
+        // No ownership check: the field it guarded has been removed, and leaving this would
+        // block every submission on a question nobody can answer any more.
+        for (const c of companies) { if (c.name.trim() && !c.industry) return "Each business you add needs an industry."; }
+      }
       if (companies.length > 1) {
         if (!companies[primaryIndex]?.name) return "Please choose which business your agent should focus on first.";
         if (!portfolio.structure || !portfolio.sharedOps) return "Please tell us how the businesses are connected and whether they share operations.";
@@ -1196,7 +1201,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "biz", label: "Your Business", node: (
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
-      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} />
+      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={!!cfoBranch} />
       <FF label="Website" required><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
       {/* Business Model sat beside this and is gone at David's call. Service-based vs product

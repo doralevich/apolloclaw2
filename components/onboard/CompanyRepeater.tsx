@@ -103,6 +103,9 @@ interface Props {
   onPrimaryChange: (index: number) => void;
   portfolio: PortfolioMeta;
   onPortfolioChange: (next: PortfolioMeta) => void;
+  // Hide the Industry field. The industry answer only exists to select the Industry Deep-Dive
+  // step, which the CFO intake doesn't use, so asking it there is a dead question.
+  hideIndustry?: boolean;
 }
 
 // ---- Component ------------------------------------------------------------
@@ -114,6 +117,7 @@ export default function CompanyRepeater({
   onPrimaryChange,
   portfolio,
   onPortfolioChange,
+  hideIndustry = false,
 }: Props) {
   const multi = companies.length > 1;
 
@@ -202,19 +206,21 @@ export default function CompanyRepeater({
             </Field>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-              <Field label="Industry" required>
-                <Select
-                  value={company.industry}
-                  onChange={(v) =>
-                    updateCompany(i, {
-                      industry: v,
-                      // keep any write-in only while "Other" stays selected
-                      industryOther: v === "Other" ? company.industryOther : "",
-                    })
-                  }
-                  options={INDUSTRY_OPTIONS}
-                />
-              </Field>
+              {!hideIndustry && (
+                <Field label="Industry" required>
+                  <Select
+                    value={company.industry}
+                    onChange={(v) =>
+                      updateCompany(i, {
+                        industry: v,
+                        // keep any write-in only while "Other" stays selected
+                        industryOther: v === "Other" ? company.industryOther : "",
+                      })
+                    }
+                    options={INDUSTRY_OPTIONS}
+                  />
+                </Field>
+              )}
               {/* Open text, at David's call - this was a seventeen-option dropdown with the
                   real answer hiding behind "Other" for anyone whose title was not on it. A role
                   is a thing people know how to type, and "Clinical Director" typed directly
@@ -241,7 +247,7 @@ export default function CompanyRepeater({
                 string: it is read by buildData and by the intake email, and dropping it would
                 mean touching both for a value nothing decides on. */}
 
-            {company.industry === "Other" && (
+            {!hideIndustry && company.industry === "Other" && (
               <Field label="Tell us your industry" required>
                 <input
                   type="text"
