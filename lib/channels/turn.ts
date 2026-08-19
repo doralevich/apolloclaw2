@@ -21,34 +21,49 @@ export interface TurnResult {
   error?: { message?: string } | null;
 }
 
-// How long a channel session may sit idle before the next message starts a FRESH one instead of
-// continuing it.
+// When a channel session gets reset, so its history stops growing without bound.
 //
 // A channel reuses one session so the conversation carries across messages — but nothing ever
 // ended it, so the session grew for the life of the bot and every turn re-billed the entire
 // accumulated history as input. That is the shape of Grace's bill: 13M input tokens against 50K
-// output, a 260:1 ratio that only a huge, ever-growing context per turn produces. Left unbounded
-// it gets worse every message, forever.
+// output, a 260:1 ratio that only a huge, ever-growing context per turn produces.
 //
-// Six hours is the "this is a new conversation" line. Within a working session, gaps stay under
-// it and the thread continues as before; come back the next morning and the agent starts clean
-// rather than re-reading yesterday on every reply. Nothing important is lost on a reset — durable
-// facts live in the instance's own memory (MEMORY.md), which a new session still reads; only the
-// expendable scrollback is shed. Tune here.
-export const CHANNEL_SESSION_MAX_IDLE_MS = 6 * 60 * 60 * 1000;
+// Two limits, because there are two ways a thread bloats:
+//
+//   IDLE — a gap between messages is a new conversation. Come back after a break and the agent
+//   starts clean rather than re-reading the earlier thread on every reply.
+//
+//   AGE — a long, UNBROKEN conversation never goes idle, so idle alone never caps it. The age
+//   limit resets the thread once it has simply been alive too long, mid-conversation if need be,
+//   so the per-turn re-read stays bounded no matter how heavily the bot is used in one sitting.
+//   This is the lever that was missing while Grace stayed slow through an active day.
+//
+// Nothing important is lost on a reset — durable facts live in the instance's own memory
+// (MEMORY.md), which a new session still reads; only the expendable scrollback is shed. Tune here.
+export const CHANNEL_SESSION_MAX_IDLE_MS = 60 * 60 * 1000; // 1 hour since the last message
+export const CHANNEL_SESSION_MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours since the session opened
 
 /**
  * The session id to continue on this turn, or null to start fresh.
  *
- * Continues the stored session while the conversation is live, and drops it once it has gone cold
- * — so history can't accumulate across days into a context that costs more to re-read every turn
- * than the answer it produces. Passing null makes runTurn open a new session; the receiver then
- * persists the new id exactly as it already persisted the old one.
+ * Continues the stored session while the conversation is live, young, and warm; drops it once it
+ * has gone cold (idle) OR grown old (age), so history can't accumulate into a context that costs
+ * more to re-read every turn than the answer it produces. Passing null makes runTurn open a new
+ * session; the receiver then persists the new id — and stamps a fresh session_started_at.
+ *
+ * A session with no known start time (a row that predates session_started_at) is treated as
+ * aged-out and reset once, so it gets a tracked start from then on.
  */
-export function sessionToContinue(sessionId: string | null, lastActivityMs: number | null): string | null {
+export function sessionToContinue(
+  sessionId: string | null,
+  lastActivityMs: number | null,
+  sessionStartedMs: number | null
+): string | null {
   if (!sessionId) return null;
-  if (lastActivityMs == null) return sessionId;
-  if (Date.now() - lastActivityMs > CHANNEL_SESSION_MAX_IDLE_MS) return null;
+  const now = Date.now();
+  if (sessionStartedMs == null) return null;
+  if (now - sessionStartedMs > CHANNEL_SESSION_MAX_AGE_MS) return null;
+  if (lastActivityMs != null && now - lastActivityMs > CHANNEL_SESSION_MAX_IDLE_MS) return null;
   return sessionId;
 }
 

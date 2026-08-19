@@ -99,11 +99,17 @@ export async function POST(request: Request, { params }: Ctx) {
         });
       }
 
-      const result = await runTurn(agentId, text, sessionToContinue(config.sessionId, config.updatedAt));
+      const result = await runTurn(
+        agentId,
+        text,
+        sessionToContinue(config.sessionId, config.updatedAt, config.sessionStartedAt)
+      );
 
+      // A changed id means a fresh session opened; stamp its start time for the age cap.
       if (result.session_id && result.session_id !== config.sessionId) {
         await upsertChannel(agentId, "slack", {
           sessionId: result.session_id,
+          sessionStartedAt: new Date().toISOString(),
           state: "connected",
           message: null,
         });
