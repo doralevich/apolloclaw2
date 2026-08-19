@@ -22,6 +22,12 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   thinking?: string;
+  /**
+   * The agent's working narration — the "let me open the page, now I'll check…" text it types
+   * between tool calls. Folded out of `content` (see useChat) so the bubble shows only the final
+   * answer, with these steps tucked into an expandable section instead of flooding the transcript.
+   */
+  steps?: string;
   tools?: ToolEvent[];
   attachments?: MessageAttachment[];
 }
