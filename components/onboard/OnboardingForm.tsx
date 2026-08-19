@@ -1767,7 +1767,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     <Gatekeeper
       onPass={handleGate}
       initial={enteredGate ?? undefined}
-      heading={isWhiteGlove ? <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></> : undefined}
+      heading={isWhiteGlove ? (agentTypeId === "cfo" ? <>Let&apos;s Customize Your <span style={{ color: R }}>CFO Agent.</span></> : <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></>) : undefined}
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
   );
