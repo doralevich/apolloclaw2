@@ -10,6 +10,7 @@ import { findAuthUserIdByEmail } from "@/lib/license-session";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { graceUntilIso } from "@/lib/entitlement";
 import { sendTelegram } from "@/lib/telegram";
 import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { syncMailchimpRegistration } from "@/lib/mailchimp";
@@ -143,7 +144,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     const { error } = await db
       .from("entitlements")
       .upsert(
-        { email, status: "active", source: "stripe", user_id: userId },
+        // grace_until cleared: a fresh/renewed subscription wipes any lingering grace window.
+        { email, status: "active", source: "stripe", user_id: userId, grace_until: null },
         { onConflict: "email" }
       );
     if (error) console.error("[stripe-webhook] entitlement upsert failed:", email, error.message);
@@ -336,7 +338,7 @@ async function handleLicensePurchase(session: Stripe.Checkout.Session): Promise<
   // cancel it later. Keyed by email, like the allowlist.
   const { error: entErr } = await db
     .from("entitlements")
-    .upsert({ email, status: "active", source: "stripe", user_id: userId }, { onConflict: "email" });
+    .upsert({ email, status: "active", source: "stripe", user_id: userId, grace_until: null }, { onConflict: "email" });
   if (entErr) console.error("[stripe-webhook] entitlement upsert failed:", email, entErr.message);
 
   const amount =
@@ -516,10 +518,15 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   const email = !customer.deleted ? customer.email?.trim().toLowerCase() : null;
   if (!email) return;
 
+  // A cancellation opens a grace window rather than locking the account the same minute: the
+  // customer keeps dashboard access until grace_until passes (10 days), after which the gate
+  // and the credit-watch cron take over. This is the fix for the "cancelled, instantly locked
+  // out while the instance keeps running" case. updated_at is stamped here (the old cancel path
+  // left it untouched, which made created_at === updated_at read misleadingly).
   const db = createAdminClient();
   const { error } = await db
     .from("entitlements")
-    .update({ status: "canceled" })
+    .update({ status: "canceled", grace_until: graceUntilIso(), updated_at: new Date().toISOString() })
     .eq("email", email)
     .eq("source", "stripe");
   if (error) console.error("[stripe-webhook] entitlement cancel failed:", email, error.message);

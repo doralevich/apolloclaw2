@@ -1,15 +1,40 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ShieldCheck, Trash2 } from "lucide-react";
+import { ShieldCheck, Trash2, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
+import { graceDaysLeft, inGrace } from "@/lib/entitlement";
 import type { AdminAccount } from "@/lib/types";
 import type { AccountTeardownResult } from "@/lib/admin-teardown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+// One access-state control per row. "Live" = full access; "grace" opens the same 10-day window
+// a Stripe cancellation does; "deactivate" locks immediately. Mirrors the server's actions.
+type EntitlementAction = "live" | "grace" | "deactivate";
+
+// How the License cell reads, given the stored status and grace window. Grace is shown even
+// though the underlying status is still "canceled", because access is what the admin cares about.
+function licenseBadge(account: AdminAccount) {
+  if (account.entitlement === "active") return { label: "active", variant: "success" as const };
+  if (inGrace(account.grace_until)) {
+    const days = graceDaysLeft(account.grace_until);
+    return { label: `grace · ${days}d left`, variant: "warning" as const };
+  }
+  if (account.entitlement) return { label: account.entitlement, variant: "muted" as const };
+  return null;
+}
 
 // Accounts — every registered person, and the door out for the ones that shouldn't be here.
 //
@@ -52,6 +77,20 @@ export function AdminAccountsView() {
     // Follow-ups stay on screen until dismissed - these are the by-hand steps.
     for (const note of result.notes) toast.warning(note, { duration: Infinity });
     await load();
+  }
+
+  async function setEntitlement(account: AdminAccount, action: EntitlementAction) {
+    const verb = action === "live" ? "set live" : action === "grace" ? "moved to grace" : "deactivated";
+    try {
+      await apiFetch(`/api/admin/accounts/${account.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ action }),
+      });
+      toast.success(`${account.email} ${verb}.`);
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   return (
@@ -124,13 +163,14 @@ export function AdminAccountsView() {
                           ))}
                     </td>
                     <td className="px-4 py-3">
-                      {a.entitlement ? (
-                        <Badge variant={a.entitlement === "active" ? "success" : "muted"}>
-                          {a.entitlement}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
+                      {(() => {
+                        const b = licenseBadge(a);
+                        return b ? (
+                          <Badge variant={b.variant}>{b.label}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDate(a.created_at)}</td>
                     <td className="px-4 py-3 text-muted-foreground">
@@ -140,15 +180,34 @@ export function AdminAccountsView() {
                       {a.is_platform_admin ? (
                         <span className="text-xs text-muted-foreground">Protected</span>
                       ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleting(a)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                              Manage
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuLabel>Access</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              disabled={a.entitlement === "active"}
+                              onClick={() => setEntitlement(a, "live")}
+                            >
+                              Set live
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEntitlement(a, "grace")}>
+                              Start 10-day grace
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEntitlement(a, "deactivate")}>
+                              Deactivate now
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem variant="destructive" onClick={() => setDeleting(a)}>
+                              <Trash2 className="h-4 w-4" />
+                              Delete account
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </td>
                   </tr>

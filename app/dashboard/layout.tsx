@@ -9,6 +9,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DashboardChatProvider } from "@/components/DashboardChatProvider";
 import { PendingApproval } from "@/components/PendingApproval";
+import { hasDashboardAccess } from "@/lib/entitlement";
 import { mapMembershipsToWorkspaces } from "@/lib/workspaces";
 import type { WorkspaceWithRole } from "@/lib/types";
 
@@ -30,15 +31,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const db = createAdminClient();
   const email = (user.email ?? "").toLowerCase();
 
-  // v1 access gate (allowlist). Stripe later relaxes this (let unpaid users in to
-  // subscribe). Checked via the admin client so a non-entitled user can't slip
-  // through on a flaky SSR auth context.
+  // Access gate. Live accounts are in; a lapsed account (cancelled/past-due) stays in until
+  // its 10-day grace window closes — see lib/entitlement.ts for the shared rule. Checked via
+  // the admin client so a non-entitled user can't slip through on a flaky SSR auth context.
   const { data: entitlement } = await db
     .from("entitlements")
-    .select("status")
+    .select("status, grace_until")
     .eq("email", email)
     .maybeSingle();
-  if (entitlement?.status !== "active") {
+  if (!hasDashboardAccess(entitlement)) {
     // Pass the status through so a lapsed subscriber sees "paused", not "no access".
     return <PendingApproval email={user.email ?? ""} status={entitlement?.status} />;
   }
