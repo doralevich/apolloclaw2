@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
@@ -43,6 +44,7 @@ export default function LoginPage() {
   const [signinEmailTyped, setSigninEmail] = useState<string | null>(null);
   const signinEmail = signinEmailTyped ?? prefill;
   const [signinPassword, setSigninPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [signinLoading, setSigninLoading] = useState(false);
 
 
@@ -207,15 +209,28 @@ export default function LoginPage() {
                   Forgot password?
                 </button>
               </div>
-              <Input
-                id="signin-password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Your password"
-                value={signinPassword}
-                onChange={(e) => setSigninPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="signin-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Your password"
+                  value={signinPassword}
+                  onChange={(e) => setSigninPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={signinLoading}>
               {signinLoading ? "Signing in..." : "Log In"}
