@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
-import { Loader2, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { Loader2, MessageSquare, Pencil, Pin, PinOff, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { useChatContext } from "./ChatProvider";
@@ -27,6 +27,47 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
   } = useChatContext();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const pendingDelete = sessions.find((s) => s.session_id === pendingDeleteId) ?? null;
+
+  // Pinned chats, kept in localStorage per agent. Pinning is a personal, per-device preference
+  // (which threads YOU want kept at the top), so it does not need a backend row - the chat list
+  // itself comes from the instance, and this just reorders it. Loaded after mount so there's no
+  // SSR/client mismatch, and re-read when the active agent changes.
+  const storageKey = agentId ? `apolloclaw:pinnedChats:${agentId}` : null;
+  const [pinned, setPinned] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!storageKey) return;
+    let ids: string[] = [];
+    try {
+      ids = JSON.parse(localStorage.getItem(storageKey) || "[]") as string[];
+    } catch {
+      ids = [];
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading the saved pins for this agent
+    setPinned(new Set(Array.isArray(ids) ? ids : []));
+  }, [storageKey]);
+
+  function togglePin(sessionId: string) {
+    setPinned((prev) => {
+      const next = new Set(prev);
+      if (next.has(sessionId)) next.delete(sessionId);
+      else next.add(sessionId);
+      if (storageKey) {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify([...next]));
+        } catch {
+          // Storage full or blocked - the pin just doesn't persist across reloads. Not worth failing over.
+        }
+      }
+      return next;
+    });
+  }
+
+  // Pinned threads float to the top; within each group the instance's own order is preserved.
+  const ordered = useMemo(() => {
+    const pins = sessions.filter((s) => pinned.has(s.session_id));
+    const rest = sessions.filter((s) => !pinned.has(s.session_id));
+    return [...pins, ...rest];
+  }, [sessions, pinned]);
 
   // Inline rename: the row's label swaps to a text input. Enter (or blur) commits; Escape cancels
   // without committing — `skipBlur` suppresses the commit the resulting blur would otherwise fire.
@@ -90,11 +131,12 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
             <p className="px-3 py-2 text-xs text-muted-foreground">No chats yet.</p>
           ) : (
             <nav className="flex flex-col gap-0.5">
-              {sessions.map((s) => {
+              {ordered.map((s) => {
                 const label = s.title || "New chat";
                 // Null when the instance sent nothing usable — see session-time.ts. The row
                 // simply has no timestamp rather than an invented one.
                 const when = sessionTime(s.last_active);
+                const isPinned = pinned.has(s.session_id);
                 return (
                   <div key={s.session_id} className="group relative">
                     {editingId === s.session_id ? (
@@ -127,19 +169,35 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
                             "flex w-full select-none items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
                             // Room for the hover actions only while hovering, so the timestamp
                             // gets the space the rest of the time.
-                            "pr-3 group-hover:pr-14",
+                            "pr-3 group-hover:pr-[4.75rem]",
                             activeSessionId === s.session_id
                               ? "bg-primary/10 font-medium text-primary"
                               : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                           )}
                         >
-                          <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                          {isPinned ? (
+                            <Pin className="h-3.5 w-3.5 shrink-0 fill-current text-primary" />
+                          ) : (
+                            <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                          )}
                           <span className="min-w-0 flex-1 truncate">{label}</span>
                           {when && (
                             <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground/80 group-hover:hidden">
                               {when}
                             </span>
                           )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => togglePin(s.session_id)}
+                          aria-label={isPinned ? `Unpin chat ${label}` : `Pin chat ${label}`}
+                          title={isPinned ? "Unpin chat" : "Pin chat"}
+                          className={cn(
+                            "absolute right-[3.25rem] top-1/2 -translate-y-1/2 opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100",
+                            isPinned ? "text-primary" : "text-muted-foreground"
+                          )}
+                        >
+                          {isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
                         </button>
                         <button
                           type="button"
