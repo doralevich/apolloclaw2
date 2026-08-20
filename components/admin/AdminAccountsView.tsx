@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ShieldCheck, Trash2, MoreHorizontal } from "lucide-react";
+import { ShieldCheck, Trash2, MoreHorizontal, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -10,7 +10,17 @@ import type { AdminAccount } from "@/lib/types";
 import type { AccountTeardownResult } from "@/lib/admin-teardown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -47,6 +57,9 @@ function licenseBadge(account: AdminAccount) {
 export function AdminAccountsView() {
   const [accounts, setAccounts] = useState<AdminAccount[] | null>(null);
   const [deleting, setDeleting] = useState<AdminAccount | null>(null);
+  const [emailEditing, setEmailEditing] = useState<AdminAccount | null>(null);
+  const [emailValue, setEmailValue] = useState("");
+  const [emailSaving, setEmailSaving] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -90,6 +103,29 @@ export function AdminAccountsView() {
       await load();
     } catch (e) {
       toast.error((e as Error).message);
+    }
+  }
+
+  async function saveEmail() {
+    if (!emailEditing) return;
+    const next = emailValue.trim().toLowerCase();
+    if (!next || next === emailEditing.email) {
+      setEmailEditing(null);
+      return;
+    }
+    setEmailSaving(true);
+    try {
+      await apiFetch(`/api/admin/accounts/${emailEditing.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ newEmail: next }),
+      });
+      toast.success(`Email changed to ${next}.`);
+      setEmailEditing(null);
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setEmailSaving(false);
     }
   }
 
@@ -202,6 +238,16 @@ export function AdminAccountsView() {
                               Deactivate now
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setEmailValue(a.email);
+                                setEmailEditing(a);
+                              }}
+                            >
+                              <Mail className="h-4 w-4" />
+                              Change email
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem variant="destructive" onClick={() => setDeleting(a)}>
                               <Trash2 className="h-4 w-4" />
                               Delete account
@@ -217,6 +263,51 @@ export function AdminAccountsView() {
           </table>
         </div>
       )}
+
+      <Dialog
+        open={!!emailEditing}
+        onOpenChange={(open) => {
+          if (!open) setEmailEditing(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change email</DialogTitle>
+            <DialogDescription>
+              Moves the login and the entitlement to the new address, so access is kept. The new
+              address is marked verified with no confirmation email sent. Use this when a customer
+              cannot receive our mail at their current address.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="new-email">New email</Label>
+            <Input
+              id="new-email"
+              type="email"
+              autoComplete="off"
+              value={emailValue}
+              onChange={(e) => setEmailValue(e.target.value)}
+              placeholder="name@example.com"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveEmail();
+              }}
+            />
+            {emailEditing && (
+              <p className="text-xs text-muted-foreground">
+                Currently <span className="font-medium text-foreground">{emailEditing.email}</span>.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailEditing(null)} disabled={emailSaving}>
+              Cancel
+            </Button>
+            <Button onClick={saveEmail} disabled={emailSaving}>
+              {emailSaving ? "Saving..." : "Change email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {deleting && (
         <ConfirmDialog

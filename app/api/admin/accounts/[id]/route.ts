@@ -50,12 +50,53 @@ export const DELETE = route(async (request: Request, { params }: Ctx) => {
 export const PATCH = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
-  const { action } = await readJson<{ action?: string }>(request);
+  const body = await readJson<{ action?: string; newEmail?: string }>(request);
+  const db = createAdminClient();
+
+  // Change the account's email. Moves BOTH the auth login and the entitlement row (which is keyed
+  // by email) so access is never lost in the swap. email_confirm:true marks the new address
+  // verified without sending a confirmation mail the customer may not be able to receive - which
+  // is the whole reason this exists: a corporate mailbox that silently drops our email, where the
+  // fix is to move them to an address that works.
+  if (body.newEmail !== undefined) {
+    const newEmail = body.newEmail.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmail)) {
+      throw new ApiError(400, "bad_request", "Enter a valid email address.");
+    }
+    const { data: authUser } = await db.auth.admin.getUserById(id);
+    const oldEmail = authUser?.user?.email?.trim().toLowerCase() ?? null;
+    if (!oldEmail) throw new ApiError(404, "not_found", "No account found for that id");
+    if (oldEmail === newEmail) return json({ ok: true, email: newEmail, from: oldEmail });
+
+    // Refuse if the target already has its own entitlement row: moving onto it collides on the
+    // primary key and could clobber a real account. That has to be resolved by hand first.
+    const { data: clash } = await db.from("entitlements").select("email").eq("email", newEmail).maybeSingle();
+    if (clash) throw new ApiError(409, "email_in_use", "That email already has an account. Resolve it first.");
+
+    const { error: authErr } = await db.auth.admin.updateUserById(id, { email: newEmail, email_confirm: true });
+    if (authErr) throw new ApiError(409, "email_in_use", authErr.message);
+
+    const { error: entErr } = await db
+      .from("entitlements")
+      .update({ email: newEmail, user_id: id, updated_at: new Date().toISOString() })
+      .eq("email", oldEmail);
+    if (entErr) throw new ApiError(500, "db_error", entErr.message);
+
+    await logAudit({
+      actorEmail: user.email,
+      action: "account.email_changed",
+      target: newEmail,
+      metadata: { from: oldEmail, to: newEmail },
+      request,
+    });
+    return json({ ok: true, email: newEmail, from: oldEmail });
+  }
+
+  const { action } = body;
   if (!action || !(action in ENTITLEMENT_ACTIONS)) {
     throw new ApiError(400, "bad_request", "action must be one of: live, grace, deactivate");
   }
 
-  const db = createAdminClient();
   // Prefer the entitlement's own email; fall back to the auth record for an account that has
   // no row yet. Lowercased to match the primary key.
   let email: string | null = null;
