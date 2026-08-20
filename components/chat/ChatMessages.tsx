@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bot, Check, ChevronDown, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -110,14 +110,38 @@ function ToolChip({ tool }: { tool: ToolEvent }) {
   );
 }
 
-// The agent's work, tucked away. While it runs a task it narrates ("let me open the page…") and
-// fires tools; none of that is the answer, so it lives behind a single collapsed line the reader
-// can expand if they want to see what happened. Collapsed by default, on purpose — the point of
-// this is that a customer sees the reply, not the play-by-play.
-function AgentSteps({ steps, tools, working }: { steps?: string; tools: ToolEvent[]; working: boolean }) {
+// A live clock while the agent is working, so even a long, silent tool step shows a ticking
+// heartbeat. It is the difference between "is this stuck?" and "it has been thinking for 0:48".
+function ElapsedTimer({ running }: { running: boolean }) {
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    const start = Date.now();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the clock at the start of each turn
+    setSecs(0);
+    const id = setInterval(() => setSecs(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [running]);
+  if (!running) return null;
+  const mm = Math.floor(secs / 60);
+  const ss = (secs % 60).toString().padStart(2, "0");
+  return <span className="tabular-nums opacity-70">{mm}:{ss}</span>;
+}
+
+// The agent's work. While it runs, this is the "it's alive, not stuck" surface: a spinner, a
+// running timer, and the model's live reasoning streaming underneath, so a long prompt always
+// shows motion. Once the turn ends it collapses to a "Steps" line the reader can expand to see
+// what happened. The reasoning + narration + tools live behind the toggle so the reply stays clean.
+function AgentSteps({ steps, tools, thinking, working }: { steps?: string; tools: ToolEvent[]; thinking?: string; working: boolean }) {
   const [open, setOpen] = useState(false);
   const hasSteps = !!steps && steps.trim().length > 0;
-  if (!hasSteps && tools.length === 0) return null;
+  const hasThinking = !!thinking && thinking.trim().length > 0;
+  // While working, always render (spinner + timer) so the "alive" cue shows from the first moment.
+  if (!working && !hasSteps && !hasThinking && tools.length === 0) return null;
+
+  // The tail of the live reasoning, shown uncollapsed while working so there is visible motion
+  // without a click. Older lines fade out at the top.
+  const livePreview = working && hasThinking ? thinking!.trim().slice(-320) : "";
 
   return (
     <div className="mb-3">
@@ -128,37 +152,35 @@ function AgentSteps({ steps, tools, working }: { steps?: string; tools: ToolEven
         className="flex items-center gap-1.5 rounded-lg border border-border/70 bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
         {working ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wrench className="h-3.5 w-3.5" />}
-        <span className="font-medium">{working ? "Working" : "Steps"}</span>
+        <span className="font-medium">{working ? "Thinking" : "Steps"}</span>
+        {working && <ElapsedTimer running={working} />}
         {tools.length > 0 && <span className="tabular-nums opacity-70">&middot; {tools.length}</span>}
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
       </button>
+
+      {livePreview && !open && (
+        <div
+          className="mt-1.5 max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words text-[11px] leading-snug text-muted-foreground/70"
+          style={{ WebkitMaskImage: "linear-gradient(to bottom, transparent, black 55%)", maskImage: "linear-gradient(to bottom, transparent, black 55%)" }}
+        >
+          {livePreview}
+        </div>
+      )}
+
       {open && (
         <div className="mt-2 space-y-2 border-l-2 border-border/50 pl-3">
           {tools.map((t, k) => (
             <ToolChip key={`${t.tool}-${k}`} tool={t} />
           ))}
+          {hasThinking && (
+            <div className="whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground/80">{thinking}</div>
+          )}
           {hasSteps && (
             <div className="whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">{steps}</div>
           )}
         </div>
       )}
     </div>
-  );
-}
-
-// Bigger, higher-contrast "..." with a staggered bounce — visible the whole time the agent is
-// generating, until the first content chunk arrives.
-function TypingDots() {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-2" aria-label="Agent is typing">
-      {[0, 150, 300].map((d) => (
-        <span
-          key={d}
-          className="h-2 w-2 animate-bounce rounded-full bg-foreground/60"
-          style={{ animationDelay: `${d}ms` }}
-        />
-      ))}
-    </span>
   );
 }
 
@@ -199,22 +221,15 @@ export function ChatMessages({
 
         const lastAssistant = i === messages.length - 1 && m.role === "assistant";
         const tools = m.tools ?? [];
-        // Show the typing dots whenever the agent is generating and no markdown content has
-        // streamed yet — even if a thinking block or tool chip is already visible, so there's
-        // always an obvious "something is happening" cue.
-        const showDots = lastAssistant && isStreaming && !m.content;
 
         return (
           <div key={m.id} className="flex items-start justify-start gap-2.5">
             <AgentBadge />
             <div className="min-w-0 flex-1">
-              <AgentSteps steps={m.steps} tools={tools} working={lastAssistant && isStreaming} />
+              {/* The live "Thinking" surface (spinner, timer, streaming reasoning) shows the agent
+                  is alive through a long turn; it collapses to "Steps" once the reply lands. */}
+              <AgentSteps steps={m.steps} tools={tools} thinking={m.thinking} working={lastAssistant && isStreaming} />
               {m.content ? <Markdown content={m.content} /> : null}
-              {showDots && (
-                <div className={tools.length > 0 ? "mt-2" : undefined}>
-                  <TypingDots />
-                </div>
-              )}
             </div>
           </div>
         );
