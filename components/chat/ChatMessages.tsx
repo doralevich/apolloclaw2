@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bot, Check, ChevronDown, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -110,32 +110,14 @@ function ToolChip({ tool }: { tool: ToolEvent }) {
   );
 }
 
-// A live clock while the agent is working, so even a long, silent tool step shows a ticking
-// heartbeat. It is the difference between "is this stuck?" and "it has been thinking for 0:48".
-function ElapsedTimer({ running }: { running: boolean }) {
-  const [secs, setSecs] = useState(0);
-  useEffect(() => {
-    if (!running) return;
-    const start = Date.now();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset the clock at the start of each turn
-    setSecs(0);
-    const id = setInterval(() => setSecs(Math.floor((Date.now() - start) / 1000)), 1000);
-    return () => clearInterval(id);
-  }, [running]);
-  if (!running) return null;
-  const mm = Math.floor(secs / 60);
-  const ss = (secs % 60).toString().padStart(2, "0");
-  return <span className="tabular-nums opacity-70">{mm}:{ss}</span>;
-}
-
-// The agent's work. While it runs, this is a quiet "it's alive, not stuck" cue: a spinner and a
-// running timer, nothing more. The model's reasoning is deliberately NOT shown - watching it
-// stream past during a conversation is noise. Once the turn ends this collapses to a "Steps" line
-// the reader can expand to see the tool activity and working narration.
+// The agent's work. While it runs, this is a quiet "it's alive, not stuck" cue: just a spinner.
+// The model's reasoning is deliberately NOT shown - watching it stream past during a conversation
+// is noise. Once the turn ends this collapses to a "Steps" line the reader can expand to see the
+// tool activity and working narration.
 function AgentSteps({ steps, tools, working }: { steps?: string; tools: ToolEvent[]; working: boolean }) {
   const [open, setOpen] = useState(false);
   const hasSteps = !!steps && steps.trim().length > 0;
-  // While working, always render (spinner + timer) so the "alive" cue shows from the first moment.
+  // While working, always render (spinner) so the "alive" cue shows from the first moment.
   if (!working && !hasSteps && tools.length === 0) return null;
 
   return (
@@ -148,7 +130,6 @@ function AgentSteps({ steps, tools, working }: { steps?: string; tools: ToolEven
       >
         {working ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wrench className="h-3.5 w-3.5" />}
         <span className="font-medium">{working ? "Working" : "Steps"}</span>
-        {working && <ElapsedTimer running={working} />}
         {tools.length > 0 && <span className="tabular-nums opacity-70">&middot; {tools.length}</span>}
         <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
       </button>
