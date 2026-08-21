@@ -63,6 +63,10 @@ export const INDUSTRY_OPTIONS: string[] = [
   "IT Services / MSP",
   "Staffing / Recruiting",
   "Travel / Tourism",
+  // Athletics: college programs (GW basketball, Michigan football) and the pro side each get
+  // their own deep-dive branch below, so picking either makes the questionnaire go athletic.
+  "College Athletics",
+  "Professional Athletics",
   "Other",
 ];
 
@@ -945,6 +949,136 @@ export const industryConfig: Record<string, IndustryBranch> = {
         label: "Publishing cadence",
         type: "dropdown",
         options: ["Daily", "Several times a week", "Weekly", "A few times a month", "Project by project"],
+      },
+    ],
+  },
+
+  // College programs (GW basketball, Michigan football). This world runs on recruiting, roster
+  // operations, travel, and NCAA compliance, none of which the generic branch would ever ask about.
+  "College Athletics": {
+    stepTitle: "Your Program",
+    stepSubtitle: "A few specifics so your agent speaks college sports fluently, recruiting, roster, and compliance included.",
+    fields: [
+      {
+        key: "sport",
+        label: "Sport",
+        type: "text",
+        required: true,
+        placeholder: "e.g. Men's Basketball, Football, Women's Soccer",
+      },
+      {
+        key: "division",
+        label: "Division / level",
+        type: "dropdown",
+        required: true,
+        options: ["NCAA Division I", "NCAA Division II", "NCAA Division III", "NAIA", "JUCO", "Other"],
+      },
+      {
+        key: "program_role",
+        label: "What part of the program is this agent for?",
+        type: "dropdown",
+        options: [
+          "Head coaching staff",
+          "Recruiting / operations",
+          "Player development",
+          "Compliance",
+          "Communications / media",
+          "Business / marketing",
+          "Academics / player services",
+          "Other",
+        ],
+      },
+      {
+        key: "agent_focus",
+        label: "What should the agent take off your plate?",
+        type: "multiselect",
+        options: [
+          "Recruiting and prospect tracking",
+          "Recruit communications (texts, emails, DMs)",
+          "Roster and player operations",
+          "Scheduling and travel logistics",
+          "Scouting and opponent prep",
+          "NIL and player branding",
+          "NCAA compliance",
+          "Academics and eligibility",
+          "Fan, media, and comms",
+          "Fundraising and boosters",
+        ],
+      },
+      {
+        key: "recruiting_centrality",
+        label: "How central is recruiting to this role?",
+        type: "radio",
+        options: ["It is the main thing", "A big part", "Some", "Not really"],
+      },
+      {
+        key: "program_tools",
+        label: "Software the program runs on",
+        type: "text",
+        placeholder: "Recruiting CRM (Teamworks, ARMS, Front Rush), film (Hudl, Synergy), etc.",
+        helper: "Recruiting, film, compliance, communications, whatever you use.",
+      },
+      {
+        key: "biggest_headache",
+        label: "Biggest time drain right now",
+        type: "textarea",
+        placeholder: "Where does the staff lose the most hours, and what falls through the cracks?",
+      },
+    ],
+  },
+
+  // Pro teams, individual pro athletes, and the agencies around them.
+  "Professional Athletics": {
+    stepTitle: "Your Athletics Operation",
+    stepSubtitle: "A few specifics so your agent works the world of pro sports, not a generic one.",
+    fields: [
+      {
+        key: "org_type",
+        label: "What are you?",
+        type: "dropdown",
+        required: true,
+        options: [
+          "Pro team or franchise",
+          "Individual professional athlete",
+          "Agency / athlete representation",
+          "League or governing body",
+          "Training / performance group",
+          "Other",
+        ],
+      },
+      {
+        key: "sport",
+        label: "Sport or sports",
+        type: "text",
+        required: true,
+        placeholder: "e.g. Basketball, Football, Soccer, Golf",
+      },
+      {
+        key: "agent_focus",
+        label: "What should the agent take off your plate?",
+        type: "multiselect",
+        options: [
+          "Scheduling and travel logistics",
+          "Communications and inbox",
+          "Brand, sponsorship, and endorsements",
+          "Media and public relations",
+          "Contracts and deal logistics",
+          "Fan and community engagement",
+          "Content and social media",
+          "Business and finances",
+        ],
+      },
+      {
+        key: "who_served",
+        label: "Who does the agent report to?",
+        type: "text",
+        placeholder: "e.g. the athlete, the front office, the agency team",
+      },
+      {
+        key: "biggest_headache",
+        label: "Biggest time drain right now",
+        type: "textarea",
+        placeholder: "Where do you lose the most hours, and what falls through the cracks?",
       },
     ],
   },
