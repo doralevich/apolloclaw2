@@ -59,8 +59,8 @@ function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
 // OPTION LISTS
 // ════════════════════════════════════════════════════════════
 const BIZ_SIZES    = ["Just me (Solo)","2-5 people","6-10 people","11-25 people","26-50 people","51-100 people","100+ people"];
-const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k-$10k/mo","$10k-$25k/mo","$25k-$50k/mo","$50k-$100k/mo","$100k-$250k/mo","$250k-$500k/mo","$500k+/mo","Prefer not to say"];
-const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years"];
+const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k-$10k/mo","$10k-$25k/mo","$25k-$50k/mo","$50k-$100k/mo","$100k-$250k/mo","$250k-$500k/mo","$500k+/mo","Not applicable","Prefer not to say"];
+const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years","Not applicable"];
 // Sales & CRM, weighted to what mid-market and enterprise buyers actually run.
 //
 // Keap and Close came out at David's call - both are small-business tools, and neither is a
@@ -1148,7 +1148,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         if (!companies[primaryIndex]?.name) return "Please choose which business your agent should focus on first.";
         if (!portfolio.structure || !portfolio.sharedOps) return "Please tell us how the businesses are connected and whether they share operations.";
       }
-      if (!s2.web_presence.trim()) return "Please add a website.";
+      // Website is optional - not every business has one (and some, like an athlete or coach, run
+      // entirely off social). Left blank, the agent just works without it.
     }
     if (key === "whatyoudo") {
       if (!s2.desc.trim()) return "Please describe your business.";
@@ -1202,7 +1203,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
       <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={!!cfoBranch} />
-      <FF label="Website" required><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
+      <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
       {/* Business Model sat beside this and is gone at David's call. Service-based vs product
           vs SaaS is the kind of self-classification people stall on when their business is two
