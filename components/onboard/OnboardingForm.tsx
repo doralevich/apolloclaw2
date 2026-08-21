@@ -1120,7 +1120,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // sample, generic AI goals, horizons) is dropped. Both the key list and the page list below are
   // filtered to this same set, so the step-order assertion stays satisfied.
   const CFO_PAGE_KEYS = ["biz", "whatyoudo", "cfo", "scope"];
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(cfoBranch ? ["cfo"] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "horizon", "scope"];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(cfoBranch ? ["cfo"] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const pageKeys = cfoBranch ? allPageKeys.filter(k => CFO_PAGE_KEYS.includes(k)) : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
@@ -1432,27 +1432,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       )}
     </Stack>
     ) },
-    // Its own page at David's call. It was a divider at the bottom of Where You Are With AI -
-    // three open boxes arriving after five questions about the past, on a page somebody had
-    // already decided they were finished with. The only forward-looking question in the
-    // questionnaire deserves to be asked on its own.
-    { key: "horizon", label: "Where This Is Going", node: (
-    <Stack key="s7horizon">
-      {/* Three horizons, three boxes, not one.
-          Separate fields rather than one paragraph because that is what makes them usable
-          later: dated intentions the agent can hold you to and check against, instead of a
-          block of prose it can only quote back. Optional throughout - somebody who does not
-          know yet should not be blocked, and a guess entered to get past a required field
-          would be worse than an empty one. */}
-      <SHead stepNum={9} total={0} title="Where This Is Going" subtitle="Where you see your agent and your organization at each point. Rough is fine - your agent uses these to tell whether things are on track, and you can change them any time." badge="Business" />
-      {/* Placeholders are a rollout arc, at David's call: one team, then the company, then the
-          business result. They set the scale of answer this wants - "second tier", "throughout
-          the company" - which an example about a tidy inbox did not. */}
-      <FF label="In three months"><TArea value={s7.horizon3} onChange={v => f7("horizon3", v)} placeholder="e.g. Deployed to a second tier of the team." rows={2} /></FF>
-      <FF label="In six months"><TArea value={s7.horizon6} onChange={v => f7("horizon6", v)} placeholder="e.g. Deployment throughout the company." rows={2} /></FF>
-      <FF label="In twelve months"><TArea value={s7.horizon12} onChange={v => f7("horizon12", v)} placeholder="e.g. Double the revenue with the same headcount, and the agent owns all first-line support." rows={2} /></FF>
-    </Stack>
-    ) },
+    // "Where This Is Going" (the 3/6/12-month horizons) was removed at David's call - dropped
+    // from every form. The s7.horizon* fields stay in state and go out empty in the payload;
+    // nothing reads them to decide anything, and the empty rows are dropped by every renderer.
     { key: "scope", label: "Scope", node: (
     <Stack key="s8">
       <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
