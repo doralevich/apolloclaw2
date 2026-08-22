@@ -886,15 +886,15 @@ function IntegrationCard({
     // wrong for everything behind them.
     <div
       className={cn(
-        "flex flex-col rounded-xl border bg-card p-4 transition-colors hover:border-foreground/20",
+        "flex flex-col rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20",
         connected && "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/25"
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5">
         <ToolkitLogo logo={t.logo} name={t.name} size="lg" />
         <div className="min-w-0 flex-1">
-          <div className="truncate font-semibold leading-tight">{t.name}</div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <div className="truncate text-sm font-semibold leading-tight">{t.name}</div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             {connected ? (
               <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
                 <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
@@ -917,14 +917,14 @@ function IntegrationCard({
       {/* Two lines, clamped. Composio's descriptions run from four words to a paragraph, and
           without a clamp one long one sets the height of every card in its row. */}
       {t.description && (
-        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 line-clamp-2 text-xs leading-snug text-muted-foreground">
           {t.description}
         </p>
       )}
 
       {/* mt-auto so the action sits on the floor of the card whatever the description did to
           the middle — a row of three with buttons at three different heights reads as broken. */}
-      <div className="mt-auto flex items-center justify-end pt-4">
+      <div className="mt-auto flex items-center justify-end pt-3">
         {connected ? (
           <Button
             variant="ghost"
@@ -1050,7 +1050,7 @@ function ToolkitLogo({
   name: string;
   size?: "sm" | "lg";
 }) {
-  const box = size === "lg" ? "h-10 w-10" : "h-8 w-8";
+  const box = size === "lg" ? "h-9 w-9" : "h-8 w-8";
   if (logo) {
     return (
       // eslint-disable-next-line @next/next/no-img-element

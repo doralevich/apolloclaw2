@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import * as Icons from "lucide-react";
-import { ArrowRight, Check, ExternalLink, MessageSquare } from "lucide-react";
+import { ArrowRight, Check, MessageSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
-import { CHECKLIST_CATEGORIES, connectHref, type ChecklistIcon } from "@/config/checklist";
+import { CHECKLIST_CATEGORIES, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
 import { SchedulePanel } from "@/components/SchedulePanel";
 import { ChannelsPanel } from "@/components/ChannelsView";
@@ -63,6 +63,10 @@ export function ChecklistView() {
 
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
   const complete = total > 0 && doneCount === total;
+  // No handover items (the white-glove / no-answers cohort, now that the app cards are gone):
+  // there is nothing to count, so the progress number and bar would read 0/0. Drop them and let
+  // the channel and schedule panels below be the whole page.
+  const hasItems = total > 0;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -73,113 +77,86 @@ export function ChecklistView() {
               {complete ? "You are set up." : "Getting set up"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {personalized
-                ? "Built from what you told us at onboarding, so it only lists what applies to you."
-                : "The essentials, in the order they matter."}
+              {!hasItems
+                ? "Set up where your agent reaches you, and when it runs."
+                : personalized
+                  ? "Built from what you told us at onboarding, so it only lists what applies to you."
+                  : "The essentials, in the order they matter."}
             </p>
           </div>
           {/* The number, at the size the number deserves. A progress bar with the count buried
               in 12px grey underneath made the one fact people came for the smallest thing here. */}
-          <div className="shrink-0 text-right">
-            <div className="text-2xl font-semibold tabular-nums">
-              {doneCount}
-              <span className="text-muted-foreground">/{total}</span>
+          {hasItems && (
+            <div className="shrink-0 text-right">
+              <div className="text-2xl font-semibold tabular-nums">
+                {doneCount}
+                <span className="text-muted-foreground">/{total}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">{pct}% done</div>
             </div>
-            <div className="text-xs text-muted-foreground">{pct}% done</div>
-          </div>
+          )}
         </div>
 
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-500"
-            style={{ width: `${pct}%` }}
-            role="progressbar"
-            aria-valuenow={doneCount}
-            aria-valuemin={0}
-            aria-valuemax={total}
-          />
-        </div>
+        {hasItems && (
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-500"
+              style={{ width: `${pct}%` }}
+              role="progressbar"
+              aria-valuenow={doneCount}
+              aria-valuemin={0}
+              aria-valuemax={total}
+            />
+          </div>
+        )}
       </div>
 
       {loading && items.length === 0 ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : (
-        CHECKLIST_CATEGORIES.map((cat) => {
-          const rows = items.filter((i) => i.category === cat);
-          // Connect survives an empty item list: the channel cards live under it and a customer
-          // with no intake answers still has to be able to reach them.
-          if (!rows.length && cat !== "Connect your tools") return null;
-          const catDone = rows.filter((r) => r.done).length;
-          return (
-            <section key={cat}>
-              <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {cat}
-                </h2>
-                {rows.length > 0 && (
+        <>
+          {CHECKLIST_CATEGORIES.map((cat) => {
+            const rows = items.filter((i) => i.category === cat);
+            if (!rows.length) return null;
+            const catDone = rows.filter((r) => r.done).length;
+            return (
+              <section key={cat}>
+                <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    {cat}
+                  </h2>
                   <span className="text-xs tabular-nums text-muted-foreground">
                     {catDone}/{rows.length}
                   </span>
-                )}
-              </div>
-              {/* Apps two-up, everything else full width - the layout David picked.
-                  An app card is logo, name, one line and a button, which is narrow content: at
-                  full width the button ends up a long way from the name it belongs to. A channel
-                  or a handover carries more text and earns the whole row. */}
-              {rows.some((r) => r.toolkitSlug) && (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {rows
-                    .filter((r) => r.toolkitSlug)
-                    .map((item) => (
-                      <Row
-                        key={item.id}
-                        item={item}
-                        agentId={agentId}
-                        onToggle={() => toggle(item)}
-                      />
-                    ))}
                 </div>
-              )}
-
-              <div className="mt-2 space-y-2">
-                {rows
-                  .filter((r) => !r.toolkitSlug)
-                  .map((item) => (
-                    <Row key={item.id} item={item} agentId={agentId} onToggle={() => toggle(item)} />
+                <div className="space-y-2">
+                  {rows.map((item) => (
+                    <Row key={item.id} item={item} onToggle={() => toggle(item)} />
                   ))}
-              </div>
-
-              {/* The channel cards, under the app grid - the layout David pointed back at.
-                  These left once already and he asked where they went, which settles the
-                  question of whether they earn the space: where the agent ANSWERS you is part
-                  of connecting your tools, and the cards expand into their own setup steps.
-                  Same reuse rule as ever - the Channels page's own panel, so the two surfaces
-                  cannot drift. Doubly load-bearing now the Channels tab is off the rail: for
-                  most customers this panel is the only route to Telegram setup that remains. */}
-              {cat === "Connect your tools" && (
-                <div className="mt-8">
-                  {/* Its own break and its own words, at David's call: without them the channel
-                      cards read as three more apps that failed to load a Connect button. They
-                      are a different kind of thing - where the agent ANSWERS you, set up with a
-                      token rather than an OAuth click - and the heading says so before the
-                      cards have to. */}
-                  <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5 pt-2">
-                    <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                      Where your agent answers you
-                    </h2>
-                  </div>
-                  <p className="mb-3 px-1 text-sm text-muted-foreground">
-                    Pick a chat app and your agent messages you there - these connect with a few
-                    setup steps, not a Connect button. Open a card for its walkthrough.
-                  </p>
-                  <ChannelsPanel agentId={agentId} showHeading={false} />
                 </div>
-              )}
+              </section>
+            );
+          })}
 
-              {cat === "Connect your tools" && <ScheduleBlock agentId={agentId} />}
-            </section>
-          );
-        })
+          {/* Where the agent answers you (channels) and when it runs (the schedule). Neither is an
+              app-connect card - they were never in the checklist item list - so they render from
+              their own panels, kept here after David took the tool-connect cards off this page but
+              asked to leave the communication setup on it. Same reuse rule as ever: the Channels
+              page's own panel and SchedulePanel, so the surfaces cannot drift. */}
+          <section>
+            <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Where your agent answers you
+              </h2>
+            </div>
+            <p className="mb-3 px-1 text-sm text-muted-foreground">
+              Pick a chat app and your agent messages you there - these connect with a few setup
+              steps, not a Connect button. Open a card for its walkthrough.
+            </p>
+            <ChannelsPanel agentId={agentId} showHeading={false} />
+            <ScheduleBlock agentId={agentId} />
+          </section>
+        </>
       )}
 
       {/* Chat is not a step. "Ask it something real" was the last row of a list, which put the
@@ -226,11 +203,9 @@ function ScheduleBlock({ agentId }: { agentId: string }) {
 
 function Row({
   item,
-  agentId,
   onToggle,
 }: {
   item: ResolvedItem;
-  agentId: string;
   onToggle: () => void;
 }) {
   const derived = !!item.derived;
@@ -266,32 +241,18 @@ function Row({
         </div>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
 
-        {!item.done &&
-          (item.toolkitSlug ? (
-            // The actual connection, here. This is the same server-side redirect the Connections
-            // page uses — a plain anchor, so no fetch and no token in the browser — which means
-            // connecting Gmail is one press on this page rather than a trip to another one.
-            <Button asChild size="sm" className="relative z-10 mt-2.5 h-8">
-              <a
-                href={connectHref(agentId, item.toolkitSlug)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {item.cta}
-                <ExternalLink className="size-3.5" />
-              </a>
-            </Button>
-          ) : (
-            // The whole row is the target for everything else: this stretches over the card, so
-            // the tick button stays clickable by sitting above it.
-            <Link
-              href={item.href}
-              className="mt-2.5 inline-flex items-center gap-1 text-sm font-medium text-primary after:absolute after:inset-0 after:content-[''] hover:underline"
-            >
-              {item.cta}
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          ))}
+        {/* The whole row is the target: this link stretches over the card, so the tick button
+            stays clickable by sitting above it. (Handover rows only now - the app-connect rows,
+            which opened an OAuth redirect instead, moved to the Connections page.) */}
+        {!item.done && (
+          <Link
+            href={item.href}
+            className="mt-2.5 inline-flex items-center gap-1 text-sm font-medium text-primary after:absolute after:inset-0 after:content-[''] hover:underline"
+          >
+            {item.cta}
+            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        )}
       </div>
 
       {/* Self-reported only. A derived row has nothing to toggle - its tile already says what we
