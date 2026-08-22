@@ -1,7 +1,9 @@
 import { agent37 } from "@/lib/agent37";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ApiError, json, route } from "@/lib/http";
+import { findAuthUserIdByEmail } from "@/lib/license-session";
+import { logAudit } from "@/lib/audit";
+import { ApiError, json, readJson, route } from "@/lib/http";
 import type { AdminWorkspaceSummary } from "@/lib/types";
 
 // How many workspaces the god-view shows. No pagination by design — newest 50.
@@ -100,4 +102,42 @@ export const GET = route(async () => {
   }));
 
   return json({ workspaces: summaries });
+});
+
+// POST /api/admin/workspaces { email, name? } — create a new workspace owned by an existing
+// user, from the god-view. The seam for standing up a white-glove client by hand: create the
+// workspace here, then "Create Apollo Agent" drops a blank OpenClaw box into it, then Open /
+// log in to the instance to write the customized files. The owner must already have an account
+// (a workspace needs an owner_id); if they don't, they register first.
+export const POST = route(async (request: Request) => {
+  const { user } = await requirePlatformAdmin();
+  const { email, name } = await readJson<{ email?: string; name?: string }>(request);
+  const cleanEmail = (email ?? "").trim().toLowerCase();
+  if (!cleanEmail) throw new ApiError(400, "invalid_request", "email is required");
+
+  const admin = createAdminClient();
+  const ownerId = await findAuthUserIdByEmail(admin, cleanEmail);
+  if (!ownerId) {
+    throw new ApiError(404, "not_found", `No account found for ${cleanEmail}. The user needs to register first.`);
+  }
+
+  const wsName = (name ?? "").trim() || `${cleanEmail}'s Workspace`;
+  const { data, error } = await admin
+    .from("workspaces")
+    // The on_workspace_created trigger adds the owner's admin membership, same as every other
+    // workspace-creation path, so the user lands in it on their next login.
+    .insert({ name: wsName, owner_id: ownerId })
+    .select("id, name, owner_id, created_at")
+    .single();
+  if (error) throw new ApiError(500, "db_error", error.message);
+
+  await logAudit({
+    actorEmail: user.email,
+    action: "workspace.created_for_user",
+    target: cleanEmail,
+    metadata: { workspace_id: data.id, name: wsName },
+    request,
+  });
+
+  return json({ workspace: data }, 201);
 });
