@@ -131,6 +131,14 @@ export const POST = route(async (request: Request) => {
     .single();
   if (error) throw new ApiError(500, "db_error", error.message);
 
+  // Add the creating admin as an admin member too, so "Create Apollo Agent" works on the new
+  // card right away (agent provisioning is membership-gated). Same support-member row that
+  // "Open" would add, and reversible from the card's Leave button when setup is done.
+  const { error: memErr } = await admin
+    .from("memberships")
+    .insert({ workspace_id: data.id, user_id: user.id, role: "admin" });
+  if (memErr) throw new ApiError(500, "db_error", `Workspace created, but adding you as a member failed: ${memErr.message}`);
+
   await logAudit({
     actorEmail: user.email,
     action: "workspace.created_for_user",
