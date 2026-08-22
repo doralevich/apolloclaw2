@@ -60,6 +60,8 @@ export function AdminAccountsView() {
   const [emailEditing, setEmailEditing] = useState<AdminAccount | null>(null);
   const [emailValue, setEmailValue] = useState("");
   const [emailSaving, setEmailSaving] = useState(false);
+  const [newAcct, setNewAcct] = useState({ email: "", first: "", last: "", password: "" });
+  const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -76,6 +78,36 @@ export function AdminAccountsView() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
+
+  // Create a login by hand so a white-glove setup doesn't wait on the client registering. You
+  // set the password and hand it over directly - the reliable path when their corporate mail
+  // blocks ours. The account is created active, so they can sign in right away.
+  async function createAccount() {
+    const email = newAcct.email.trim();
+    if (!email || newAcct.password.length < 8) {
+      toast.error("Email and a password of at least 8 characters are required.");
+      return;
+    }
+    setCreating(true);
+    try {
+      await apiFetch("/api/admin/accounts", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          password: newAcct.password,
+          firstName: newAcct.first.trim() || undefined,
+          lastName: newAcct.last.trim() || undefined,
+        }),
+      });
+      toast.success(`Account created for ${email}. Give them the password directly.`);
+      setNewAcct({ email: "", first: "", last: "", password: "" });
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setCreating(false);
+    }
+  }
 
   async function destroy(account: AdminAccount) {
     const result = await apiFetch<AccountTeardownResult>(`/api/admin/accounts/${account.id}`, {
@@ -136,6 +168,55 @@ export function AdminAccountsView() {
         <p className="text-sm text-muted-foreground">
           Every registered account. Deleting one removes its sole-member workspaces, their
           agents and instances, and the login itself.
+        </p>
+      </div>
+
+      {/* Create a login by hand for a white-glove client, set the password and hand it over, then
+          go to Workspaces to create their workspace. */}
+      <div className="rounded-xl border bg-card p-4">
+        <p className="mb-2 text-sm font-medium">New account</p>
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void createAccount();
+          }}
+        >
+          <input
+            type="email"
+            required
+            value={newAcct.email}
+            onChange={(e) => setNewAcct((a) => ({ ...a, email: e.target.value }))}
+            placeholder="user@email.com"
+            className="h-9 min-w-[15rem] flex-1 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <input
+            type="text"
+            value={newAcct.first}
+            onChange={(e) => setNewAcct((a) => ({ ...a, first: e.target.value }))}
+            placeholder="First name"
+            className="h-9 w-28 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <input
+            type="text"
+            value={newAcct.last}
+            onChange={(e) => setNewAcct((a) => ({ ...a, last: e.target.value }))}
+            placeholder="Last name"
+            className="h-9 w-28 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <input
+            type="text"
+            value={newAcct.password}
+            onChange={(e) => setNewAcct((a) => ({ ...a, password: e.target.value }))}
+            placeholder="Password (8+ chars)"
+            className="h-9 w-40 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button type="submit" size="sm" disabled={creating || !newAcct.email.trim() || newAcct.password.length < 8}>
+            {creating ? "Creating..." : "Create account"}
+          </Button>
+        </form>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Created active and ready to sign in. Give the client the password directly (their mail may block ours).
         </p>
       </div>
 

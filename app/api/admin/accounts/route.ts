@@ -1,8 +1,11 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { isAdminEmail } from "@/config/admins";
-import { ApiError, json, route } from "@/lib/http";
+import { logAudit } from "@/lib/audit";
+import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdminAccount } from "@/lib/types";
+
+const MIN_PASSWORD = 8;
 
 // GET /api/admin/accounts — every registered account, with what hangs off it.
 //
@@ -107,4 +110,57 @@ export const GET = route(async () => {
   // Newest first, same as the workspace list.
   accounts.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   return json({ accounts });
+});
+
+// POST /api/admin/accounts { email, password, firstName?, lastName? } — create a login for a
+// client by hand, so a white-glove setup doesn't wait on them registering. Created already
+// email-confirmed, which fires the signup trigger and gives them an active entitlement, so they
+// can sign in immediately. The admin sets the password and hands it to the client directly - the
+// reliable path when the client's corporate mail blocks our email.
+export const POST = route(async (request: Request) => {
+  const { user } = await requirePlatformAdmin();
+  const { email, password, firstName, lastName } = await readJson<{
+    email?: string;
+    password?: string;
+    firstName?: string;
+    lastName?: string;
+  }>(request);
+
+  const cleanEmail = (email ?? "").trim().toLowerCase();
+  if (!cleanEmail) throw new ApiError(400, "invalid_request", "email is required");
+  if (!password || password.length < MIN_PASSWORD) {
+    throw new ApiError(400, "invalid_request", `password must be at least ${MIN_PASSWORD} characters`);
+  }
+
+  const first = (firstName ?? "").trim();
+  const last = (lastName ?? "").trim();
+  const full = [first, last].filter(Boolean).join(" ");
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.createUser({
+    email: cleanEmail,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      ...(first ? { first_name: first } : {}),
+      ...(last ? { last_name: last } : {}),
+      ...(full ? { full_name: full } : {}),
+    },
+  });
+  if (error) {
+    // GoTrue returns a 422 for an address that already has an account.
+    const already = /already|registered|exists/i.test(error.message);
+    throw new ApiError(already ? 409 : 500, already ? "conflict" : "db_error",
+      already ? `An account already exists for ${cleanEmail}.` : error.message);
+  }
+
+  await logAudit({
+    actorEmail: user.email,
+    action: "account.created",
+    target: cleanEmail,
+    metadata: { user_id: data.user?.id },
+    request,
+  });
+
+  return json({ id: data.user?.id, email: cleanEmail }, 201);
 });
