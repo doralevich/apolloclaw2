@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   BarChart3,
+  Boxes,
   Check,
   ChevronRight,
   Code2,
   ExternalLink,
   FileText,
+  LayoutGrid,
   Loader2,
-  Mail,
   Megaphone,
   Plug,
   Plus,
@@ -72,10 +73,11 @@ const ESSENTIALS = "essentials";
 // lib/integration-catalog.ts stays JSX-free and server-safe — the same split config/agent-types
 // makes with its icon names.
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  "Email & calendar": Mail,
+  "Google Workspace": Boxes,
+  "Microsoft 365": LayoutGrid,
   "Files & docs": FileText,
   "Tasks & projects": SquareCheck,
-  Meetings: Video,
+  "Meetings & scheduling": Video,
   "Sales & marketing": Megaphone,
   "Design & code": Code2,
   "Research & agent tools": BarChart3,
