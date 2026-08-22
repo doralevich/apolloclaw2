@@ -11,13 +11,14 @@ import {
   Plus,
   Scale,
   ShieldCheck,
+  SquareDashed,
   Stethoscope,
   TrendingUp,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AGENT_TYPES } from "@/config/agent-types";
+import { AGENT_TYPES, LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { BUNDLE_PRICE_LABEL } from "@/lib/pricing/catalog";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   Home,
   TrendingUp,
   Wallet,
+  SquareDashed,
 };
 
 // Self-serve "Create Agent" dialog: one card per registry type. Free types (College
@@ -112,9 +114,16 @@ export function CreateAgentModal({
   // bought the licence and are still paying the hosting; giving it back to them is not a new
   // sale, and the server agrees: POST /api/agents already provisions this type for an entitled
   // admin, so the only thing that stood in the way was this filter.
+  //
+  // At zero agents a customer is offered ONLY the license type, not every internal one. The
+  // registry now carries other admin-only builds (the CFO Agent, the Blank Agent) that a customer
+  // has not bought and must not be able to self-provision by deleting their agent and rebuilding;
+  // the license type is the one thing this modal was ever meant to give them back.
   const hasNoAgents = agents.length === 0;
   const pickableTypes = AGENT_TYPES.filter(
-    (t) => !t.externalUrl && (isPlatformAdmin || !t.internal || hasNoAgents)
+    (t) =>
+      !t.externalUrl &&
+      (isPlatformAdmin || !t.internal || (hasNoAgents && t.id === LICENSE_AGENT_TYPE_ID))
   );
 
   // One option is not a choice. With the College Agent gone from the list this is the normal
@@ -150,13 +159,22 @@ export function CreateAgentModal({
         method: "POST",
         body: JSON.stringify({ workspace_id: current.id, type: selectedType.id }),
       });
-      toast.success(`${created.name || selectedType.label} is provisioning`);
       setOpen(false);
       // Refresh the global agent list and make the new agent the active one so Chat /
       // Integrations / Credits point at it immediately.
       await refresh();
       if (created?.id) setActiveId(created.id);
       onCreated?.();
+
+      // A blank build has no questionnaire (noSetup): provision and stop. Routing to /onboard
+      // would 404 (there is no config for it), and the point of the type is to skip intake and
+      // write the files by hand, so land on the dashboard with the new agent active instead.
+      if (selectedType.noSetup) {
+        toast.success(`${created.name || selectedType.label} is provisioning. Open it to write its files.`);
+        return;
+      }
+
+      toast.success(`${created.name || selectedType.label} is provisioning`);
 
       // Then straight into the questionnaire, which is the half that was missing.
       //

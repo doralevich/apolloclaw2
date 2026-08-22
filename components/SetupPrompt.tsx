@@ -2,7 +2,18 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getAgentType } from "@/config/agent-types";
 import type { MergedAgent } from "@/lib/types";
+
+/** A blank build has no questionnaire (agent-types `noSetup`), so "finish setup" is meaningless
+ *  for it and the link would 404. Treat it as not-needing-setup wherever the nag is decided. */
+function needsSetup(a: MergedAgent): boolean {
+  return (
+    a.setup_completed === false &&
+    !!a.agent_type &&
+    !getAgentType(a.agent_type)?.noSetup
+  );
+}
 
 // Surfaces agents whose setup questionnaire has not been completed.
 //
@@ -13,9 +24,10 @@ import type { MergedAgent } from "@/lib/types";
 // Setup is per agent, not per workspace: each type asks its own questions, because what makes a
 // CEO agent useful is not what a CFO agent needs.
 
-/** Agents still missing their questionnaire. `undefined` (lookup failed) is treated as done. */
+/** Agents still missing their questionnaire. `undefined` (lookup failed) is treated as done, and
+ *  a blank build (noSetup) never counts - it has no questionnaire to miss. */
 export function agentsNeedingSetup(agents: MergedAgent[]): MergedAgent[] {
-  return agents.filter((a) => a.setup_completed === false && !!a.agent_type);
+  return agents.filter(needsSetup);
 }
 
 export function SetupBanner({ agents }: { agents: MergedAgent[] }) {
@@ -50,6 +62,11 @@ export function SetupBanner({ agents }: { agents: MergedAgent[] }) {
 /** Inline cell for the agents table. */
 export function SetupCell({ agent }: { agent: MergedAgent }) {
   if (agent.setup_completed === undefined) return <span className="text-muted-foreground">-</span>;
+
+  // A blank build has no questionnaire, so there is nothing to finish and nowhere to link.
+  if (agent.agent_type && getAgentType(agent.agent_type)?.noSetup) {
+    return <span className="text-muted-foreground">-</span>;
+  }
 
   if (!agent.setup_completed) {
     return agent.agent_type ? (
