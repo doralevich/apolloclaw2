@@ -27,7 +27,11 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
   // Any type this app configures, not just the paid ones. /api/agent-setup enforces the real
   // rule — an agent of this type must already exist in the workspace unless it is a paid type
   // still waiting on its Stripe webhook — so reaching this page can never conjure an agent.
-  if (!type || type.externalUrl) notFound();
+  //
+  // A `noSetup` type (the Blank Agent) has no questionnaire by definition: there are no fields
+  // to render and nothing downstream to submit, so this page is not a thing for it. 404 rather
+  // than show an empty form.
+  if (!type || type.externalUrl || type.noSetup) notFound();
 
   const { user } = await getSession();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/onboard/${agent}`)}`);

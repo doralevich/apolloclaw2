@@ -39,6 +39,11 @@ export interface AgentType {
   // these out entirely rather than showing them disabled, because "you cannot pick this"
   // and "this is not a thing you pick" are different messages.
   internal?: boolean;
+  // No onboarding questionnaire. The create flow provisions the box and STOPS there instead
+  // of routing into /onboard, and the dashboard never nags it to "finish setup". This is the
+  // deliberately-blank, hand-authored build: there is no /onboard/{id} config for it (that URL
+  // would 404), so the flag both suppresses that route and the setup nag that links to it.
+  noSetup?: boolean;
 }
 
 // Shared spend cap for the paid Apollo agents — one cap across the line. The machine they
@@ -154,6 +159,30 @@ export const AGENT_TYPES: AgentType[] = [
     available: true,
     internal: true,
     icon: "Wallet",
+  },
+  // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
+  // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
+  // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the
+  // intake that fills it in: personaForAgentType returns undefined and no agent_setup row exists,
+  // so injectAfterProvision installs the shared skills and stops, leaving the seven files to be
+  // written by hand on the instance. That is the white-glove build David reaches for when the
+  // questionnaire is the wrong tool - a client whose setup he types himself.
+  //
+  // `internal`, so only a platform admin sees the card (CreateAgentModal: isPlatformAdmin ||
+  // !internal). Same stock template, $25 cap, and INSTANCE_RESOURCES machine as every other
+  // agent - the only thing missing is the customization, which is the whole point.
+  {
+    id: "blank",
+    label: "Blank Agent",
+    description:
+      "An empty agent with no preset persona and no questionnaire. Provisions a stock box and drops you at the instance to write its files by hand - the white-glove build.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    noSetup: true,
+    icon: "SquareDashed",
   },
 ];
 
