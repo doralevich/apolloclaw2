@@ -35,6 +35,9 @@ export function AdminWorkspacesView() {
   const [workspaces, setWorkspaces] = useState<AdminWorkspaceSummary[] | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [details, setDetails] = useState<Record<string, Detail>>({});
+  const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const loadWorkspaces = useCallback(async () => {
     try {
@@ -45,6 +48,29 @@ export function AdminWorkspacesView() {
       setWorkspaces([]);
     }
   }, []);
+
+  // Stand up a new workspace for an existing user. The seam for a white-glove setup: create it
+  // here, then "Create Apollo Agent" on the card drops a blank OpenClaw box in, then Open to
+  // write the files. The owner must already have an account (the API resolves email -> user).
+  const createWorkspace = useCallback(async () => {
+    const email = newEmail.trim();
+    if (!email) return;
+    setCreating(true);
+    try {
+      await apiFetch("/api/admin/workspaces", {
+        method: "POST",
+        body: JSON.stringify({ email, name: newName.trim() || undefined }),
+      });
+      toast.success(`Workspace created for ${email}.`);
+      setNewEmail("");
+      setNewName("");
+      await loadWorkspaces();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setCreating(false);
+    }
+  }, [newEmail, newName, loadWorkspaces]);
 
   useEffect(() => {
     // Initial fetch on mount. setState happens after the await (async), not synchronously
@@ -99,6 +125,41 @@ export function AdminWorkspacesView() {
         <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
         <p className="text-sm text-muted-foreground">
           All workspaces across the platform (newest 50). Expand a card to see its instances.
+        </p>
+      </div>
+
+      {/* Create a workspace for an existing user, then use "Create Apollo Agent" on its card to
+          drop a blank OpenClaw box in and Open to write the files. */}
+      <div className="rounded-xl border bg-card p-4">
+        <p className="mb-2 text-sm font-medium">New workspace</p>
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void createWorkspace();
+          }}
+        >
+          <input
+            type="email"
+            required
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="user@email.com (must have an account)"
+            className="h-9 min-w-[16rem] flex-1 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Workspace name (optional)"
+            className="h-9 min-w-[12rem] flex-1 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button type="submit" size="sm" disabled={creating || !newEmail.trim()}>
+            {creating ? "Creating..." : "Create workspace"}
+          </Button>
+        </form>
+        <p className="mt-2 text-xs text-muted-foreground">
+          The user must already have an account. The workspace is owned by them and appears in their dashboard on next login.
         </p>
       </div>
 
