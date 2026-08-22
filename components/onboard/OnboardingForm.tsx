@@ -7,6 +7,21 @@ import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
+import { LEGAL_BRANCH } from "@/lib/legalIntake";
+
+// Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
+// add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
+// per such agent type; the generic Apollo agent has none and runs the full questionnaire.
+//   - stepKey / stepLabel: the id and heading of the injected deep-dive page.
+//   - detailsKey: the JSONB blob the answers save under (read back by lib/onboardingSections.ts).
+//   - roleName: filled into the white-glove "Let's Customize Your ___" heading.
+const ROLE_INTAKES: Record<
+  string,
+  { branch: IndustryBranch; stepKey: string; stepLabel: string; detailsKey: string; roleName: string }
+> = {
+  cfo: { branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent" },
+  legal: { branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent" },
+};
 import {
   DEFAULT_LICENSE_TIER,
   resolveLicenseTier,
@@ -1070,7 +1085,12 @@ function hydrateBizState(a: PrefillAnswers) {
     primaryIndex: typeof a.primaryCompanyIndex === "number" ? a.primaryCompanyIndex : 0,
     portfolio: a.portfolio && typeof a.portfolio === "object" ? (a.portfolio as PortfolioMeta) : emptyPortfolio(),
     industryDetails: a.industryDetails && typeof a.industryDetails === "object" ? (a.industryDetails as Record<string, string | string[]>) : {},
-    cfoDetails: a.cfoDetails && typeof a.cfoDetails === "object" ? (a.cfoDetails as Record<string, string | string[]>) : {},
+    // Either role blob, whichever a prior save wrote. Only one role applies to a given form, so at
+    // most one is present; the component reads it back through its own role's detailsKey.
+    roleDetails:
+      (a.cfoDetails && typeof a.cfoDetails === "object" ? (a.cfoDetails as Record<string, string | string[]>) : null) ??
+      (a.legalDetails && typeof a.legalDetails === "object" ? (a.legalDetails as Record<string, string | string[]>) : null) ??
+      {},
   };
 }
 
@@ -1091,18 +1111,20 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const [primaryIndex, setPrimaryIndex] = useState(() => seed?.primaryIndex ?? 0);
   const [portfolio, setPortfolio] = useState<PortfolioMeta>(() => seed?.portfolio ?? emptyPortfolio());
   const [industryDetails, setIndustryDetails] = useState<Record<string, string | string[]>>(() => seed?.industryDetails ?? {});
-  const [cfoDetails, setCfoDetails] = useState<Record<string, string | string[]>>(() => seed?.cfoDetails ?? {});
+  const [roleDetails, setRoleDetails] = useState<Record<string, string | string[]>>(() => seed?.roleDetails ?? {});
   const [agreeErr, setAgreeErr] = useState(false);
   const [vErr, setVErr] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const setIndustry = (k: string, v: string | string[]) => setIndustryDetails(p => ({ ...p, [k]: v }));
-  const setCfo = (k: string, v: string | string[]) => setCfoDetails(p => ({ ...p, [k]: v }));
+  const setRoleDetail = (k: string, v: string | string[]) => setRoleDetails(p => ({ ...p, [k]: v }));
   const primaryCompany = companies[primaryIndex] || companies[0];
   const primaryName = primaryCompany?.name?.trim() || "your business";
   const branch = getIndustryBranch(primaryCompany?.industry);
-  // The CFO agent adds a finance deep-dive on top of the standard business questions. Keyed off
-  // the agent type, so /onboard/cfo and the unlisted /cfo-onboarding link get it and nobody else does.
-  const cfoBranch = agentTypeId === "cfo" ? CFO_BRANCH : null;
+  // A role agent (the CFO Agent, the Law Agent) adds its deep-dive on top of the standard business
+  // questions. Keyed off the agent type via ROLE_INTAKES, so /onboard/cfo, /onboard/legal and the
+  // unlisted /cfo-onboarding and /legal-onboarding links get it and nobody else does.
+  const roleIntake = agentTypeId ? ROLE_INTAKES[agentTypeId] : undefined;
+  const roleBranch = roleIntake?.branch ?? null;
   // The step order, and it MUST match allPages below. Checked at the bottom of this component
   // rather than trusted.
   //
@@ -1114,14 +1136,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   //
   // It stays a literal because the handlers below close over it and allPages is built from
   // state further down; the assertion is what makes the duplication safe.
-  // The CFO agent gets a role-specific, trimmed intake: company basics, what the business does,
-  // the finance deep-dive, and the final details/agreement. Everything off-role for a fractional
-  // CFO (exec profile, industry branch, tech stack, ops pain, family/life, brand voice, writing
-  // sample, generic AI goals, horizons) is dropped. Both the key list and the page list below are
-  // filtered to this same set, so the step-order assertion stays satisfied.
-  const CFO_PAGE_KEYS = ["biz", "whatyoudo", "cfo", "scope"];
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(cfoBranch ? ["cfo"] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "scope"];
-  const pageKeys = cfoBranch ? allPageKeys.filter(k => CFO_PAGE_KEYS.includes(k)) : allPageKeys;
+  // A role agent gets a role-specific, trimmed intake: company basics, what the business does, the
+  // role deep-dive, and the final details/agreement. Everything off-role (exec profile, industry
+  // branch, tech stack, ops pain, family/life, brand voice, writing sample, generic AI goals,
+  // horizons) is dropped. Both the key list and the page list below are filtered to this same set,
+  // so the step-order assertion stays satisfied.
+  const rolePageKeys = roleIntake ? ["biz", "whatyoudo", roleIntake.stepKey, "scope"] : [];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(roleBranch ? [roleIntake!.stepKey] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "scope"];
+  const pageKeys = roleBranch ? allPageKeys.filter(k => rolePageKeys.includes(k)) : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
@@ -1129,12 +1151,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, cfoDetails, contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, aiGoalsOther: s7.goalsOther, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, aiGoalsOther: s7.goalsOther, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
-      // The CFO intake hides the Industry field (cfoBranch), so it is not required there.
-      if (cfoBranch) {
+      // A role intake hides the Industry field (roleBranch), so it is not required there.
+      if (roleBranch) {
         if (!p?.name?.trim() || !p?.role) return "Please fill in the primary business name and your role.";
       } else {
         if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
@@ -1161,10 +1183,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }
     }
-    if (key === "cfo" && cfoBranch) {
-      for (const f of cfoBranch.fields) {
+    if (roleBranch && key === roleIntake!.stepKey) {
+      for (const f of roleBranch.fields) {
         if (!f.required) continue;
-        const v = cfoDetails[f.key];
+        const v = roleDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }
     }
@@ -1202,7 +1224,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "biz", label: "Your Business", node: (
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
-      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={!!cfoBranch} />
+      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={!!roleBranch} />
       <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
       {/* Business Model sat beside this and is gone at David's call. Service-based vs product
@@ -1242,8 +1264,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     ...(branch ? [{ key: "industry", label: "Industry", node: (
       <IndustryStep branch={branch} values={industryDetails} onChange={setIndustry} otherLabel={primaryCompany?.industryOther} />
     ) }] : []),
-    ...(cfoBranch ? [{ key: "cfo", label: "Finances", node: (
-      <IndustryStep branch={cfoBranch} values={cfoDetails} onChange={setCfo} badge="Finances" />
+    ...(roleBranch ? [{ key: roleIntake!.stepKey, label: roleIntake!.stepLabel, node: (
+      <IndustryStep branch={roleBranch} values={roleDetails} onChange={setRoleDetail} badge={roleIntake!.stepLabel} />
     ) }] : []),
     { key: "stack", label: "Tech Stack", node: (
     <Stack key="s2stack">
@@ -1447,15 +1469,15 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? R : "rgba(0,0,0,0.28)"}`, background: s8.agree ? R : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
         </span>
-        I've answered honestly and I'm ready to get started building my agent.
+        I&apos;ve answered honestly and I&apos;m ready to get started building my agent.
       </button>
       {agreeErr && <p style={{ fontSize: 13, fontWeight: 600, color: "#dc2626", marginTop: 6 }}>Please check this box before submitting.</p>}
     </Stack>
     ) },
   ];
-  // Trim to the CFO set when it's the CFO agent, mirroring the pageKeys filter above so the two
-  // stay in lockstep. Filtering preserves order, so the CFO flow reads biz -> whatyoudo -> cfo -> scope.
-  const allPages = cfoBranch ? allPagesFull.filter(p => CFO_PAGE_KEYS.includes(p.key)) : allPagesFull;
+  // Trim to the role set when it's a role agent, mirroring the pageKeys filter above so the two
+  // stay in lockstep. Filtering preserves order, so a role flow reads biz -> whatyoudo -> role -> scope.
+  const allPages = roleBranch ? allPagesFull.filter(p => rolePageKeys.includes(p.key)) : allPagesFull;
   // The check that makes the duplication above safe. A page added without a key - or a key
   // without a page - is a questionnaire that quietly stops advancing partway through, which is
   // the worst kind of bug this form can have: the customer sees a Continue button that does
@@ -1580,6 +1602,9 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // the gate and the questionnaire, keyed on mode === "lead" — this mode is exempt by design,
   // which is the entire reason it exists.
   const isWhiteGlove = mode === "whiteglove";
+  // The role agent (CFO, Law) this white-glove form is customizing, if any - fills the
+  // "Let's Customize Your ___" gate heading. Same ROLE_INTAKES lookup BizTrack uses.
+  const roleIntake = agentTypeId ? ROLE_INTAKES[agentTypeId] : undefined;
   // THE PAYWALL IS BACK ON, as a choice between two tiers rather than the single $2,500 wall
   // it was. It was off for one deploy while David decided pricing.
   //
@@ -1755,7 +1780,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     <Gatekeeper
       onPass={handleGate}
       initial={enteredGate ?? undefined}
-      heading={isWhiteGlove ? (agentTypeId === "cfo" ? <>Let&apos;s Customize Your <span style={{ color: R }}>CFO Agent.</span></> : <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></>) : undefined}
+      heading={isWhiteGlove ? (roleIntake ? <>Let&apos;s Customize Your <span style={{ color: R }}>{roleIntake.roleName}.</span></> : <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></>) : undefined}
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
   );
