@@ -40,22 +40,34 @@ function toolkit(
 export type IntegrationCategory = { title: string; toolkits: IntegrationToolkit[] };
 
 export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
+  // Vendor suites first, grouped by who makes them - David's call. Google and Microsoft each
+  // spread one login across mail, files, calendar and meetings, so a customer connecting "their
+  // Google stuff" was hunting it across four function shelves. These two shelves collect each
+  // suite in one place; the apps live ONLY here now, not also under Files & docs / Meetings, so
+  // nothing shows twice.
   {
-    title: "Email & calendar",
+    title: "Google Workspace",
     toolkits: [
       toolkit("gmail", "Gmail", "Gmail is Google's email service."),
       toolkit("googlecalendar", "Google Calendar", "Google Calendar helps manage schedules and events."),
+      toolkit("googledrive", "Google Drive", "Google Drive stores and shares cloud files."),
+      toolkit("googledocs", "Google Docs", "Google Docs is a collaborative document editor."),
+      toolkit("googlesheets", "Google Sheets", "Google Sheets is a cloud spreadsheet tool."),
+      toolkit("googletasks", "Google Tasks", "Google Tasks helps track tasks and to-dos."),
+      toolkit("googlemeet", "Google Meet", "Google Meet for video calls and meetings."),
+    ],
+  },
+  {
+    title: "Microsoft 365",
+    toolkits: [
       toolkit("outlook", "Outlook", "Outlook is Microsoft's email and calendar platform."),
-      toolkit("calendly", "Calendly", "Calendly schedules meetings without the back-and-forth."),
+      toolkit("one_drive", "OneDrive", "OneDrive for Microsoft 365 cloud files."),
+      toolkit("microsoft_teams", "Microsoft Teams", "Microsoft Teams for meetings and team chat."),
     ],
   },
   {
     title: "Files & docs",
     toolkits: [
-      toolkit("googledrive", "Google Drive", "Google Drive stores and shares cloud files."),
-      toolkit("googledocs", "Google Docs", "Google Docs is a collaborative document editor."),
-      toolkit("googlesheets", "Google Sheets", "Google Sheets is a cloud spreadsheet tool."),
-      toolkit("one_drive", "OneDrive", "OneDrive for Microsoft 365 cloud files."),
       toolkit("dropbox", "Dropbox", "Dropbox for cloud file storage and team sharing."),
       toolkit("box", "Box", "Box for secure cloud file storage and sharing."),
     ],
@@ -63,7 +75,6 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
   {
     title: "Tasks & projects",
     toolkits: [
-      toolkit("googletasks", "Google Tasks", "Google Tasks helps track tasks and to-dos."),
       toolkit("todoist", "Todoist", "Todoist keeps tasks and to-do lists organized."),
       toolkit("notion", "Notion", "Notion centralizes notes, docs, wikis, and tasks."),
       toolkit("trello", "Trello", "Trello organizes projects on kanban boards."),
@@ -74,11 +85,13 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
     ],
   },
   {
-    title: "Meetings",
+    // Zoom and Calendly are all that is left here once Google Meet and Teams move into their
+    // suites; Calendly came over from the old "Email & calendar" shelf, which held nothing else
+    // after Gmail, Google Calendar and Outlook left.
+    title: "Meetings & scheduling",
     toolkits: [
       toolkit("zoom", "Zoom", "Zoom for client calls, team meetings, and webinars."),
-      toolkit("googlemeet", "Google Meet", "Google Meet for video calls and meetings."),
-      toolkit("microsoft_teams", "Microsoft Teams", "Microsoft Teams for meetings and team chat."),
+      toolkit("calendly", "Calendly", "Calendly schedules meetings without the back-and-forth."),
     ],
   },
   {
@@ -150,13 +163,17 @@ export function categoryForSlug(slug: string): string | undefined {
 // Drive covers the documents — true for finding a file, false for reading one, and reading is
 // the whole point. A contract, a rate card or a model the agent cannot open is a file it can
 // only see the name of.
+// Grouped by vendor here too, so the pinned shelf reads the same way the Google Workspace and
+// Microsoft 365 shelves below it do: the Google apps together, then the Microsoft ones, then
+// Dropbox. Interleaving them (gmail, outlook, calendar, drive...) was the thing that made the
+// shelf look unsorted.
 export const ESSENTIAL_INTEGRATION_SLUGS: string[] = [
   "gmail",
-  "outlook",
   "googlecalendar",
   "googledrive",
   "googledocs",
   "googlesheets",
+  "outlook",
   "one_drive",
   "dropbox",
 ];

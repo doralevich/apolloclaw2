@@ -13,6 +13,7 @@ import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
+import { useLoginCount, gettingStartedRetired } from "@/lib/useLoginCount";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -153,7 +154,13 @@ function SidebarContent({
   // vanishes on exactly the state that ticks all three steps there. While the checklist is
   // still loading allDone is false, so the tab holds rather than flickering out and back.
   const { allDone: welcomeDone } = useWelcomeComplete(active, sessions.length);
-  const nav = NAV.filter((item) => !(item.href === "/dashboard/start-here" && welcomeDone)).map(
+  // Also retire the Welcome tab once the user has signed in enough times (useLoginCount) - David's
+  // call that a returning customer has no more use for the getting-started page even if they never
+  // ticked all three steps. Only when there is an agent to return to: with none, Start Here is the
+  // page that lets them build one, so it stays regardless of how many times they've logged in.
+  const { count: loginCount } = useLoginCount();
+  const welcomeRetired = welcomeDone || (!!active && gettingStartedRetired(loginCount));
+  const nav = NAV.filter((item) => !(item.href === "/dashboard/start-here" && welcomeRetired)).map(
     (item) => (item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item)
   );
 

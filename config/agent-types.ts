@@ -160,6 +160,27 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "Wallet",
   },
+  // The Law Agent — the CFO Agent's twin for legal work. Same white-glove model: an off-the-rack
+  // legal-drafting persona (config/personas.ts -> `legal`, applied by personaForAgentType at
+  // provision) on a stock OpenClaw box, plus a legal-specific intake (lib/legalIntake.ts) that the
+  // onboarding form adds when the type is `legal`.
+  //
+  // Sold on /ai-agents/legal (a "Schedule Your Consultation" page) and set up from the unlisted
+  // /legal-onboarding link, exactly like the CFO Agent. NO `planKey` (scoped and priced per
+  // engagement, paid white-glove), and `internal` so only a platform admin sees the card. Same
+  // stock template and $25 hosting cap as every other agent.
+  {
+    id: "legal",
+    label: "The Law Agent",
+    description:
+      "A legal drafting and review agent: contracts and NDAs, plain-English clause summaries, obligation and renewal tracking, and standard policies - set up for one business, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Scale",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the

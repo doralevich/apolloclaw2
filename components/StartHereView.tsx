@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, MessageSquare } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
+import { useLoginCount, gettingStartedRetired } from "@/lib/useLoginCount";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
@@ -30,12 +33,25 @@ export function StartHereView() {
   const { current, userFirstName } = useWorkspace();
   const { agents, active, loading } = useActiveAgent();
   const { sessions } = useChatContext();
+  const router = useRouter();
   // Same source the sidebar reads to decide whether to keep showing the Welcome tab, and the
   // same checklist the Checklist page uses — so the three can never disagree about what's done.
   const { setupDone, toolDone, chatDone } = useWelcomeComplete(active, sessions.length);
 
+  // Retire the getting-started page for a returning customer. /dashboard still redirects here, so
+  // this is where "get rid of it after the fourth login" actually happens: once the user has an
+  // agent and has signed in enough times, bounce straight to Chat, the page they come back for.
+  // With no agent we do not redirect - Start Here is how they build one, so it stays.
+  const { count: loginCount } = useLoginCount();
+  const retire = !!active && gettingStartedRetired(loginCount);
+  useEffect(() => {
+    if (retire) router.replace("/dashboard/chat");
+  }, [retire, router]);
+
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
+  // Redirecting to Chat: render nothing rather than flashing the page we are retiring.
+  if (retire) return null;
 
   // Reached two ways: a new customer waiting for provisioning, and somebody who deleted their
   // agent to start over. Both get the build button.

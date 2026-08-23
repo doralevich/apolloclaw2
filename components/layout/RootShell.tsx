@@ -8,7 +8,7 @@ import ChatWidget from '@/components/ChatWidget';
 // Marketing pages that render without the marketing nav/footer (but keep chat).
 // /white-glove-onboarding renders the SAME full-screen questionnaire as /onboard, so it gets
 // the same bare treatment — no nav, and no pre-footer/footer bands under the form.
-const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard', '/white-glove-onboarding', '/cfo-onboarding'];
+const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard', '/white-glove-onboarding', '/cfo-onboarding', '/legal-onboarding'];
 // Dashboard surfaces render their own chrome — no marketing nav/footer/chat.
 const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite', '/admin'];
 

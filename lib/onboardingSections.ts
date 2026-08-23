@@ -73,13 +73,24 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
-    // The CFO agent's finance deep-dive (lib/cfoIntake.ts), same generic key/value rendering as
-    // the industry block. Present only when the CFO intake was filled, so it is safe to always list.
+    // The role agents' deep-dives (lib/cfoIntake.ts, lib/legalIntake.ts), same generic key/value
+    // rendering as the industry block. Each is present only when that role's intake was filled, so
+    // it is safe to always list; a given form fills at most one.
     const cdet = d.cfoDetails && typeof d.cfoDetails === "object" ? (d.cfoDetails as Record<string, unknown>) : {};
     if (Object.keys(cdet).length) {
       sections.push({
         title: "CFO Deep-Dive",
         rows: Object.entries(cdet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
+    const ldet = d.legalDetails && typeof d.legalDetails === "object" ? (d.legalDetails as Record<string, unknown>) : {};
+    if (Object.keys(ldet).length) {
+      sections.push({
+        title: "Legal Deep-Dive",
+        rows: Object.entries(ldet).map(([k, v]) => ({
           label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
           value: v as unknown,
         })),

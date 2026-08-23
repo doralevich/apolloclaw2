@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   BarChart3,
+  Boxes,
   Check,
   ChevronRight,
   Code2,
   ExternalLink,
   FileText,
+  LayoutGrid,
   Loader2,
-  Mail,
   Megaphone,
   Plug,
   Plus,
@@ -72,10 +73,11 @@ const ESSENTIALS = "essentials";
 // lib/integration-catalog.ts stays JSX-free and server-safe — the same split config/agent-types
 // makes with its icon names.
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  "Email & calendar": Mail,
+  "Google Workspace": Boxes,
+  "Microsoft 365": LayoutGrid,
   "Files & docs": FileText,
   "Tasks & projects": SquareCheck,
-  Meetings: Video,
+  "Meetings & scheduling": Video,
   "Sales & marketing": Megaphone,
   "Design & code": Code2,
   "Research & agent tools": BarChart3,
@@ -876,25 +878,24 @@ function IntegrationCard({
 }) {
   const category = categoryForSlug(t.slug);
   return (
-    // A stacked card: logo, name, category, what it does, then the action on its own row.
-    //
-    // This WAS one compact row, and the argument for that was real — a sentence about Gmail is a
-    // sentence nobody reads about software they already use every day. What that argument misses
-    // is the rest of the catalogue. "More from the app store" reaches a thousand-odd Composio
-    // toolkits nobody has heard of, and for those the description is the only thing separating
-    // one unfamiliar logo from the next. The compact row was right for the eleven Essentials and
-    // wrong for everything behind them.
+    // A compact row: logo, name and status on the left, the one action on the right, and a single
+    // line of description under them. It WAS a tall stacked card - logo, name, a two-line blurb,
+    // then the button on its own row - which David found too big for a grid he scans more than
+    // reads. The blurb was most of that height and, for the Essentials, is a sentence nobody needs
+    // about software they use every day. Kept to ONE clamped line, because "More from the app
+    // store" reaches a thousand-odd Composio toolkits nobody has heard of and there the line is
+    // the only thing separating one unfamiliar logo from the next - a sentence, not a paragraph.
     <div
       className={cn(
-        "flex flex-col rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20",
+        "rounded-xl border bg-card p-3 transition-colors hover:border-foreground/20",
         connected && "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/25"
       )}
     >
-      <div className="flex items-start gap-2.5">
+      <div className="flex items-center gap-2.5">
         <ToolkitLogo logo={t.logo} name={t.name} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold leading-tight">{t.name}</div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
             {connected ? (
               <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
                 <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
@@ -912,47 +913,46 @@ function IntegrationCard({
             {category && <span className="text-muted-foreground/70">{category}</span>}
           </div>
         </div>
+
+        {/* The one action, beside the name rather than on its own row below. */}
+        <div className="shrink-0">
+          {connected ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 px-2 text-xs text-emerald-700 hover:text-emerald-700 dark:text-emerald-400"
+              onClick={onManage}
+            >
+              <Check className="h-3.5 w-3.5" />
+              Manage
+            </Button>
+          ) : pending ? (
+            <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs" disabled>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            </Button>
+          ) : (
+            <Button asChild size="sm" variant="outline" className="h-8 px-3 text-xs">
+              <a
+                href={connectRedirectHref(agentId, t.slug)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onConnect}
+              >
+                Connect
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Two lines, clamped. Composio's descriptions run from four words to a paragraph, and
-          without a clamp one long one sets the height of every card in its row. */}
+      {/* One line, clamped. Composio's descriptions run from four words to a paragraph; a single
+          line keeps every card the same short height whatever the copy does. */}
       {t.description && (
-        <p className="mt-2 line-clamp-2 text-xs leading-snug text-muted-foreground">
+        <p className="mt-1.5 line-clamp-1 text-xs leading-snug text-muted-foreground">
           {t.description}
         </p>
       )}
-
-      {/* mt-auto so the action sits on the floor of the card whatever the description did to
-          the middle — a row of three with buttons at three different heights reads as broken. */}
-      <div className="mt-auto flex items-center justify-end pt-3">
-        {connected ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1 px-2 text-xs text-emerald-700 hover:text-emerald-700 dark:text-emerald-400"
-            onClick={onManage}
-          >
-            <Check className="h-3.5 w-3.5" />
-            Manage
-          </Button>
-        ) : pending ? (
-          <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs" disabled>
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          </Button>
-        ) : (
-          <Button asChild size="sm" variant="outline" className="h-8 px-3 text-xs">
-            <a
-              href={connectRedirectHref(agentId, t.slug)}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={onConnect}
-            >
-              Connect
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
