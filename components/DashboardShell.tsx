@@ -10,10 +10,6 @@ import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
-import { useActiveAgent } from "@/components/ActiveAgentProvider";
-import { useChatContext } from "@/components/chat/ChatProvider";
-import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
-import { useLoginCount, gettingStartedRetired } from "@/lib/useLoginCount";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,27 +28,17 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 // ones competed for the same attention; a rail you scan every day should only carry the
 // former.
 const NAV = [
-  { href: "/dashboard/start-here", label: "Welcome", icon: Compass, exact: false },
-  // Chat sits directly under Welcome, above Checklist — David's call. Talking to the agent is
-  // the thing people come back for every day; the checklist is a first-week errand. The daily
-  // surface goes higher than the once-through one.
+  { href: "/dashboard/start-here", label: "Home", icon: Compass, exact: false },
+  // Chat sits directly under Home. Talking to the agent is the thing people come back for every
+  // day; the checklist is a first-week errand. The daily surface goes higher than the once-through
+  // one.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
-  { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
-  // Channels is OFF the rail at David's call - the same call that took the channel cards off
-  // the checklist. The page itself still exists and still works at /dashboard/channels; only
-  // the tab is gone, so nothing is deleted and putting it back is one line.
-  //
-  // Worth knowing what that costs: Channels is where a customer connects Telegram, and Telegram
-  // is how most of them actually talk to their agent. With no tab, the only routes left are the
-  // direct URL and whatever we send them in email. If people stop connecting it, this is why.
-  // Sits directly under Chat's neighbours: it is the answer to "what do I say to this thing",
-  // which is a question people have while looking at the chat, not while looking for account
-  // options.
-  { href: "/dashboard/guide", label: "Guide", icon: BookOpen, exact: false },
-  // My Agent is not here. It went below Guide first, and then into Settings entirely — the rail
-  // is things you DO with the agent, and looking at the agent itself turned out to be the same
-  // kind of question as billing or members.
+  // Connections and Guide moved OFF the daily rail and INTO Settings (SETTINGS_NAV) - David's call.
+  // The rail is the handful of things you do every day; connecting an app or reading the guide is
+  // not that. Their pages are unchanged, only the tabs moved: the inSettings check below now
+  // counts those two routes as part of the Settings area, so the Settings rail shows on them and
+  // the moved tab highlights there. Channels stays off the rail too (still at /dashboard/channels).
 ];
 
 // The settings area's own rail, grouped, shown INSTEAD of NAV while you're inside it — the
@@ -77,6 +63,9 @@ const SETTINGS_NAV = [
       // label that flips between singular and plural reads as a bug.
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
       { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
+      // Connections lives here now rather than on the daily rail (David's call): it is the agent's
+      // apps - Gmail, calendar, files - which is a setup question, not a daily one.
+      { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
       // Two money pages, two scopes, both named for what they answer. Plan is the WORKSPACE's
       // subscription - seats, invoices, the card. Credits is one AGENT's wallet; Usage sits
       // directly beneath it (David's call) - where the wallet went, one row down from what's left.
@@ -84,6 +73,8 @@ const SETTINGS_NAV = [
       { href: "/dashboard/settings/billing", label: "Credits", icon: ChartNoAxesColumn, exact: false },
       { href: "/dashboard/settings/usage", label: "Usage", icon: Activity, exact: false },
       { href: "/dashboard/settings/members", label: "Members", icon: Users, exact: false },
+      // Guide (how to use the product) moved off the daily rail into Settings too.
+      { href: "/dashboard/guide", label: "Guide", icon: BookOpen, exact: false },
     ],
   },
 ];
@@ -144,25 +135,16 @@ function SidebarContent({
   // "Start Here" is where every session lands, agents or not: with one it greets the
   // active agent, without one it prompts them to create the first. Hiding it used to
   // leave a freshly-signed-in customer on a page missing from their own sidebar.
-  const inSettings = pathname.startsWith(SETTINGS_ROOT);
+  // Connections and Guide are not under /settings/, but they moved into the Settings area, so the
+  // Settings rail (not the daily rail) shows on them and their moved tab highlights there.
+  const inSettings =
+    pathname.startsWith(SETTINGS_ROOT) ||
+    pathname.startsWith("/dashboard/integrations") ||
+    pathname.startsWith("/dashboard/guide");
 
-  const { agents, active } = useActiveAgent();
-  const { sessions } = useChatContext();
-  // Once setup is answered, a tool is connected and there's been a first conversation, the
-  // Welcome greeting has served its purpose — David's call to drop it off the rail then. The
-  // page stays reachable by URL; only the tab goes. Same source Start Here reads, so the tab
-  // vanishes on exactly the state that ticks all three steps there. While the checklist is
-  // still loading allDone is false, so the tab holds rather than flickering out and back.
-  const { allDone: welcomeDone } = useWelcomeComplete(active, sessions.length);
-  // Also retire the Welcome tab once the user has signed in enough times (useLoginCount) - David's
-  // call that a returning customer has no more use for the getting-started page even if they never
-  // ticked all three steps. Only when there is an agent to return to: with none, Start Here is the
-  // page that lets them build one, so it stays regardless of how many times they've logged in.
-  const { count: loginCount } = useLoginCount();
-  const welcomeRetired = welcomeDone || (!!active && gettingStartedRetired(loginCount));
-  const nav = NAV.filter((item) => !(item.href === "/dashboard/start-here" && welcomeRetired)).map(
-    (item) => (item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item)
-  );
+  // Home always shows now (David's call): it is a launcher you come back to, not a getting-started
+  // page you outgrow, so the tab is never hidden and there is no retire-after-N-logins rule.
+  const nav = NAV;
 
   const { current, workspaces, isPlatformAdmin } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;

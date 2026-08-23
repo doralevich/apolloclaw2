@@ -172,7 +172,9 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
                             "pr-3 group-hover:pr-[4.75rem]",
                             activeSessionId === s.session_id
                               ? "bg-primary/10 font-medium text-primary"
-                              : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                              // Near-full-strength foreground, not muted: on the near-white rail the
+                              // muted grey was too faint to read at a glance (David's call).
+                              : "text-foreground/80 hover:bg-secondary/60 hover:text-foreground"
                           )}
                         >
                           {isPinned ? (
