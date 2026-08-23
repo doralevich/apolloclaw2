@@ -10,10 +10,6 @@ import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
-import { useActiveAgent } from "@/components/ActiveAgentProvider";
-import { useChatContext } from "@/components/chat/ChatProvider";
-import { useWelcomeComplete } from "@/lib/useWelcomeComplete";
-import { useLoginCount, gettingStartedRetired } from "@/lib/useLoginCount";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,23 +142,9 @@ function SidebarContent({
     pathname.startsWith("/dashboard/integrations") ||
     pathname.startsWith("/dashboard/guide");
 
-  const { agents, active } = useActiveAgent();
-  const { sessions } = useChatContext();
-  // Once setup is answered, a tool is connected and there's been a first conversation, the
-  // Welcome greeting has served its purpose — David's call to drop it off the rail then. The
-  // page stays reachable by URL; only the tab goes. Same source Start Here reads, so the tab
-  // vanishes on exactly the state that ticks all three steps there. While the checklist is
-  // still loading allDone is false, so the tab holds rather than flickering out and back.
-  const { allDone: welcomeDone } = useWelcomeComplete(active, sessions.length);
-  // Also retire the Welcome tab once the user has signed in enough times (useLoginCount) - David's
-  // call that a returning customer has no more use for the getting-started page even if they never
-  // ticked all three steps. Only when there is an agent to return to: with none, Start Here is the
-  // page that lets them build one, so it stays regardless of how many times they've logged in.
-  const { count: loginCount } = useLoginCount();
-  const welcomeRetired = welcomeDone || (!!active && gettingStartedRetired(loginCount));
-  const nav = NAV.filter((item) => !(item.href === "/dashboard/start-here" && welcomeRetired)).map(
-    (item) => (item.href === "/dashboard" && agents.length > 1 ? { ...item, label: "My Agents" } : item)
-  );
+  // Home always shows now (David's call): it is a launcher you come back to, not a getting-started
+  // page you outgrow, so the tab is never hidden and there is no retire-after-N-logins rule.
+  const nav = NAV;
 
   const { current, workspaces, isPlatformAdmin } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;
