@@ -9,7 +9,7 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { statusVariant } from "@/lib/format";
 import { getAgentType } from "@/config/agent-types";
-import type { IntegrationConnectionsResult, MergedAgent, Role } from "@/lib/types";
+import type { Budget, IntegrationConnectionsResult, MergedAgent, Role } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
@@ -80,6 +80,24 @@ export function AgentCard({
       cancelled = true;
     };
   }, [agent.agent37_id]);
+
+  // Unspent purchased credit, so the delete confirm can warn that it's about to be thrown away.
+  // A real customer deleted an agent that still had $23 of credit on it and lost it - the number
+  // belongs in front of them before they confirm, not in a support ticket afterwards. Same quiet
+  // failure mode as the app count: an unknown balance just doesn't warn.
+  const [creditMicros, setCreditMicros] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<Budget & { credit_remaining_micros?: number }>(`/api/agents/${agent.agent37_id}/budget`)
+      .then((b) => {
+        if (!cancelled) setCreditMicros(b.credit_remaining_micros ?? b.topup_remaining_micros ?? 0);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [agent.agent37_id]);
+  const creditDollars = creditMicros && creditMicros > 0 ? creditMicros / 1_000_000 : 0;
 
   return (
     <div className="rounded-xl border bg-card p-6">
@@ -173,7 +191,12 @@ export function AgentCard({
             open={confirmDelete}
             onOpenChange={setConfirmDelete}
             title={`Delete ${name}?`}
-            description={`Permanently tears down ${name} - its memory of the business, its app connections, its chat history. If this workspace still has another agent afterwards, the $189/month hosting seat is credited back automatically. This cannot be undone.`}
+            description={
+              (creditDollars > 0
+                ? `Heads up: ${name} still has $${creditDollars.toFixed(2)} in purchased credit, which is lost once it's finally deleted. `
+                : "") +
+              `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. If this workspace still has another agent afterwards, the $189/month hosting seat is credited back automatically.`
+            }
             confirmText={`Delete ${name}`}
             destructive
             onConfirm={removeAgent}

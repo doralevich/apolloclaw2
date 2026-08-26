@@ -32,6 +32,7 @@ export const GET = route(async (request: Request) => {
     .from("agents")
     .select("agent37_id")
     .eq("workspace_id", workspaceId)
+    .is("deleted_at", null)
     .or(`agent_type.eq.${type.id},template.eq.${type.template}`)
     .limit(1)
     .maybeSingle();

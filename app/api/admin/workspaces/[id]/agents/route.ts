@@ -18,6 +18,7 @@ export const GET = route(async (_request: Request, { params }: Ctx) => {
     .from("agents")
     .select("*")
     .eq("workspace_id", workspaceId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (error) throw new ApiError(500, "db_error", error.message);
 

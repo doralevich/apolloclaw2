@@ -61,7 +61,7 @@ const install = route(async (request: Request) => {
 
 async function allAgentIds(): Promise<string[]> {
   const db = createAdminClient();
-  const { data, error } = await db.from("agents").select("agent37_id");
+  const { data, error } = await db.from("agents").select("agent37_id").is("deleted_at", null);
   if (error) throw new Error(error.message);
   return (data ?? []).map((r) => r.agent37_id as string);
 }

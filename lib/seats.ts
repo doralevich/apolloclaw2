@@ -116,6 +116,7 @@ export async function claimSeat(
     .select("agent37_id")
     .eq("workspace_id", workspaceId)
     .eq("owner_id", invite.created_by)
+    .is("deleted_at", null)
     .order("created_at", { ascending: true })
     .limit(10);
 

@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/scheduled-skills",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/purge-agents",
+      "schedule": "0 3 * * *"
     }
   ]
 }

@@ -228,7 +228,8 @@ export async function listWatchedAgents(): Promise<CreditSettings[]> {
 
   const { data: agents, error: agentsError } = await db
     .from("agents")
-    .select("agent37_id, workspace_id");
+    .select("agent37_id, workspace_id")
+    .is("deleted_at", null);
   if (agentsError) throw new ApiError(500, "db_error", agentsError.message);
 
   const { data: rows, error } = await db.from("credit_settings").select("*");

@@ -1,5 +1,6 @@
 import { getWorkspaceOwner, requireAdmin, requireUser } from "@/lib/auth";
 import { agent37 } from "@/lib/agent37";
+import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import type { Workspace } from "@/lib/types";
 
@@ -37,7 +38,7 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
   return json({ workspace: data as Workspace });
 });
 
-export const DELETE = route(async (_request: Request, { params }: Ctx) => {
+export const DELETE = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   const { supabase, user } = await requireUser();
 
@@ -45,19 +46,45 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   if (!owner) throw new ApiError(404, "not_found", "Workspace not found");
   if (owner !== user.id) throw new ApiError(403, "forbidden", "Only the owner can delete a workspace");
 
-  // Tear down the workspace's Agent37 agents first so none are orphaned. Concurrent —
-  // each delete is independent and per-agent failures are logged, never fatal.
+  // Deleting a whole workspace is a deliberate, owner-only teardown, so it stays immediate rather
+  // than going through the agent retention window: every agent's Agent37 instance is destroyed
+  // and the rows go with the workspace (ON DELETE CASCADE). This reads ALL agents, soft-deleted
+  // ones included, so a trashed-but-not-yet-purged agent doesn't survive its workspace.
+  //
+  // Concurrent — each instance delete is independent and per-agent failures are logged, never
+  // fatal. Every agent teardown is audited so a workspace deletion leaves the same trail a
+  // single-agent one does (this path used to log nothing).
   const { data: rows } = await supabase.from("agents").select("agent37_id").eq("workspace_id", id);
   await Promise.allSettled(
-    (rows ?? []).map((row) =>
-      agent37
-        .deleteAgent(row.agent37_id as string)
-        .catch((err) => console.error("[workspace-delete:orphaned-agent]", row.agent37_id, err))
-    )
+    (rows ?? []).map(async (row) => {
+      const agentId = row.agent37_id as string;
+      let vps_deleted = false;
+      try {
+        await agent37.deleteAgent(agentId);
+        vps_deleted = true;
+      } catch (err) {
+        console.error("[workspace-delete:orphaned-agent]", agentId, err);
+      }
+      await logAudit({
+        actorEmail: user.email,
+        action: "agent.purged",
+        target: agentId,
+        metadata: { vps_deleted, db_deleted: true, workspace_id: id, via: "workspace_delete" },
+        request,
+      });
+    })
   );
 
   const { error } = await supabase.from("workspaces").delete().eq("id", id);
   if (error) throw new ApiError(500, "db_error", error.message);
+
+  await logAudit({
+    actorEmail: user.email,
+    action: "workspace.deleted",
+    target: id,
+    metadata: { agents: (rows ?? []).length },
+    request,
+  });
 
   return json({ id, deleted: true });
 });

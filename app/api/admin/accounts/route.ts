@@ -64,7 +64,7 @@ export const GET = route(async () => {
     listAllUsers(db),
     db.from("memberships").select("workspace_id, user_id, role"),
     db.from("workspaces").select("id, name"),
-    db.from("agents").select("agent37_id, workspace_id, name, owner_id"),
+    db.from("agents").select("agent37_id, workspace_id, name, owner_id").is("deleted_at", null),
     db.from("entitlements").select("email, user_id, status, grace_until"),
   ]);
   for (const res of [memsRes, wsRes, agentsRes, entsRes]) {

@@ -69,7 +69,7 @@ export const GET = route(async (request: Request) => {
   // owner_id IS NULL is included deliberately: those agents predate seats and were
   // workspace-wide when they were created, so filtering them out would take an agent away from
   // somebody already using it every day.
-  let query = supabase.from("agents").select("*").eq("workspace_id", workspaceId);
+  let query = supabase.from("agents").select("*").eq("workspace_id", workspaceId).is("deleted_at", null);
   if (role !== "admin") {
     query = query.or(`owner_id.eq.${user.id},owner_id.is.null`);
   }

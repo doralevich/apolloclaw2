@@ -51,7 +51,16 @@ export async function requireEntitled(db: DB): Promise<void> {
 }
 
 export async function getAgentRow(db: DB, agent37Id: string): Promise<AgentRow> {
-  const { data } = await db.from("agents").select("*").eq("agent37_id", agent37Id).maybeSingle();
+  // Soft-deleted agents (deleted_at set, awaiting purge) are gone as far as the product is
+  // concerned: every per-agent route funnels through here, so this one filter 404s chat, resize,
+  // checklist, rename and the rest for an agent in the trash. Restoring one is an admin action
+  // that goes through the service-role client, not this gate.
+  const { data } = await db
+    .from("agents")
+    .select("*")
+    .eq("agent37_id", agent37Id)
+    .is("deleted_at", null)
+    .maybeSingle();
   if (!data) throw new ApiError(404, "not_found", "Agent not found");
   return data as AgentRow;
 }

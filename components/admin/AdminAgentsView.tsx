@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, DoorOpen, ExternalLink, Trash2 } from "lucide-react";
+import { CornerDownRight, DoorOpen, ExternalLink, RotateCcw, Trash2 } from "lucide-react";
 import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -67,17 +67,42 @@ export function AdminAgentsView() {
   }, [load]);
 
   async function destroy(agent: AdminAgentOverview) {
-    const result = await apiFetch<{ id: string; vps_deleted: boolean; db_deleted: boolean }>(
-      `/api/admin/agents/${agent.agent37_id}`,
-      { method: "DELETE" }
-    );
-    toast.success(
-      [
-        result.vps_deleted ? "Instance deleted." : "Instance was already gone.",
-        result.db_deleted ? "Records purged." : "No records to purge.",
-      ].join(" ")
-    );
+    const result = await apiFetch<{
+      id: string;
+      mode: "soft_deleted" | "purged";
+      purge_after?: string;
+      vps_deleted?: boolean;
+      db_deleted?: boolean;
+    }>(`/api/admin/agents/${agent.agent37_id}`, { method: "DELETE" });
+    if (result.mode === "soft_deleted") {
+      toast.success("Moved to trash. Its instance is stopped and it can be restored until it purges.");
+    } else {
+      toast.success(
+        [
+          result.vps_deleted ? "Instance deleted." : "Instance was already gone.",
+          result.db_deleted ? "Records purged." : "No records to purge.",
+        ].join(" ")
+      );
+    }
     await load();
+  }
+
+  async function restore(agent: AdminAgentOverview) {
+    try {
+      const result = await apiFetch<{ id: string; restored: boolean; started: boolean; startError?: string }>(
+        `/api/admin/agents/${agent.agent37_id}/restore`,
+        { method: "POST" }
+      );
+      toast.success(
+        result.started
+          ? "Restored. The instance is starting back up."
+          : "Restored. The instance did not start - start it from the instance controls." +
+              (result.startError ? ` (${result.startError})` : "")
+      );
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   // One section per workspace (name-sorted), instances outside any workspace last.
@@ -134,12 +159,12 @@ export function AdminAgentsView() {
                 </div>
                 <div className="space-y-3">
                   {main.map((a) => (
-                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} />
+                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} />
                   ))}
                   {members.length > 0 && (
                     <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
                       {members.map((a) => (
-                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} />
+                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} />
                       ))}
                     </div>
                   )}
@@ -150,39 +175,60 @@ export function AdminAgentsView() {
         </div>
       )}
 
-      {deleting && (
-        <ConfirmDialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setDeleting(null);
-          }}
-          title={`Delete ${deleting.name || deleting.agent37_id}?`}
-          description={
-            deleting.presence === "ghost"
-              ? "The instance is already gone; this purges the leftover records so the agent stops appearing in the product."
-              : deleting.presence === "orphan"
-                ? "This instance has no records in the product; this deletes it from Agent37 so it stops hosting."
-                : `This deletes the running instance and all of its records${deleting.workspace_name ? ` in "${deleting.workspace_name}"` : ""}. If the workspace keeps another agent, one hosting seat is credited back.`
-          }
-          confirmText="Delete agent"
-          destructive
-          onConfirm={() => destroy(deleting)}
-        />
-      )}
+      {deleting && (() => {
+        // Three outcomes: an already-trashed agent purges for good (skips the wait); an orphan
+        // instance (no row) is deleted from Agent37 outright; anything else moves to the trash,
+        // reversibly. Only the first two are irreversible.
+        const isTrashed = Boolean(deleting.deleted_at);
+        const isOrphan = deleting.presence === "orphan";
+        const hard = isTrashed || isOrphan;
+        return (
+          <ConfirmDialog
+            open
+            onOpenChange={(open) => {
+              if (!open) setDeleting(null);
+            }}
+            title={hard ? `Purge ${deleting.name || deleting.agent37_id} for good?` : `Delete ${deleting.name || deleting.agent37_id}?`}
+            description={
+              isTrashed
+                ? "This agent is already in the trash. Purging destroys its instance and records now, skipping the retention window. This cannot be undone."
+                : isOrphan
+                  ? "This instance has no records in the product; this deletes it from Agent37 so it stops hosting. This cannot be undone."
+                  : `This moves the agent to the trash: its instance is stopped (not destroyed) and it can be restored until it purges${deleting.workspace_name ? `, in "${deleting.workspace_name}"` : ""}. If the workspace keeps another agent, one hosting seat is credited back.`
+            }
+            confirmText={hard ? "Purge for good" : "Move to trash"}
+            destructive={hard}
+            onConfirm={() => destroy(deleting)}
+          />
+        );
+      })()}
     </div>
   );
+}
+
+// "in 6 days", "today", or "overdue" for a purge_after timestamp.
+function purgeCountdown(purgeAfter: string | null): string {
+  if (!purgeAfter) return "soon";
+  const ms = new Date(purgeAfter).getTime() - Date.now();
+  if (ms <= 0) return "any time now";
+  const days = Math.round(ms / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "today";
+  return `in ${days} day${days === 1 ? "" : "s"}`;
 }
 
 function AgentCard({
   agent,
   member = false,
   onDelete,
+  onRestore,
 }: {
   agent: AdminAgentOverview;
   member?: boolean;
   onDelete: () => void;
+  onRestore: () => void;
 }) {
   const presence = PRESENCE[agent.presence];
+  const trashed = Boolean(agent.deleted_at);
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
   const [opening, setOpening] = useState<"apolloclaw" | "instance" | null>(null);
 
@@ -216,7 +262,11 @@ function AgentCard({
     }
   }
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4">
+    <div
+      className={`flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4${
+        trashed ? " border-dashed opacity-70" : ""
+      }`}
+    >
       {member && <CornerDownRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
       {agent.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element -- storage URLs and data: URIs; next/image adds nothing here
@@ -230,6 +280,14 @@ function AgentCard({
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{agent.name || "Untitled agent"}</span>
           {member && <Badge variant="secondary">Member seat</Badge>}
+          {trashed && (
+            <Badge
+              variant="destructive"
+              title={`Soft-deleted - the instance is stopped, not destroyed. The purge cron removes it for good ${purgeCountdown(agent.purge_after)}.`}
+            >
+              In trash · purges {purgeCountdown(agent.purge_after)}
+            </Badge>
+          )}
           <span title={presence.hint}>
             <Badge variant={presence.variant}>{presence.label}</Badge>
           </span>
@@ -257,15 +315,33 @@ function AgentCard({
             {opening === "instance" ? "Opening..." : "Instance"}
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-4 w-4" />
-          Delete
-        </Button>
+        {trashed ? (
+          <>
+            <Button variant="outline" size="sm" onClick={onRestore} disabled={opening !== null}>
+              <RotateCcw className="h-4 w-4" />
+              Restore
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+              Purge now
+            </Button>
+          </>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        )}
       </div>
     </div>
   );

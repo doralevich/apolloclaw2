@@ -43,7 +43,9 @@ export const GET = route(async () => {
   const db = createAdminClient();
 
   const [agentsRes, wsRes, live] = await Promise.all([
-    db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, avatar_url, owner_id, created_at"),
+    // Soft-deleted rows ARE included here (no deleted_at filter): the overview is where an admin
+    // sees the trash and restores or purges from it. deleted_at/purge_after drive that UI.
+    db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, avatar_url, owner_id, created_at, deleted_at, purge_after"),
     db.from("workspaces").select("id, name, owner_id"),
     // Live truth, or null when Agent37 is unreachable - in which case presence can't be judged
     // and every row is reported as such rather than guessed at.
@@ -82,6 +84,8 @@ export const GET = route(async () => {
       avatar_url: (a.avatar_url as string | null) ?? null,
       agent_type: (a.agent_type as string | null) ?? null,
       created_at: a.created_at as string,
+      deleted_at: (a.deleted_at as string | null) ?? null,
+      purge_after: (a.purge_after as string | null) ?? null,
     };
   });
 
@@ -105,6 +109,8 @@ export const GET = route(async () => {
         created_at: instance.created
           ? new Date(instance.created > 1e12 ? instance.created : instance.created * 1000).toISOString()
           : null,
+        deleted_at: null,
+        purge_after: null,
       });
     }
   }

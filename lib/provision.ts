@@ -680,6 +680,9 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     .from("agents")
     .select("agent37_id")
     .eq("workspace_id", workspaceId)
+    // A soft-deleted agent of this type is on its way out, so it must not count against the
+    // one-per-type cap - otherwise a customer who deleted theirs can't rebuild until it purges.
+    .is("deleted_at", null)
     // Legacy rows predate agent_type and are identified by template alone — which includes
     // rows written under a FORMER template name, so the aliases have to be in the cap check
     // too. Miss them and a rename quietly lets one workspace hold two of the same agent.
