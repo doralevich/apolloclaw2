@@ -230,10 +230,12 @@ function SidebarContent({
           "whose account am I in", which is a real question in a product where you switch between
           them - and nobody here does: every customer has exactly one, so it was a permanent row
           restating their own name back at them, directly under a wordmark. WorkspaceSwitcher
-          still renders in full when there IS more than one, which is when the question starts
-          being worth a row. */}
+          still renders when there IS more than one, which is when the question starts being
+          worth a row — and always for platform admins, who bounce between customer workspaces
+          from Super Admin and need this tile to confirm which one they're in (it renders as a
+          static name label for them, not the switching dropdown). */}
       <div className="mt-4 space-y-2">
-        {hasManyWorkspaces && <WorkspaceSwitcher />}
+        {(hasManyWorkspaces || isPlatformAdmin) && <WorkspaceSwitcher />}
         <AgentSwitcher />
       </div>
 

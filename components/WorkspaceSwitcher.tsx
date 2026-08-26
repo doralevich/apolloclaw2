@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 
 export function WorkspaceSwitcher() {
-  const { workspaces, current, setCurrentId, refresh } = useWorkspace();
+  const { workspaces, current, setCurrentId, refresh, isPlatformAdmin } = useWorkspace();
 
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -65,7 +65,14 @@ export function WorkspaceSwitcher() {
   // menu; you keep knowing where you are.
   // Styled as the card the mockup puts at the top of the rail rather than a line of grey text:
   // this is the answer to "whose account am I in", and it was reading as a disabled field.
-  if (workspaces.length <= 1) {
+  //
+  // Platform admins get this same static tile even though they belong to MANY workspaces
+  // (David's call): they no longer switch from here, they drop into a customer's workspace via
+  // Super Admin's "Open in ApolloClaw" (which sets the current workspace and opens /dashboard).
+  // The interactive dropdown was a second, redundant way to switch — but the NAME is still worth
+  // keeping, because when you land in "Graham Grieve's Workspace" from the god-view this tile is
+  // what confirms which account you're now acting in.
+  if (workspaces.length <= 1 || isPlatformAdmin) {
     const name = current?.name ?? "No workspace";
     return (
       <div className="flex w-full items-center gap-2.5 rounded-lg border bg-card p-2">
