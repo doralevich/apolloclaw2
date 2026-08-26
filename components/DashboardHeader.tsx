@@ -2,8 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Plus, Settings } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { useChatContext } from "@/components/chat/ChatProvider";
@@ -107,16 +106,9 @@ export function DashboardHeader() {
         {/* Light/dark at the top of the screen, where you are when you decide you want it. The
             three-way preference (including "follow my device") stays in Settings. */}
         <ThemeToggle />
-        {/* Settings, up here where David asked for it - beside the name it configures. The
-            sidebar's own Settings entry stays; a door this important can have two handles. */}
-        <Link
-          href="/dashboard/settings"
-          title="Settings"
-          aria-label="Settings"
-          className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-        >
-          <Settings className="h-4 w-4" />
-        </Link>
+        {/* Settings used to sit here as a cog. It moved into the account card's menu at the foot
+            of the rail (with Sign out), so account, settings and sign-out share one home instead
+            of a cog up here and sign-out down there. */}
         <button
           type="button"
           onClick={newChat}

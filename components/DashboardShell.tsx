@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -16,6 +16,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -273,10 +274,11 @@ function SidebarContent({
           meant two sidebars on screen there and none anywhere else. */}
       <ChatSidebar onNavigate={onNavigate} />
 
-      {/* The Settings NavLink that lived here is gone at David's call - the header's cog is
-          the door now, and two identical doors ten centimetres apart made the rail longer
-          without making anything easier to find. The account card stays: it is who you are,
-          not where you go. */}
+      {/* The account card, at the foot of the rail: who you are, and the door to everything you
+          configure. Settings lives in its menu now, right above Sign out - the bottom-left
+          account control is where people are trained to look for "my settings / sign out"
+          (Slack, Linear, GitHub all put them there together). The header's Settings cog is gone
+          with this: one predictable home beats a cog up top and a sign-out down here. */}
       <div className="mt-auto space-y-2 pt-4">
         <AccountCard userEmail={userEmail} />
       </div>
@@ -284,38 +286,48 @@ function SidebarContent({
   );
 }
 
-// Who you're signed in as, at the foot of the rail.
+// Who you're signed in as, at the foot of the rail — and the menu for everything account-level.
 //
 // It was the raw email on one line and a full-width "Sign out" button under it — which gave the
 // most destructive control in the rail the most visual weight, and gave the identity none. The
-// mockup has a card: initial, address, and the action tucked behind a menu where you go looking
-// for it rather than fall onto it.
+// mockup has a card: initial, address, and the actions tucked behind a menu where you go looking
+// for them rather than fall onto them.
+//
+// The WHOLE card is the menu trigger now, not just a 16px kebab: this is the one control people
+// hunt for by the avatar, so the hit target is the card. The menu holds Settings above Sign out —
+// Settings moved here off the header cog (David's call) so account, settings and sign-out share
+// one predictable home instead of being split top-and-bottom.
 function AccountCard({ userEmail }: { userEmail: string }) {
   const initial = (userEmail?.[0] || "?").toUpperCase();
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border bg-card p-2">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
-        {initial}
-      </span>
-      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{userEmail}</span>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            aria-label="Account menu"
-            className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" side="top">
-          <DropdownMenuItem onClick={signOut}>
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="Account and settings"
+          className="flex w-full items-center gap-2.5 rounded-lg border bg-card p-2 text-left transition-colors hover:bg-secondary/60"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+            {initial}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{userEmail}</span>
+          <MoreHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" side="top" className="w-56">
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/settings">
+            <Settings className="h-4 w-4" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={signOut}>
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
