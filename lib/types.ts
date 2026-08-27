@@ -217,6 +217,10 @@ export interface AdminAgentOverview {
   avatar_url: string | null;
   agent_type: string | null;
   created_at: string | null;
+  /** Set when the agent is soft-deleted (in the trash), null when live. */
+  deleted_at: string | null;
+  /** When the purge cron may destroy a soft-deleted agent for good. */
+  purge_after: string | null;
 }
 
 // One row in the all-workspaces table. Counts are computed server-side across every

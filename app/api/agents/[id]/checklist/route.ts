@@ -23,6 +23,7 @@ async function loadAnswers(
     .from("agents")
     .select("workspace_id")
     .eq("agent37_id", agentId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (!agent?.workspace_id) return null;
 

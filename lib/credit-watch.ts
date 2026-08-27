@@ -55,6 +55,7 @@ async function resolveContext(settings: CreditSettings): Promise<AgentContext | 
     .from("agents")
     .select("name, agent37_id")
     .eq("agent37_id", settings.agent37Id)
+    .is("deleted_at", null)
     .maybeSingle();
   // The row is gone: the agent was deleted and its settings outlived it. Nothing to watch.
   if (!agent) return null;

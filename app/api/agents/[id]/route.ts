@@ -1,6 +1,6 @@
 import { after } from "next/server";
 import { isAvatarPresetPath } from "@/config/avatar-presets";
-import { agent37 } from "@/lib/agent37";
+import { softDeleteAgent } from "@/lib/agent-lifecycle";
 import { requireAgentAccess } from "@/lib/auth";
 import { changeHostingSeats } from "@/lib/hosting-seats";
 import { ApiError, json, readJson, route } from "@/lib/http";
@@ -66,31 +66,40 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
   return json({ id, ...update });
 });
 
-export const DELETE = route(async (_request: Request, { params }: Ctx) => {
+export const DELETE = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
-  const { supabase, row: agent } = await requireAgentAccess(id, "admin");
+  const { user, row: agent } = await requireAgentAccess(id, "admin");
 
-  await agent37.deleteAgent(id);
-  await supabase.from("agents").delete().eq("agent37_id", id);
+  // Soft-delete now: the instance is STOPPED (not destroyed) and the row is stamped deleted_at
+  // with a purge_after window, so the customer can ask us to bring it back and the purge cron
+  // does the real teardown only once the window has passed. See lib/agent-lifecycle.ts.
+  const db = createAdminClient();
+  await softDeleteAgent(db, id, {
+    workspaceId: agent.workspace_id,
+    deletedBy: user.id,
+    actorEmail: user.email,
+    request,
+  });
 
   // Give the seat back — David's call, after testing left him billed for an agent he had
   // deleted. Adding through seats bumps the hosting quantity, so removing has to bump it down,
   // or "delete the test agent" quietly becomes a subscription line nobody is using.
   //
-  // ONLY when at least one agent remains. Deleting your last agent is the delete-and-rebuild
-  // flow: the quantity stays at 1, you keep paying for the seat you still own, and the rebuild
-  // provisions against it without touching billing. changeHostingSeats floors at 1 anyway, so
-  // even a miscount here cannot zero out the subscription; the count is so the ordinary rebuild
-  // does not trigger a pointless no-op call. Decrease credits the account (create_prorations)
-  // rather than refunding cash — the same proration the increase charged.
+  // ONLY when at least one LIVE agent remains (the just-deleted one now reads deleted_at, so the
+  // count excludes it). Deleting your last agent is the delete-and-rebuild flow: the quantity
+  // stays at 1, you keep paying for the seat you still own, and the rebuild provisions against it
+  // without touching billing. changeHostingSeats floors at 1 anyway, so even a miscount here
+  // cannot zero out the subscription; the count is so the ordinary rebuild does not trigger a
+  // pointless no-op call. Decrease credits the account (create_prorations) rather than refunding
+  // cash — the same proration the increase charged.
   //
-  // After the response and best-effort: the agent is gone either way, and a Stripe hiccup must
-  // not resurrect it on an error screen. The log line is the trail if the credit is missed.
-  const db = createAdminClient();
+  // After the response and best-effort: the agent is gone from view either way, and a Stripe
+  // hiccup must not resurrect it on an error screen. The log line is the trail if credit is missed.
   const { count } = await db
     .from("agents")
     .select("agent37_id", { count: "exact", head: true })
-    .eq("workspace_id", agent.workspace_id);
+    .eq("workspace_id", agent.workspace_id)
+    .is("deleted_at", null);
   if ((count ?? 0) >= 1) {
     after(async () => {
       try {

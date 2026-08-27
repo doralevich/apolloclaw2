@@ -72,6 +72,7 @@ export const POST = route(async (request: Request) => {
       .select("agent37_id")
       .eq("workspace_id", workspaceId)
       .eq("agent_type", type.id)
+      .is("deleted_at", null)
       .limit(1)
       .maybeSingle();
     if (!existing) {

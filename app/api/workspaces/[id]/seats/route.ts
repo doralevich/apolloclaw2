@@ -159,6 +159,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
       .select("agent37_id")
       .eq("workspace_id", id)
       .eq("owner_id", member.user_id)
+      .is("deleted_at", null)
       .limit(1)
       .maybeSingle();
     if (owned) {

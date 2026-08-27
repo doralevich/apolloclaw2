@@ -59,7 +59,7 @@ export const GET = route(async () => {
   // without per-agent calls. Owner emails come from the auth admin API.
   const [membersRes, agentsRes, liveRes, emails] = await Promise.all([
     admin.from("memberships").select("workspace_id, user_id").in("workspace_id", ids),
-    admin.from("agents").select("workspace_id, agent37_id, status").in("workspace_id", ids),
+    admin.from("agents").select("workspace_id, agent37_id, status").in("workspace_id", ids).is("deleted_at", null),
     agent37.listAgents().then(
       (r) => new Map(r.data.map((a) => [a.id, a.status])),
       () => new Map<string, string>()

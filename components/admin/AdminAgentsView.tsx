@@ -1,16 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, DoorOpen, ExternalLink, Trash2 } from "lucide-react";
+import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Trash2 } from "lucide-react";
 import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
-import { getAgentType } from "@/config/agent-types";
-import type { AdminAgentOverview } from "@/lib/types";
+import { AGENT_TYPES, getAgentType, LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
+import type { AdminAgentOverview, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Agents — everything that exists, in the database or in Agent37, in one list.
 //
@@ -46,6 +55,11 @@ export function AdminAgentsView() {
   const [agents, setAgents] = useState<AdminAgentOverview[] | null>(null);
   const [liveChecked, setLiveChecked] = useState(true);
   const [deleting, setDeleting] = useState<AdminAgentOverview | null>(null);
+  const [adopting, setAdopting] = useState<AdminAgentOverview | null>(null);
+  const [workspaces, setWorkspaces] = useState<AdminWorkspaceSummary[] | null>(null);
+  const [adoptWs, setAdoptWs] = useState("");
+  const [adoptType, setAdoptType] = useState<string>(LICENSE_AGENT_TYPE_ID);
+  const [adoptBusy, setAdoptBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -67,17 +81,72 @@ export function AdminAgentsView() {
   }, [load]);
 
   async function destroy(agent: AdminAgentOverview) {
-    const result = await apiFetch<{ id: string; vps_deleted: boolean; db_deleted: boolean }>(
-      `/api/admin/agents/${agent.agent37_id}`,
-      { method: "DELETE" }
-    );
-    toast.success(
-      [
-        result.vps_deleted ? "Instance deleted." : "Instance was already gone.",
-        result.db_deleted ? "Records purged." : "No records to purge.",
-      ].join(" ")
-    );
+    const result = await apiFetch<{
+      id: string;
+      mode: "soft_deleted" | "purged";
+      purge_after?: string;
+      vps_deleted?: boolean;
+      db_deleted?: boolean;
+    }>(`/api/admin/agents/${agent.agent37_id}`, { method: "DELETE" });
+    if (result.mode === "soft_deleted") {
+      toast.success("Moved to trash. Its instance is stopped and it can be restored until it purges.");
+    } else {
+      toast.success(
+        [
+          result.vps_deleted ? "Instance deleted." : "Instance was already gone.",
+          result.db_deleted ? "Records purged." : "No records to purge.",
+        ].join(" ")
+      );
+    }
     await load();
+  }
+
+  async function restore(agent: AdminAgentOverview) {
+    try {
+      const result = await apiFetch<{ id: string; restored: boolean; started: boolean; startError?: string }>(
+        `/api/admin/agents/${agent.agent37_id}/restore`,
+        { method: "POST" }
+      );
+      toast.success(
+        result.started
+          ? "Restored. The instance is starting back up."
+          : "Restored. The instance did not start - start it from the instance controls." +
+              (result.startError ? ` (${result.startError})` : "")
+      );
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  // Adopt an orphan: open the picker, lazily loading the workspace list the first time.
+  function openAdopt(agent: AdminAgentOverview) {
+    setAdopting(agent);
+    setAdoptWs("");
+    setAdoptType(LICENSE_AGENT_TYPE_ID);
+    if (!workspaces) {
+      apiFetch<{ workspaces: AdminWorkspaceSummary[] }>("/api/admin/workspaces")
+        .then((d) => setWorkspaces(d.workspaces))
+        .catch((e) => toast.error((e as Error).message));
+    }
+  }
+
+  async function adopt() {
+    if (!adopting || !adoptWs) return;
+    setAdoptBusy(true);
+    try {
+      await apiFetch(`/api/admin/agents/${adopting.agent37_id}/adopt`, {
+        method: "POST",
+        body: JSON.stringify({ workspace_id: adoptWs, agent_type: adoptType }),
+      });
+      toast.success("Instance adopted - it now belongs to the workspace.");
+      setAdopting(null);
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setAdoptBusy(false);
+    }
   }
 
   // One section per workspace (name-sorted), instances outside any workspace last.
@@ -134,12 +203,12 @@ export function AdminAgentsView() {
                 </div>
                 <div className="space-y-3">
                   {main.map((a) => (
-                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} />
+                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} />
                   ))}
                   {members.length > 0 && (
                     <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
                       {members.map((a) => (
-                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} />
+                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} />
                       ))}
                     </div>
                   )}
@@ -150,39 +219,128 @@ export function AdminAgentsView() {
         </div>
       )}
 
-      {deleting && (
-        <ConfirmDialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setDeleting(null);
-          }}
-          title={`Delete ${deleting.name || deleting.agent37_id}?`}
-          description={
-            deleting.presence === "ghost"
-              ? "The instance is already gone; this purges the leftover records so the agent stops appearing in the product."
-              : deleting.presence === "orphan"
-                ? "This instance has no records in the product; this deletes it from Agent37 so it stops hosting."
-                : `This deletes the running instance and all of its records${deleting.workspace_name ? ` in "${deleting.workspace_name}"` : ""}. If the workspace keeps another agent, one hosting seat is credited back.`
-          }
-          confirmText="Delete agent"
-          destructive
-          onConfirm={() => destroy(deleting)}
-        />
-      )}
+      {deleting && (() => {
+        // Three outcomes: an already-trashed agent purges for good (skips the wait); an orphan
+        // instance (no row) is deleted from Agent37 outright; anything else moves to the trash,
+        // reversibly. Only the first two are irreversible.
+        const isTrashed = Boolean(deleting.deleted_at);
+        const isOrphan = deleting.presence === "orphan";
+        const hard = isTrashed || isOrphan;
+        return (
+          <ConfirmDialog
+            open
+            onOpenChange={(open) => {
+              if (!open) setDeleting(null);
+            }}
+            title={hard ? `Purge ${deleting.name || deleting.agent37_id} for good?` : `Delete ${deleting.name || deleting.agent37_id}?`}
+            description={
+              isTrashed
+                ? "This agent is already in the trash. Purging destroys its instance and records now, skipping the retention window. This cannot be undone."
+                : isOrphan
+                  ? "This instance has no records in the product; this deletes it from Agent37 so it stops hosting. This cannot be undone."
+                  : `This moves the agent to the trash: its instance is stopped (not destroyed) and it can be restored until it purges${deleting.workspace_name ? `, in "${deleting.workspace_name}"` : ""}. If the workspace keeps another agent, one hosting seat is credited back.`
+            }
+            confirmText={hard ? "Purge for good" : "Move to trash"}
+            destructive={hard}
+            onConfirm={() => destroy(deleting)}
+          />
+        );
+      })()}
+
+      <Dialog open={!!adopting} onOpenChange={(open) => { if (!open) setAdopting(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adopt this instance</DialogTitle>
+            <DialogDescription>
+              Give this orphaned Agent37 instance a home. It gets a record in the workspace you
+              pick and shows up in the product as that workspace&apos;s agent - use this to
+              reconnect an instance Agent37 restored, or one a swept row left stranded.
+            </DialogDescription>
+          </DialogHeader>
+          {adopting && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                <span className="font-mono">{adopting.agent37_id}</span>
+                {adopting.name ? ` · ${adopting.name}` : ""}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="adopt-ws">Workspace</Label>
+                <select
+                  id="adopt-ws"
+                  value={adoptWs}
+                  onChange={(e) => setAdoptWs(e.target.value)}
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="" disabled>
+                    {workspaces === null ? "Loading workspaces..." : "Select a workspace"}
+                  </option>
+                  {(workspaces ?? []).map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                      {w.owner_email ? ` — ${w.owner_email}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="adopt-type">Agent type</Label>
+                <select
+                  id="adopt-type"
+                  value={adoptType}
+                  onChange={(e) => setAdoptType(e.target.value)}
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {AGENT_TYPES.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  The instance keeps its own persona - this only sets the label the product shows.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdopting(null)} disabled={adoptBusy}>
+              Cancel
+            </Button>
+            <Button onClick={adopt} disabled={adoptBusy || !adoptWs}>
+              {adoptBusy ? "Adopting..." : "Adopt instance"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+// "in 6 days", "today", or "overdue" for a purge_after timestamp.
+function purgeCountdown(purgeAfter: string | null): string {
+  if (!purgeAfter) return "soon";
+  const ms = new Date(purgeAfter).getTime() - Date.now();
+  if (ms <= 0) return "any time now";
+  const days = Math.round(ms / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "today";
+  return `in ${days} day${days === 1 ? "" : "s"}`;
 }
 
 function AgentCard({
   agent,
   member = false,
   onDelete,
+  onRestore,
+  onAdopt,
 }: {
   agent: AdminAgentOverview;
   member?: boolean;
   onDelete: () => void;
+  onRestore: () => void;
+  onAdopt: () => void;
 }) {
   const presence = PRESENCE[agent.presence];
+  const trashed = Boolean(agent.deleted_at);
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
   const [opening, setOpening] = useState<"apolloclaw" | "instance" | null>(null);
 
@@ -216,7 +374,11 @@ function AgentCard({
     }
   }
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4">
+    <div
+      className={`flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4${
+        trashed ? " border-dashed opacity-70" : ""
+      }`}
+    >
       {member && <CornerDownRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
       {agent.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element -- storage URLs and data: URIs; next/image adds nothing here
@@ -230,6 +392,14 @@ function AgentCard({
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{agent.name || "Untitled agent"}</span>
           {member && <Badge variant="secondary">Member seat</Badge>}
+          {trashed && (
+            <Badge
+              variant="destructive"
+              title={`Soft-deleted - the instance is stopped, not destroyed. The purge cron removes it for good ${purgeCountdown(agent.purge_after)}.`}
+            >
+              In trash · purges {purgeCountdown(agent.purge_after)}
+            </Badge>
+          )}
           <span title={presence.hint}>
             <Badge variant={presence.variant}>{presence.label}</Badge>
           </span>
@@ -257,15 +427,41 @@ function AgentCard({
             {opening === "instance" ? "Opening..." : "Instance"}
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-4 w-4" />
-          Delete
-        </Button>
+        {/* Orphan only: a live instance with no row can be adopted into a workspace instead of
+            deleted. The reconnect path for a restored or stranded instance. */}
+        {agent.presence === "orphan" && (
+          <Button variant="outline" size="sm" onClick={onAdopt}>
+            <Link2 className="h-4 w-4" />
+            Adopt
+          </Button>
+        )}
+        {trashed ? (
+          <>
+            <Button variant="outline" size="sm" onClick={onRestore} disabled={opening !== null}>
+              <RotateCcw className="h-4 w-4" />
+              Restore
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+              Purge now
+            </Button>
+          </>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        )}
       </div>
     </div>
   );

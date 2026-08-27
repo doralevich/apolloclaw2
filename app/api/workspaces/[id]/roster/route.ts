@@ -33,6 +33,7 @@ export const GET = route(async (_request: Request, { params }: Ctx) => {
     .from("agents")
     .select("agent37_id, name, avatar_url, owner_id, created_by, status, created_at")
     .eq("workspace_id", id)
+    .is("deleted_at", null)
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
 

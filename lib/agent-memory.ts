@@ -258,7 +258,10 @@ export async function removeUserMdPointer(instanceIds: string[]): Promise<Repair
  */
 export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairResult[]> {
   const db = createAdminClient();
-  const { data, error } = await db.from("agents").select("agent37_id, name, workspace_id, agent_type");
+  const { data, error } = await db
+    .from("agents")
+    .select("agent37_id, name, workspace_id, agent_type")
+    .is("deleted_at", null);
   if (error) throw new Error(`could not read this dashboard's agents: ${error.message}`);
 
   const rows = (data ?? []) as {
