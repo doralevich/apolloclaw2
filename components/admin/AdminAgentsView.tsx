@@ -1,16 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, DoorOpen, ExternalLink, RotateCcw, Trash2 } from "lucide-react";
+import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Trash2 } from "lucide-react";
 import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
-import { getAgentType } from "@/config/agent-types";
-import type { AdminAgentOverview } from "@/lib/types";
+import { AGENT_TYPES, getAgentType, LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
+import type { AdminAgentOverview, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Agents — everything that exists, in the database or in Agent37, in one list.
 //
@@ -46,6 +55,11 @@ export function AdminAgentsView() {
   const [agents, setAgents] = useState<AdminAgentOverview[] | null>(null);
   const [liveChecked, setLiveChecked] = useState(true);
   const [deleting, setDeleting] = useState<AdminAgentOverview | null>(null);
+  const [adopting, setAdopting] = useState<AdminAgentOverview | null>(null);
+  const [workspaces, setWorkspaces] = useState<AdminWorkspaceSummary[] | null>(null);
+  const [adoptWs, setAdoptWs] = useState("");
+  const [adoptType, setAdoptType] = useState<string>(LICENSE_AGENT_TYPE_ID);
+  const [adoptBusy, setAdoptBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -105,6 +119,36 @@ export function AdminAgentsView() {
     }
   }
 
+  // Adopt an orphan: open the picker, lazily loading the workspace list the first time.
+  function openAdopt(agent: AdminAgentOverview) {
+    setAdopting(agent);
+    setAdoptWs("");
+    setAdoptType(LICENSE_AGENT_TYPE_ID);
+    if (!workspaces) {
+      apiFetch<{ workspaces: AdminWorkspaceSummary[] }>("/api/admin/workspaces")
+        .then((d) => setWorkspaces(d.workspaces))
+        .catch((e) => toast.error((e as Error).message));
+    }
+  }
+
+  async function adopt() {
+    if (!adopting || !adoptWs) return;
+    setAdoptBusy(true);
+    try {
+      await apiFetch(`/api/admin/agents/${adopting.agent37_id}/adopt`, {
+        method: "POST",
+        body: JSON.stringify({ workspace_id: adoptWs, agent_type: adoptType }),
+      });
+      toast.success("Instance adopted - it now belongs to the workspace.");
+      setAdopting(null);
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setAdoptBusy(false);
+    }
+  }
+
   // One section per workspace (name-sorted), instances outside any workspace last.
   const groups = new Map<string, { name: string; owner: string | null; rows: AdminAgentOverview[] }>();
   for (const a of agents ?? []) {
@@ -159,12 +203,12 @@ export function AdminAgentsView() {
                 </div>
                 <div className="space-y-3">
                   {main.map((a) => (
-                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} />
+                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} />
                   ))}
                   {members.length > 0 && (
                     <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
                       {members.map((a) => (
-                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} />
+                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} />
                       ))}
                     </div>
                   )}
@@ -202,6 +246,72 @@ export function AdminAgentsView() {
           />
         );
       })()}
+
+      <Dialog open={!!adopting} onOpenChange={(open) => { if (!open) setAdopting(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adopt this instance</DialogTitle>
+            <DialogDescription>
+              Give this orphaned Agent37 instance a home. It gets a record in the workspace you
+              pick and shows up in the product as that workspace&apos;s agent - use this to
+              reconnect an instance Agent37 restored, or one a swept row left stranded.
+            </DialogDescription>
+          </DialogHeader>
+          {adopting && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                <span className="font-mono">{adopting.agent37_id}</span>
+                {adopting.name ? ` · ${adopting.name}` : ""}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="adopt-ws">Workspace</Label>
+                <select
+                  id="adopt-ws"
+                  value={adoptWs}
+                  onChange={(e) => setAdoptWs(e.target.value)}
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="" disabled>
+                    {workspaces === null ? "Loading workspaces..." : "Select a workspace"}
+                  </option>
+                  {(workspaces ?? []).map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                      {w.owner_email ? ` — ${w.owner_email}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="adopt-type">Agent type</Label>
+                <select
+                  id="adopt-type"
+                  value={adoptType}
+                  onChange={(e) => setAdoptType(e.target.value)}
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {AGENT_TYPES.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  The instance keeps its own persona - this only sets the label the product shows.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdopting(null)} disabled={adoptBusy}>
+              Cancel
+            </Button>
+            <Button onClick={adopt} disabled={adoptBusy || !adoptWs}>
+              {adoptBusy ? "Adopting..." : "Adopt instance"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -221,11 +331,13 @@ function AgentCard({
   member = false,
   onDelete,
   onRestore,
+  onAdopt,
 }: {
   agent: AdminAgentOverview;
   member?: boolean;
   onDelete: () => void;
   onRestore: () => void;
+  onAdopt: () => void;
 }) {
   const presence = PRESENCE[agent.presence];
   const trashed = Boolean(agent.deleted_at);
@@ -313,6 +425,14 @@ function AgentCard({
           <Button variant="ghost" size="sm" onClick={openInstance} disabled={opening !== null}>
             <ExternalLink className="h-4 w-4" />
             {opening === "instance" ? "Opening..." : "Instance"}
+          </Button>
+        )}
+        {/* Orphan only: a live instance with no row can be adopted into a workspace instead of
+            deleted. The reconnect path for a restored or stranded instance. */}
+        {agent.presence === "orphan" && (
+          <Button variant="outline" size="sm" onClick={onAdopt}>
+            <Link2 className="h-4 w-4" />
+            Adopt
           </Button>
         )}
         {trashed ? (
