@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { MergedAgent, Role } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
@@ -41,11 +41,20 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // The workspace whose agents we currently WANT. Opening a customer for support mounts on the
+  // admin's own workspace and then switches, so two loads (own, then customer) are in flight at
+  // once; without this guard the slower one wins and can blank the customer's agent with the
+  // (empty) own-workspace result. Every load stamps this and ignores its own response if the
+  // workspace has moved on since.
+  const wantRef = useRef<string | null>(workspaceId);
+
   // `silent` suppresses the toast for background polls — a flaky network shouldn't toast
   // every 5 seconds; the error state (and any cached list) still updates.
   const load = useCallback(
     async ({ silent = false }: { silent?: boolean } = {}) => {
-      if (!workspaceId) {
+      const ws = workspaceId;
+      wantRef.current = ws;
+      if (!ws) {
         setAgents([]);
         setError(null);
         setLoading(false);
@@ -53,17 +62,19 @@ export function ActiveAgentProvider({ children }: { children: React.ReactNode })
       }
       try {
         const data = await apiFetch<{ agents: MergedAgent[]; role: Role }>(
-          `/api/agents?workspace=${workspaceId}`
+          `/api/agents?workspace=${ws}`
         );
+        if (wantRef.current !== ws) return; // superseded by a newer workspace - drop this result
         setAgents(data.agents);
         setRole(data.role);
         setError(null);
       } catch (e) {
+        if (wantRef.current !== ws) return;
         const message = (e as Error).message || "Couldn't load agents.";
         setError(message);
         if (!silent) toast.error(message);
       } finally {
-        setLoading(false);
+        if (wantRef.current === ws) setLoading(false);
       }
     },
     [workspaceId]
