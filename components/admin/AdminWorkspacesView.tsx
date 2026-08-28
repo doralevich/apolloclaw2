@@ -11,18 +11,19 @@ import type { AdminAgentDetail, AdminWorkspaceSummary, Budget } from "@/lib/type
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
-import { STORAGE_KEY } from "@/components/WorkspaceProvider";
-
-// Support access: become an admin member of the customer's workspace (idempotent,
-// audit-logged), point the dashboard's stored workspace at it, and open the ApolloClaw
-// dashboard in a new tab - landing inside THEIR workspace with the whole product available:
-// checklist, integrations, skills, channels. This is how "help the client with their setup"
-// actually happens; the OpenClaw button next to it is the raw instance for when the product
-// isn't the surface you need.
+// Support access: become an admin member of the customer's workspace (idempotent, audit-logged)
+// and open the ApolloClaw dashboard in a new tab pointed AT their workspace via ?ws= - landing
+// inside THEIR workspace with the whole product available: checklist, integrations, skills,
+// channels. This is how "help the client with their setup" actually happens; the OpenClaw button
+// next to it is the raw instance for when the product isn't the surface you need.
+//
+// The ?ws= param is a PER-TAB support view (see WorkspaceProvider): it deliberately does NOT
+// write the cross-session default, so opening a customer for support never makes their workspace
+// the admin's home on future logins - the bug this replaced, where every login landed the admin
+// back in the last customer they'd helped.
 export async function openWorkspaceInApolloClaw(workspaceId: string): Promise<void> {
   await apiFetch(`/api/admin/workspaces/${workspaceId}/join`, { method: "POST" });
-  localStorage.setItem(STORAGE_KEY, workspaceId);
-  window.open("/dashboard", "_blank", "noopener");
+  window.open(`/dashboard?ws=${encodeURIComponent(workspaceId)}`, "_blank", "noopener");
 }
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
@@ -331,6 +331,36 @@ function AccountCard({ userEmail }: { userEmail: string }) {
   );
 }
 
+// Shown only to a platform admin who is looking at a workspace that isn't their own - i.e. a
+// support view opened from Super Admin. It makes the context unmissable (you're acting in a
+// customer's account) and, crucially, gives the one way back that the rail no longer does since
+// the admin workspace switcher was retired: a button home to your own workspace.
+function SupportViewBanner() {
+  const { isPlatformAdmin, viewingOther, current, ownWorkspaceId, returnToOwnWorkspace } = useWorkspace();
+  const router = useRouter();
+  if (!isPlatformAdmin || !viewingOther) return null;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100 md:px-8">
+      <span>
+        You&apos;re viewing <strong>{current?.name ?? "another workspace"}</strong> for support — changes
+        here affect the customer&apos;s account.
+      </span>
+      {ownWorkspaceId && (
+        <button
+          type="button"
+          onClick={() => {
+            returnToOwnWorkspace();
+            router.push("/dashboard/start-here");
+          }}
+          className="shrink-0 rounded-md border border-amber-300 bg-white/70 px-2.5 py-1 text-xs font-medium text-amber-900 transition-colors hover:bg-white dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900"
+        >
+          Return to your workspace
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isChat = pathname.startsWith("/dashboard/chat");
@@ -403,6 +433,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           around a conversation they would put the composer in a box in the middle of the room. */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <DashboardHeader />
+        <SupportViewBanner />
         {/* No wash here any more - David's final call, looking at the checklist: "make the
             background white." The lavender-and-rose bloom went onto every page for a while and
             came straight back off; it survives only on the chat WELCOME state (ChatView), the
