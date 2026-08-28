@@ -99,6 +99,7 @@ export const GET = route(async () => {
     agent_count: agentCount.get(w.id) ?? 0,
     running_count: runningCount.get(w.id) ?? 0,
     you_are_member: mine.has(w.id),
+    you_own: w.owner_id === user.id,
   }));
 
   return json({ workspaces: summaries });
