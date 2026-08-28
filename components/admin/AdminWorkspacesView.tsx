@@ -24,7 +24,11 @@ import { CreateAgentButton } from "@/components/CreateAgentButton";
 // back in the last customer they'd helped.
 export async function openWorkspaceInApolloClaw(workspaceId: string): Promise<void> {
   await apiFetch(`/api/admin/workspaces/${workspaceId}/join`, { method: "POST" });
-  window.open(`/dashboard?ws=${encodeURIComponent(workspaceId)}`, "_blank", "noopener");
+  // Open the FINAL page (start-here), not /dashboard: /dashboard is a server redirect to
+  // start-here, and that redirect drops the query string - so opening /dashboard?ws= lost the
+  // param before the provider could read it, and the admin landed back in their own workspace
+  // instead of the customer's. Targeting the real destination keeps ?ws= intact.
+  window.open(`/dashboard/start-here?ws=${encodeURIComponent(workspaceId)}`, "_blank", "noopener");
 }
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
