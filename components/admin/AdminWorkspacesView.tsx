@@ -10,6 +10,7 @@ import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAgentDetail, AdminWorkspaceSummary, Budget } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
 // Support access: become an admin member of the customer's workspace (idempotent, audit-logged)
 // and open the ApolloClaw dashboard in a new tab pointed AT their workspace via ?ws= - landing
@@ -39,6 +40,8 @@ export function AdminWorkspacesView() {
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [confirmLeaveAll, setConfirmLeaveAll] = useState(false);
+  const [leavingAll, setLeavingAll] = useState(false);
 
   const loadWorkspaces = useCallback(async () => {
     try {
@@ -72,6 +75,28 @@ export function AdminWorkspacesView() {
       setCreating(false);
     }
   }, [newEmail, newName, loadWorkspaces]);
+
+  // Drop every SUPPORT membership at once (workspaces the admin is a member of but doesn't own).
+  // The accumulated cost of every "Open in ApolloClaw" join, cleared in one click instead of
+  // leaving each customer's workspace by hand.
+  const leaveAll = useCallback(async () => {
+    setLeavingAll(true);
+    try {
+      const { count } = await apiFetch<{ left: string[]; count: number }>(
+        "/api/admin/workspaces/leave-all",
+        { method: "POST" }
+      );
+      toast.success(
+        count === 0 ? "No support memberships to leave." : `Left ${count} support workspace${count === 1 ? "" : "s"}.`
+      );
+      setConfirmLeaveAll(false);
+      await loadWorkspaces();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setLeavingAll(false);
+    }
+  }, [loadWorkspaces]);
 
   useEffect(() => {
     // Initial fetch on mount. setState happens after the await (async), not synchronously
@@ -120,14 +145,40 @@ export function AdminWorkspacesView() {
     [loadWorkspaces, loadDetail, expanded]
   );
 
+  const supportCount = (workspaces ?? []).filter((w) => w.you_are_member && !w.you_own).length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
-        <p className="text-sm text-muted-foreground">
-          All workspaces across the platform (newest 50). Expand a card to see its instances.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
+          <p className="text-sm text-muted-foreground">
+            All workspaces across the platform (newest 50). Expand a card to see its instances.
+          </p>
+        </div>
+        {supportCount > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setConfirmLeaveAll(true)}
+            title="Leave every workspace you only joined for support"
+          >
+            <LogOut className="h-4 w-4" />
+            Leave {supportCount} support workspace{supportCount === 1 ? "" : "s"}
+          </Button>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={confirmLeaveAll}
+        onOpenChange={(open) => {
+          if (!leavingAll) setConfirmLeaveAll(open);
+        }}
+        title={`Leave ${supportCount} support workspace${supportCount === 1 ? "" : "s"}?`}
+        description="Removes your support membership from every customer workspace you don't own, clearing them out of your own workspace list. Your own workspaces are untouched, and you can rejoin any customer any time with Open in ApolloClaw."
+        confirmText={leavingAll ? "Leaving..." : "Leave all"}
+        onConfirm={leaveAll}
+      />
 
       {/* Create a workspace for an existing user, then use "Create Apollo Agent" on its card to
           drop a blank OpenClaw box in and Open to write the files. */}

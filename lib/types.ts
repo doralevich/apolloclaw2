@@ -236,6 +236,8 @@ export interface AdminWorkspaceSummary {
   running_count: number;
   /** The calling platform admin already holds a membership (support access is open). */
   you_are_member: boolean;
+  /** The calling admin OWNS this workspace (their own, not a support membership). */
+  you_own: boolean;
 }
 
 // One instance inside an expanded workspace row, enriched with live agent37 state plus
