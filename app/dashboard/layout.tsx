@@ -58,6 +58,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <ThemeProvider>
       <WorkspaceProvider
         initialWorkspaces={workspaces}
+        userId={user.id}
         userEmail={user.email ?? ""}
         // Resolved here because auth user_metadata is only readable server-side. Null when the
         // account has no usable name — the chat greeting has a no-name form for exactly that.
