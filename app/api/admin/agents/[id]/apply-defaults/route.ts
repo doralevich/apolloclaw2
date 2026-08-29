@@ -6,6 +6,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+// applyInstanceDefaults retries for up to ~90s while a sleeping box wakes, then restarts it. The
+// platform default timeout (~15s) kills that mid-flight before we can log or respond, so a slow
+// box silently fails. Match the other exec-heavy admin routes (install-skills, repair-memory).
+export const maxDuration = 300;
+
 // POST /api/admin/agents/{id}/apply-defaults — backfill our capability defaults onto a box that
 // already exists (memory embeddings, Tavily web search, clock). New agents get these at provision;
 // this is how the ones created before that lands catch up. Restarts the instance so the config
