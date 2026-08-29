@@ -252,9 +252,9 @@ export function AdminWorkspacesView() {
                     </span>
                   </button>
 
-                  <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-                    <Stat label="Owner" value={w.owner_email ?? "-"} />
-                    <Stat label="Members" value={String(w.member_count)} />
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                    <Stat label="Owner" value={w.owner_email ?? "-"} className="w-52" />
+                    <Stat label="Members" value={String(w.member_count)} className="w-16" />
                     <Stat
                       label="Agents"
                       value={
@@ -262,8 +262,9 @@ export function AdminWorkspacesView() {
                           ? "0"
                           : `${w.agent_count}${w.running_count ? ` (${w.running_count} running)` : ""}`
                       }
+                      className="w-28"
                     />
-                    <Stat label="Created" value={formatDate(w.created_at)} />
+                    <Stat label="Created" value={formatDate(w.created_at)} className="w-24" />
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -294,11 +295,13 @@ export function AdminWorkspacesView() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
-    <div>
+    <div className={className}>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm">{value}</p>
+      <p className="truncate text-sm" title={value}>
+        {value}
+      </p>
     </div>
   );
 }

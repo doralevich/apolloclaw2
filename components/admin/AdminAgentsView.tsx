@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Wrench } from "lucide-react";
 import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -61,6 +61,7 @@ export function AdminAgentsView() {
   const [adoptType, setAdoptType] = useState<string>(LICENSE_AGENT_TYPE_ID);
   const [adoptBusy, setAdoptBusy] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [revertingId, setRevertingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -123,6 +124,31 @@ export function AdminAgentsView() {
       toast.error((e as Error).message);
     } finally {
       setApplyingId(null);
+    }
+  }
+
+  // Undo the capability defaults on a box whose harness they took down. Removes exactly the
+  // openclaw.json keys Apply defaults set and restarts, bringing the agent runtime back.
+  async function revertDefaults(agent: AdminAgentOverview) {
+    setRevertingId(agent.agent37_id);
+    try {
+      const r = await apiFetch<{ reverted: boolean; removed: string[]; note?: string }>(
+        `/api/admin/agents/${agent.agent37_id}/revert-defaults`,
+        { method: "POST" }
+      );
+      if (r.reverted) {
+        toast.success(
+          r.removed.length
+            ? `Reverted: removed ${r.removed.join(", ")}. Instance restarting.`
+            : "Nothing to revert - our keys were not present. Instance restarting."
+        );
+      } else {
+        toast.error(`Could not revert${r.note ? `: ${r.note}` : ""}.`);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setRevertingId(null);
     }
   }
 
@@ -228,12 +254,12 @@ export function AdminAgentsView() {
                 </div>
                 <div className="space-y-3">
                   {main.map((a) => (
-                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} />
+                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} />
                   ))}
                   {members.length > 0 && (
                     <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
                       {members.map((a) => (
-                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} />
+                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} />
                       ))}
                     </div>
                   )}
@@ -359,6 +385,8 @@ function AgentCard({
   onAdopt,
   onApplyDefaults,
   applying = false,
+  onRevertDefaults,
+  reverting = false,
 }: {
   agent: AdminAgentOverview;
   member?: boolean;
@@ -367,6 +395,8 @@ function AgentCard({
   onAdopt: () => void;
   onApplyDefaults: () => void;
   applying?: boolean;
+  onRevertDefaults: () => void;
+  reverting?: boolean;
 }) {
   const presence = PRESENCE[agent.presence];
   const trashed = Boolean(agent.deleted_at);
@@ -470,6 +500,14 @@ function AgentCard({
           <Button variant="ghost" size="sm" onClick={onApplyDefaults} disabled={applying} title="Apply memory + web search + clock defaults, then restart">
             <Sparkles className="h-4 w-4" />
             {applying ? "Applying..." : "Apply defaults"}
+          </Button>
+        )}
+        {/* Recovery: undo the defaults on a box whose harness they took down. Removes exactly the
+            keys Apply defaults set and restarts the instance. */}
+        {agent.presence !== "ghost" && !trashed && (
+          <Button variant="ghost" size="sm" onClick={onRevertDefaults} disabled={reverting} title="Remove the memory/web-search config we wrote and restart (harness recovery)">
+            <Wrench className="h-4 w-4" />
+            {reverting ? "Reverting..." : "Revert defaults"}
           </Button>
         )}
         {trashed ? (
