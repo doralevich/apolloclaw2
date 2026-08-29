@@ -35,12 +35,11 @@ export const POST = route(async (request: Request) => {
   }
 
   const db = createAdminClient();
-  const redirectTo = `${publicSiteOrigin(new URL(request.url).origin)}/auth/callback?next=${encodeURIComponent("/reset-password")}`;
+  const origin = publicSiteOrigin(new URL(request.url).origin);
 
   const { data, error } = await db.auth.admin.generateLink({
     type: "recovery",
     email,
-    options: { redirectTo },
   });
 
   if (error) {
@@ -51,11 +50,21 @@ export const POST = route(async (request: Request) => {
     throw new Error("Could not create a reset link. Please try again.");
   }
 
-  const link = data.properties?.action_link;
-  if (!link) {
-    console.error("[reset-password] no action_link in response for", email);
+  // Build our OWN callback link from the single-use token hash instead of mailing Supabase's raw
+  // action_link. The action_link routes through Supabase's /auth/v1/verify, which hands the
+  // session back to redirect_to as a URL HASH fragment (#access_token=...) - which a server route
+  // cannot read. So /auth/callback saw no `code` and no `token_hash`, fell through, and bounced
+  // to /login: the reset "loop" Graham hit (link -> login screen, never the password form).
+  //
+  // Pointing straight at /auth/callback with the token_hash + type=recovery hits its verifyOtp
+  // branch, which establishes the session SERVER-SIDE (setting the auth cookies) and forwards to
+  // /reset-password, where the page finds a live session and shows the new-password form.
+  const tokenHash = data.properties?.hashed_token;
+  if (!tokenHash) {
+    console.error("[reset-password] no hashed_token in response for", email);
     throw new Error("Could not create a reset link. Please try again.");
   }
+  const link = `${origin}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=recovery&next=${encodeURIComponent("/reset-password")}`;
 
   await sendMandrillEmail({
     to: email,
