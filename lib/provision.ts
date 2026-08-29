@@ -11,6 +11,7 @@ import {
   TOOLS_FENCE,
 } from "@/config/agent-workspace";
 import { buildAgentsMd, buildIdentityMd, buildToolsMd } from "@/lib/agent-files";
+import { applyInstanceDefaults } from "@/lib/instance-defaults";
 import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
@@ -555,6 +556,15 @@ async function injectAfterProvision(
     .eq("workspace_id", workspaceId)
     .eq("agent_type", type.id)
     .maybeSingle();
+
+  // The capability defaults every box should come up with: local memory embeddings (so searchable
+  // memory works with no OpenAI key), Tavily web search (fleet key from TAVILY_API_KEY), and the
+  // customer's clock. Independent of the questionnaire, so it runs BEFORE the answers gate below
+  // and still applies to a blank agent with no setup row. Best-effort - never fails a provision.
+  const setupAnswers = (setup?.answers as Record<string, unknown> | undefined) ?? undefined;
+  const tz = typeof setupAnswers?.timezone === "string" ? (setupAnswers.timezone as string) : null;
+  await applyInstanceDefaults(agentId, { timezone: tz });
+
   if (!setup) return;
 
   // Onboarding can finish before the agent even exists (fast questionnaire, slow webhook);
