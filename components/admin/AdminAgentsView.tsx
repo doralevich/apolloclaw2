@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Trash2 } from "lucide-react";
+import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -60,6 +60,7 @@ export function AdminAgentsView() {
   const [adoptWs, setAdoptWs] = useState("");
   const [adoptType, setAdoptType] = useState<string>(LICENSE_AGENT_TYPE_ID);
   const [adoptBusy, setAdoptBusy] = useState(false);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -99,6 +100,30 @@ export function AdminAgentsView() {
       );
     }
     await load();
+  }
+
+  // Backfill capability defaults (memory embeddings, Tavily search, clock) onto an existing box,
+  // then it restarts to pick them up. New agents get these at provision automatically.
+  async function applyDefaults(agent: AdminAgentOverview) {
+    setApplyingId(agent.agent37_id);
+    try {
+      const r = await apiFetch<{ applied: boolean; memory: boolean; webSearch: boolean; timezone: boolean; note?: string }>(
+        `/api/admin/agents/${agent.agent37_id}/apply-defaults`,
+        { method: "POST" }
+      );
+      if (r.applied) {
+        toast.success(
+          `Defaults applied: memory${r.webSearch ? " + web search" : ""}${r.timezone ? " + clock" : ""}. Instance restarting.` +
+            (r.note ? ` (${r.note})` : "")
+        );
+      } else {
+        toast.error(`Could not apply defaults${r.note ? `: ${r.note}` : ""}.`);
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setApplyingId(null);
+    }
   }
 
   async function restore(agent: AdminAgentOverview) {
@@ -203,12 +228,12 @@ export function AdminAgentsView() {
                 </div>
                 <div className="space-y-3">
                   {main.map((a) => (
-                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} />
+                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} />
                   ))}
                   {members.length > 0 && (
                     <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
                       {members.map((a) => (
-                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} />
+                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} />
                       ))}
                     </div>
                   )}
@@ -332,12 +357,16 @@ function AgentCard({
   onDelete,
   onRestore,
   onAdopt,
+  onApplyDefaults,
+  applying = false,
 }: {
   agent: AdminAgentOverview;
   member?: boolean;
   onDelete: () => void;
   onRestore: () => void;
   onAdopt: () => void;
+  onApplyDefaults: () => void;
+  applying?: boolean;
 }) {
   const presence = PRESENCE[agent.presence];
   const trashed = Boolean(agent.deleted_at);
@@ -433,6 +462,14 @@ function AgentCard({
           <Button variant="outline" size="sm" onClick={onAdopt}>
             <Link2 className="h-4 w-4" />
             Adopt
+          </Button>
+        )}
+        {/* Backfill capability defaults (memory, web search, clock) onto a box that has a live
+            instance. New agents get these at provision; this catches up the older ones. */}
+        {agent.presence !== "ghost" && !trashed && (
+          <Button variant="ghost" size="sm" onClick={onApplyDefaults} disabled={applying} title="Apply memory + web search + clock defaults, then restart">
+            <Sparkles className="h-4 w-4" />
+            {applying ? "Applying..." : "Apply defaults"}
           </Button>
         )}
         {trashed ? (
