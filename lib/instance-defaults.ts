@@ -266,6 +266,51 @@ export async function inspectInstanceDefaults(agentId: string): Promise<InspectR
   }
 }
 
+export interface ConfigDumpResult {
+  ok: boolean;
+  file?: string;
+  config?: unknown;
+  note?: string;
+}
+
+/**
+ * Read one instance's whole OpenClaw config back, with every secret-looking value redacted, so we
+ * can see how a working provider (e.g. Anthropic) is registered and mirror that exact shape for a
+ * new one — instead of guessing the schema, which is what took an instance's harness down. Values
+ * under key names that look like credentials are replaced with a length-only marker, and any very
+ * long string is truncated, so nothing sensitive leaves the box. Read-only; never writes.
+ */
+export async function dumpInstanceConfig(agentId: string): Promise<ConfigDumpResult> {
+  const script =
+    'const fs=require("fs");' +
+    'const root=process.env.OPENCLAW_STATE_DIR||"/home/node/.openclaw";' +
+    'const cands=["openclaw.json","config.json"].map(f=>root+"/"+f);' +
+    'const file=cands.find(f=>fs.existsSync(f));' +
+    'if(!file){console.log("NO_CONFIG");process.exit(0);}' +
+    'let cfg;try{cfg=JSON.parse(fs.readFileSync(file,"utf8"));}catch(e){console.log("CONFIG_PARSE_FAIL");process.exit(0);}' +
+    'const SECRET=/key|token|secret|password|apikey|authorization|bearer/i;' +
+    'const redact=(o)=>{' +
+    'if(Array.isArray(o))return o.map(redact);' +
+    'if(o&&typeof o==="object"){const r={};for(const k of Object.keys(o)){const v=o[k];r[k]=(SECRET.test(k)&&typeof v==="string")?(v?"***REDACTED(len="+v.length+")***":""):redact(v);}return r;}' +
+    'if(typeof o==="string"&&o.length>200)return o.slice(0,200)+"…(+"+(o.length-200)+" more)";' +
+    'return o;};' +
+    'console.log("CONFIG_DUMP:"+JSON.stringify({file:file,config:redact(cfg)}));';
+
+  const cmd = GUARD + `node -e '${script}'`;
+  const res = await runWithRetries(agentId, cmd);
+  if (res.note) return { ok: false, note: res.note };
+  if (/NO_CONFIG/.test(res.stdout)) return { ok: false, note: "no-config-file" };
+  if (/CONFIG_PARSE_FAIL/.test(res.stdout)) return { ok: false, note: "config-parse-fail" };
+  const m = /CONFIG_DUMP:(\{[\s\S]*\})\s*$/.exec(res.stdout);
+  if (!m) return { ok: false, note: "no-output" };
+  try {
+    const parsed = JSON.parse(m[1]) as { file: string; config: unknown };
+    return { ok: true, file: parsed.file, config: parsed.config };
+  } catch {
+    return { ok: false, note: "parse-output-failed" };
+  }
+}
+
 /** Run one guarded command against a booting box, retrying while it wakes. Returns the stdout,
  *  or a terminal `note` for the non-OpenClaw / no-confirmation cases the callers all share. */
 async function runWithRetries(
