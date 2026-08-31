@@ -109,7 +109,8 @@ const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBook
 // the questionnaire never asked where a customer's documents are kept.
 const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint","Google Docs","Google Sheets","Google Slides","Google Drive","OneDrive / SharePoint","Dropbox","Box","None","Other"];
 const IT_COMPLY    = ["HIPAA (healthcare)","PCI-DSS (payments)","GDPR (EU data)","CCPA (California)","SOC 2","None / Not applicable","Not sure","Multiple"];
-const BROKEN_AREAS = ["Sales / Lead Generation","Customer Support / Service","Operations / Admin","Marketing & Content","Invoicing & Finance","Scheduling & Calendar","Hiring & HR","Reporting & Analytics","Order Fulfillment / Shipping","Email & Inbox","Team Communication","Vendor / Supplier Management","Project Management","Customer Onboarding","Contracts & Proposals"];
+// BROKEN_AREAS (the "which areas feel most broken?" options) lived here until the Operations &
+// Pain Points page was removed at David's call. It was that page's only consumer, so it went with it.
 const KIDS_COUNT   = ["None","1","2","3","4","5 or more"];
 const MARITAL      = ["Single","In a relationship","Engaged","Married","Domestic partnership","Divorced / Separated","Widowed","Prefer not to say"];
 const LIFE_STAGE   = ["Building - early, grinding hard","Scaling - growing fast, feeling stretched","Optimizing - established, refining","Exiting - preparing to sell or step back","Pivoting - changing direction","Surviving - navigating a hard period"];
@@ -1100,7 +1101,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const seed = useMemo(() => (initialAnswers ? hydrateBizState(initialAnswers) : null), [initialAnswers]);
   const [step, setStep] = useState(0);
   const [s2, setS2] = useState(() => seed?.s2 ?? emptyS2());
-  const [s3, setS3] = useState(() => seed?.s3 ?? emptyS3());
+  // s3 (mainPain / brokenAreas etc.) is read into the payload but no page sets it any more since
+  // the Operations & Pain Points page was removed, so there is no setter. Edit mode still pre-fills
+  // it through the initial seed.
+  const [s3] = useState(() => seed?.s3 ?? emptyS3());
   const [s4, setS4] = useState(() => seed?.s4 ?? emptyS4());
   const [s5, setS5] = useState(() => seed?.s5 ?? emptyS5());
   const [s6, setS6] = useState(() => seed?.s6 ?? emptyS6());
@@ -1142,10 +1146,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // horizons) is dropped. Both the key list and the page list below are filtered to this same set,
   // so the step-order assertion stays satisfied.
   const rolePageKeys = roleIntake ? ["biz", "whatyoudo", roleIntake.stepKey, "scope"] : [];
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(roleBranch ? [roleIntake!.stepKey] : []), "stack", "ops", "life", "voice", "sample", "goals", "scopeai", "scope"];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(roleBranch ? [roleIntake!.stepKey] : []), "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const pageKeys = roleBranch ? allPageKeys.filter(k => rolePageKeys.includes(k)) : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
-  const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
@@ -1292,25 +1295,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
     </Stack>
     ) },
-    { key: "ops", label: "Operations", node: (
-    <Stack key="s3">
-      <SHead stepNum={4} total={0} title={`Operations & Pain Points for ${primaryName}`} subtitle="Be direct. The clearer the problem, the better we can architect the fix." badge="Business" />
-      <FF label="Your biggest operational headache right now"><TArea value={s3.pain} onChange={v => f3("pain", v)} placeholder="Walk us through a typical bad day. What breaks, what falls through the cracks?" rows={4} /></FF>
-      <CheckGroup label="Which areas feel most broken?" hint="Select all that apply" options={BROKEN_AREAS} value={s3.depts} onChange={v => f3("depts", v)} cols={2} />
-      {/* "Hours lost to administrative tasks each week" and "What's this costing the business?"
-          sat here and are gone at David's call. Both asked for a number nobody has: the hours
-          are spread across a dozen small tasks and the cost is a guess on top of that guess, so
-          the answer was a shrug picked from a dropdown. The headache box and the broken-areas
-          list above say the same thing in terms the customer can actually be sure of.
-          s3.hours and s3.costImpact stay in state and in the payload as empty strings; nothing
-          reads them to decide anything. */}
-      {/* "Rough weekly volume on your busiest workflow" was here and is gone at David's
-          call. It asked somebody to pick their busiest workflow and then estimate it, which
-          is two judgements before an answer, and the industry branches that care about
-          volume ask it in their own terms - patients per week, active clients, order count.
-          branchHasVolume existed only to stop this duplicating those. */}
-    </Stack>
-    ) },
+    // The "Operations & Pain Points" page (biggest operational headache + which areas feel most
+    // broken) was removed at David's call. Its s3.pain / s3.depts fields stay in state and in the
+    // payload as their empty defaults (mainPain / brokenAreas), the same way s3.hours and
+    // s3.costImpact were left when their questions came off this page - nothing that provisions an
+    // agent requires them. Note: brokenAreas was the only live input to the onboarding checklist
+    // (config/checklist.ts), so the checklist now shows just its channel + schedule panels.
     { key: "life", label: "Life Context", node: (
     <Stack key="s4">
       <SHead stepNum={6} total={0} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />

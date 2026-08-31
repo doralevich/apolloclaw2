@@ -35,11 +35,12 @@ const NAV = [
   // one.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
-  // Connections and Guide moved OFF the daily rail and INTO Settings (SETTINGS_NAV) - David's call.
-  // The rail is the handful of things you do every day; connecting an app or reading the guide is
-  // not that. Their pages are unchanged, only the tabs moved: the inSettings check below now
-  // counts those two routes as part of the Settings area, so the Settings rail shows on them and
-  // the moved tab highlights there. Channels stays off the rail too (still at /dashboard/channels).
+  // Connections is back on the daily rail, directly under Checklist - David's call. It also stays
+  // reachable from Settings, but the rail is where he wants it day to day, so /dashboard/integrations
+  // no longer counts as part of the Settings area (see the inSettings check below) and this tab
+  // highlights on the daily rail. Guide stayed in Settings; Channels stays off the rail too (still
+  // at /dashboard/channels).
+  { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
 ];
 
 // The settings area's own rail, grouped, shown INSTEAD of NAV while you're inside it — the
@@ -64,9 +65,6 @@ const SETTINGS_NAV = [
       // label that flips between singular and plural reads as a bug.
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
       { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
-      // Connections lives here now rather than on the daily rail (David's call): it is the agent's
-      // apps - Gmail, calendar, files - which is a setup question, not a daily one.
-      { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
       // Two money pages, two scopes, both named for what they answer. Plan is the WORKSPACE's
       // subscription - seats, invoices, the card. Credits is one AGENT's wallet; Usage sits
       // directly beneath it (David's call) - where the wallet went, one row down from what's left.
@@ -136,11 +134,11 @@ function SidebarContent({
   // "Start Here" is where every session lands, agents or not: with one it greets the
   // active agent, without one it prompts them to create the first. Hiding it used to
   // leave a freshly-signed-in customer on a page missing from their own sidebar.
-  // Connections and Guide are not under /settings/, but they moved into the Settings area, so the
-  // Settings rail (not the daily rail) shows on them and their moved tab highlights there.
+  // Guide is not under /settings/ but lives in the Settings area, so the Settings rail (not the
+  // daily rail) shows on it. Connections came back to the daily rail, so /dashboard/integrations is
+  // deliberately NOT counted here - it keeps the daily rail and highlights its tab there.
   const inSettings =
     pathname.startsWith(SETTINGS_ROOT) ||
-    pathname.startsWith("/dashboard/integrations") ||
     pathname.startsWith("/dashboard/guide");
 
   // Home always shows now (David's call): it is a launcher you come back to, not a getting-started
