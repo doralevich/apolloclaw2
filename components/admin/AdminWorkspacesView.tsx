@@ -236,7 +236,7 @@ export function AdminWorkspacesView() {
                   <button
                     type="button"
                     onClick={() => toggle(w.id)}
-                    className="flex min-w-0 flex-1 items-center gap-2 text-left hover:text-primary"
+                    className="flex w-72 shrink-0 items-center gap-2 text-left hover:text-primary"
                     aria-expanded={isOpen}
                   >
                     {isOpen ? (
@@ -267,7 +267,7 @@ export function AdminWorkspacesView() {
                     <Stat label="Created" value={formatDate(w.created_at)} className="w-24" />
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="ml-auto flex items-center gap-2">
                     <OpenWorkspaceButton workspaceId={w.id} />
                     {w.you_are_member && (
                       <LeaveWorkspaceButton workspaceId={w.id} name={w.name} onLeft={loadWorkspaces} />
