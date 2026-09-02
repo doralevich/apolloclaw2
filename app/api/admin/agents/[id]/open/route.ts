@@ -1,7 +1,8 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { logAudit } from "@/lib/audit";
-import { portsForTemplate } from "@/config/agents";
+import { isKnownTemplate, portsForTemplate } from "@/config/agents";
 import { ApiError, json, route } from "@/lib/http";
+import { agent37 } from "@/lib/agent37";
 import { instanceSignedUrl } from "@/lib/openclaw-dashboard";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -21,15 +22,33 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
 
-  // The dashboard port depends on the instance's template (the college-agent image remaps
-  // its surfaces and exposes none of the standard ports). Orphan instances have no row;
-  // they get the default openclaw template's port map.
+  // The dashboard port depends on the instance's template, and getting it wrong is silent:
+  // the signed URL mints fine and the tab just never loads. This used to read the template
+  // ONLY from our own row and let portsForTemplate fall back to the OpenClaw map when there
+  // wasn't one - so every instance with no row here (this Agent37 account is shared with the
+  // College Agent, whose Hermes boxes serve 9119, not OpenClaw's 18789) got a URL pointing at
+  // a port nothing listens on. Ask Agent37 for the real template instead of assuming.
   const { data: row } = await createAdminClient()
     .from("agents")
     .select("template")
     .eq("agent37_id", id)
     .maybeSingle();
-  const port = portsForTemplate(row?.template).dashboard;
+  let template: string | null | undefined = row?.template;
+  if (!template) {
+    template = await agent37.listAgents().then(
+      (r) => r.data.find((a) => a.id === id)?.template ?? null,
+      () => null
+    );
+  }
+  if (!isKnownTemplate(template)) {
+    // Better an explanation than a blank tab: say what it is and where it can be opened.
+    throw new ApiError(
+      400,
+      "invalid_request",
+      "This instance isn't one this app manages - it has no record here and its template isn't one we serve. It most likely belongs to the College Agent, which shares this Agent37 account; open it from that app's admin instead."
+    );
+  }
+  const port = portsForTemplate(template).dashboard;
   if (!port) {
     throw new ApiError(400, "invalid_request", "This agent's template doesn't expose a dashboard.");
   }
