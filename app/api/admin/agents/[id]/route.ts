@@ -1,6 +1,6 @@
 import { after } from "next/server";
 import { agent37, Agent37Error } from "@/lib/agent37";
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { purgeAgent, softDeleteAgent } from "@/lib/agent-lifecycle";
 import { logAudit } from "@/lib/audit";
 import { changeHostingSeats } from "@/lib/hosting-seats";
@@ -40,6 +40,10 @@ export const DELETE = route(async (request: Request, { params }: Ctx) => {
 
   // ORPHAN — no row anywhere; just clean up the instance.
   if (!row) {
+    // ...unless it is the College Agent's, which also has no row here and is now LISTED in the
+    // overview. Without this, the one destructive button on the page hard-deletes a live
+    // student's agent - the single worst thing this app can do to the other product.
+    await assertNotOtherApp(id);
     let vps_deleted = false;
     try {
       await agent37.deleteAgent(id);

@@ -206,7 +206,7 @@ export interface AdminAccount {
 export interface AdminAgentOverview {
   agent37_id: string;
   name: string | null;
-  presence: "ok" | "ghost" | "orphan" | "unattributed" | "unknown";
+  presence: "ok" | "ghost" | "orphan" | "unattributed" | "external" | "unknown";
   live_status: string | null;
   db_status: string | null;
   workspace_id: string | null;
@@ -216,6 +216,13 @@ export interface AdminAgentOverview {
   is_member_agent: boolean;
   avatar_url: string | null;
   agent_type: string | null;
+  /** Agent37 template the box actually runs, from live truth. Null when Agent37 was unreachable. */
+  template: string | null;
+  /**
+   * For presence "external": the app that owns the instance, read from its `app` metadata
+   * stamp (e.g. "college-agent"). Null for everything this app owns or cannot attribute.
+   */
+  external_app: string | null;
   created_at: string | null;
   /** Set when the agent is soft-deleted (in the trash), null when live. */
   deleted_at: string | null;

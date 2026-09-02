@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { logAudit } from "@/lib/audit";
 import { isKnownTemplate, portsForTemplate } from "@/config/agents";
 import { ApiError, json, route } from "@/lib/http";
@@ -21,6 +21,8 @@ type Ctx = { params: Promise<{ id: string }> };
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
 
   // The dashboard port depends on the instance's template, and getting it wrong is silent:
   // the signed URL mints fine and the tab just never loads. This used to read the template

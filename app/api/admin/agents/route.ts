@@ -17,8 +17,12 @@ import type { AdminAgentOverview } from "@/lib/types";
 //   ORPHAN - an instance with no database row (row swept, VPS delete missed). Invisible in the
 //   product, still billing as hosting.
 //
-// Each row states which of the three cases it is, so the cleanup that used to take a SQL
-// session and an Agent37 dashboard side-by-side is one glance and one button.
+//   EXTERNAL - an instance the College Agent provisioned (stamped app=college-agent). Shown
+//   read-only. It is not ours to act on, but leaving it out meant no single page in either
+//   product listed the whole Agent37 account, and this page is the fleet source of truth.
+//
+// Each row states which case it is, so the cleanup that used to take a SQL session and an
+// Agent37 dashboard side-by-side is one glance and one button.
 
 /** owner_id -> email for just the ids we need, via the paged auth admin API. */
 async function resolveEmails(
@@ -84,6 +88,8 @@ export const GET = route(async () => {
       is_member_agent: Boolean(a.owner_id && ws && a.owner_id !== ws.owner_id),
       avatar_url: (a.avatar_url as string | null) ?? null,
       agent_type: (a.agent_type as string | null) ?? null,
+      template: instance?.template ?? null,
+      external_app: null,
       created_at: a.created_at as string,
       deleted_at: (a.deleted_at as string | null) ?? null,
       purge_after: (a.purge_after as string | null) ?? null,
@@ -96,20 +102,22 @@ export const GET = route(async () => {
       if (known.has(instance.id)) continue;
       // This Agent37 account is SHARED with the College Agent, so "a live instance with no
       // row in our database" is usually not an orphan at all - it is simply the other app's
-      // agent. Reporting those as ours is what filled this page with false orphans. Claim
-      // only what this app can actually account for:
+      // agent. Reporting those as ours is what filled this page with false orphans, so each
+      // one is named for what it actually is:
       //   stamped as ours   -> a genuine orphan (our row went missing); adoptable.
-      //   stamped as theirs -> not ours to show at all.
+      //   stamped as theirs -> the College Agent's, shown read-only. This page is the fleet
+      //                        source of truth for BOTH products (David's call), so it has to
+      //                        list them; it must not offer a single button that acts on one.
       //   unstamped         -> created before the stamp existed, and Agent37 has no way to
       //                        set metadata on an existing instance, so it can never be
       //                        backfilled. Reported as unattributed rather than blamed on
       //                        either app; adopting it here is how it stops being unknown.
       const app = instanceAppId(instance.metadata);
-      if (app && app !== APP_ID) continue;
+      const external = Boolean(app && app !== APP_ID);
       rows.push({
         agent37_id: instance.id,
         name: instance.name,
-        presence: app === APP_ID ? "orphan" : "unattributed",
+        presence: external ? "external" : app === APP_ID ? "orphan" : "unattributed",
         live_status: instance.status,
         db_status: null,
         workspace_id: null,
@@ -118,6 +126,8 @@ export const GET = route(async () => {
         is_member_agent: false,
         avatar_url: null,
         agent_type: null,
+        template: instance.template,
+        external_app: external ? app : null,
         // Agent37 timestamps are epoch numbers of undocumented resolution; >1e12 means ms.
         created_at: instance.created
           ? new Date(instance.created > 1e12 ? instance.created : instance.created * 1000).toISOString()
