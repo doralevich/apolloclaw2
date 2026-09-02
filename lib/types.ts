@@ -206,7 +206,7 @@ export interface AdminAccount {
 export interface AdminAgentOverview {
   agent37_id: string;
   name: string | null;
-  presence: "ok" | "ghost" | "orphan" | "unknown";
+  presence: "ok" | "ghost" | "orphan" | "unattributed" | "unknown";
   live_status: string | null;
   db_status: string | null;
   workspace_id: string | null;

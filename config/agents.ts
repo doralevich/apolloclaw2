@@ -9,6 +9,27 @@
 //
 // Instances that ALREADY exist keep whatever they were built with — Agent37 sizes a box at
 // create time. Resizing one is a deliberate act through /api/agents/[id]/resize.
+// Which app provisioned an instance. Apollo and the College Agent share ONE Agent37
+// account, so listAgents() hands back both apps' instances to whichever app asks. The
+// admin overview builds its orphan list from "live instance with no row in our database",
+// which is true of every College Agent box - so they all reported here as orphans of
+// Apollo's, and a real orphan of ours was indistinguishable from someone else's agent.
+//
+// Stamped into instance metadata at create (lib/provision.ts, the only createAgent call).
+// Deliberately NOT the template name: the Apollo image is registered under "college-agent"
+// as well while it is renamed to "apollo-agent" (see TEMPLATE_PORTS below), so the template
+// cannot separate the two apps and filtering on it would misattribute our own agents.
+export const APP_ID = "apolloclaw" as const;
+
+// The app that created an instance, read from its Agent37 metadata. null for instances
+// provisioned before the stamp existed - Agent37 offers no way to set metadata on an
+// existing instance, so those can never be backfilled and are reported as unattributed
+// rather than claimed.
+export function instanceAppId(metadata: Record<string, unknown> | null | undefined): string | null {
+  const v = metadata?.app;
+  return typeof v === "string" && v.trim() ? v.trim() : null;
+}
+
 export const INSTANCE_RESOURCES = { cpu: 2, memory: 4, disk: 6 } as const;
 
 // $25/mo to match the paid Apollo agent (config/agent-types.ts PAID_AGENT) and the hosting we
