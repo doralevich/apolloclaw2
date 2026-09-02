@@ -90,6 +90,14 @@ export function runtimeForTemplate(template: string | null | undefined): "Hermes
   return (template ? TEMPLATE_RUNTIMES[template] : undefined) ?? null;
 }
 
+// Whether this is a template we actually have a port map for. Distinguishes "an image we
+// serve" from "an image we know nothing about", which portsForTemplate alone cannot: it
+// falls back to the OpenClaw map for anything unknown, and minting a signed URL to
+// OpenClaw's port on a foreign box yields a tab that silently fails to load.
+export function isKnownTemplate(template: string | null | undefined): boolean {
+  return !!template && template in TEMPLATE_PORTS;
+}
+
 export function portsForTemplate(
   template: string | null | undefined
 ): Partial<Record<PortName, number>> {
