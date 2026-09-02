@@ -44,6 +44,9 @@ export const DEFAULT_AGENT = {
   monthlyCapUsd: 25,
 } as const;
 
+// The OpenClaw port set, and the fallback for an unrecognised template. Hermes boxes use
+// HERMES_PORTS below - lib/openclaw-dashboard.ts keys off PORTS.dashboard to decide whether
+// to mint an OpenClaw gateway token, so these two must stay distinct numbers.
 export const PORTS = {
   // OpenClaw serves its Control UI (the "dashboard") on its own gateway port 18789,
   // not Hermes' 9119. terminal/files are shared across both templates.
@@ -54,19 +57,27 @@ export const PORTS = {
 
 export type PortName = keyof typeof PORTS;
 
-// Which openable ports each template actually serves. The college-agent template remaps
-// its internal surfaces (Hermes dashboard 9120, ttyd 7682, filebrowser 8081) and none of
-// the standard ports are enabled on its instances, so it exposes no port actions. Unknown
-// templates fall back to the OpenClaw set.
-const TEMPLATE_PORTS: Record<string, readonly PortName[]> = {
-  "agent37-openclaw": ["dashboard", "terminal", "files"],
-  // The Apollo build's OWN template names, kept as fallbacks in config/agent-types.ts. Both
-  // remap their internal surfaces and enable none of the standard ports.
-  // Same image under both names while the Agent37 registry is renamed from college-agent to
-  // apollo-agent. Dropping either one would fall through to the OpenClaw set and offer port
-  // actions that instance doesn't serve.
-  "college-agent": [],
-  "apollo-agent": [],
+// The Hermes port set. Hermes serves its dashboard on 9119 - NOT OpenClaw's 18789 - while
+// ttyd and the file browser sit on the same numbers under both runtimes.
+//
+// These are the numbers thecollegeagent.ai has been opening in production all along (its own
+// config/agents.ts PORTS). This file previously recorded 9120/7682/8081 and mapped the
+// template to no ports at all, which is why an operator looking at a College Agent box here
+// was told its template "doesn't expose a dashboard" and had no way in. Confirmed by David
+// against the live instances.
+const HERMES_PORTS = { dashboard: 9119, terminal: 7681, files: 8080 } as const;
+
+// Which openable ports each template actually serves, WITH the numbers - the port a surface
+// lives on is per-template, not global, so a name alone ("dashboard") can't answer it.
+// Unknown templates fall back to the OpenClaw set.
+const TEMPLATE_PORTS: Record<string, Partial<Record<PortName, number>>> = {
+  "agent37-openclaw": { dashboard: PORTS.dashboard, terminal: PORTS.terminal, files: PORTS.files },
+  // Hermes, under both of its names - same image while the Agent37 registry is renamed from
+  // college-agent to apollo-agent (see TEMPLATE_RUNTIMES below, which already called both
+  // Hermes). Only college-agent has live instances today; apollo-agent is mapped identically
+  // so an agent that provisions through the alias fallback isn't left with dead buttons.
+  "college-agent": { ...HERMES_PORTS },
+  "apollo-agent": { ...HERMES_PORTS },
 };
 
 // Which runtime an image actually is, which is a different question from what the template
@@ -101,9 +112,9 @@ export function isKnownTemplate(template: string | null | undefined): boolean {
 export function portsForTemplate(
   template: string | null | undefined
 ): Partial<Record<PortName, number>> {
-  const names =
+  const ports =
     (template ? TEMPLATE_PORTS[template] : undefined) ?? TEMPLATE_PORTS["agent37-openclaw"];
-  const ports: Partial<Record<PortName, number>> = {};
-  for (const name of names) ports[name] = PORTS[name];
-  return ports;
+  // Copied, not handed out: the maps above are module-level constants and a caller that
+  // mutated one would change every later lookup for that template.
+  return { ...ports };
 }

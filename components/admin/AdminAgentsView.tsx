@@ -425,9 +425,11 @@ function AgentCard({
   reverting?: boolean;
 }) {
   const presence = PRESENCE[agent.presence];
-  // The College Agent owns this box. We list it so the fleet view is complete; we offer no
-  // button that touches it. Adopting one would hand a live student's agent to a workspace in
-  // a database that has never heard of them, and Delete would destroy it outright.
+  // The College Agent owns this box. We list it so the fleet view is complete, and "Instance"
+  // stays available because read-only support access is the whole point - it is the only door
+  // into a student's agent. Everything that WRITES is withheld: adopting one would hand a live
+  // student's agent to a workspace in a database that has never heard of them, and Delete
+  // would destroy it outright.
   const readOnly = agent.presence === "external";
   const trashed = Boolean(agent.deleted_at);
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
@@ -515,7 +517,7 @@ function AgentCard({
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {readOnly && (
-          <span className="px-2 text-xs text-muted-foreground">Managed in The College Agent</span>
+          <span className="px-2 text-xs text-muted-foreground">Read-only · College Agent</span>
         )}
         {agent.workspace_id && (
           <Button variant="outline" size="sm" onClick={openApolloClaw} disabled={opening !== null}>
@@ -523,7 +525,7 @@ function AgentCard({
             {opening === "apolloclaw" ? "Opening..." : "Open"}
           </Button>
         )}
-        {agent.presence !== "ghost" && !readOnly && (
+        {agent.presence !== "ghost" && (
           <Button variant="ghost" size="sm" onClick={openInstance} disabled={opening !== null}>
             <ExternalLink className="h-4 w-4" />
             {opening === "instance" ? "Opening..." : "Instance"}
