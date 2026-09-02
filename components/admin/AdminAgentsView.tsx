@@ -421,12 +421,21 @@ function AgentCard({
 
   async function openInstance() {
     setOpening("instance");
+    // Open the tab SYNCHRONOUSLY inside the click. Once we await below, the browser stops
+    // treating the call as user-initiated and silently blocks window.open() — it returns
+    // null, throws nothing and shows no toast, so the button simply appeared to do nothing.
+    // (Same idiom BillingView already uses for the Stripe portal.) opener is nulled to keep
+    // the noopener guarantee the direct call used to provide.
+    const tab = window.open("", "_blank");
+    if (tab) tab.opener = null;
     try {
       const { url } = await apiFetch<{ url: string }>(`/api/admin/agents/${agent.agent37_id}/open`, {
         method: "POST",
       });
-      window.open(url, "_blank", "noopener");
+      if (tab) tab.location.href = url;
+      else window.location.assign(url); // popup blocked anyway → fall back to this tab
     } catch (e) {
+      tab?.close();
       toast.error((e as Error).message);
     } finally {
       setOpening(null);

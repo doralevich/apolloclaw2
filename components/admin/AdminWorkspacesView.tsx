@@ -471,12 +471,19 @@ function OpenInstanceButton({ agentId }: { agentId: string }) {
 
   async function open() {
     setBusy(true);
+    // Opened synchronously inside the click: after the await the browser no longer treats
+    // this as user-initiated and silently blocks the popup (returns null, throws nothing),
+    // so the button looks dead. Same idiom as BillingView's portal open.
+    const tab = window.open("", "_blank");
+    if (tab) tab.opener = null; // preserve the old noopener guarantee
     try {
       const { url } = await apiFetch<{ url: string }>(`/api/admin/agents/${agentId}/open`, {
         method: "POST",
       });
-      window.open(url, "_blank", "noopener");
+      if (tab) tab.location.href = url;
+      else window.location.assign(url); // popup blocked anyway → fall back to this tab
     } catch (e) {
+      tab?.close();
       toast.error((e as Error).message);
     } finally {
       setBusy(false);
