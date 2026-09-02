@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { curateModelsResponse } from "@/config/chat-models";
 import { agent37 } from "@/lib/agent37";
 import { json, route } from "@/lib/http";
@@ -21,6 +21,8 @@ type Ctx = { params: Promise<{ id: string }> };
 // those two have completely different fixes.
 export const GET = route(async (_request: Request, { params }: Ctx) => {
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
   await requirePlatformAdmin();
 
   const raw = await agent37.listModels(id);

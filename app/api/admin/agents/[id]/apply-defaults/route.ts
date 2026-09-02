@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { applyInstanceDefaults } from "@/lib/instance-defaults";
 import { logAudit } from "@/lib/audit";
 import { json, route } from "@/lib/http";
@@ -18,6 +18,8 @@ export const maxDuration = 300;
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
   const db = createAdminClient();
 
   // Best-effort timezone from the agent's setup answers, same source provisioning uses.

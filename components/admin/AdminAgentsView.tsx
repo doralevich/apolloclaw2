@@ -53,6 +53,11 @@ const PRESENCE: Record<
     variant: "muted",
     hint: "Agent37 instance with no database row here and no app stamp. This Agent37 account is shared with the College Agent, and this box predates the stamp, so it may belong to that app - do not delete it unless you know it is ours. Adopt it to give it a home here.",
   },
+  external: {
+    label: "The College Agent",
+    variant: "muted",
+    hint: "Provisioned by thecollegeagent.ai on the Agent37 account we share with it. Listed here because this page is the source of truth for the whole fleet - but it is read-only: that app owns the box, and its student records live in a different database this one cannot read.",
+  },
   unknown: { label: "unverified", variant: "muted", hint: "Agent37 could not be reached to compare." },
 };
 
@@ -208,9 +213,15 @@ export function AdminAgentsView() {
   // One section per workspace (name-sorted), instances outside any workspace last.
   const groups = new Map<string, { name: string; owner: string | null; rows: AdminAgentOverview[] }>();
   for (const a of agents ?? []) {
-    const key = a.workspace_id ?? "__none__";
+    // The other app's instances get their own section rather than falling into "Not in any
+    // workspace" beside our genuine orphans - they are not strays, they are simply somebody
+    // else's, and a section header says so before anyone reads a badge.
+    const key = a.workspace_id ?? (a.presence === "external" ? "__external__" : "__none__");
     const group = groups.get(key) ?? {
-      name: a.workspace_name ?? "Not in any workspace",
+      name:
+        key === "__external__"
+          ? "The College Agent (other product)"
+          : a.workspace_name ?? "Not in any workspace",
       owner: null,
       rows: [],
     };
@@ -218,9 +229,13 @@ export function AdminAgentsView() {
     group.rows.push(a);
     groups.set(key, group);
   }
+  // Ours first, then unhomed instances, then the other product's - descending order of
+  // "something here might need you".
+  const RANK: Record<string, number> = { __none__: 1, __external__: 2 };
   const sections = [...groups.entries()].sort(([ka, a], [kb, b]) => {
-    if (ka === "__none__") return 1;
-    if (kb === "__none__") return -1;
+    const ra = RANK[ka] ?? 0;
+    const rb = RANK[kb] ?? 0;
+    if (ra !== rb) return ra - rb;
     return a.name.localeCompare(b.name);
   });
 
@@ -229,9 +244,10 @@ export function AdminAgentsView() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
         <p className="text-sm text-muted-foreground">
-          Every agent across the platform, checked against Agent37, grouped by workspace.
-          Member seats nest under the workspace&apos;s main agent. Delete removes whichever
-          halves exist - instance, records, or both.
+          Every instance on the Agent37 account, checked against this database and grouped by
+          workspace - including the College Agent&apos;s, which are listed read-only so this page
+          matches the Agent37 dashboard exactly. Member seats nest under the workspace&apos;s main
+          agent. Delete removes whichever halves exist - instance, records, or both.
         </p>
         {!liveChecked && (
           <p className="mt-2 text-sm text-amber-700">
@@ -409,6 +425,12 @@ function AgentCard({
   reverting?: boolean;
 }) {
   const presence = PRESENCE[agent.presence];
+  // The College Agent owns this box. We list it so the fleet view is complete, and "Instance"
+  // stays available because read-only support access is the whole point - it is the only door
+  // into a student's agent. Everything that WRITES is withheld: adopting one would hand a live
+  // student's agent to a workspace in a database that has never heard of them, and Delete
+  // would destroy it outright.
+  const readOnly = agent.presence === "external";
   const trashed = Boolean(agent.deleted_at);
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
   const [opening, setOpening] = useState<"apolloclaw" | "instance" | null>(null);
@@ -488,11 +510,15 @@ function AgentCard({
         <div className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
           <span className="font-mono">{agent.agent37_id}</span>
           {agent.agent_type && <span>{getAgentType(agent.agent_type)?.label ?? agent.agent_type}</span>}
+          {agent.template && <span className="font-mono">{agent.template}</span>}
           {agent.owner_email && <span>{agent.owner_email}</span>}
           {agent.created_at && <span>Created {formatDate(agent.created_at)}</span>}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {readOnly && (
+          <span className="px-2 text-xs text-muted-foreground">Read-only · College Agent</span>
+        )}
         {agent.workspace_id && (
           <Button variant="outline" size="sm" onClick={openApolloClaw} disabled={opening !== null}>
             <DoorOpen className="h-4 w-4" />
@@ -515,7 +541,7 @@ function AgentCard({
         )}
         {/* Backfill capability defaults (memory, web search, clock) onto a box that has a live
             instance. New agents get these at provision; this catches up the older ones. */}
-        {agent.presence !== "ghost" && !trashed && (
+        {agent.presence !== "ghost" && !trashed && !readOnly && (
           <Button variant="ghost" size="sm" onClick={onApplyDefaults} disabled={applying} title="Apply memory + web search + clock defaults, then restart">
             <Sparkles className="h-4 w-4" />
             {applying ? "Applying..." : "Apply defaults"}
@@ -523,13 +549,13 @@ function AgentCard({
         )}
         {/* Recovery: undo the defaults on a box whose harness they took down. Removes exactly the
             keys Apply defaults set and restarts the instance. */}
-        {agent.presence !== "ghost" && !trashed && (
+        {agent.presence !== "ghost" && !trashed && !readOnly && (
           <Button variant="ghost" size="sm" onClick={onRevertDefaults} disabled={reverting} title="Remove the memory/web-search config we wrote and restart (harness recovery)">
             <Wrench className="h-4 w-4" />
             {reverting ? "Reverting..." : "Revert defaults"}
           </Button>
         )}
-        {trashed ? (
+        {!readOnly && (trashed ? (
           <>
             <Button variant="outline" size="sm" onClick={onRestore} disabled={opening !== null}>
               <RotateCcw className="h-4 w-4" />
@@ -555,7 +581,7 @@ function AgentCard({
             <Trash2 className="h-4 w-4" />
             Delete
           </Button>
-        )}
+        ))}
       </div>
     </div>
   );

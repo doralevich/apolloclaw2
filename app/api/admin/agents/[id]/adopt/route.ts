@@ -1,5 +1,5 @@
 import { agent37 } from "@/lib/agent37";
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { logAudit } from "@/lib/audit";
 import { getAgentType } from "@/config/agent-types";
 import { ApiError, json, readJson, route } from "@/lib/http";
@@ -20,6 +20,8 @@ type Ctx = { params: Promise<{ id: string }> };
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
   const body = await readJson<{ workspace_id?: string; owner_id?: string; agent_type?: string }>(request);
 
   const workspaceId = body.workspace_id?.trim();

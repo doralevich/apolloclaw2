@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { inspectInstanceDefaults, revertInstanceDefaults } from "@/lib/instance-defaults";
 import { logAudit } from "@/lib/audit";
 import { json, route } from "@/lib/http";
@@ -21,6 +21,8 @@ export const maxDuration = 300;
 export const GET = route(async (request: Request, { params }: Ctx) => {
   await requirePlatformAdmin();
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
   const inspect = new URL(request.url).searchParams.get("inspect") === "1";
   if (!inspect) {
     return json({ hint: "POST to revert the defaults on this instance, or GET ?inspect=1 to read its keys." });
@@ -32,6 +34,8 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
 
   const result = await revertInstanceDefaults(id, { restart: true });
   await logAudit({

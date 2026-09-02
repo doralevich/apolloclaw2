@@ -1,4 +1,4 @@
-import { requirePlatformAdmin } from "@/lib/admin";
+import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { dumpInstanceConfig } from "@/lib/instance-defaults";
 import { json, route } from "@/lib/http";
 
@@ -16,5 +16,7 @@ export const maxDuration = 300;
 export const GET = route(async (_request: Request, { params }: Ctx) => {
   await requirePlatformAdmin();
   const { id } = await params;
+  // The College Agent's boxes are listed in the overview but are not ours to touch.
+  await assertNotOtherApp(id);
   return json(await dumpInstanceConfig(id));
 });

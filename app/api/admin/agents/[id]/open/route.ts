@@ -21,6 +21,10 @@ type Ctx = { params: Promise<{ id: string }> };
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
+  // NOT gated by assertNotOtherApp, unlike the mutating admin routes. Opening is read-only
+  // support access, audit-logged below, and being unable to reach a student's box from the
+  // fleet view is the problem this whole page exists to solve - David is the operator of both
+  // products, and the College Agent has no other door once its own admin goes away.
 
   // The dashboard port depends on the instance's template, and getting it wrong is silent:
   // the signed URL mints fine and the tab just never loads. This used to read the template
@@ -45,7 +49,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(
       400,
       "invalid_request",
-      "This instance isn't one this app manages - it has no record here and its template isn't one we serve. It most likely belongs to the College Agent, which shares this Agent37 account; open it from that app's admin instead."
+      `This instance runs template "${template ?? "unknown"}", which has no port map here, so any dashboard URL would point at a port nothing listens on. Add it to TEMPLATE_PORTS (config/agents.ts) once its ports are known.`
     );
   }
   const port = portsForTemplate(template).dashboard;
