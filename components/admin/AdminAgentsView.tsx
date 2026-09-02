@@ -48,6 +48,11 @@ const PRESENCE: Record<
     variant: "warning",
     hint: "Agent37 instance with no database row - invisible in the product but still hosted. Delete removes the instance.",
   },
+  unattributed: {
+    label: "unattributed",
+    variant: "muted",
+    hint: "Agent37 instance with no database row here and no app stamp. This Agent37 account is shared with the College Agent, and this box predates the stamp, so it may belong to that app - do not delete it unless you know it is ours. Adopt it to give it a home here.",
+  },
   unknown: { label: "unverified", variant: "muted", hint: "Agent37 could not be reached to compare." },
 };
 
@@ -276,7 +281,10 @@ export function AdminAgentsView() {
         // reversibly. Only the first two are irreversible.
         const isTrashed = Boolean(deleting.deleted_at);
         const isOrphan = deleting.presence === "orphan";
-        const hard = isTrashed || isOrphan;
+        // No row here either, so this is a hard Agent37 delete - but an unattributed box
+        // may be the College Agent's, and deleting it would destroy a live customer's agent.
+        const isUnattributed = deleting.presence === "unattributed";
+        const hard = isTrashed || isOrphan || isUnattributed;
         return (
           <ConfirmDialog
             open
@@ -287,7 +295,9 @@ export function AdminAgentsView() {
             description={
               isTrashed
                 ? "This agent is already in the trash. Purging destroys its instance and records now, skipping the retention window. This cannot be undone."
-                : isOrphan
+                : isUnattributed
+                  ? "This instance has no records here AND no app stamp. This Agent37 account is shared with the College Agent, so it may be one of that app's agents - deleting it would destroy a live customer's agent there. Only continue if you know it is ours. This cannot be undone."
+                  : isOrphan
                   ? "This instance has no records in the product; this deletes it from Agent37 so it stops hosting. This cannot be undone."
                   : `This moves the agent to the trash: its instance is stopped (not destroyed) and it can be restored until it purges${deleting.workspace_name ? `, in "${deleting.workspace_name}"` : ""}. If the workspace keeps another agent, one hosting seat is credited back.`
             }
@@ -497,7 +507,7 @@ function AgentCard({
         )}
         {/* Orphan only: a live instance with no row can be adopted into a workspace instead of
             deleted. The reconnect path for a restored or stranded instance. */}
-        {agent.presence === "orphan" && (
+        {(agent.presence === "orphan" || agent.presence === "unattributed") && (
           <Button variant="outline" size="sm" onClick={onAdopt}>
             <Link2 className="h-4 w-4" />
             Adopt

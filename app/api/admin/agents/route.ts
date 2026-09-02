@@ -1,4 +1,5 @@
 import { agent37 } from "@/lib/agent37";
+import { APP_ID, instanceAppId } from "@/config/agents";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { ApiError, json, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -93,10 +94,22 @@ export const GET = route(async () => {
     const known = new Set(rows.map((r) => r.agent37_id));
     for (const instance of live.values()) {
       if (known.has(instance.id)) continue;
+      // This Agent37 account is SHARED with the College Agent, so "a live instance with no
+      // row in our database" is usually not an orphan at all - it is simply the other app's
+      // agent. Reporting those as ours is what filled this page with false orphans. Claim
+      // only what this app can actually account for:
+      //   stamped as ours   -> a genuine orphan (our row went missing); adoptable.
+      //   stamped as theirs -> not ours to show at all.
+      //   unstamped         -> created before the stamp existed, and Agent37 has no way to
+      //                        set metadata on an existing instance, so it can never be
+      //                        backfilled. Reported as unattributed rather than blamed on
+      //                        either app; adopting it here is how it stops being unknown.
+      const app = instanceAppId(instance.metadata);
+      if (app && app !== APP_ID) continue;
       rows.push({
         agent37_id: instance.id,
         name: instance.name,
-        presence: "orphan",
+        presence: app === APP_ID ? "orphan" : "unattributed",
         live_status: instance.status,
         db_status: null,
         workspace_id: null,

@@ -1,7 +1,7 @@
 import "server-only";
 import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
-import { DEFAULT_AGENT, INSTANCE_RESOURCES } from "@/config/agents";
+import { APP_ID, DEFAULT_AGENT, INSTANCE_RESOURCES } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
 import {
   AGENTS_FENCE,
@@ -748,7 +748,7 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     resources: { ...INSTANCE_RESOURCES },
     user: userId,
     name: instanceName,
-    metadata: { app_workspace: workspaceId, agent_type: type.id },
+    metadata: { app: APP_ID, app_workspace: workspaceId, agent_type: type.id },
     budget: { monthly_cap_micros: usdToMicros(type.monthlyCapUsd) },
   });
 
