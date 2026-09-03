@@ -96,6 +96,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    const redet = d.realEstateDetails && typeof d.realEstateDetails === "object" ? (d.realEstateDetails as Record<string, unknown>) : {};
+    if (Object.keys(redet).length) {
+      sections.push({
+        title: "Real Estate Deep-Dive",
+        rows: Object.entries(redet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [
