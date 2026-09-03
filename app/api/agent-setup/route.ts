@@ -1,4 +1,5 @@
 import { getAgentType } from "@/config/agent-types";
+import { isAdminEmail } from "@/config/admins";
 import { storeAgentSetup, type AvatarUpload } from "@/lib/agent-setup";
 import { requireMember, requireUser } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
@@ -66,6 +67,13 @@ export const POST = route(async (request: Request) => {
   //
   // Paid types are exempt because they race the Stripe webhook: the buyer often lands here
   // before provisioning finishes, and the answers are stored for the webhook to pick up.
+  // "Form first, then create" for the role agents (CFO, Law, Real Estate, CEO): a platform admin
+  // picks the role, fills in its questionnaire, and the correctly-typed, customized agent is
+  // provisioned HERE on submit - not before. So an admin submitting a role questionnaire for a
+  // type that has no agent yet provisions one; a customer still may only fill in the questionnaire
+  // for an agent that ALREADY exists (no free self-provisioning).
+  const isAdmin = isAdminEmail(user.email);
+  let provisionIfMissing = false;
   if (!type.planKey) {
     const { data: existing } = await createAdminClient()
       .from("agents")
@@ -76,11 +84,15 @@ export const POST = route(async (request: Request) => {
       .limit(1)
       .maybeSingle();
     if (!existing) {
-      throw new ApiError(
-        400,
-        "invalid_request",
-        `There is no ${type.label} in this workspace to set up yet.`
-      );
+      if (isAdmin) {
+        provisionIfMissing = true;
+      } else {
+        throw new ApiError(
+          400,
+          "invalid_request",
+          `There is no ${type.label} in this workspace to set up yet.`
+        );
+      }
     }
   }
 
@@ -97,9 +109,11 @@ export const POST = route(async (request: Request) => {
     // to the instance the customer is actually setting up rather than to whichever one the
     // lookup happens to find first.
     agent37Id: body.agent37_id,
-    // The Stripe webhook provisions this flow's agents; this route only ever injects into
-    // whatever it finds.
-    provisionIfMissing: false,
+    // Paid types race the Stripe webhook (it provisions, we inject). For everyone else this
+    // stays false EXCEPT the admin form-first case above, where the questionnaire IS the create.
+    provisionIfMissing,
+    // Admins are testing and may want several of a type; the cap stays on for customers.
+    allowMultiple: isAdmin,
   });
 
   // workspace_id feeds the post-submit "building your agent" screen, which polls the

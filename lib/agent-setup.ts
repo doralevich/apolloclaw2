@@ -107,6 +107,12 @@ export interface SetupInput {
    * depends on the answers that only arrive here.
    */
   provisionIfMissing?: boolean;
+  /**
+   * Skip the one-agent-per-type-per-workspace cap when provisioning here. Set only for the
+   * platform-admin "form first, then create" path, where David is standing up several role agents
+   * (and several of a type) while testing. Left false everywhere a customer provisions.
+   */
+  allowMultiple?: boolean;
 }
 
 export interface SetupResult {
@@ -115,7 +121,7 @@ export interface SetupResult {
 }
 
 export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
-  const { type, workspaceId, submittedBy, buyerEmail, provisionIfMissing = false } = input;
+  const { type, workspaceId, submittedBy, buyerEmail, provisionIfMissing = false, allowMultiple = false } = input;
   const db = createAdminClient();
 
   // Raw uploaded files (with base64) live only in memory long enough to attach to the
@@ -220,6 +226,8 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
         // We enrich below, with the uploaded files still in memory; provisioning's own pass
         // would only see the website and would be racing us for the same file.
         callerWritesContext: true,
+        // Admin "form first" testing path only (see route); customer flows leave this false.
+        allowMultiple,
       });
       agentId = agent.id;
     } catch (err) {
