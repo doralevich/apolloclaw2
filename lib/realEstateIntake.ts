@@ -6,6 +6,9 @@
 // business questions, so a real-estate agent is set up around the client's actual practice from
 // day one.
 //
+// Every field is required (David's call): the whole step is the discipline detail that makes the
+// agent useful, so none of it is optional.
+//
 // Answers land under the `realEstateDetails` key and are surfaced in USER.md / the intake email
 // via the "Real Estate Deep-Dive" section (lib/onboardingSections.ts).
 //
@@ -34,6 +37,21 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
+      key: "brokerage",
+      label: "What brokerage are you with?",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
+    },
+    {
+      key: "mls",
+      label: "Which MLS(es) do you belong to?",
+      type: "text",
+      required: true,
+      placeholder: "e.g. Bright MLS, Stellar MLS, CRMLS",
+      helper: "The multiple listing service(s) you are a member of.",
+    },
+    {
       key: "markets",
       label: "Which markets do you work?",
       type: "text",
@@ -45,6 +63,7 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "property_types",
       label: "What property types do you handle?",
       type: "multiselect",
+      required: true,
       options: [
         "Single-family homes",
         "Condos / townhomes",
@@ -57,15 +76,35 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
+      key: "specialties",
+      label: "What do you specialize in?",
+      type: "multiselect",
+      required: true,
+      options: [
+        "Buyer representation",
+        "Listing / seller representation",
+        "Luxury",
+        "First-time buyers",
+        "Investors",
+        "Relocation",
+        "New construction",
+        "Rentals / leasing",
+        "Commercial",
+        "Other",
+      ],
+    },
+    {
       key: "transaction_volume",
       label: "Roughly how many deals do you close a year?",
       type: "dropdown",
+      required: true,
       options: ["1-5", "6-15", "16-30", "31-60", "60+", "Just getting started"],
     },
     {
       key: "crm",
       label: "What CRM or transaction system do you use?",
       type: "dropdown",
+      required: true,
       options: [
         "Follow Up Boss",
         "kvCORE / BoldTrail",
@@ -79,9 +118,31 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
+      key: "re_tools",
+      label: "Which real estate tools and programs do you use?",
+      type: "multiselect",
+      required: true,
+      helper: "E-signature, showings, lockboxes, comps, marketing, 3D tours.",
+      options: [
+        "DocuSign",
+        "dotloop",
+        "SkySlope",
+        "ShowingTime",
+        "SentriLock / Supra lockbox",
+        "Cloud CMA / RPR (comps)",
+        "Canva",
+        "BombBomb",
+        "Matterport / 3D tours",
+        "Zillow Premier Agent",
+        "None yet",
+        "Other",
+      ],
+    },
+    {
       key: "lead_sources",
       label: "Where do your leads come from?",
       type: "multiselect",
+      required: true,
       options: [
         "Referrals / sphere",
         "Zillow / portals",
@@ -110,13 +171,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
-      key: "compliance_notes",
-      label: "Any local rules, forms, or disclosures the agent must respect?",
-      type: "text",
-      placeholder: "e.g. state association forms, HOA disclosures, local transfer taxes",
-      helper: "Real estate rules vary by state and locality; note anything the agent should always account for.",
-    },
-    {
       key: "real_estate_pain",
       label: "Biggest headache in your business right now?",
       type: "textarea",
@@ -127,6 +181,7 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "real_estate_goals",
       label: "What would a great first 90 days look like?",
       type: "textarea",
+      required: true,
       placeholder: "The deals, systems, or time back you want three months from now.",
     },
   ],

@@ -112,7 +112,7 @@ const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBook
 // connections that let the agent open any of the files above, and until this section existed
 // the questionnaire never asked where a customer's documents are kept.
 const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint","Google Docs","Google Sheets","Google Slides","Google Drive","OneDrive / SharePoint","Dropbox","Box","None","Other"];
-const IT_COMPLY    = ["HIPAA (healthcare)","PCI-DSS (payments)","GDPR (EU data)","CCPA (California)","SOC 2","None / Not applicable","Not sure","Multiple"];
+// IT_COMPLY (the "Any compliance requirements?" options) was removed with that question at David's call.
 // BROKEN_AREAS (the "which areas feel most broken?" options) lived here until the Operations &
 // Pain Points page was removed at David's call. It was that page's only consumer, so it went with it.
 const KIDS_COUNT   = ["None","1","2","3","4","5 or more"];
@@ -1454,7 +1454,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "scope", label: "Scope", node: (
     <Stack key="s8">
       <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
-      <CheckGroup label="Any compliance requirements?" hint="Select all that apply" options={IT_COMPLY} value={s8.comply} onChange={v => f8("comply", v)} cols={2} />
+      {/* "Any compliance requirements?" was here and is gone at David's call. s8.comply stays in
+          state and in the payload as an empty array; nothing reads it to decide anything. */}
       <FF label="Anything else we should know?" hint="Extra context, priorities, or details that will help us build."><TArea value={s8.constraints} onChange={v => f8("constraints", v)} placeholder="Anything else that helps us understand your business and what you need." rows={4} /></FF>
       <FF label="Upload company materials" hint="Optional, and the more the better. Anything that helps us learn your business: company materials, your resume so we know your background, example emails / memos / documents, SOPs, and templates.">
         <FileUpload files={files} onFiles={setFiles} />
