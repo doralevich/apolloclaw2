@@ -8,6 +8,7 @@ import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
 import { LEGAL_BRANCH } from "@/lib/legalIntake";
+import { REALESTATE_BRANCH } from "@/lib/realEstateIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
 // add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
@@ -21,6 +22,7 @@ const ROLE_INTAKES: Record<
 > = {
   cfo: { branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent" },
   legal: { branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent" },
+  realestate: { branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent" },
 };
 import {
   DEFAULT_LICENSE_TIER,

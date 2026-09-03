@@ -181,6 +181,28 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "Scale",
   },
+  // The Real Estate Agent — the CFO/Law model applied to property work: an off-the-rack
+  // real-estate persona (config/personas.ts -> `realestate`, applied by personaForAgentType at
+  // provision) on a stock OpenClaw box, plus a real-estate-specific intake (lib/realEstateIntake.ts)
+  // the onboarding form adds when the type is `realestate` (ROLE_INTAKES in OnboardingForm), whose
+  // answers surface as the "Real Estate Deep-Dive" section (lib/onboardingSections.ts).
+  //
+  // Same white-glove shape as CFO/Law: NO `planKey` (scoped and priced per engagement), and
+  // `internal` so only a platform admin sees the card and provisions one after closing. Same stock
+  // template and $25 hosting cap as every other agent - the role lives in the persona and intake,
+  // not in a per-role image.
+  {
+    id: "realestate",
+    label: "The Real Estate Agent",
+    description:
+      "A real estate agent: listing copy and market comps, transaction checklists from offer to close, investment math (cap rate, cash flow, ROI), and client follow-up - set up for one business, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Home",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the
