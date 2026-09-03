@@ -106,6 +106,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    const ceodet = d.ceoDetails && typeof d.ceoDetails === "object" ? (d.ceoDetails as Record<string, unknown>) : {};
+    if (Object.keys(ceodet).length) {
+      sections.push({
+        title: "CEO Deep-Dive",
+        rows: Object.entries(ceodet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [

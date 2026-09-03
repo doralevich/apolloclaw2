@@ -203,6 +203,28 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "Home",
   },
+  // The CEO Agent — the same role model as CFO/Law/Real Estate, for the executive's chief of
+  // staff: an off-the-rack persona (config/personas.ts -> `ceo`, applied by personaForAgentType at
+  // provision) on a stock OpenClaw box, plus an executive intake (lib/ceoIntake.ts) the onboarding
+  // form adds when the type is `ceo` (ROLE_INTAKES in OnboardingForm), surfaced as the "CEO
+  // Deep-Dive" section (lib/onboardingSections.ts). Its marketing page already exists at
+  // /ai-agents/ceo.
+  //
+  // Same white-glove shape as the other role agents: NO `planKey` (scoped and priced per
+  // engagement), `internal` so only a platform admin sees the card, and the same stock template
+  // and $25 hosting cap as every other agent.
+  {
+    id: "ceo",
+    label: "The CEO Agent",
+    description:
+      "An AI chief of staff for a busy executive: inbox triage and draft replies, calendar and focus-time defense, follow-ups and open loops, and briefings that give the summary first - set up for one executive, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Briefcase",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the
