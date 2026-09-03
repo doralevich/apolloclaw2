@@ -116,6 +116,46 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    const mktdet = d.marketingDetails && typeof d.marketingDetails === "object" ? (d.marketingDetails as Record<string, unknown>) : {};
+    if (Object.keys(mktdet).length) {
+      sections.push({
+        title: "Marketing Deep-Dive",
+        rows: Object.entries(mktdet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
+    const saldet = d.salesDetails && typeof d.salesDetails === "object" ? (d.salesDetails as Record<string, unknown>) : {};
+    if (Object.keys(saldet).length) {
+      sections.push({
+        title: "Sales Deep-Dive",
+        rows: Object.entries(saldet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
+    const recdet = d.recruitingDetails && typeof d.recruitingDetails === "object" ? (d.recruitingDetails as Record<string, unknown>) : {};
+    if (Object.keys(recdet).length) {
+      sections.push({
+        title: "Recruiting Deep-Dive",
+        rows: Object.entries(recdet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
+    const meddet = d.medicalDetails && typeof d.medicalDetails === "object" ? (d.medicalDetails as Record<string, unknown>) : {};
+    if (Object.keys(meddet).length) {
+      sections.push({
+        title: "Medical Deep-Dive",
+        rows: Object.entries(meddet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [

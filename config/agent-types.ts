@@ -225,6 +225,89 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "Briefcase",
   },
+  // The Marketing Agent - the same role model as CFO/Law/Real Estate/CEO, for the marketing work a
+  // small team never has time for: an off-the-rack persona (config/personas.ts -> `marketing`,
+  // applied by personaForAgentType at provision) on a stock OpenClaw box, plus a marketing intake
+  // (lib/marketingIntake.ts) the onboarding form adds when the type is `marketing` (ROLE_INTAKES in
+  // OnboardingForm), surfaced as the "Marketing Deep-Dive" section (lib/onboardingSections.ts).
+  //
+  // Same white-glove shape as the other role agents: NO `planKey` (scoped and priced per
+  // engagement), `internal` so only a platform admin sees the card, and the same stock template
+  // and $25 hosting cap as every other agent - the role lives in the persona and intake.
+  {
+    id: "marketing",
+    label: "The Marketing Agent",
+    description:
+      "A marketing agent: on-brand copy for email, social, landing pages, ads, and blog, a content calendar that keeps moving, content repurposed across channels, and performance recaps with what to try next - set up for one business, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Megaphone",
+  },
+  // The Sales Agent - the same role model as the other role agents, for keeping a pipeline moving:
+  // an off-the-rack persona (config/personas.ts -> `sales`, applied by personaForAgentType at
+  // provision) on a stock OpenClaw box, plus a sales intake (lib/salesIntake.ts) the onboarding
+  // form adds when the type is `sales` (ROLE_INTAKES in OnboardingForm), surfaced as the "Sales
+  // Deep-Dive" section (lib/onboardingSections.ts).
+  //
+  // Same white-glove shape as the other role agents: NO `planKey`, `internal` so only a platform
+  // admin sees the card, and the same stock template and $25 hosting cap as every other agent.
+  {
+    id: "sales",
+    label: "The Sales Agent",
+    description:
+      "A sales agent: prospect and account research, personalized outreach that reads like a human wrote it, call briefs and objection handling, follow-up cadences, proposal drafts, and CRM notes kept current - set up for one business, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "TrendingUp",
+  },
+  // The Recruiting Agent - the same role model as the other role agents, for keeping a hiring
+  // pipeline moving: an off-the-rack persona (config/personas.ts -> `recruiting`, applied by
+  // personaForAgentType at provision) on a stock OpenClaw box, plus a recruiting intake
+  // (lib/recruitingIntake.ts) the onboarding form adds when the type is `recruiting` (ROLE_INTAKES
+  // in OnboardingForm), surfaced as the "Recruiting Deep-Dive" section (lib/onboardingSections.ts).
+  //
+  // Same white-glove shape as the other role agents: NO `planKey`, `internal` so only a platform
+  // admin sees the card, and the same stock template and $25 hosting cap as every other agent.
+  {
+    id: "recruiting",
+    label: "The Recruiting Agent",
+    description:
+      "A recruiting agent: resume screening against role requirements, candidate outreach and follow-up, interview scheduling and coordination, hiring-manager updates, and an ATS kept current - set up for one team, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "UserPlus",
+  },
+  // The Medical Agent - the same role model as the other role agents, ADMINISTRATIVE ONLY: an
+  // off-the-rack persona (config/personas.ts -> `medical`, applied by personaForAgentType at
+  // provision) on a stock OpenClaw box, plus a practice-admin intake (lib/medicalIntake.ts) the
+  // onboarding form adds when the type is `medical` (ROLE_INTAKES in OnboardingForm), surfaced as
+  // the "Medical Deep-Dive" section (lib/onboardingSections.ts). It supports the people who deliver
+  // care; it does NOT diagnose or make clinical decisions - the persona and intake both hold that
+  // line, and the agent is built to be HIPAA-mindful with any patient data.
+  //
+  // Same white-glove shape as the other role agents: NO `planKey`, `internal` so only a platform
+  // admin sees the card, and the same stock template and $25 hosting cap as every other agent.
+  {
+    id: "medical",
+    label: "The Medical Agent",
+    description:
+      "An administrative agent for a medical practice: patient reminders and follow-ups, plain-language patient explanations, insurance and billing paperwork, records organization, and literature summaries for clinicians - administrative support only, not diagnosis, set up for one practice, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Stethoscope",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the
