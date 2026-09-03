@@ -6,6 +6,8 @@
 // business questions, so a real-estate agent is set up around the client's actual practice from
 // day one.
 //
+// All fields are optional (David's call): answer what applies, skip the rest.
+//
 // Answers land under the `realEstateDetails` key and are surfaced in USER.md / the intake email
 // via the "Real Estate Deep-Dive" section (lib/onboardingSections.ts).
 //
@@ -21,7 +23,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "role",
       label: "What is your role in real estate?",
       type: "multiselect",
-      required: true,
       options: [
         "Residential agent / Realtor",
         "Commercial broker",
@@ -34,10 +35,22 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
+      key: "brokerage",
+      label: "What brokerage are you with?",
+      type: "text",
+      placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
+    },
+    {
+      key: "mls",
+      label: "Which MLS(es) do you belong to?",
+      type: "text",
+      placeholder: "e.g. Bright MLS, Stellar MLS, CRMLS",
+      helper: "The multiple listing service(s) you are a member of.",
+    },
+    {
       key: "markets",
       label: "Which markets do you work?",
       type: "text",
-      required: true,
       placeholder: "e.g. Austin metro; Round Rock and Cedar Park",
       helper: "Cities, neighborhoods, or regions the agent should know.",
     },
@@ -53,6 +66,23 @@ export const REALESTATE_BRANCH: IndustryBranch = {
         "Land / lots",
         "Commercial (office / retail / industrial)",
         "Short-term rentals",
+        "Other",
+      ],
+    },
+    {
+      key: "specialties",
+      label: "What do you specialize in?",
+      type: "multiselect",
+      options: [
+        "Buyer representation",
+        "Listing / seller representation",
+        "Luxury",
+        "First-time buyers",
+        "Investors",
+        "Relocation",
+        "New construction",
+        "Rentals / leasing",
+        "Commercial",
         "Other",
       ],
     },
@@ -97,7 +127,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "owns_work",
       label: "What do you want your real estate agent to own?",
       type: "multiselect",
-      required: true,
       options: [
         "Listing descriptions & marketing copy",
         "Comps & market research",
@@ -110,17 +139,9 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
-      key: "compliance_notes",
-      label: "Any local rules, forms, or disclosures the agent must respect?",
-      type: "text",
-      placeholder: "e.g. state association forms, HOA disclosures, local transfer taxes",
-      helper: "Real estate rules vary by state and locality; note anything the agent should always account for.",
-    },
-    {
       key: "real_estate_pain",
       label: "Biggest headache in your business right now?",
       type: "textarea",
-      required: true,
       placeholder: "e.g. follow-up falls through the cracks, listings take too long to write, I never have comps ready fast enough.",
     },
     {
