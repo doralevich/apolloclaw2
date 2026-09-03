@@ -10,6 +10,10 @@ import { CFO_BRANCH } from "@/lib/cfoIntake";
 import { LEGAL_BRANCH } from "@/lib/legalIntake";
 import { REALESTATE_BRANCH } from "@/lib/realEstateIntake";
 import { CEO_BRANCH } from "@/lib/ceoIntake";
+import { MARKETING_BRANCH } from "@/lib/marketingIntake";
+import { SALES_BRANCH } from "@/lib/salesIntake";
+import { RECRUITING_BRANCH } from "@/lib/recruitingIntake";
+import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
 // add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
@@ -25,6 +29,10 @@ const ROLE_INTAKES: Record<
   legal: { branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent" },
   realestate: { branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent" },
   ceo: { branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent" },
+  marketing: { branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent" },
+  sales: { branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent" },
+  recruiting: { branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent" },
+  medical: { branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent" },
 };
 import {
   DEFAULT_LICENSE_TIER,
@@ -1095,6 +1103,12 @@ function hydrateBizState(a: PrefillAnswers) {
     roleDetails:
       (a.cfoDetails && typeof a.cfoDetails === "object" ? (a.cfoDetails as Record<string, string | string[]>) : null) ??
       (a.legalDetails && typeof a.legalDetails === "object" ? (a.legalDetails as Record<string, string | string[]>) : null) ??
+      (a.realEstateDetails && typeof a.realEstateDetails === "object" ? (a.realEstateDetails as Record<string, string | string[]>) : null) ??
+      (a.ceoDetails && typeof a.ceoDetails === "object" ? (a.ceoDetails as Record<string, string | string[]>) : null) ??
+      (a.marketingDetails && typeof a.marketingDetails === "object" ? (a.marketingDetails as Record<string, string | string[]>) : null) ??
+      (a.salesDetails && typeof a.salesDetails === "object" ? (a.salesDetails as Record<string, string | string[]>) : null) ??
+      (a.recruitingDetails && typeof a.recruitingDetails === "object" ? (a.recruitingDetails as Record<string, string | string[]>) : null) ??
+      (a.medicalDetails && typeof a.medicalDetails === "object" ? (a.medicalDetails as Record<string, string | string[]>) : null) ??
       {},
   };
 }
