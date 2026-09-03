@@ -6,6 +6,8 @@
 // questions, so a legal-drafting agent is set up around the client's actual contracts and matters
 // from day one.
 //
+// All fields are optional (David's call): answer what applies, skip the rest.
+//
 // Answers land under the `legalDetails` key and are surfaced in USER.md / the intake email via the
 // "Legal Deep-Dive" section (lib/onboardingSections.ts).
 //
@@ -24,7 +26,6 @@ export const LEGAL_BRANCH: IndustryBranch = {
       key: "legal_context",
       label: "Who will the agent work for?",
       type: "dropdown",
-      required: true,
       options: [
         "A business handling its own contracts (in-house)",
         "A law firm or solo attorney",
@@ -36,7 +37,6 @@ export const LEGAL_BRANCH: IndustryBranch = {
       key: "practice_areas",
       label: "What kinds of legal work come up most?",
       type: "multiselect",
-      required: true,
       options: [
         "Commercial contracts (MSAs, SOWs)",
         "NDAs / confidentiality",
@@ -53,6 +53,27 @@ export const LEGAL_BRANCH: IndustryBranch = {
       ],
     },
     {
+      key: "clientele",
+      label: "Who are your typical clients?",
+      type: "multiselect",
+      options: [
+        "Businesses / companies",
+        "Startups",
+        "Enterprises",
+        "Individuals",
+        "Nonprofits",
+        "Government / public sector",
+        "Other",
+      ],
+    },
+    {
+      key: "client_industries",
+      label: "What industries do your clients operate in?",
+      type: "text",
+      placeholder: "e.g. SaaS, healthcare, real estate, manufacturing",
+      helper: "So the agent uses the terms and norms of your clients' world.",
+    },
+    {
       key: "document_volume",
       label: "How many agreements do you handle in a typical month?",
       type: "dropdown",
@@ -64,6 +85,13 @@ export const LEGAL_BRANCH: IndustryBranch = {
       type: "text",
       placeholder: "e.g. New York and Delaware, or US plus EU",
       helper: "Governing law and where you operate. The agent flags when something falls outside these.",
+    },
+    {
+      key: "key_clauses",
+      label: "Which clauses or terms do you care most about?",
+      type: "text",
+      placeholder: "e.g. liability caps, indemnity, IP assignment, termination, non-compete",
+      helper: "The positions the agent should watch for and hold to.",
     },
     {
       key: "templates_status",
@@ -88,6 +116,8 @@ export const LEGAL_BRANCH: IndustryBranch = {
         "DocuSign",
         "PandaDoc / Adobe Sign",
         "A CLM (Ironclad, Juro, LinkSquares...)",
+        "A practice manager (Clio, MyCase...)",
+        "iManage / NetDocuments",
         "SharePoint / OneDrive",
         "Google Drive",
         "Dropbox / Box",
@@ -98,7 +128,6 @@ export const LEGAL_BRANCH: IndustryBranch = {
       key: "responsibilities",
       label: "What do you want your Law Agent to own?",
       type: "multiselect",
-      required: true,
       options: [
         "Draft first versions from your templates",
         "Review incoming contracts and redline against your positions",
@@ -115,13 +144,18 @@ export const LEGAL_BRANCH: IndustryBranch = {
       key: "review_authority",
       label: "How should the agent handle anything it drafts or reviews?",
       type: "dropdown",
-      required: true,
       options: [
         "Draft only; a person reviews everything before it leaves",
         "Draft and recommend; attorney signs off on anything binding",
         "Handle routine low-risk documents, escalate the rest",
         "Not sure yet",
       ],
+    },
+    {
+      key: "turnaround",
+      label: "Typical turnaround you need on a document?",
+      type: "dropdown",
+      options: ["Same day", "1-2 days", "Within a week", "Varies by matter"],
     },
     {
       key: "confidentiality",
@@ -134,7 +168,6 @@ export const LEGAL_BRANCH: IndustryBranch = {
       key: "legal_pain",
       label: "Biggest legal bottleneck or headache right now?",
       type: "textarea",
-      required: true,
       placeholder: "e.g. contracts sit in my inbox for a week, I never know what renews when, every NDA starts from scratch.",
     },
     {
