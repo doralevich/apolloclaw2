@@ -155,18 +155,20 @@ export function CreateAgentModal({
         return;
       }
 
-      // "Form first, then create" for the role agents (CFO, Law, Real Estate, CEO): don't
-      // provision a box here. Go straight to the role questionnaire; its submit
-      // (POST /api/agent-setup) provisions the correctly-typed, customized agent once the form is
-      // done, so nothing half-baked lands in the workspace. This is only the internal role types:
-      // the Blank build has no questionnaire (noSetup), the license/Apollo build provisions here
-      // and customizes after, and external types are sold on another site.
-      const formFirstRole =
-        selectedType.internal &&
-        !selectedType.noSetup &&
-        !selectedType.externalUrl &&
-        selectedType.id !== LICENSE_AGENT_TYPE_ID;
-      if (formFirstRole) {
+      // "Form first, then create" for EVERY agent that has a questionnaire (David's call): don't
+      // provision a box here. Go straight to that type's questionnaire - the general business one
+      // for the Apollo build, the discipline-specific deep-dive for the role agents (CFO, Law, Real
+      // Estate, CEO) - and its submit (POST /api/agent-setup) provisions the correctly-typed,
+      // customized agent once the form is done, so nothing half-baked lands in the workspace.
+      //
+      // The only type that still provisions directly below is the Blank build (noSetup): it has no
+      // questionnaire by design. External types (The College Agent) are sold on another site and
+      // are already filtered out of the picker. This modal's create is platform-admin-only
+      // (POST /api/agents 403s customers), and agent-setup only provisions-on-submit for admins, so
+      // this is the admin create path; the customer license agent still comes from the purchase
+      // flow (/api/onboard/complete), which is untouched.
+      const formFirst = !selectedType.noSetup && !selectedType.externalUrl;
+      if (formFirst) {
         setOpen(false);
         router.push(`/onboard/${selectedType.id}?ws=${encodeURIComponent(current.id)}`);
         return;
