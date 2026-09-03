@@ -248,7 +248,10 @@ export function CreateAgentModal({
           {pickableTypes.map((t) => {
             const Icon = (t.icon && TYPE_ICONS[t.icon]) || Bot;
             const alreadyCreated = t.available && alreadyHas(t);
-            const disabled = !t.available || alreadyCreated;
+            // Platform admins can create another of a type they already have (the server skips the
+            // one-per-type cap for them) - so the card stays selectable and only shows the badge.
+            // Customers stay blocked: a second agent of a type is a seat, not a rebuild.
+            const disabled = !t.available || (alreadyCreated && !isPlatformAdmin);
             const isSelected = selectedType?.id === t.id;
             return (
               <button
