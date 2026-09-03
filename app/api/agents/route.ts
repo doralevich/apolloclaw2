@@ -196,6 +196,12 @@ export const POST = route(async (request: Request) => {
     // No customer has paid here, so a missing template should fail loudly rather than
     // quietly hand an admin the wrong kind of box — which is the bug this replaces.
     allowTemplateFallback: false,
+    // This endpoint is platform-admin-only (requirePlatformAdmin above), so skip the
+    // one-agent-per-type-per-workspace cap: David needs to spin up several workspaces and
+    // several agents while testing without hitting "each workspace can have one agent per type".
+    // The cap still applies everywhere a customer provisions (checkout / onboarding / the Stripe
+    // webhook, which relies on the 409 for idempotency) - only this admin path is exempt.
+    allowMultiple: true,
   });
 
   return json(agent, 201);

@@ -155,6 +155,23 @@ export function CreateAgentModal({
         return;
       }
 
+      // "Form first, then create" for the role agents (CFO, Law, Real Estate, CEO): don't
+      // provision a box here. Go straight to the role questionnaire; its submit
+      // (POST /api/agent-setup) provisions the correctly-typed, customized agent once the form is
+      // done, so nothing half-baked lands in the workspace. This is only the internal role types:
+      // the Blank build has no questionnaire (noSetup), the license/Apollo build provisions here
+      // and customizes after, and external types are sold on another site.
+      const formFirstRole =
+        selectedType.internal &&
+        !selectedType.noSetup &&
+        !selectedType.externalUrl &&
+        selectedType.id !== LICENSE_AGENT_TYPE_ID;
+      if (formFirstRole) {
+        setOpen(false);
+        router.push(`/onboard/${selectedType.id}?ws=${encodeURIComponent(current.id)}`);
+        return;
+      }
+
       const created = await apiFetch<Agent>("/api/agents", {
         method: "POST",
         body: JSON.stringify({ workspace_id: current.id, type: selectedType.id }),
@@ -248,7 +265,10 @@ export function CreateAgentModal({
           {pickableTypes.map((t) => {
             const Icon = (t.icon && TYPE_ICONS[t.icon]) || Bot;
             const alreadyCreated = t.available && alreadyHas(t);
-            const disabled = !t.available || alreadyCreated;
+            // Platform admins can create another of a type they already have (the server skips the
+            // one-per-type cap for them) - so the card stays selectable and only shows the badge.
+            // Customers stay blocked: a second agent of a type is a seat, not a rebuild.
+            const disabled = !t.available || (alreadyCreated && !isPlatformAdmin);
             const isSelected = selectedType?.id === t.id;
             return (
               <button
