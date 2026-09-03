@@ -6,8 +6,7 @@
 // business questions, so a real-estate agent is set up around the client's actual practice from
 // day one.
 //
-// Every field is required (David's call): the whole step is the discipline detail that makes the
-// agent useful, so none of it is optional.
+// All fields are optional (David's call): answer what applies, skip the rest.
 //
 // Answers land under the `realEstateDetails` key and are surfaced in USER.md / the intake email
 // via the "Real Estate Deep-Dive" section (lib/onboardingSections.ts).
@@ -24,7 +23,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "role",
       label: "What is your role in real estate?",
       type: "multiselect",
-      required: true,
       options: [
         "Residential agent / Realtor",
         "Commercial broker",
@@ -40,14 +38,12 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "brokerage",
       label: "What brokerage are you with?",
       type: "text",
-      required: true,
       placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
     },
     {
       key: "mls",
       label: "Which MLS(es) do you belong to?",
       type: "text",
-      required: true,
       placeholder: "e.g. Bright MLS, Stellar MLS, CRMLS",
       helper: "The multiple listing service(s) you are a member of.",
     },
@@ -55,7 +51,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "markets",
       label: "Which markets do you work?",
       type: "text",
-      required: true,
       placeholder: "e.g. Austin metro; Round Rock and Cedar Park",
       helper: "Cities, neighborhoods, or regions the agent should know.",
     },
@@ -63,7 +58,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "property_types",
       label: "What property types do you handle?",
       type: "multiselect",
-      required: true,
       options: [
         "Single-family homes",
         "Condos / townhomes",
@@ -79,7 +73,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "specialties",
       label: "What do you specialize in?",
       type: "multiselect",
-      required: true,
       options: [
         "Buyer representation",
         "Listing / seller representation",
@@ -97,14 +90,12 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "transaction_volume",
       label: "Roughly how many deals do you close a year?",
       type: "dropdown",
-      required: true,
       options: ["1-5", "6-15", "16-30", "31-60", "60+", "Just getting started"],
     },
     {
       key: "crm",
       label: "What CRM or transaction system do you use?",
       type: "dropdown",
-      required: true,
       options: [
         "Follow Up Boss",
         "kvCORE / BoldTrail",
@@ -118,31 +109,9 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       ],
     },
     {
-      key: "re_tools",
-      label: "Which real estate tools and programs do you use?",
-      type: "multiselect",
-      required: true,
-      helper: "E-signature, showings, lockboxes, comps, marketing, 3D tours.",
-      options: [
-        "DocuSign",
-        "dotloop",
-        "SkySlope",
-        "ShowingTime",
-        "SentriLock / Supra lockbox",
-        "Cloud CMA / RPR (comps)",
-        "Canva",
-        "BombBomb",
-        "Matterport / 3D tours",
-        "Zillow Premier Agent",
-        "None yet",
-        "Other",
-      ],
-    },
-    {
       key: "lead_sources",
       label: "Where do your leads come from?",
       type: "multiselect",
-      required: true,
       options: [
         "Referrals / sphere",
         "Zillow / portals",
@@ -158,7 +127,6 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "owns_work",
       label: "What do you want your real estate agent to own?",
       type: "multiselect",
-      required: true,
       options: [
         "Listing descriptions & marketing copy",
         "Comps & market research",
@@ -174,14 +142,12 @@ export const REALESTATE_BRANCH: IndustryBranch = {
       key: "real_estate_pain",
       label: "Biggest headache in your business right now?",
       type: "textarea",
-      required: true,
       placeholder: "e.g. follow-up falls through the cracks, listings take too long to write, I never have comps ready fast enough.",
     },
     {
       key: "real_estate_goals",
       label: "What would a great first 90 days look like?",
       type: "textarea",
-      required: true,
       placeholder: "The deals, systems, or time back you want three months from now.",
     },
   ],
