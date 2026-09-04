@@ -1158,12 +1158,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   //
   // It stays a literal because the handlers below close over it and allPages is built from
   // state further down; the assertion is what makes the duplication safe.
-  // A role agent gets a role-specific, trimmed intake: company basics, what the business does, the
-  // role deep-dive, and the final details/agreement. Everything off-role (exec profile, industry
-  // branch, tech stack, ops pain, family/life, brand voice, writing sample, generic AI goals,
-  // horizons) is dropped. Both the key list and the page list below are filtered to this same set,
-  // so the step-order assertion stays satisfied.
-  const rolePageKeys = roleIntake ? ["biz", "whatyoudo", roleIntake.stepKey, "scope"] : [];
+  // A role agent gets the standard intake MINUS the tech-stack and generic-industry pages: company
+  // basics, what the business does, the executive profile, the role deep-dive, the personal pages
+  // (life context, voice, writing sample), the AI goals and what-it-should-do pages, and the final
+  // details/agreement. Only the tech stack and the generic industry branch (replaced by the role
+  // deep-dive) are dropped - David's call, so a role agent keeps the personal questions that make it
+  // feel built for the person. Order is taken from allPageKeys below (this list is a membership
+  // filter, not an ordering), so the step-order assertion stays satisfied.
+  const rolePageKeys = roleIntake ? ["biz", "whatyoudo", "exec", roleIntake.stepKey, "life", "voice", "sample", "goals", "scopeai", "scope"] : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(roleBranch ? [roleIntake!.stepKey] : []), "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const pageKeys = roleBranch ? allPageKeys.filter(k => rolePageKeys.includes(k)) : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
