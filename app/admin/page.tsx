@@ -1,5 +1,5 @@
-import { AdminWorkspacesView } from "@/components/admin/AdminWorkspacesView";
+import { AdminCustomersView } from "@/components/admin/AdminCustomersView";
 
 export default function AdminPage() {
-  return <AdminWorkspacesView />;
+  return <AdminCustomersView />;
 }
