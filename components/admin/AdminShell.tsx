@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/button";
 // DashboardShell (no workspace switcher / per-workspace nav). Just a top bar identifying
 // the admin area and the signed-in operator, with the full-width content below.
 //
-// Three tabs, three questions: Workspaces is "what does each customer have", Accounts is
-// "who is registered", Agents is "what actually exists" (database and Agent37 compared).
+// Two tabs, two questions: Customers is "who is registered and what do they have" (accounts,
+// licenses, workspaces, and the agents inside, in one view), Fleet is "what actually exists"
+// (every Agent37 instance compared against this database).
 const TABS = [
-  { href: "/admin", label: "Workspaces" },
-  { href: "/admin/accounts", label: "Accounts" },
-  { href: "/admin/agents", label: "Agents" },
+  { href: "/admin", label: "Customers" },
+  { href: "/admin/agents", label: "Fleet" },
 ];
 export function AdminShell({
   email,

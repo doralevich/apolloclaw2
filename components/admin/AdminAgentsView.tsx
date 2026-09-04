@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Wrench } from "lucide-react";
-import { openWorkspaceInApolloClaw } from "@/components/admin/AdminWorkspacesView";
+import { openWorkspaceInApolloClaw } from "@/components/admin/workspace-instances";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
@@ -61,6 +61,46 @@ const PRESENCE: Record<
   unknown: { label: "unverified", variant: "muted", hint: "Agent37 could not be reached to compare." },
 };
 
+// The fleet filter: one bucket per state that matters, plus "all". Trash is its own bucket, so a
+// trashed agent never also counts as running/ghost. External (College Agent) boxes show only under
+// "all" - they are reference, not something to act on here.
+type FleetFilter = "all" | "ok" | "ghost" | "orphan" | "trash";
+
+const FILTERS: { key: FleetFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "ok", label: "Running" },
+  { key: "ghost", label: "No instance" },
+  { key: "orphan", label: "Orphan" },
+  { key: "trash", label: "In trash" },
+];
+
+function matchesFilter(a: AdminAgentOverview, f: FleetFilter): boolean {
+  const trashed = Boolean(a.deleted_at);
+  switch (f) {
+    case "all":
+      return true;
+    case "trash":
+      return trashed;
+    case "ok":
+      return !trashed && a.presence === "ok";
+    case "ghost":
+      return !trashed && a.presence === "ghost";
+    case "orphan":
+      return !trashed && (a.presence === "orphan" || a.presence === "unattributed");
+  }
+}
+
+// Sort key: the states that need a human first, healthy in the middle, the other product's boxes
+// and trash last.
+function severity(a: AdminAgentOverview): number {
+  if (Boolean(a.deleted_at)) return 5;
+  if (a.presence === "orphan" || a.presence === "unattributed") return 0;
+  if (a.presence === "ghost") return 1;
+  if (a.presence === "ok") return 2;
+  if (a.presence === "external") return 4;
+  return 3;
+}
+
 export function AdminAgentsView() {
   const [agents, setAgents] = useState<AdminAgentOverview[] | null>(null);
   const [liveChecked, setLiveChecked] = useState(true);
@@ -72,6 +112,7 @@ export function AdminAgentsView() {
   const [adoptBusy, setAdoptBusy] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [revertingId, setRevertingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FleetFilter>("all");
 
   const load = useCallback(async () => {
     try {
@@ -210,44 +251,30 @@ export function AdminAgentsView() {
     }
   }
 
-  // One section per workspace (name-sorted), instances outside any workspace last.
-  const groups = new Map<string, { name: string; owner: string | null; rows: AdminAgentOverview[] }>();
-  for (const a of agents ?? []) {
-    // The other app's instances get their own section rather than falling into "Not in any
-    // workspace" beside our genuine orphans - they are not strays, they are simply somebody
-    // else's, and a section header says so before anyone reads a badge.
-    const key = a.workspace_id ?? (a.presence === "external" ? "__external__" : "__none__");
-    const group = groups.get(key) ?? {
-      name:
-        key === "__external__"
-          ? "The College Agent (other product)"
-          : a.workspace_name ?? "Not in any workspace",
-      owner: null,
-      rows: [],
-    };
-    if (!a.is_member_agent && a.owner_email) group.owner = group.owner ?? a.owner_email;
-    group.rows.push(a);
-    groups.set(key, group);
-  }
-  // Ours first, then unhomed instances, then the other product's - descending order of
-  // "something here might need you".
-  const RANK: Record<string, number> = { __none__: 1, __external__: 2 };
-  const sections = [...groups.entries()].sort(([ka, a], [kb, b]) => {
-    const ra = RANK[ka] ?? 0;
-    const rb = RANK[kb] ?? 0;
-    if (ra !== rb) return ra - rb;
-    return a.name.localeCompare(b.name);
-  });
+  // One flat, filterable list of every instance - no workspace grouping (that lives on the
+  // Customers tab now). Each row still names its owner and workspace; the filter chips slice the
+  // fleet by the state that actually needs you.
+  const all = agents ?? [];
+  const counts: Record<FleetFilter, number> = {
+    all: all.length,
+    ok: all.filter((a) => matchesFilter(a, "ok")).length,
+    ghost: all.filter((a) => matchesFilter(a, "ghost")).length,
+    orphan: all.filter((a) => matchesFilter(a, "orphan")).length,
+    trash: all.filter((a) => matchesFilter(a, "trash")).length,
+  };
+  // Needs-attention first (orphans, ghosts), then healthy, then the other product's, then trash.
+  const sorted = [...all].sort((a, b) => severity(a) - severity(b) || (a.name || a.agent37_id).localeCompare(b.name || b.agent37_id));
+  const visible = sorted.filter((a) => matchesFilter(a, filter));
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Fleet</h1>
         <p className="text-sm text-muted-foreground">
-          Every instance on the Agent37 account, checked against this database and grouped by
-          workspace - including the College Agent&apos;s, which are listed read-only so this page
-          matches the Agent37 dashboard exactly. Member seats nest under the workspace&apos;s main
-          agent. Delete removes whichever halves exist - instance, records, or both.
+          Every instance on the Agent37 account, checked against this database. This is where the
+          two can drift: a record with no live instance, or a live instance still billing with no
+          record. The College Agent&apos;s boxes are listed read-only so this matches the Agent37
+          dashboard exactly. Delete removes whichever halves exist - instance, records, or both.
         </p>
         {!liveChecked && (
           <p className="mt-2 text-sm text-amber-700">
@@ -263,32 +290,40 @@ export function AdminAgentsView() {
           <p className="text-sm text-muted-foreground">No agents anywhere.</p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {sections.map(([key, group]) => {
-            const main = group.rows.filter((a) => !a.is_member_agent);
-            const members = group.rows.filter((a) => a.is_member_agent);
-            return (
-              <section key={key}>
-                <div className="mb-2 flex items-baseline gap-2">
-                  <h2 className="font-semibold">{group.name}</h2>
-                  {group.owner && <span className="text-xs text-muted-foreground">{group.owner}</span>}
-                </div>
-                <div className="space-y-3">
-                  {main.map((a) => (
-                    <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} />
-                  ))}
-                  {members.length > 0 && (
-                    <div className="ml-5 space-y-3 border-l-2 border-muted pl-4">
-                      {members.map((a) => (
-                        <AgentCard key={a.agent37_id} agent={a} member onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+        <>
+          <div className="flex flex-wrap gap-2">
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFilter(f.key)}
+                aria-pressed={filter === f.key}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  filter === f.key
+                    ? "border-foreground bg-foreground text-background"
+                    : "bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {f.label}
+                <span className={`rounded-full px-1.5 text-xs ${filter === f.key ? "bg-background/20" : "bg-muted"}`}>
+                  {counts[f.key]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {visible.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-10 text-center">
+              <p className="text-sm text-muted-foreground">Nothing in this state.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {visible.map((a) => (
+                <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {deleting && (() => {
@@ -512,6 +547,7 @@ function AgentCard({
           {agent.agent_type && <span>{getAgentType(agent.agent_type)?.label ?? agent.agent_type}</span>}
           {agent.template && <span className="font-mono">{agent.template}</span>}
           {agent.owner_email && <span>{agent.owner_email}</span>}
+          {agent.workspace_name && <span>{agent.workspace_name}</span>}
           {agent.created_at && <span>Created {formatDate(agent.created_at)}</span>}
         </div>
       </div>
