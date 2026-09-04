@@ -1,3 +1,4 @@
+import { getAgentType } from "@/config/agent-types";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { HOSTING_PLAN, resolveLicenseTier } from "@/lib/pricing/catalog";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
@@ -29,6 +30,14 @@ interface CheckoutBody {
   /** The self-serve paywall only sends "basic" now (Advanced became a call-for-setup path, not a
    *  bare checkout). Anything missing or unrecognised resolves to Basic — see resolveLicenseTier. */
   tier?: string;
+  /** Which role agent this purchase builds (e.g. "realestate" from the branded /build/[type]
+   *  funnel). Absent (or not a valid, self-serve role type) provisions the generic license agent -
+   *  so the plain /onboard flow is unchanged. Carried on the session metadata and read back by
+   *  /api/onboard/complete + /status; the webhook ignores it (it only creates the account). */
+  agentType?: string;
+  /** Internal path to return to after Stripe (the branded funnel page, so the post-payment
+   *  questionnaire is the right one). Validated to an internal path; defaults to /onboard. */
+  returnPath?: string;
 }
 
 // Stripe metadata values are capped at 500 characters and the whole object at 50 keys. None
@@ -55,6 +64,18 @@ export const POST = route(async (request: Request) => {
   // The tier is resolved from the catalog, never taken as a price id from the body. A caller
   // who could name the price could name a $0 one, and this route is deliberately open.
   const tier = resolveLicenseTier(body.tier);
+
+  // A role agent to build, if the branded funnel asked for one. Only a real, self-serve role type
+  // is honoured (never external like the College Agent, never the no-questionnaire Blank build);
+  // anything else falls through to the generic license agent, keeping plain /onboard unchanged.
+  const requestedType = clean(body.agentType, 40);
+  const rt = requestedType ? getAgentType(requestedType) : undefined;
+  const agentType = rt && !rt.externalUrl && !rt.noSetup ? rt.id : "";
+
+  // Where Stripe returns to. Must be an internal path (no open redirect), and only the pathname is
+  // used - the ?paid / ?session_id / ?checkout params are appended here.
+  const rawReturn = clean(body.returnPath, 200).split(/[?#]/)[0];
+  const returnPath = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : "/onboard";
 
   const stripe = getStripe();
   const { data: prices } = await stripe.prices.list({
@@ -91,6 +112,9 @@ export const POST = route(async (request: Request) => {
     last_name: last,
     personal_email: clean(body.personalEmail, 200).toLowerCase(),
     phone: clean(body.phone, 40),
+    // Only present for a role-agent purchase. /api/onboard/complete + /status read it to build the
+    // right agent; the license webhook never looks at it.
+    ...(agentType ? { agent_type: agentType } : {}),
   };
 
   const origin = publicSiteOrigin(new URL(request.url).origin);
@@ -110,8 +134,8 @@ export const POST = route(async (request: Request) => {
     // questionnaire. The session id lets that screen read back what was actually charged
     // (promotion codes and proration mean the catalog price is not always the total) and
     // confirm the payment with Stripe rather than trusting ?paid=1.
-    success_url: `${origin}/onboard?paid=1&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/onboard?checkout=cancelled`,
+    success_url: `${origin}${returnPath}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}${returnPath}?checkout=cancelled`,
     allow_promotion_codes: true,
   });
 
