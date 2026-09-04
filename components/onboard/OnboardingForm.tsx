@@ -1159,15 +1159,17 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // It stays a literal because the handlers below close over it and allPages is built from
   // state further down; the assertion is what makes the duplication safe.
   // A role agent gets the standard intake MINUS the tech-stack and generic-industry pages: company
-  // basics, what the business does, the executive profile, the role deep-dive, the personal pages
+  // basics, what the business does, the role deep-dive, the executive profile, the personal pages
   // (life context, voice, writing sample), the AI goals and what-it-should-do pages, and the final
   // details/agreement. Only the tech stack and the generic industry branch (replaced by the role
   // deep-dive) are dropped - David's call, so a role agent keeps the personal questions that make it
-  // feel built for the person. Order is taken from allPageKeys below (this list is a membership
-  // filter, not an ordering), so the step-order assertion stays satisfied.
-  const rolePageKeys = roleIntake ? ["biz", "whatyoudo", "exec", roleIntake.stepKey, "life", "voice", "sample", "goals", "scopeai", "scope"] : [];
+  // feel built for the person. UNLIKE the generic flow (ordered by allPageKeys), a role agent takes
+  // its order straight from this list, so the role deep-dive comes first and the executive profile
+  // sits after it - David's call. Both pageKeys and allPages below derive from this list, so the
+  // step-order assertion stays satisfied.
+  const rolePageKeys = roleIntake ? ["biz", "whatyoudo", roleIntake.stepKey, "exec", "life", "voice", "sample", "goals", "scopeai", "scope"] : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(roleBranch ? [roleIntake!.stepKey] : []), "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
-  const pageKeys = roleBranch ? allPageKeys.filter(k => rolePageKeys.includes(k)) : allPageKeys;
+  const pageKeys = roleBranch ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
@@ -1488,7 +1490,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   ];
   // Trim to the role set when it's a role agent, mirroring the pageKeys filter above so the two
   // stay in lockstep. Filtering preserves order, so a role flow reads biz -> whatyoudo -> role -> scope.
-  const allPages = roleBranch ? allPagesFull.filter(p => rolePageKeys.includes(p.key)) : allPagesFull;
+  // For a role agent, order the pages by rolePageKeys (not allPagesFull's natural order), so the
+  // executive profile can sit AFTER the role deep-dive. Both this and pageKeys above read from
+  // rolePageKeys, so the assertion below still holds.
+  const allPages = roleBranch
+    ? rolePageKeys
+        .map((k) => allPagesFull.find((p) => p.key === k))
+        .filter((p): p is (typeof allPagesFull)[number] => Boolean(p))
+    : allPagesFull;
   // The check that makes the duplication above safe. A page added without a key - or a key
   // without a page - is a questionnaire that quietly stops advancing partway through, which is
   // the worst kind of bug this form can have: the customer sees a Continue button that does
