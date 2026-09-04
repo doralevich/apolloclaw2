@@ -1,14 +1,14 @@
 import { json, readJson, route } from "@/lib/http";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
-import { checkPasscode, passcodeConfigured, mintCookieValue, INVITE_COOKIE } from "@/lib/realEstateInvite";
+import { checkPasscode, passcodeConfigured, mintCookieValue, INVITE_COOKIE } from "@/lib/agentInvite";
 
-// POST /api/real-estate-invite/unlock { passcode }
+// POST /api/agent-invite/unlock { passcode }
 //
-// The gate for the Real Estate invite link. On the right passcode it sets an HttpOnly cookie that
-// both the /real-estate-invite page and the claim endpoint check. Fails closed when no passcode is
-// configured (REALESTATE_ONBOARDING_PASSCODE unset), so a half-configured deploy grants no one.
+// The shared gate for every role-agent invite link. On the right passcode it sets an HttpOnly
+// cookie that the /agent-invite/[type] page and the claim endpoint both check. Fails closed when no
+// passcode is configured (AGENT_INVITE_PASSCODE unset), so a half-configured deploy grants no one.
 export const POST = route(async (request: Request) => {
-  const limited = await enforceRateLimit(request, "re_invite_unlock", LIMITS.form);
+  const limited = await enforceRateLimit(request, "agent_invite_unlock", LIMITS.form);
   if (limited) return limited;
 
   if (!passcodeConfigured()) {

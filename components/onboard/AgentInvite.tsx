@@ -2,11 +2,14 @@
 import { useState } from "react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Client UI for /real-estate-invite. Two phases:
-//   - gate:    enter the access password -> POST /api/real-estate-invite/unlock (sets the cookie).
-//   - welcome: "Welcome, David" + name/email -> POST /api/real-estate-invite/claim, which provisions
-//              the live agent and returns a one-click sign-in URL we navigate to. From there the
-//              visitor is in the standard customer onboarding, same as any other agent.
+// Client UI for /agent-invite/[type]. Two phases:
+//   - gate:    enter the access password -> POST /api/agent-invite/unlock (sets the cookie).
+//   - welcome: "Welcome" + name/email -> POST /api/agent-invite/[type]/claim, which provisions the
+//              live agent and returns a one-click sign-in URL we navigate to. From there the visitor
+//              is in the standard customer onboarding, same as any other agent.
+//
+// Parameterized by agent type: the same flow serves the CFO, Law, CEO, Marketing, Sales, Recruiting,
+// Medical, and Real Estate agents. `agentLabel` is the registry label (e.g. "The CFO Agent").
 //
 // Brand rule: no em dashes in user-facing copy. Use hyphens or commas.
 
@@ -20,6 +23,11 @@ const TXM = "#1A1A1A";
 const TXD = "#4A4A4A";
 
 const FONT = "'Inter',-apple-system,BlinkMacSystemFont,sans-serif";
+
+// "The CFO Agent" -> "CFO Agent", for possessive/inline copy ("your customized CFO Agent").
+function inlineLabel(label: string): string {
+  return label.replace(/^The\s+/i, "");
+}
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -79,22 +87,28 @@ const labelStyle: React.CSSProperties = {
   margin: "0 0 7px",
 };
 
+const eyebrowStyle: React.CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  color: R,
+  margin: "0 0 10px",
+};
+
 function Button({
   children,
   disabled,
-  onClick,
   type = "button",
 }: {
   children: React.ReactNode;
   disabled?: boolean;
-  onClick?: () => void;
   type?: "button" | "submit";
 }) {
   return (
     <button
       type={type}
       disabled={disabled}
-      onClick={onClick}
       style={{
         width: "100%",
         padding: "14px 18px",
@@ -135,7 +149,17 @@ function Spinner({ label }: { label: string }) {
   );
 }
 
-export default function RealEstateInvite({ unlocked, greetName }: { unlocked: boolean; greetName: string }) {
+export default function AgentInvite({
+  type,
+  agentLabel,
+  unlocked,
+  greetName,
+}: {
+  type: string;
+  agentLabel: string;
+  unlocked: boolean;
+  greetName: string;
+}) {
   const [isUnlocked, setUnlocked] = useState(unlocked);
 
   // Gate state
@@ -144,17 +168,20 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
   const [unlocking, setUnlocking] = useState(false);
 
   // Welcome state
-  const [name, setName] = useState("David Liniado");
+  const [name, setName] = useState(greetName);
   const [email, setEmail] = useState("");
   const [welcomeErr, setWelcomeErr] = useState("");
   const [claiming, setClaiming] = useState(false);
+
+  const eyebrow = agentLabel.toUpperCase();
+  const inline = inlineLabel(agentLabel);
 
   const submitPasscode = async () => {
     if (!passcode.trim() || unlocking) return;
     setUnlocking(true);
     setGateErr("");
     try {
-      const res = await fetch("/api/real-estate-invite/unlock", {
+      const res = await fetch("/api/agent-invite/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passcode }),
@@ -182,7 +209,7 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
     setClaiming(true);
     setWelcomeErr("");
     try {
-      const res = await fetch("/api/real-estate-invite/claim", {
+      const res = await fetch(`/api/agent-invite/${encodeURIComponent(type)}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email: trimmedEmail }),
@@ -190,7 +217,7 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
       const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
       if (res.ok && data.url) {
         // Navigate to the sign-in link, which logs the visitor in and forwards to the standard
-        // Real Estate setup questionnaire.
+        // setup questionnaire for this agent.
         window.location.href = data.url;
         return;
       }
@@ -213,9 +240,7 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
   if (!isUnlocked) {
     return (
       <Shell>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: R, margin: "0 0 10px" }}>
-          The Real Estate Agent
-        </p>
+        <p style={eyebrowStyle}>{eyebrow}</p>
         <h1 style={{ fontSize: 26, fontWeight: 900, color: TX, margin: "0 0 8px", lineHeight: 1.2 }}>
           Private access
         </h1>
@@ -228,11 +253,11 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
             void submitPasscode();
           }}
         >
-          <label style={labelStyle} htmlFor="re-passcode">
+          <label style={labelStyle} htmlFor="ai-passcode">
             Access password
           </label>
           <input
-            id="re-passcode"
+            id="ai-passcode"
             type="password"
             value={passcode}
             autoFocus
@@ -253,16 +278,13 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
 
   return (
     <Shell>
-      <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: R, margin: "0 0 10px" }}>
-        The Real Estate Agent
-      </p>
+      <p style={eyebrowStyle}>{eyebrow}</p>
       <h1 style={{ fontSize: 27, fontWeight: 900, color: TX, margin: "0 0 10px", lineHeight: 1.2 }}>
-        Welcome, {greetName}.
+        {greetName ? `Welcome, ${greetName}.` : "Welcome."}
       </h1>
       <p style={{ fontSize: 15, color: TXD, margin: "0 0 24px", lineHeight: 1.6 }}>
-        Let&apos;s build your customized Real Estate Agent. First, tell us where to set up your
-        account. Next you&apos;ll answer a few questions about your practice, and your agent will be
-        ready to use.
+        Let&apos;s build your customized {inline}. First, tell us where to set up your account. Next
+        you&apos;ll answer a few questions, and your agent will be ready to use.
       </p>
       <form
         onSubmit={(e) => {
@@ -270,22 +292,22 @@ export default function RealEstateInvite({ unlocked, greetName }: { unlocked: bo
           void submitClaim();
         }}
       >
-        <label style={labelStyle} htmlFor="re-name">
+        <label style={labelStyle} htmlFor="ai-name">
           Your name
         </label>
         <input
-          id="re-name"
+          id="ai-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Full name"
           style={{ ...inputStyle, marginBottom: 18 }}
         />
-        <label style={labelStyle} htmlFor="re-email">
+        <label style={labelStyle} htmlFor="ai-email">
           Your email
         </label>
         <input
-          id="re-email"
+          id="ai-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}

@@ -4,17 +4,17 @@ import { enforceRateLimit, type RateLimitRule } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { findAuthUserIdByEmail } from "@/lib/license-session";
 import { provisionTypedAgent } from "@/lib/provision";
-import { getAgentType } from "@/config/agent-types";
-import { INVITE_COOKIE, verifyCookieValue } from "@/lib/realEstateInvite";
+import { INVITE_COOKIE, verifyCookieValue, invitableType } from "@/lib/agentInvite";
 
-// POST /api/real-estate-invite/claim { name, email }
+// POST /api/agent-invite/[type]/claim { name, email }
 //
-// The no-payment equivalent of the Stripe webhook + /api/onboard/complete: authorized by the
-// invite passcode cookie (not a login, not a paid session), it stands up a real account for the
-// visitor and provisions their LIVE Real Estate agent, then hands back a one-click sign-in URL.
+// The no-payment equivalent of the Stripe webhook + /api/onboard/complete, for any role agent:
+// authorized by the invite passcode cookie (not a login, not a paid session), it stands up a real
+// account for the visitor and provisions their LIVE agent of `type`, then hands back a one-click
+// sign-in URL.
 //
 // After this returns, the browser navigates to that URL, which logs the visitor in server-side and
-// forwards them to /onboard/realestate?ws=...&agent=... — the STANDARD customer questionnaire and
+// forwards them to /onboard/[type]?ws=...&agent=... - the STANDARD customer questionnaire and
 // dashboard, identical to any paying customer. The passcode simply stands in for checkout.
 //
 // Provisioning spends real money on a VPS, so this is rate-limited far tighter than a form: the
@@ -24,15 +24,23 @@ const CLAIM_LIMIT: RateLimitRule = { max: 4, windowSeconds: 3600 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const POST = route(async (request: Request) => {
-  const limited = await enforceRateLimit(request, "re_invite_claim", CLAIM_LIMIT);
+type Ctx = { params: Promise<{ type: string }> };
+
+export const POST = route(async (request: Request, { params }: Ctx) => {
+  const limited = await enforceRateLimit(request, "agent_invite_claim", CLAIM_LIMIT);
   if (limited) return limited;
 
-  // Gate: must have passed the passcode. The page checks this too, but the endpoint re-checks so
-  // it can never be driven directly.
+  // Gate: must have passed the passcode. The page checks this too, but the endpoint re-checks so it
+  // can never be driven directly.
   const store = await cookies();
   if (!verifyCookieValue(store.get(INVITE_COOKIE)?.value)) {
     return json({ error: "Please enter the access password first." }, 403);
+  }
+
+  const { type: typeParam } = await params;
+  const type = invitableType(typeParam);
+  if (!type) {
+    return json({ error: "This agent is not available through an invite link." }, 404);
   }
 
   const body = await readJson<{ name?: string; email?: string }>(request);
@@ -44,16 +52,11 @@ export const POST = route(async (request: Request) => {
   const first = name.split(/\s+/)[0] || "";
   const last = name.split(/\s+/).slice(1).join(" ") || "";
 
-  const type = getAgentType("realestate");
-  if (!type) {
-    // Unreachable unless the registry entry is removed.
-    return json({ error: "The Real Estate Agent is not available." }, 500);
-  }
-
   const db = createAdminClient();
 
-  // 1. Account: reuse the visitor's existing account if the email already has one, otherwise
-  //    create it (confirmed, so the magic link below signs them straight in).
+  // 1. Account: reuse the visitor's existing account if the email already has one, otherwise create
+  //    it (confirmed, so the magic link below signs them straight in, and the signup trigger grants
+  //    the entitlement the dashboard requires).
   let userId = await findAuthUserIdByEmail(db, email);
   if (!userId) {
     const { data: created, error: createErr } = await db.auth.admin.createUser({
@@ -73,14 +76,13 @@ export const POST = route(async (request: Request) => {
 
   // 2. Workspace: reuse their first workspace if they have one, otherwise create it. The
   //    on_workspace_created trigger inserts the owner's admin membership automatically.
-  let workspaceId: string | undefined;
   const { data: membership } = await db
     .from("memberships")
     .select("workspace_id")
     .eq("user_id", userId)
     .limit(1)
     .maybeSingle();
-  workspaceId = (membership?.workspace_id as string | undefined) ?? undefined;
+  let workspaceId = (membership?.workspace_id as string | undefined) ?? undefined;
   if (!workspaceId) {
     const wsName = first ? `${first}'s Workspace` : email;
     const { data: ws, error: wsErr } = await db
@@ -94,7 +96,7 @@ export const POST = route(async (request: Request) => {
     workspaceId = ws.id as string;
   }
 
-  // 3. Agent: provision a live Real Estate agent if the workspace has none. If one already exists
+  // 3. Agent: provision a live agent of this type if the workspace has none. If one already exists
   //    (the visitor came back), reuse it. The questionnaire that follows customizes it.
   const { data: existing } = await db
     .from("agents")
@@ -133,7 +135,7 @@ export const POST = route(async (request: Request) => {
   }
 
   // 4. Sign-in: mint a single-use magic link and hand back our own /auth/callback URL (same
-  //    mechanism as the password-reset email, minus the email — the visitor is already here). It
+  //    mechanism as the password-reset email, minus the email - the visitor is already here). It
   //    establishes the session server-side and forwards to the standard setup questionnaire.
   const { data: linkData, error: linkErr } = await db.auth.admin.generateLink({
     type: "magiclink",
