@@ -707,7 +707,7 @@ function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) 
 // has no account at this point and does not need one — /api/onboard/checkout is anonymous
 // and the account is created from the completed checkout by the Stripe webhook.
 
-function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
+function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => void; agentTypeId?: string }) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   // Standard Setup is the only self-serve tier now (Custom Setup books a call instead of
@@ -727,6 +727,11 @@ function Paywall({ gate, onBack }: { gate: GateData; onBack: () => void }) {
           email: gate.email,
           phone: gate.phone,
           tier: DEFAULT_LICENSE_TIER,
+          // A branded role funnel (e.g. /build/real-estate) sends its type + its own path so the
+          // purchase builds that agent and Stripe returns to the right questionnaire. Plain
+          // /onboard sends neither and provisions the generic license agent, unchanged.
+          agentType: agentTypeId,
+          returnPath: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -1804,7 +1809,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
   );
-  if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} />;
+  if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} agentTypeId={agentTypeId} />;
   if (phase === "confirm") return (
     <PaymentConfirmation
       sessionId={sessionId}

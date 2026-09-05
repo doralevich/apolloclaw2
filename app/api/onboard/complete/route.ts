@@ -1,4 +1,4 @@
-import { licenseAgentType } from "@/config/agent-types";
+import { getAgentType, licenseAgentType } from "@/config/agent-types";
 import { storeAgentSetup, type AvatarUpload } from "@/lib/agent-setup";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { findBuyerAccount, verifyPaidLicenseSession } from "@/lib/license-session";
@@ -38,14 +38,19 @@ export const POST = route(async (request: Request) => {
   }>(request);
 
   if (!body.session_id) throw new ApiError(400, "invalid_request", "session_id is required");
-  const { email } = await verifyPaidLicenseSession(body.session_id);
+  const { session, email } = await verifyPaidLicenseSession(body.session_id);
+
+  // Which agent this purchase builds. A branded role funnel (e.g. /build/real-estate) stamps
+  // `agent_type` on the checkout metadata; the plain /onboard flow does not, so it falls back to
+  // the generic license agent. The type is trusted from the paid session, not the request body.
+  const type = getAgentType(session.metadata?.agent_type ?? "") ?? licenseAgentType();
 
   // Throws 409 account_pending if the webhook has not landed yet. The client retries on
   // that rather than showing a failure, since it resolves itself within seconds.
   const { userId, workspaceId } = await findBuyerAccount(email);
 
   const result = await storeAgentSetup({
-    type: licenseAgentType(),
+    type,
     workspaceId,
     submittedBy: userId,
     buyerEmail: email,

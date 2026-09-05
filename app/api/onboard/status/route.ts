@@ -1,5 +1,5 @@
 import { agent37 } from "@/lib/agent37";
-import { licenseAgentType } from "@/config/agent-types";
+import { getAgentType, licenseAgentType } from "@/config/agent-types";
 import { ApiError, json, route } from "@/lib/http";
 import { findBuyerAccount, verifyPaidLicenseSession } from "@/lib/license-session";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
@@ -24,9 +24,11 @@ export const GET = route(async (request: Request) => {
   const id = new URL(request.url).searchParams.get("id")?.trim() || "";
   if (!id) throw new ApiError(400, "invalid_request", "id is required");
 
-  const { email } = await verifyPaidLicenseSession(id);
+  const { session, email } = await verifyPaidLicenseSession(id);
   const { workspaceId } = await findBuyerAccount(email);
-  const type = licenseAgentType();
+  // Match the type this purchase built (a role funnel stamps agent_type on the session), so the
+  // progress poll finds the right row rather than any openclaw box in the workspace.
+  const type = getAgentType(session.metadata?.agent_type ?? "") ?? licenseAgentType();
 
   const { data: row } = await createAdminClient()
     .from("agents")
