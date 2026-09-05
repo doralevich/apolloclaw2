@@ -161,17 +161,61 @@ The admin god-view is **two tabs**, not three:
 
 ## Where the three sites stand
 
-All three are migrated, on Vercel, and serving. Each has its own repo, its own accent
-color, and both-paths CTAs into its `/build/<slug>` funnel.
+All three are migrated, on Vercel, serving, and now **multi-page Next.js apps**. Each has
+its own repo, its own accent color, and both-paths CTAs into its `/build/<slug>` funnel.
 
 | Site | Repo | Funnel |
 |---|---|---|
-| therealestateagent.ai | `doralevich/therealestateagent-site` (static) | `/build/real-estate` |
-| thecfoagent.ai | `doralevich/thecfoagent-site` (static) | `/build/cfo` |
-| theceoagent.ai | `doralevich/theceoagent-site` (Next.js app) | `/build/ceo` |
+| therealestateagent.ai | `doralevich/therealestateagent-site` | `/build/real-estate` |
+| thecfoagent.ai | `doralevich/thecfoagent-site` | `/build/cfo` |
+| theceoagent.ai | `doralevich/theceoagent-site` | `/build/ceo` |
 
 The CEO divergence is resolved: the **live Next.js app is authoritative**, and its source
 now lives in the repo. The stale static `index.html` is gone.
+
+## The site structure: marketing layer only
+
+All three sites use the same page structure, modelled on thecollegeagent.ai's **marketing
+layer**. What was explicitly *not* copied is that site's product layer (its own auth,
+Stripe, Supabase, dashboard and provisioning). The college agent has one because it is a
+separate product; the role agents are one product sold under different brands, and
+duplicating checkout three times would mean three Stripe integrations to keep in sync and
+customers who never appear in ApolloClaw's Customers and Fleet tabs.
+
+```
+/                        home
+/how-it-works            what it does, the timeline, what it connects to
+/what-is-an-agent        agent vs chatbot, and why private matters
+/faq                     the full question list
+/about                   the founder story
+/contact                 consult, email, phone
+/for-<audience> x4       the segmented pages
+/privacy /terms /thank-you    noindex
+/robots.txt /sitemap.xml      generated from the audience list
+```
+
+**The four audience pages are the point.** One page cannot argue to a solo agent and a
+45-agent brokerage, or to a controller and a sponsor-backed CFO, without going vague.
+
+| Site | Audiences |
+|---|---|
+| Real Estate | solo agents, teams, brokerages, property managers |
+| CFO | CFOs, controllers, PE-backed companies, multi-entity finance |
+| CEO | founders, executives, chiefs of staff, owner-operators |
+
+Two conventions make the next site cheap:
+
+- Content that appears on more than one page (capabilities, timeline, testimonials, FAQs)
+  lives in **`lib/content.ts`**, so the home page and the interior pages cannot drift.
+- The audience pages are **data in `lib/audiences.ts`** behind one shared component.
+  Adding a fifth audience is an entry, not a page, and the sitemap picks it up.
+
+Colors are tailwind tokens (`brand`, `brand-tint`, `ground`) rather than hexes in a
+stylesheet, so the same components render on all three sites.
+
+**Not yet built: the blog.** thecollegeagent.ai's is Sanity-backed (project `elj68qgu`,
+dataset `production`, with a fallback posts file). Adding `/blog` to an agent site needs a
+content type and posts in Sanity first, which is Donna's lane.
 
 ## Open items
 
@@ -182,6 +226,7 @@ now lives in the repo. The stale static `index.html` is gone.
   or Attio) — the choice is open.
 - **Retire the hetzner-4 copies** of the CFO and CEO sites, so nobody edits an orphaned
   file. Step 8 of the runbook; the real estate copy is already retired.
-- **Sites are being rebuilt larger**, closer in scope to thecollegeagent.ai, rather than
-  staying single-page static files. The funnel contract above does not change: however
-  big a site gets, Build Your Agent still points at `/build/<slug>`.
+- **Privacy and terms are placeholders on all three sites.** They say so honestly rather
+  than inventing policy text, but they need real text before the sites take real traffic.
+- **The blog.** See the site structure section above: it needs a Sanity content type
+  before there is anything to wire up.
