@@ -6,6 +6,7 @@ import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
+import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
 import { LEGAL_BRANCH } from "@/lib/legalIntake";
 import { REALESTATE_BRANCH } from "@/lib/realEstateIntake";
@@ -359,7 +360,11 @@ interface GateData { first: string; last: string; email: string; phone: string; 
 // `initial` re-seeds the five fields when someone steps BACK here from the questionnaire.
 // Without it the screen would remount empty and the trip back to fix one typo would cost
 // them all five.
-function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData }) {
+function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand }) {
+  // The accent is the agent's own colour when the funnel is pinned to one, and
+  // ApolloClaw red otherwise.
+  const accent = brand?.color ?? R;
+  const accentRgb = brand?.colorRgb ?? "215, 43, 43";
   const [d, setD] = useState<GateData>(initial ?? { first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
 
   const [err, setErr] = useState("");
@@ -411,15 +416,27 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
   };
   return (
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
+      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(${accentRgb},0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
+        {/* The agent itself, deliberately small. On its own marketing site this robot is
+            the hero; here it is a token of continuity, so it sits above the headline at a
+            fraction of that size rather than competing with the form. */}
+        {brand?.mascot && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={brand.mascot}
+            alt=""
+            aria-hidden="true"
+            style={{ height: 152, width: "auto", margin: "0 auto 22px", display: "block", filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.16))" }}
+          />
+        )}
         <h1 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
-          {heading ?? <>Let&apos;s Create Your <span style={{ color: R }}>Agent!</span></>}
+          {heading ?? <>Let&apos;s Create Your <span style={{ color: accent }}>Agent!</span></>}
         </h1>
         <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto" }}>{intro ?? "Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result."}</p>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 700, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6 }} />
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${accent},transparent)`, opacity: 0.6 }} />
           <div style={{ marginBottom: 24, paddingBottom: 20, borderBottom: `1px solid ${BDR}` }}>
             <p style={{ fontWeight: 700, fontSize: 16, color: TX, margin: "0 0 4px" }}>Start here</p>
             <p style={{ fontSize: 13, color: TXD, margin: 0 }}>Tell us about yourself so we can personalize your experience.</p>
@@ -475,7 +492,7 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
               </p>
               <a
                 href={`/login?email=${encodeURIComponent(d.email.trim().toLowerCase())}`}
-                style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 700, fontSize: 14, padding: "11px 22px", borderRadius: 6, textDecoration: "none" }}
+                style={{ display: "inline-block", background: accent, color: "#fff", fontWeight: 700, fontSize: 14, padding: "11px 22px", borderRadius: 6, textDecoration: "none" }}
               >
                 Log in →
               </a>
@@ -487,7 +504,7 @@ function Gatekeeper({ onPass, heading, intro, initial }: { onPass: (d: GateData)
             </div>
           )}
 
-          <button type="button" onClick={() => void submit()} disabled={checking} style={{ width: "100%", marginTop: 24, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: checking ? "default" : "pointer", opacity: checking ? 0.75 : 1, letterSpacing: "0.01em" }}>
+          <button type="button" onClick={() => void submit()} disabled={checking} style={{ width: "100%", marginTop: 24, background: accent, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: checking ? "default" : "pointer", opacity: checking ? 0.75 : 1, letterSpacing: "0.01em" }}>
             {checking ? "Checking…" : "Continue →"}
           </button>
           <p style={{ textAlign: "center", fontSize: 11, color: TXD, marginTop: 12, lineHeight: 1.5 }}>Your information is confidential. We do not sell or share your data.</p>
@@ -1630,6 +1647,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // The role agent (CFO, Law) this white-glove form is customizing, if any - fills the
   // "Let's Customize Your ___" gate heading. Same ROLE_INTAKES lookup BizTrack uses.
   const roleIntake = agentTypeId ? ROLE_INTAKES[agentTypeId] : undefined;
+  const brand = agentBrand(agentTypeId);
   // THE PAYWALL IS BACK ON, as a choice between two tiers rather than the single $2,500 wall
   // it was. It was off for one deploy while David decided pricing.
   //
@@ -1805,7 +1823,17 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     <Gatekeeper
       onPass={handleGate}
       initial={enteredGate ?? undefined}
-      heading={isWhiteGlove ? (roleIntake ? <>Let&apos;s Customize Your <span style={{ color: R }}>{roleIntake.roleName}.</span></> : <>Let&apos;s Build <span style={{ color: R }}>Your Agent.</span></>) : undefined}
+      brand={brand}
+      // Named as early as possible. Someone arriving from therealestateagent.ai should see
+      // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
+      // is pinned to one type, so there is no reason to be vague about which.
+      heading={
+        roleIntake
+          ? <>Let&apos;s Build Your <span style={{ color: brand.color }}>{roleIntake.roleName}.</span></>
+          : isWhiteGlove
+            ? <>Let&apos;s Build <span style={{ color: brand.color }}>Your Agent.</span></>
+            : undefined
+      }
       intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
     />
   );
