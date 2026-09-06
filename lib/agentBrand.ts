@@ -43,42 +43,43 @@ const BRANDS: Record<string, AgentBrand> = {
     mascot: "/agents/mascots/ceo.png",
   },
 
-  // PROVISIONAL COLOURS - these four have no wordmark SVG yet, so the values below are
-  // sampled from the mascot artwork rather than read off a flat brand asset.
-  //
-  // That is measurably imprecise, and the three entries above are the proof: running the
-  // same sampler over their mascots returns #2B7A2C for real estate (true #0F8743, off by
-  // 64), #092A5D for CFO (true #1E305F, off by 29) and #A70403 for CEO (true #E12E30, off
-  // by 145). The mascots are shaded 3D renders, so the accent spans dark to lit and the
-  // flat brand hex is not recoverable from them at any single point.
-  //
-  // Each value below is the midpoint of that shadow-to-lit range, which brackets the answer
-  // without pretending to hit it. Replace them by sampling the wordmark SVG the moment one
-  // exists, exactly as was done for the real estate green after it shipped eyeballed.
+  // Colours below read directly off each agent's wordmark SVG fill (law, sales, medical,
+  // marketing) or, for recruiting, sampled off the flat wordmark PNG bracket glyph — no
+  // wordmark SVG was supplied for that one. These replace the earlier provisional
+  // mascot-sampled values once the real wordmark assets arrived Sept 6, 2026.
   legal: {
-    color: "#AF2830",
-    colorRgb: "175, 40, 48",
+    color: "#8E192A",
+    colorRgb: "142, 25, 42",
     mascot: "/agents/mascots/legal.png",
   },
   sales: {
-    color: "#6C25A3",
-    colorRgb: "108, 37, 163",
+    color: "#6459A6",
+    colorRgb: "100, 89, 166",
     mascot: "/agents/mascots/sales.png",
   },
   recruiting: {
-    color: "#B71C26",
-    colorRgb: "183, 28, 38",
+    color: "#D82929",
+    colorRgb: "216, 41, 41",
     mascot: "/agents/mascots/recruiting.png",
   },
   medical: {
-    color: "#037384",
-    colorRgb: "3, 115, 132",
+    color: "#158C90",
+    colorRgb: "21, 140, 144",
     mascot: "/agents/mascots/medical.png",
   },
   marketing: {
-    color: "#E12070",
-    colorRgb: "225, 32, 112",
+    color: "#CE0247",
+    colorRgb: "206, 2, 71",
     mascot: "/agents/mascots/marketing.png",
+  },
+
+  // Wordmark SVG fill sampled directly. Mascot added Sept 6, 2026 (previously fell back
+  // to ApolloClaw red with no mascot, which is why /build/insurance was the last funnel
+  // still red and centered).
+  insurance: {
+    color: "#3C5BAA",
+    colorRgb: "60, 91, 170",
+    mascot: "/agents/mascots/insurance.png",
   },
 };
 
