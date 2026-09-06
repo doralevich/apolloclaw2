@@ -42,6 +42,39 @@ const BRANDS: Record<string, AgentBrand> = {
     colorRgb: "225, 46, 48",
     mascot: "/agents/mascots/ceo.png",
   },
+
+  // PROVISIONAL COLOURS - these four have no wordmark SVG yet, so the values below are
+  // sampled from the mascot artwork rather than read off a flat brand asset.
+  //
+  // That is measurably imprecise, and the three entries above are the proof: running the
+  // same sampler over their mascots returns #2B7A2C for real estate (true #0F8743, off by
+  // 64), #092A5D for CFO (true #1E305F, off by 29) and #A70403 for CEO (true #E12E30, off
+  // by 145). The mascots are shaded 3D renders, so the accent spans dark to lit and the
+  // flat brand hex is not recoverable from them at any single point.
+  //
+  // Each value below is the midpoint of that shadow-to-lit range, which brackets the answer
+  // without pretending to hit it. Replace them by sampling the wordmark SVG the moment one
+  // exists, exactly as was done for the real estate green after it shipped eyeballed.
+  legal: {
+    color: "#AF2830",
+    colorRgb: "175, 40, 48",
+    mascot: "/agents/mascots/legal.png",
+  },
+  sales: {
+    color: "#6C25A3",
+    colorRgb: "108, 37, 163",
+    mascot: "/agents/mascots/sales.png",
+  },
+  recruiting: {
+    color: "#B71C26",
+    colorRgb: "183, 28, 38",
+    mascot: "/agents/mascots/recruiting.png",
+  },
+  medical: {
+    color: "#037384",
+    colorRgb: "3, 115, 132",
+    mascot: "/agents/mascots/medical.png",
+  },
 };
 
 /** The brand for an agent type, falling back to ApolloClaw's own. */
