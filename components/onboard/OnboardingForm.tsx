@@ -6,7 +6,7 @@ import AgentWordmark from "@/components/AgentWordmark";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
-import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
+import { fieldVisible, getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
 import { LEGAL_BRANCH } from "@/lib/legalIntake";
@@ -1103,7 +1103,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
   return (
     <Stack>
       <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} />
-      {branch.fields.map(f => {
+      {branch.fields.filter(f => fieldVisible(f, values)).map(f => {
         const val = values[f.key];
         const str = typeof val === "string" ? val : "";
         const arr = Array.isArray(val) ? val : [];
@@ -1341,7 +1341,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     }
     if (key === "industry" && branch) {
       for (const f of branch.fields) {
-        if (!f.required) continue;
+        // A hidden field is not an unanswered one. Without this, a required field behind a
+        // showIf would block Continue with an error naming a question that is not on screen.
+        if (!f.required || !fieldVisible(f, industryDetails)) continue;
         const v = industryDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }
@@ -1349,7 +1351,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     const rolePageIdx = key ? roleStepKeys.indexOf(key) : -1;
     if (rolePageIdx >= 0) {
       for (const f of rolePages[rolePageIdx].fields) {
-        if (!f.required) continue;
+        if (!f.required || !fieldVisible(f, roleDetails)) continue;
         const v = roleDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }

@@ -383,6 +383,36 @@ const AGENT: IndustryBranch = {
         "Open house follow-up",
       ],
     },
+    // The two follow-ups to owns_work, and the reason they exist: those two options are the
+    // only ones on the list that ask the agent to APPLY A RULE it cannot infer. "Write listing
+    // copy" is configured by the voice question below; "run my investment math" is not
+    // configured by anything unless we ask what the numbers have to clear, and "handle my
+    // scheduling" is not configured by anything unless we ask what it is booking into.
+    //
+    // Without these the agent is told to do two jobs and has to open by interviewing its owner
+    // about both, on day one, having just been handed forty other answers.
+    //
+    // Conditional, so the realtor who ticked neither never sees them.
+    {
+      key: "investment_criteria",
+      label: "What do the numbers have to clear?",
+      type: "textarea",
+      showIf: { key: "owns_work", includes: "Investment math (cap rate, cash flow, ROI)" },
+      placeholder:
+        "e.g. 8% cap minimum in my market, $300+/door monthly cash flow, nothing needing more than $40k of work, 20 year hold.",
+      helper:
+        "Your rules of thumb, in your words. This is what your agent screens a deal against before it tells you the deal is worth a look.",
+    },
+    {
+      key: "scheduling_setup",
+      label: "What is your agent booking into, and what are the rules?",
+      type: "textarea",
+      showIf: { key: "owns_work", includes: "Showing & inspection scheduling" },
+      placeholder:
+        "e.g. Google Calendar under my work address, showings only Tue to Sat 10-6, 45 minute blocks with 30 minutes of drive time between, never book me before 9am.",
+      helper:
+        "The calendar, the hours you actually show, and anything it must never do without asking you first.",
+    },
     {
       key: "first_priority",
       label: "If it only fixed one thing in month one, what should it be?",

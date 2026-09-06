@@ -22,6 +22,30 @@ export interface IndustryField {
   placeholder?: string; // text | textarea
   required?: boolean;
   helper?: string; // small grey subtext under the label
+  // Show this field only when an EARLIER multiselect on the same page has a given option
+  // ticked. For the follow-up question that only makes sense once someone has asked for the
+  // thing: "handle my showing scheduling" is the job, "which calendar" is how, and asking the
+  // second of everyone would put two dead questions in front of the realtors who said no.
+  //
+  // Deliberately limited to one option of one field. A general condition language here would
+  // be a small rules engine nobody can read at a glance, and every case so far is this shape.
+  showIf?: { key: string; includes: string };
+}
+
+/**
+ * Whether a conditional field should render, given the answers so far.
+ *
+ * Shared by the renderer and by validation, because they have to agree: a required field that
+ * is hidden must not block Continue, and that bug is invisible until somebody hits it - the
+ * form simply stops advancing with no error pointing anywhere they can see.
+ */
+export function fieldVisible(
+  f: IndustryField,
+  values: Record<string, string | string[]>
+): boolean {
+  if (!f.showIf) return true;
+  const v = values[f.showIf.key];
+  return Array.isArray(v) ? v.includes(f.showIf.includes) : v === f.showIf.includes;
 }
 
 export interface IndustryBranch {
