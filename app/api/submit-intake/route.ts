@@ -77,7 +77,7 @@ async function sendSetupLinkEmail(email: string, firstName: string): Promise<voi
         template_name: "apolloclaw-setup-link",
         template_content: [],
         message: {
-          from_email: "hello@apolloclaw.ai",
+          from_email: "david@apolloclaw.ai",
           from_name: "Apollo[Claw]",
           to: [{ email, name: firstName || email, type: "to" }],
           bcc_address: "david@apolloclaw.ai",

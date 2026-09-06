@@ -210,11 +210,11 @@ export default function Footer() {
                 Let&apos;s Talk
               </h4>
               <a
-                href="mailto:hello@apolloclaw.ai"
+                href="mailto:david@apolloclaw.ai"
                 className="font-body text-sm transition-colors hover:text-white"
                 style={{ color: WHITE_MUTED, display: "inline-block", marginBottom: 6 }}
               >
-                hello@apolloclaw.ai
+                david@apolloclaw.ai
               </a>
               <br />
               <a
