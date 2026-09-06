@@ -1,11 +1,12 @@
 "use client";
-import { Fragment, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Fragment, createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
+import AgentWordmark from "@/components/AgentWordmark";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
-import { getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
+import { fieldVisible, getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
 import { LEGAL_BRANCH } from "@/lib/legalIntake";
@@ -25,18 +26,85 @@ import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
 //   - roleName: filled into the white-glove "Let's Customize Your ___" heading.
 const ROLE_INTAKES: Record<
   string,
-  { branch: IndustryBranch; stepKey: string; stepLabel: string; detailsKey: string; roleName: string }
+  {
+    // One page, or several. A deep-dive long enough to need page breaks passes an array and
+    // each entry becomes its own page; every page still writes into the SAME detailsKey blob,
+    // so nothing downstream (USER.md, the intake email, the edit pre-fill) changes.
+    branch: IndustryBranch | IndustryBranch[];
+    stepKey: string;
+    stepLabel: string;
+    detailsKey: string;
+    roleName: string;
+    // Overrides the wording of the shared writing-sample page. "Share a sample of your writing"
+    // is the right ask for most people and a vague one for an agent who writes the same kind of
+    // thing every week - David's call on the real estate flow: ask for a listing they were proud
+    // of, because that is a thing they can find in thirty seconds and it is exactly the writing
+    // the agent will be asked to produce. Left unset, the page keeps its generic copy.
+    sample?: { title: string; subtitle: string; label: string; hint: string; placeholder: string; upload: string; uploadHint: string; footnote: string };
+    // OPT IN to dropping the generic "What your agent should take on" page, by naming the two
+    // fields in this branch that already ask its two questions. Only set it once the branch
+    // genuinely covers both - the whole point is to stop asking twice, not to stop asking.
+    //
+    // Opt-in rather than automatic because the eight other role agents have not been checked
+    // against this bar, and silently removing a page from their flows while fixing real estate
+    // is how a "cleanup" becomes an outage nobody traces back.
+    //
+    // owns -> aiGoals and win -> successMetric, which lib/agent-files.ts reads by name into the
+    // agent's "What to push on" section. Unmapped, that section would quietly go empty.
+    coversScope?: { owns: string; win: string };
+  }
 > = {
-  cfo: { branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent" },
-  legal: { branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent" },
-  realestate: { branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent" },
-  ceo: { branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent" },
-  marketing: { branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent" },
-  sales: { branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent" },
-  recruiting: { branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent" },
-  medical: { branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent" },
-  insurance: { branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent" },
+  cfo: {
+    branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent",
+    coversScope: { owns: "owns_work", win: "financial_goals" },
+  },
+  legal: {
+    branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent",
+    coversScope: { owns: "owns_work", win: "legal_goals" },
+  },
+  realestate: {
+    branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
+    coversScope: { owns: "owns_work", win: "real_estate_goals" },
+    sample: {
+      title: "Share a listing you were proud of",
+      subtitle: "The single most useful thing on this form. One listing you actually wrote teaches your agent more than any list of adjectives.",
+      label: "Paste the listing",
+      hint: "The full description, exactly as it went out. A property you loved selling is the one to pick.",
+      placeholder: "Paste it here. The whole description beats the headline, and two listings beat one - one that sold fast and one that took work says more than either alone. Your agent is learning how you describe a property, not how you write when you know you are being read.",
+      upload: "Or upload listings instead",
+      uploadHint: "Listing sheets, a flyer, a brochure, the MLS remarks. They go in with your other materials.",
+      footnote: "Two or three is better than one. A luxury listing and a starter home are written differently, and your agent should know both registers.",
+    },
+  },
+  ceo: {
+    branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
+    coversScope: { owns: "owns_work", win: "ceo_goals" },
+  },
+  marketing: {
+    branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent",
+    coversScope: { owns: "owns_work", win: "marketing_goals" },
+  },
+  sales: {
+    branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent",
+    coversScope: { owns: "owns_work", win: "sales_goals" },
+  },
+  recruiting: {
+    branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent",
+    coversScope: { owns: "owns_work", win: "recruiting_goals" },
+  },
+  medical: {
+    branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent",
+    coversScope: { owns: "owns_work", win: "medical_goals" },
+  },
+  insurance: {
+    branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
+    coversScope: { owns: "owns_work", win: "insurance_goals" },
+  },
 };
+// AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
+// noun - "Real Estate Agent" is the product, "Real Estate" is the word that goes in the mark.
+// Derived rather than a tenth field per entry, since every roleName ends the same way.
+const wordmarkName = (roleName: string) => roleName.replace(/\s+Agent$/, "");
 import {
   DEFAULT_LICENSE_TIER,
   resolveLicenseTier,
@@ -84,6 +152,31 @@ const TXD = "#4A4A4A";
 // call site's proportions.
 function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
   return <ApolloClawLogo ink={TX} height={Math.round(size * 1.5)} />;
+}
+
+// ════════════════════════════════════════════════════════════
+// BRAND
+// ════════════════════════════════════════════════════════════
+// The whole funnel wears the agent's colour, not just its first screen.
+//
+// This started as one `brand` prop on the Gatekeeper, which coloured the masthead and left the
+// eleven pages behind it in ApolloClaw red - so somebody who arrived from therealestateagent.ai
+// saw green once and then filled in a red form. David's call: the questionnaire is the agent's
+// too, so the accent has to reach every control on it.
+//
+// Context rather than a prop because the accent is needed in the leaf primitives - the focus
+// ring on a text box, a ticked checkbox, the step badge - and threading a colour through
+// SHead, FF, CheckGroup, RadioGroup, ScaleRow, TInput, TArea and TSelect would be eight
+// signature changes and ~60 call sites for one value that never varies within a render.
+//
+// The default is ApolloClaw's own red, so anything rendered outside a provider (and the plain
+// /onboard flow, which is pinned to no agent) looks exactly as it did before.
+const APOLLO_BRAND: AgentBrand = { color: R, colorRgb: "215, 43, 43" };
+const BrandCtx = createContext<AgentBrand>(APOLLO_BRAND);
+/** The accent for the agent this funnel is pinned to. `a` is the hex, `rgb` the triplet for alpha washes. */
+function useAccent() {
+  const b = useContext(BrandCtx);
+  return { a: b.color, rgb: b.colorRgb, mascot: b.mascot };
 }
 // ════════════════════════════════════════════════════════════
 // OPTION LISTS
@@ -146,36 +239,40 @@ function useF() {
 }
 function TInput({ value, onChange, placeholder, type = "text" }: { value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   const { onFocus, onBlur, focused } = useF();
-  return <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="oc-ph" style={{ ...iBase, borderColor: focused ? R : BDR, boxShadow: focused ? `0 0 0 3px rgba(215,43,43,0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur} />;
+  const { a, rgb } = useAccent();
+  return <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="oc-ph" style={{ ...iBase, borderColor: focused ? a : BDR, boxShadow: focused ? `0 0 0 3px rgba(${rgb},0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur} />;
 }
 function TArea({ value, onChange, placeholder, rows = 3 }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number }) {
   const { onFocus, onBlur, focused } = useF();
-  return <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} className="oc-ph" style={{ ...iBase, resize: "vertical", lineHeight: 1.6, borderColor: focused ? R : BDR, boxShadow: focused ? `0 0 0 3px rgba(215,43,43,0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur} />;
+  const { a, rgb } = useAccent();
+  return <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} className="oc-ph" style={{ ...iBase, resize: "vertical", lineHeight: 1.6, borderColor: focused ? a : BDR, boxShadow: focused ? `0 0 0 3px rgba(${rgb},0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur} />;
 }
 function TSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   const { onFocus, onBlur, focused } = useF();
+  const { a, rgb } = useAccent();
   return (
     <div style={{ position: "relative" }}>
-      <select value={value} onChange={e => onChange(e.target.value)} style={{ ...iBase, appearance: "none", cursor: "pointer", paddingRight: 36, borderColor: focused ? R : BDR, boxShadow: focused ? `0 0 0 3px rgba(215,43,43,0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur}>
+      <select value={value} onChange={e => onChange(e.target.value)} style={{ ...iBase, appearance: "none", cursor: "pointer", paddingRight: 36, borderColor: focused ? a : BDR, boxShadow: focused ? `0 0 0 3px rgba(${rgb},0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur}>
         <option value="">Select one…</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
       <svg style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M2 4l4 4 4-4" stroke={R} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 4l4 4 4-4" stroke={a} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   );
 }
 function CheckGroup({ label, required, hint, options, value = [], onChange, cols = 2, split = false }: { label?: string; required?: boolean; hint?: string; options: string[]; value: string[]; onChange: (v: string[]) => void; cols?: number; split?: boolean }) {
   const toggle = (opt: string) => onChange(value.includes(opt) ? value.filter(v => v !== opt) : [...value, opt]);
+  const { a, rgb } = useAccent();
   return (
     <FF label={label} required={required} hint={hint}>
       <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${cols >= 3 ? 150 : 220}px), 1fr))`, gap: 8, marginTop: 4 }}>
         {options.map(opt => {
           const on = value.includes(opt);
           return (
-            <button key={opt} type="button" onClick={() => toggle(opt)} style={{ display: "flex", alignItems: "flex-start", gap: 10, textAlign: "left", padding: "10px 12px", borderRadius: 6, cursor: "pointer", fontSize: 13, fontFamily: "inherit", background: on ? "rgba(215,43,43,0.1)" : SRF2, border: `1px solid ${on ? "rgba(215,43,43,0.45)" : BDR}`, color: on ? TX : TXM, transition: "all 0.15s" }}>
-              <span style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0, marginTop: 1, border: `1.5px solid ${on ? R : "rgba(0,0,0,0.2)"}`, background: on ? R : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <button key={opt} type="button" onClick={() => toggle(opt)} style={{ display: "flex", alignItems: "flex-start", gap: 10, textAlign: "left", padding: "10px 12px", borderRadius: 6, cursor: "pointer", fontSize: 13, fontFamily: "inherit", background: on ? `rgba(${rgb},0.1)` : SRF2, border: `1px solid ${on ? `rgba(${rgb},0.45)` : BDR}`, color: on ? TX : TXM, transition: "all 0.15s" }}>
+              <span style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0, marginTop: 1, border: `1.5px solid ${on ? a : "rgba(0,0,0,0.2)"}`, background: on ? a : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {on && <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
               </span>
               <span style={{ lineHeight: 1.4 }}>{split && opt.includes(" - ") ? (<><span style={{ fontWeight: 700 }}>{opt.slice(0, opt.indexOf(" - "))}</span><br /><span style={{ fontSize: 11.5, color: TXD }}>{opt.slice(opt.indexOf(" - ") + 3)}</span></>) : opt}</span>
@@ -187,15 +284,16 @@ function CheckGroup({ label, required, hint, options, value = [], onChange, cols
   );
 }
 function RadioGroup({ label, hint, options, value, onChange }: { label?: string; hint?: string; options: string[]; value: string; onChange: (v: string) => void }) {
+  const { a, rgb } = useAccent();
   return (
     <FF label={label} hint={hint}>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
         {options.map(opt => {
           const on = value === opt;
           return (
-            <button key={opt} type="button" onClick={() => onChange(opt)} style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "11px 14px", borderRadius: 6, cursor: "pointer", fontSize: 14, fontFamily: "inherit", background: on ? "rgba(215,43,43,0.1)" : SRF2, border: `1px solid ${on ? "rgba(215,43,43,0.45)" : BDR}`, color: on ? TX : TXM, transition: "all 0.15s" }}>
-              <span style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `2px solid ${on ? R : "rgba(0,0,0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {on && <span style={{ width: 7, height: 7, borderRadius: "50%", background: R }} />}
+            <button key={opt} type="button" onClick={() => onChange(opt)} style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "11px 14px", borderRadius: 6, cursor: "pointer", fontSize: 14, fontFamily: "inherit", background: on ? `rgba(${rgb},0.1)` : SRF2, border: `1px solid ${on ? `rgba(${rgb},0.45)` : BDR}`, color: on ? TX : TXM, transition: "all 0.15s" }}>
+              <span style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, border: `2px solid ${on ? a : "rgba(0,0,0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {on && <span style={{ width: 7, height: 7, borderRadius: "50%", background: a }} />}
               </span>
               {opt}
             </button>
@@ -206,13 +304,14 @@ function RadioGroup({ label, hint, options, value, onChange }: { label?: string;
   );
 }
 function ScaleRow({ label, hint, low, high, value, onChange }: { label?: string; hint?: string; low: string; high: string; value: number | null; onChange: (v: number) => void }) {
+  const { a } = useAccent();
   return (
     <FF label={label} hint={hint}>
       <div style={{ marginTop: 6 }}>
         <div style={{ display: "flex", gap: 5 }}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => {
             const on = value === n;
-            return <button key={n} type="button" onClick={() => onChange(n)} style={{ flex: 1, padding: "8px 0", borderRadius: 5, fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", background: on ? R : SRF2, border: `1px solid ${on ? R : BDR}`, color: on ? "#fff" : TXD }}>{n}</button>;
+            return <button key={n} type="button" onClick={() => onChange(n)} style={{ flex: 1, padding: "8px 0", borderRadius: 5, fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", background: on ? a : SRF2, border: `1px solid ${on ? a : BDR}`, color: on ? "#fff" : TXD }}>{n}</button>;
           })}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
@@ -256,8 +355,9 @@ function LogoTile({ opt, on, onToggle }: { opt: string; on: boolean; onToggle: (
   const [imgFailed, setImgFailed] = useState(false);
   const slug = STACK_LOGOS[opt];
   const showLogo = slug && !imgFailed;
+  const { a, rgb } = useAccent();
   return (
-    <button type="button" onClick={onToggle} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: on ? 600 : 400, fontFamily: "inherit", background: on ? "rgba(215,43,43,0.08)" : SRF2, border: `1.5px solid ${on ? R : BDR}`, color: TX, transition: "all 0.15s", position: "relative" }}>
+    <button type="button" onClick={onToggle} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: on ? 600 : 400, fontFamily: "inherit", background: on ? `rgba(${rgb},0.08)` : SRF2, border: `1.5px solid ${on ? a : BDR}`, color: TX, transition: "all 0.15s", position: "relative" }}>
       <span style={{ width: 26, height: 26, borderRadius: 6, flexShrink: 0, background: "#fff", border: `1px solid ${BDR}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
         {showLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -268,7 +368,7 @@ function LogoTile({ opt, on, onToggle }: { opt: string; on: boolean; onToggle: (
       </span>
       <span style={{ lineHeight: 1.3, minWidth: 0 }}>{opt}</span>
       {on && (
-        <span style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: 9, background: R, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: 9, background: a, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </span>
       )}
@@ -286,9 +386,10 @@ function LogoCheckGroup({ options, value = [], onChange }: { options: string[]; 
 }
 
 function FF({ label, required, hint, children }: { label?: string; required?: boolean; hint?: string; children: React.ReactNode }) {
+  const { a } = useAccent();
   return (
     <div>
-      {label && <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXM, marginBottom: 7 }}>{label}{required && <span style={{ color: R, marginLeft: 4 }}>*</span>}</p>}
+      {label && <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXM, marginBottom: 7 }}>{label}{required && <span style={{ color: a, marginLeft: 4 }}>*</span>}</p>}
       {children}
       {hint && <p style={{ fontSize: 11, color: TXD, marginTop: 5, lineHeight: 1.5 }}>{hint}</p>}
     </div>
@@ -339,16 +440,36 @@ function KeyPeople({ people, onChange }: { people: KeyPerson[]; onChange: (p: Ke
     </FF>
   );
 }
-function SHead({ stepNum, total, title, subtitle, badge }: { stepNum: number; total: number; title: string; subtitle?: string; badge?: string }) {
-  return (
-    <div style={{ marginBottom: 28 }}>
+// `art` puts the agent's own mascot beside the heading instead of above the questions.
+//
+// Used on the two pages where the page is ABOUT the agent rather than about the business -
+// "What your agent should take on" and the role deep-dive's closing page - at David's call.
+// It is deliberately not on every step: a robot standing over all eleven pages stops being a
+// character and becomes wallpaper, and these two are where a reminder of who you are briefing
+// actually helps. It falls back to nothing when the agent has no mascot, so an agent without
+// artwork renders the plain single-column head it always did.
+function SHead({ stepNum, total, title, subtitle, badge, art }: { stepNum: number; total: number; title: string; subtitle?: string; badge?: string; art?: boolean }) {
+  const { a, rgb, mascot } = useAccent();
+  const showArt = art && mascot;
+  const copy = (
+    <div style={{ flex: showArt ? "1 1 380px" : undefined, minWidth: 0 }}>
       {badge && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(215,43,43,0.15)", color: R, border: `1px solid rgba(215,43,43,0.3)`, letterSpacing: "0.08em", textTransform: "uppercase" }}>{badge}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: `rgba(${rgb},0.15)`, color: a, border: `1px solid rgba(${rgb},0.3)`, letterSpacing: "0.08em", textTransform: "uppercase" }}>{badge}</span>
         </div>
       )}
       <h2 style={{ fontSize: 26, fontWeight: 900, color: TX, margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>{title}</h2>
       {subtitle && <p style={{ fontSize: 14, color: TXM, lineHeight: 1.65, margin: 0 }}>{subtitle}</p>}
+    </div>
+  );
+  if (!showArt) return <div style={{ marginBottom: 28 }}>{copy}</div>;
+  return (
+    <div style={{ marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 28, flexWrap: "wrap" }}>
+      {copy}
+      {/* Decorative, so it is hidden from screen readers rather than given a description that
+          would be read out before every question on the page. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={mascot} alt="" aria-hidden style={{ width: 132, height: "auto", flexShrink: 0, display: "block", filter: `drop-shadow(0 12px 24px rgba(${rgb},0.22))` }} />
     </div>
   );
 }
@@ -417,6 +538,9 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
     onPass(d);
   };
   return (
+    // Same provider the questionnaire runs under, so the five fields on this screen focus in
+    // the agent's colour rather than red under a green heading.
+    <BrandCtx.Provider value={brand ?? APOLLO_BRAND}>
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       {/* Masthead. With a mascot it is two columns - copy left, agent right - matching the
           hero on that agent's own marketing site, so arriving here reads as the next page
@@ -522,6 +646,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
         </div>
       </div>
     </div>
+    </BrandCtx.Provider>
   );
 }
 // ════════════════════════════════════════════════════════════
@@ -649,19 +774,28 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
 // ════════════════════════════════════════════════════════════
 // SHELL
 // ════════════════════════════════════════════════════════════
-function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLast, submitLabel }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; canBack: boolean; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string }) {
+// `brand` and `agentName` pin the whole questionnaire to one agent: its colour on the progress
+// bar and the buttons, and its own wordmark in the corner instead of Apollo[Claw]'s.
+//
+// The wordmark is the point of the pair. Somebody who clicked Build on therealestateagent.ai
+// had ApolloClaw's logo over every question, which reads as having been handed to a different
+// company halfway through buying - the same reason the site's nav and footer came off these
+// pages. The mark they came for stays with them to the end.
+function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLast, submitLabel, brand, agentName }: { steps: string[]; step: number; children: React.ReactNode; onBack: () => void; canBack: boolean; onNext: () => void; onSubmit: () => void; isLast: boolean; submitLabel: string; brand?: AgentBrand; agentName?: string }) {
   const pct = Math.round(((step + 1) / steps.length) * 100);
   const stepLabel = steps[step] ?? "";
+  const accent = brand?.color ?? R;
   return (
+    <BrandCtx.Provider value={brand ?? APOLLO_BRAND}>
     <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`.oc-ph::placeholder{color:#6b7280!important}@keyframes oc-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", height: 60, borderBottom: `1px solid ${BDR}`, background: "rgba(250,250,247,0.97)", position: "sticky", top: 0, zIndex: 50 }}>
-        <ApolloWordmark size={17} />
+        {agentName && brand ? <AgentWordmark name={agentName} accent={brand.color} ink={TX} size={17} /> : <ApolloWordmark size={17} />}
         <span style={{ fontSize: 12, color: TXM }}>{stepLabel || "Apollo[Claw] Onboarding"}</span>
       </nav>
       {/* Continuous progress bar - fills as you advance. No step numbers (they miscount). */}
       <div style={{ position: "sticky", top: 60, zIndex: 49, height: 3, background: SRF2 }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: R, transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
+        <div style={{ height: "100%", width: `${pct}%`, background: accent, transition: "width 0.4s cubic-bezier(0.4,0,0.2,1)" }} />
       </div>
 
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 24px 100px" }}>
@@ -670,8 +804,8 @@ function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLas
           {canBack ? <button type="button" onClick={onBack} style={{ background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "10px 20px", borderRadius: 6, cursor: "pointer" }}>← Back</button> : <div />}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 {isLast
-              ? <button type="button" onClick={onSubmit} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "10px 28px", borderRadius: 6, border: "none", cursor: "pointer" }}>{submitLabel}</button>
-              : <button type="button" onClick={onNext} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "10px 28px", borderRadius: 6, border: "none", cursor: "pointer" }}>Continue →</button>
+              ? <button type="button" onClick={onSubmit} style={{ background: accent, color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "10px 28px", borderRadius: 6, border: "none", cursor: "pointer" }}>{submitLabel}</button>
+              : <button type="button" onClick={onNext} style={{ background: accent, color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 14, padding: "10px 28px", borderRadius: 6, border: "none", cursor: "pointer" }}>Continue →</button>
             }
           </div>
         </div>
@@ -681,6 +815,7 @@ function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLas
         <span style={{ fontSize: 12, color: TXD }}>david@apolloclaw.ai</span>
       </div>
     </div>
+    </BrandCtx.Provider>
   );
 }
 // ════════════════════════════════════════════════════════════
@@ -1003,8 +1138,8 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
   const subtitle = isGeneric && otherLabel ? `A bit more about your ${otherLabel} business.` : branch.stepSubtitle;
   return (
     <Stack>
-      <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} />
-      {branch.fields.map(f => {
+      <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} art={branch.art} />
+      {branch.fields.filter(f => fieldVisible(f, values)).map(f => {
         const val = values[f.key];
         const str = typeof val === "string" ? val : "";
         const arr = Array.isArray(val) ? val : [];
@@ -1180,7 +1315,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // questions. Keyed off the agent type via ROLE_INTAKES, so /onboard/cfo, /onboard/legal and the
   // unlisted /cfo-onboarding and /legal-onboarding links get it and nobody else does.
   const roleIntake = agentTypeId ? ROLE_INTAKES[agentTypeId] : undefined;
-  const roleBranch = roleIntake?.branch ?? null;
+  // A role deep-dive is one or more pages. Normalising to an array here means the rest of the
+  // form does not care which, and the page keys are derived rather than hand-listed so a branch
+  // can gain a page without touching the ordering below.
+  const rolePages = roleIntake ? (Array.isArray(roleIntake.branch) ? roleIntake.branch : [roleIntake.branch]) : [];
+  const roleStepKeys = rolePages.map((_, i) => (i === 0 ? roleIntake!.stepKey : `${roleIntake!.stepKey}-${i}`));
+  const isRoleFlow = rolePages.length > 0;
   // The step order, and it MUST match allPages below. Checked at the bottom of this component
   // rather than trusted.
   //
@@ -1201,21 +1341,45 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // its order straight from this list, so the role deep-dive comes first and the executive profile
   // sits after it - David's call. Both pageKeys and allPages below derive from this list, so the
   // step-order assertion stays satisfied.
-  const rolePageKeys = roleIntake ? ["biz", "whatyoudo", roleIntake.stepKey, "exec", "life", "voice", "sample", "goals", "scopeai", "scope"] : [];
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...(roleBranch ? [roleIntake!.stepKey] : []), "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
-  const pageKeys = roleBranch ? rolePageKeys : allPageKeys;
+  // NOTE the missing "scopeai". A role agent does NOT get the generic "What your agent should
+  // take on" page, because its own deep-dive already asked both of that page's questions in the
+  // customer's own vocabulary. A realtor was picking their agent's jobs twice: once from
+  // "Listing descriptions / Comps / Transaction checklists", then again from "Content & social
+  // media / CRM data entry / Lead qualification", where five of the eleven generic options are
+  // the same jobs in blander words. The generic list is the one that loses.
+  //
+  // Nothing downstream goes empty: buildData feeds the role answers into aiGoals and
+  // successMetric, which is what those two questions existed to fill. See buildData below.
+  const rolePageKeys = isRoleFlow
+    ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", "goals", ...(roleIntake!.coversScope ? [] : ["scopeai"]), "scope"]
+    : [];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
+  const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, aiGoalsOther: s7.goalsOther, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  // A role agent answers "what should it do" and "what does winning look like" on its own
+  // deep-dive page, not on the generic one (see rolePageKeys). These two keys are what the
+  // generic page used to fill, and lib/agent-files.ts reads BOTH by name into the "What to
+  // push on" section of the agent's own instructions - the section that tells it where to
+  // aim. Left unmapped, dropping that page would have quietly emptied it, and nothing would
+  // have failed loudly enough to notice.
+  //
+  // Not a fudge: "what the owner wants the agent to do" is the same fact either way. The role
+  // list is that question asked in the customer's vocabulary, which is why it replaced the
+  // generic one rather than joining it.
+  const scopeKeys = roleIntake?.coversScope;
+  const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
+  const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
       // A role intake hides the Industry field (roleBranch), so it is not required there.
-      if (roleBranch) {
+      if (isRoleFlow) {
         if (!p?.name?.trim() || !p?.role) return "Please fill in the primary business name and your role.";
       } else {
         if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
@@ -1237,14 +1401,17 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     }
     if (key === "industry" && branch) {
       for (const f of branch.fields) {
-        if (!f.required) continue;
+        // A hidden field is not an unanswered one. Without this, a required field behind a
+        // showIf would block Continue with an error naming a question that is not on screen.
+        if (!f.required || !fieldVisible(f, industryDetails)) continue;
         const v = industryDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }
     }
-    if (roleBranch && key === roleIntake!.stepKey) {
-      for (const f of roleBranch.fields) {
-        if (!f.required) continue;
+    const rolePageIdx = key ? roleStepKeys.indexOf(key) : -1;
+    if (rolePageIdx >= 0) {
+      for (const f of rolePages[rolePageIdx].fields) {
+        if (!f.required || !fieldVisible(f, roleDetails)) continue;
         const v = roleDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
       }
@@ -1279,11 +1446,22 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // brandLike predates the switch to a multi-select and still initialises as "", so older
   // in-flight state can be either shape. Normalised once here rather than at each use.
   const brandLike = Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : []);
+  // Generic ask, unless the role agent has a better one (see ROLE_INTAKES.sample).
+  const sampleCopy = roleIntake?.sample ?? {
+    title: "Share a sample of your writing",
+    subtitle: "The single most useful thing on this form. One real paragraph you wrote teaches your agent more than any list of adjectives.",
+    label: "Paste anything you have written",
+    hint: "An email, your LinkedIn About section, a proposal, even a long Slack message.",
+    placeholder: "Paste it here. Longer is better - a few paragraphs beats a few lines, and rough beats polished. Your agent is learning how you actually write, not how you write when you know you are being read.",
+    upload: "Upload writing instead",
+    uploadHint: "Emails, proposals, memos, a blog post, anything you wrote. They go in with your other materials.",
+    footnote: "Either way, pick something you did not labour over. A quick reply to a client says more about your voice than anything you edited five times.",
+  };
   const allPagesFull: { key: string; label: string; node: React.ReactNode }[] = [
     { key: "biz", label: "Your Business", node: (
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
-      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={!!roleBranch} />
+      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={isRoleFlow} />
       <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
       {/* Business Model sat beside this and is gone at David's call. Service-based vs product
@@ -1323,9 +1501,19 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     ...(branch ? [{ key: "industry", label: "Industry", node: (
       <IndustryStep branch={branch} values={industryDetails} onChange={setIndustry} otherLabel={primaryCompany?.industryOther} />
     ) }] : []),
-    ...(roleBranch ? [{ key: roleIntake!.stepKey, label: roleIntake!.stepLabel, node: (
-      <IndustryStep branch={roleBranch} values={roleDetails} onChange={setRoleDetail} badge={roleIntake!.stepLabel} />
-    ) }] : []),
+    ...rolePages.map((rb, i) => ({
+      key: roleStepKeys[i],
+      label: rb.stepLabel ?? roleIntake!.stepLabel,
+      node: (
+        <IndustryStep
+          key={roleStepKeys[i]}
+          branch={rb}
+          values={roleDetails}
+          onChange={setRoleDetail}
+          badge={rb.stepLabel ?? roleIntake!.stepLabel}
+        />
+      ),
+    })),
     { key: "stack", label: "Tech Stack", node: (
     <Stack key="s2stack">
       <SHead stepNum={3} total={0} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
@@ -1432,9 +1620,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     // about their voice than every checkbox above it combined.
     { key: "sample", label: "Your Writing", node: (
     <Stack key="s6sample">
-      <SHead stepNum={8} total={0} title="Share a sample of your writing" subtitle="The single most useful thing on this form. One real paragraph you wrote teaches your agent more than any list of adjectives." badge="Business" />
-      <FF label="Paste anything you have written" hint="An email, your LinkedIn About section, a proposal, even a long Slack message.">
-        <TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder="Paste it here. Longer is better - a few paragraphs beats a few lines, and rough beats polished. Your agent is learning how you actually write, not how you write when you know you are being read." rows={10} />
+      <SHead stepNum={8} total={0} title={sampleCopy.title} subtitle={sampleCopy.subtitle} badge="Business" />
+      <FF label={sampleCopy.label} hint={sampleCopy.hint}>
+        <TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder={sampleCopy.placeholder} rows={10} />
       </FF>
 
       {/* Or drop files instead of typing, at David's call.
@@ -1450,14 +1638,11 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXD }}>Or drop files in</span>
         <span style={{ flex: 1, height: 1, background: BDR }} />
       </div>
-      <FF label="Upload writing instead" hint="Emails, proposals, memos, a blog post, anything you wrote. They go in with your other materials.">
+      <FF label={sampleCopy.upload} hint={sampleCopy.uploadHint}>
         <FileUpload files={files} onFiles={setFiles} />
       </FF>
 
-      <p style={{ fontSize: 12, color: TXD, lineHeight: 1.6, margin: 0 }}>
-        Either way, pick something you did not labour over. A quick reply to a client says more
-        about your voice than anything you edited five times.
-      </p>
+      <p style={{ fontSize: 12, color: TXD, lineHeight: 1.6, margin: 0 }}>{sampleCopy.footnote}</p>
     </Stack>
     ) },
     { key: "goals", label: "Goals & AI", node: (
@@ -1484,7 +1669,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     // block on a step that had grown to eight questions.
     { key: "scopeai", label: "What It Should Do", node: (
     <Stack key="s7scope">
-      <SHead stepNum={9} total={0} title="What your agent should take on" subtitle="The work you want off your desk, and what a win looks like." badge="Business" />
+      <SHead stepNum={9} total={0} title="What your agent should take on" subtitle="The work you want off your desk, and what a win looks like." badge="Business" art />
       <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
       {s7.goals.includes("Other") && <FF label="What else should it manage?"><TInput value={s7.goalsOther} onChange={v => f7("goalsOther", v)} placeholder="Name the task" /></FF>}
       {/* `split` removed at David's call. It bolded everything before the dash and greyed the
@@ -1527,7 +1712,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // For a role agent, order the pages by rolePageKeys (not allPagesFull's natural order), so the
   // executive profile can sit AFTER the role deep-dive. Both this and pageKeys above read from
   // rolePageKeys, so the assertion below still holds.
-  const allPages = roleBranch
+  const allPages = isRoleFlow
     ? rolePageKeys
         .map((k) => allPagesFull.find((p) => p.key === k))
         .filter((p): p is (typeof allPagesFull)[number] => Boolean(p))
@@ -1546,7 +1731,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
 
   const stepLabels = allPages.map(p => p.label);
   const cur = allPages[step] || allPages[allPages.length - 1];
-  return <Shell steps={stepLabels} step={step} onBack={back} canBack={step > 0 || !!onExit} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
+  // Only a funnel pinned to a real agent gets that agent's colour and wordmark. Plain /onboard
+  // is not selling one particular agent, so it stays in ApolloClaw red under the ApolloClaw mark.
+  const shellBrand = roleIntake ? agentBrand(agentTypeId) : undefined;
+  return <Shell steps={stepLabels} step={step} onBack={back} canBack={step > 0 || !!onExit} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel} brand={shellBrand} agentName={roleIntake ? wordmarkName(roleIntake.roleName) : undefined}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
 }
 // ════════════════════════════════════════════════════════════
 // ROOT
