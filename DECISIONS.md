@@ -33,6 +33,7 @@ Every role agent has a self-serve funnel on ApolloClaw at `/build/<slug>`:
 | `sales` | The Sales Agent |
 | `recruiting` | The Recruiting Agent |
 | `medical` | The Medical Agent |
+| `insurance` | The Insurance Agent |
 
 The slug is the customer-facing URL and is deliberately readable (`real-estate`),
 separate from the internal agent type id (`realestate`). The map lives in
@@ -47,6 +48,32 @@ sends no type and still provisions the generic license agent, unchanged.
 
 These pages are `noindex` — each agent's own marketing site is the front door, and
 should not have to compete with them in search.
+
+### The funnel wears the agent's brand
+
+The first screen names the agent ("Let's Build Your Real Estate Agent."), takes its
+accent colour, and shows its mascot to the right of the copy — the same copy-left,
+agent-right arrangement as the hero on that agent's own site, so arriving from there
+reads as the next page rather than a different company.
+
+`lib/agentBrand.ts` holds the map and **falls back to ApolloClaw red with no mascot**, so
+an agent with no artwork still works and simply looks the way the funnel always did.
+
+**Where the colours come from, and the one rule that matters:** sample the hex from the
+agent's **wordmark SVG**, never from its mascot. The mascots are shaded 3D renders whose
+accent spans dark to lit, and no single point on that range recovers the flat brand hex.
+Measured against the three agents whose true value is known from their SVG, sampling the
+mascot returns `#2B7A2C` for real estate (true `#0F8743`), `#092A5D` for CFO (true
+`#1E305F`) and `#A70403` for CEO (true `#E12E30`) — errors of 64, 29 and 145.
+
+Real estate, CFO and CEO are sampled from SVGs and are correct. The other five are
+sampled from mascots, marked provisional in the file, and should be corrected the moment
+a wordmark SVG exists for them.
+
+**Mascots must be transparent PNGs.** A JPEG or a flat-white PNG puts a visible box on the
+masthead. Cutting a background out afterwards works only on a lossless source: it was
+tried on the JPEG mascots and chewed the robots' white bodies to pieces, and it worked
+cleanly on the marketing PNG. Ask for a transparent export rather than repairing one.
 
 ## Calls to action: always offer both paths
 

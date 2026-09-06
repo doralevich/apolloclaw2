@@ -156,6 +156,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    const insdet = d.insuranceDetails && typeof d.insuranceDetails === "object" ? (d.insuranceDetails as Record<string, unknown>) : {};
+    if (Object.keys(insdet).length) {
+      sections.push({
+        title: "Insurance Deep-Dive",
+        rows: Object.entries(insdet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [

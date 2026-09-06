@@ -308,6 +308,31 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "Stethoscope",
   },
+  // The Insurance Agent - same role model as the others: an off-the-rack persona
+  // (config/personas.ts -> `insurance`, which predates this entry) on a stock OpenClaw box, plus
+  // an agency intake (lib/insuranceIntake.ts) the onboarding form adds when the type is
+  // `insurance` (ROLE_INTAKES in OnboardingForm), surfaced as the "Insurance Deep-Dive" section
+  // (lib/onboardingSections.ts).
+  //
+  // It SUPPORTS a licensed professional rather than replacing one: it compares, explains, drafts
+  // and chases, and stops short of binding coverage, underwriting calls and regulatory advice.
+  // The persona and the intake both hold that line, and the intake asks the agency to name where
+  // a licensed person must always take over.
+  //
+  // Same white-glove shape as the other role agents: NO `planKey`, `internal` so only a platform
+  // admin sees the card, and the same stock template and $25 hosting cap as every other agent.
+  {
+    id: "insurance",
+    label: "The Insurance Agent",
+    description:
+      "An agent for an insurance agency or brokerage: renewal tracking, quote follow-up, side-by-side policy comparisons, certificates, claims status chasing, and client communications - built around the lines you write and the carriers you place with, and stopping where a licensed professional has to take over. Set up for one agency, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "ShieldCheck",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the
