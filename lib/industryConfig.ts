@@ -27,6 +27,10 @@ export interface IndustryField {
 export interface IndustryBranch {
   stepTitle: string; // e.g. "Your Law Practice"
   stepSubtitle: string;
+  // Short name for the progress rail. Only needed when a role's deep-dive is split across
+  // several pages and each one wants its own label; a single-page branch falls back to the
+  // role's stepLabel in ROLE_INTAKES.
+  stepLabel?: string;
   fields: IndustryField[];
 }
 
