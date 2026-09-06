@@ -15,6 +15,31 @@
 //
 // All fields are optional (David's call): answer what applies, skip the rest.
 //
+// WHAT IS DELIBERATELY NOT ASKED HERE, and the rule behind it.
+//
+// This page set peaked at 37 questions and is now 25. The test each survivor had to pass: does
+// the agent need this BEFORE its first useful action, or is it something the agent can simply
+// ask? It talks to its owner every day. Anything it can learn by asking does not belong in front
+// of somebody who has already decided to buy, because every question there is a chance to close
+// the tab instead.
+//
+// Cut because the agent can ask, and the answer keeps better when it comes up in context:
+// support staff, years in the business, MLS memberships, designations, local market knowledge,
+// specialties, how the year runs seasonally, annual deal volume, what happens to a new lead
+// today, and the preferred vendor list.
+//
+// Cut because it was already asked: "Why do clients pick you over the agent down the street?"
+// is the same question as "What makes you different?" on the shared What You Do page, and the
+// second ask got the shorter answer.
+//
+// Cut because it goes stale: "What is in your pipeline right now?" is wrong the week after it
+// is answered, and USER.md tells the agent to treat what it holds as ground truth. A fact with
+// a one-week shelf life does not belong in a permanent profile.
+//
+// What stayed is what the agent cannot infer, cannot easily ask, or must not get wrong:
+// licensing and compliance boundaries, the approval line, office structure (who it may act for),
+// market and price band, voice, the systems it has to work inside, and what to fix first.
+//
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
 
 import type { IndustryBranch } from "@/lib/industryConfig";
@@ -73,31 +98,10 @@ const PRACTICE: IndustryBranch = {
       options: ["Just me", "2-3", "4-8", "9-20", "21-50", "More than 50"],
     },
     {
-      key: "support_staff",
-      label: "What support do you already have?",
-      type: "multiselect",
-      options: [
-        "Transaction coordinator",
-        "Executive or virtual assistant",
-        "Inside sales agent (ISA)",
-        "Marketing person",
-        "Showing assistant",
-        "Bookkeeper",
-        "None of the above",
-      ],
-      helper: "So the agent complements your people instead of duplicating them.",
-    },
-    {
       key: "brokerage",
       label: "What brokerage are you with?",
       type: "text",
       placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
-    },
-    {
-      key: "years_experience",
-      label: "How long have you been in real estate?",
-      type: "dropdown",
-      options: ["Less than a year", "1-3 years", "4-7 years", "8-15 years", "More than 15 years"],
     },
     {
       key: "license_states",
@@ -105,30 +109,6 @@ const PRACTICE: IndustryBranch = {
       type: "text",
       placeholder: "e.g. NY, NJ, CT",
       helper: "So the agent does not draft around rules that do not apply to you.",
-    },
-    {
-      key: "mls",
-      label: "Which MLS(es) do you belong to?",
-      type: "text",
-      placeholder: "e.g. Bright MLS, Stellar MLS, CRMLS",
-    },
-    {
-      key: "designations",
-      label: "Any designations or certifications?",
-      type: "multiselect",
-      options: [
-        "GRI",
-        "CRS",
-        "ABR (buyer's rep)",
-        "SRS (seller's rep)",
-        "SRES (seniors)",
-        "CCIM (commercial)",
-        "CIPS (international)",
-        "Luxury certification",
-        "None",
-        "Other",
-      ],
-      helper: "These show up in your bio and marketing, so the agent should know them.",
     },
   ],
 };
@@ -146,14 +126,6 @@ const MARKET: IndustryBranch = {
       type: "text",
       placeholder: "e.g. Austin metro; Round Rock and Cedar Park",
       helper: "Cities, neighborhoods, or regions the agent should know by name.",
-    },
-    {
-      key: "market_knowledge",
-      label: "What should your agent know about those areas?",
-      type: "textarea",
-      placeholder:
-        "e.g. the school districts buyers ask about, which streets flood, the HOA everyone complains about, the new development changing comps.",
-      helper: "The local knowledge that separates you from an out-of-area agent.",
     },
     {
       key: "property_types",
@@ -188,45 +160,12 @@ const MARKET: IndustryBranch = {
       helper: "Price band changes the tone of everything the agent writes.",
     },
     {
-      key: "specialties",
-      label: "What do you specialize in?",
-      type: "multiselect",
-      options: [
-        "Buyer representation",
-        "Listing / seller representation",
-        "Luxury",
-        "First-time buyers",
-        "Investors",
-        "Relocation",
-        "New construction",
-        "Rentals / leasing",
-        "Commercial",
-        "Land",
-        "Distressed / foreclosure",
-        "Other",
-      ],
-    },
-    {
       key: "client_profile",
       label: "Who is your typical client?",
       type: "textarea",
       placeholder:
         "e.g. dual-income families moving out from the city for schools, or downsizing retirees, or investors buying their third door.",
       helper: "The agent writes to this person in every message it drafts.",
-    },
-    {
-      key: "positioning",
-      label: "Why do clients pick you over the agent down the street?",
-      type: "textarea",
-      placeholder: "The thing you would say on a listing appointment if you only got one sentence.",
-    },
-    {
-      key: "seasonality",
-      label: "How does your year run?",
-      type: "textarea",
-      placeholder:
-        "e.g. spring is listings, summer is relocations, dead from Thanksgiving to mid-January.",
-      helper: "So outreach lands when your market is actually paying attention.",
     },
   ],
 };
@@ -238,19 +177,6 @@ const DEALS: IndustryBranch = {
     "How business actually moves through your practice, from first contact to closing. The more specific here, the less your agent has to guess.",
   stepLabel: "Deal Flow",
   fields: [
-    {
-      key: "transaction_volume",
-      label: "Roughly how many deals do you close a year?",
-      type: "dropdown",
-      options: ["1-5", "6-15", "16-30", "31-60", "61-120", "More than 120", "Just getting started"],
-    },
-    {
-      key: "pipeline_now",
-      label: "What is in your pipeline right now?",
-      type: "text",
-      placeholder: "e.g. 4 active listings, 6 buyers, 3 under contract",
-      helper: "A rough count is fine. It tells the agent what week one looks like.",
-    },
     {
       key: "lead_sources",
       label: "Where do your leads come from?",
@@ -267,14 +193,6 @@ const DEALS: IndustryBranch = {
         "Builder or developer relationships",
         "Other",
       ],
-    },
-    {
-      key: "lead_response",
-      label: "What happens when a new lead comes in today?",
-      type: "textarea",
-      placeholder:
-        "e.g. I get a text alert, call within the hour if I can, then it usually sits until the weekend.",
-      helper: "Be honest about where it breaks down. That gap is the first thing to fix.",
     },
     {
       key: "followup_cadence",
@@ -337,14 +255,6 @@ const DEALS: IndustryBranch = {
         "e.g. accepted offer, order inspection within 3 days, negotiate repairs by day 10, appraisal, clear to close, final walkthrough the morning of.",
       helper:
         "The dates, the order, and who you chase at each step. This is what the agent turns into your transaction checklist.",
-    },
-    {
-      key: "vendors",
-      label: "Who is on your preferred vendor list?",
-      type: "textarea",
-      placeholder:
-        "e.g. lender, title company, inspector, photographer, stager, handyman, attorney.",
-      helper: "So the agent recommends your people by name instead of saying 'a lender'.",
     },
     {
       key: "deal_breakdowns",
