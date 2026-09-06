@@ -55,6 +55,10 @@ export interface IndustryBranch {
   // several pages and each one wants its own label; a single-page branch falls back to the
   // role's stepLabel in ROLE_INTAKES.
   stepLabel?: string;
+  // Show the agent's mascot beside this page's heading. For the page that is about the AGENT
+  // rather than the business - one per flow, since a robot over every page stops being a
+  // character and becomes wallpaper.
+  art?: boolean;
   fields: IndustryField[];
 }
 

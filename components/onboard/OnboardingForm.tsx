@@ -41,12 +41,24 @@ const ROLE_INTAKES: Record<
     // of, because that is a thing they can find in thirty seconds and it is exactly the writing
     // the agent will be asked to produce. Left unset, the page keeps its generic copy.
     sample?: { title: string; subtitle: string; label: string; hint: string; placeholder: string; upload: string; uploadHint: string; footnote: string };
+    // OPT IN to dropping the generic "What your agent should take on" page, by naming the two
+    // fields in this branch that already ask its two questions. Only set it once the branch
+    // genuinely covers both - the whole point is to stop asking twice, not to stop asking.
+    //
+    // Opt-in rather than automatic because the eight other role agents have not been checked
+    // against this bar, and silently removing a page from their flows while fixing real estate
+    // is how a "cleanup" becomes an outage nobody traces back.
+    //
+    // owns -> aiGoals and win -> successMetric, which lib/agent-files.ts reads by name into the
+    // agent's "What to push on" section. Unmapped, that section would quietly go empty.
+    coversScope?: { owns: string; win: string };
   }
 > = {
   cfo: { branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent" },
   legal: { branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent" },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
+    coversScope: { owns: "owns_work", win: "real_estate_goals" },
     sample: {
       title: "Share a listing you were proud of",
       subtitle: "The single most useful thing on this form. One listing you actually wrote teaches your agent more than any list of adjectives.",
@@ -1102,7 +1114,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
   const subtitle = isGeneric && otherLabel ? `A bit more about your ${otherLabel} business.` : branch.stepSubtitle;
   return (
     <Stack>
-      <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} />
+      <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} art={branch.art} />
       {branch.fields.filter(f => fieldVisible(f, values)).map(f => {
         const val = values[f.key];
         const str = typeof val === "string" ? val : "";
@@ -1305,7 +1317,18 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // its order straight from this list, so the role deep-dive comes first and the executive profile
   // sits after it - David's call. Both pageKeys and allPages below derive from this list, so the
   // step-order assertion stays satisfied.
-  const rolePageKeys = isRoleFlow ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", "goals", "scopeai", "scope"] : [];
+  // NOTE the missing "scopeai". A role agent does NOT get the generic "What your agent should
+  // take on" page, because its own deep-dive already asked both of that page's questions in the
+  // customer's own vocabulary. A realtor was picking their agent's jobs twice: once from
+  // "Listing descriptions / Comps / Transaction checklists", then again from "Content & social
+  // media / CRM data entry / Lead qualification", where five of the eleven generic options are
+  // the same jobs in blander words. The generic list is the one that loses.
+  //
+  // Nothing downstream goes empty: buildData feeds the role answers into aiGoals and
+  // successMetric, which is what those two questions existed to fill. See buildData below.
+  const rolePageKeys = isRoleFlow
+    ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", "goals", ...(roleIntake!.coversScope ? [] : ["scopeai"]), "scope"]
+    : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
@@ -1314,7 +1337,20 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: s7.goals, aiGoalsOther: s7.goalsOther, successMetric: s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  // A role agent answers "what should it do" and "what does winning look like" on its own
+  // deep-dive page, not on the generic one (see rolePageKeys). These two keys are what the
+  // generic page used to fill, and lib/agent-files.ts reads BOTH by name into the "What to
+  // push on" section of the agent's own instructions - the section that tells it where to
+  // aim. Left unmapped, dropping that page would have quietly emptied it, and nothing would
+  // have failed loudly enough to notice.
+  //
+  // Not a fudge: "what the owner wants the agent to do" is the same fact either way. The role
+  // list is that question asked in the customer's vocabulary, which is why it replaced the
+  // generic one rather than joining it.
+  const scopeKeys = roleIntake?.coversScope;
+  const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
+  const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];

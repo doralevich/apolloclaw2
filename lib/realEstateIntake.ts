@@ -363,6 +363,10 @@ const AGENT: IndustryBranch = {
   stepSubtitle:
     "The last page. What you want handed over, how it should sound, and the lines it must not cross.",
   stepLabel: "Your Agent",
+  // The mascot lives here now. It was on the generic "What your agent should take on" page,
+  // which a role agent no longer sees - that page asked the same two questions this one does,
+  // in blander words. This is the page it was always meant for anyway: the one about the agent.
+  art: true,
   fields: [
     {
       key: "owns_work",
@@ -455,13 +459,10 @@ const AGENT: IndustryBranch = {
       helper:
         "Real estate advertising is regulated and fair housing rules apply to every word of listing copy. Anything your brokerage or state requires belongs here.",
     },
-    {
-      key: "real_estate_pain",
-      label: "Biggest headache in your business right now?",
-      type: "textarea",
-      placeholder:
-        "e.g. follow-up falls through the cracks, listings take too long to write, I never have comps ready fast enough.",
-    },
+    // "Biggest headache in your business right now?" was here and is gone. The Executive
+    // Profile page already asks "Where's the real bottleneck to growth right now?" two pages
+    // later, and the answers were the same sentence typed twice. Asking a person to describe
+    // their problem twice in one form does not get a better answer, it gets a shorter one.
     {
       key: "real_estate_goals",
       label: "What would a great first 90 days look like?",
