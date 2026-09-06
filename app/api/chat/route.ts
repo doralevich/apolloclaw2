@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
     if (!ANTHROPIC_API_KEY) {
       return NextResponse.json(
-        { error: "Chat service not configured. Please contact us at hello@apolloclaw.ai" },
+        { error: "Chat service not configured. Please contact us at david@apolloclaw.ai" },
         { status: 503 }
       );
     }

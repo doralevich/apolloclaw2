@@ -225,12 +225,12 @@ export default function ContactClient() {
                       <p className="font-body text-xs text-muted-foreground">Mon - Fri, 9am - 6pm ET</p>
                     </div>
                   </a>
-                  <a href="mailto:hello@apolloclaw.ai" className="flex items-start gap-4 group">
+                  <a href="mailto:david@apolloclaw.ai" className="flex items-start gap-4 group">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                       <Mail className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-body text-sm font-medium text-foreground group-hover:text-primary transition-colors">hello@apolloclaw.ai</p>
+                      <p className="font-body text-sm font-medium text-foreground group-hover:text-primary transition-colors">david@apolloclaw.ai</p>
                       <p className="font-body text-xs text-muted-foreground">We respond within one business day</p>
                     </div>
                   </a>

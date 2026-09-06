@@ -107,7 +107,7 @@ export default function ChatWidget() {
             role: "assistant",
             content:
               data.error ||
-              "Something went wrong. Try reaching us at hello@apolloclaw.ai",
+              "Something went wrong. Try reaching us at david@apolloclaw.ai",
           },
         ]);
       }
@@ -116,7 +116,7 @@ export default function ChatWidget() {
         ...newMessages,
         {
           role: "assistant",
-          content: "Connection error. Please try again or email hello@apolloclaw.ai",
+          content: "Connection error. Please try again or email david@apolloclaw.ai",
         },
       ]);
     } finally {

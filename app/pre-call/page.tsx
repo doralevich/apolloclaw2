@@ -137,7 +137,7 @@ export default function PreCall() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       setSubmitted(true);
     } catch {
-      setError("Something went wrong. Please try again or email hello@apolloclaw.ai");
+      setError("Something went wrong. Please try again or email david@apolloclaw.ai");
     } finally {
       setSubmitting(false);
     }
@@ -263,7 +263,7 @@ export default function PreCall() {
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: TXD }}>© {new Date().getFullYear()} Apollo[Claw]</span>
-        <span style={{ fontSize: 12, color: TXD }}>hello@apolloclaw.ai</span>
+        <span style={{ fontSize: 12, color: TXD }}>david@apolloclaw.ai</span>
       </div>
     </div>
   );
