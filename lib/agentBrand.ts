@@ -75,6 +75,11 @@ const BRANDS: Record<string, AgentBrand> = {
     colorRgb: "3, 115, 132",
     mascot: "/agents/mascots/medical.png",
   },
+  marketing: {
+    color: "#E12070",
+    colorRgb: "225, 32, 112",
+    mascot: "/agents/mascots/marketing.png",
+  },
 };
 
 /** The brand for an agent type, falling back to ApolloClaw's own. */
