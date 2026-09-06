@@ -54,8 +54,14 @@ const ROLE_INTAKES: Record<
     coversScope?: { owns: string; win: string };
   }
 > = {
-  cfo: { branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent" },
-  legal: { branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent" },
+  cfo: {
+    branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent",
+    coversScope: { owns: "owns_work", win: "financial_goals" },
+  },
+  legal: {
+    branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent",
+    coversScope: { owns: "owns_work", win: "legal_goals" },
+  },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
     coversScope: { owns: "owns_work", win: "real_estate_goals" },
@@ -70,12 +76,30 @@ const ROLE_INTAKES: Record<
       footnote: "Two or three is better than one. A luxury listing and a starter home are written differently, and your agent should know both registers.",
     },
   },
-  ceo: { branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent" },
-  marketing: { branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent" },
-  sales: { branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent" },
-  recruiting: { branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent" },
-  medical: { branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent" },
-  insurance: { branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent" },
+  ceo: {
+    branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
+    coversScope: { owns: "owns_work", win: "ceo_goals" },
+  },
+  marketing: {
+    branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent",
+    coversScope: { owns: "owns_work", win: "marketing_goals" },
+  },
+  sales: {
+    branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent",
+    coversScope: { owns: "owns_work", win: "sales_goals" },
+  },
+  recruiting: {
+    branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent",
+    coversScope: { owns: "owns_work", win: "recruiting_goals" },
+  },
+  medical: {
+    branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent",
+    coversScope: { owns: "owns_work", win: "medical_goals" },
+  },
+  insurance: {
+    branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
+    coversScope: { owns: "owns_work", win: "insurance_goals" },
+  },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
 // noun - "Real Estate Agent" is the product, "Real Estate" is the word that goes in the mark.
