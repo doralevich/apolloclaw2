@@ -15,6 +15,7 @@ import { MARKETING_BRANCH } from "@/lib/marketingIntake";
 import { SALES_BRANCH } from "@/lib/salesIntake";
 import { RECRUITING_BRANCH } from "@/lib/recruitingIntake";
 import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
+import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
 // add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
@@ -34,6 +35,7 @@ const ROLE_INTAKES: Record<
   sales: { branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent" },
   recruiting: { branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent" },
   medical: { branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent" },
+  insurance: { branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent" },
 };
 import {
   DEFAULT_LICENSE_TIER,
@@ -416,23 +418,32 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
   };
   return (
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(${accentRgb},0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
-        {/* The agent itself, deliberately small. On its own marketing site this robot is
-            the hero; here it is a token of continuity, so it sits above the headline at a
-            fraction of that size rather than competing with the form. */}
-        {brand?.mascot && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={brand.mascot}
-            alt=""
-            aria-hidden="true"
-            style={{ height: 152, width: "auto", margin: "0 auto 22px", display: "block", filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.16))" }}
-          />
-        )}
-        <h1 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
-          {heading ?? <>Let&apos;s Create Your <span style={{ color: accent }}>Agent!</span></>}
-        </h1>
-        <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto" }}>{intro ?? "Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result."}</p>
+      {/* Masthead. With a mascot it is two columns - copy left, agent right - matching the
+          hero on that agent's own marketing site, so arriving here reads as the next page
+          rather than a different company. Without one it stays centred, which is the
+          original look and what every unbranded funnel still gets. */}
+      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(${accentRgb},0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: brand?.mascot ? "space-between" : "center", gap: 40, flexWrap: "wrap" }}>
+          <div style={{ flex: brand?.mascot ? "1 1 420px" : "0 1 720px", minWidth: 0, textAlign: brand?.mascot ? "left" : "center" }}>
+            <h1 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
+              {heading ?? <>Let&apos;s Create Your <span style={{ color: accent }}>Agent!</span></>}
+            </h1>
+            <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: brand?.mascot ? 0 : "0 auto" }}>{intro ?? "Before we build your AI assistant, we need to understand your business. Takes about 15 minutes. The more detail, the better the result."}</p>
+          </div>
+          {/* Deliberately smaller than the site hero: a token of continuity, not the
+              main event. The form below is what the visitor came to do. */}
+          {brand?.mascot && (
+            <div style={{ flex: "0 0 auto" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={brand.mascot}
+                alt=""
+                aria-hidden="true"
+                style={{ height: 200, width: "auto", display: "block", filter: "drop-shadow(0 14px 28px rgba(0,0,0,0.18))" }}
+              />
+            </div>
+          )}
+        </div>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 700, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "hidden" }}>
@@ -1131,6 +1142,7 @@ function hydrateBizState(a: PrefillAnswers) {
       (a.salesDetails && typeof a.salesDetails === "object" ? (a.salesDetails as Record<string, string | string[]>) : null) ??
       (a.recruitingDetails && typeof a.recruitingDetails === "object" ? (a.recruitingDetails as Record<string, string | string[]>) : null) ??
       (a.medicalDetails && typeof a.medicalDetails === "object" ? (a.medicalDetails as Record<string, string | string[]>) : null) ??
+      (a.insuranceDetails && typeof a.insuranceDetails === "object" ? (a.insuranceDetails as Record<string, string | string[]>) : null) ??
       {},
   };
 }
