@@ -107,6 +107,77 @@ export const SUGGESTED_REPORTS: Record<string, SuggestedReport[]> = {
       days: "thursday",
     },
   ],
+
+  // THE LEGAL SET LEANS ON DATES more than the real estate one leans on anything, and that is not
+  // a stylistic difference. A missed showing costs a Saturday. A missed notice window renews a
+  // contract for a year, and a missed filing deadline can end a matter outright. Three of these
+  // five exist because the thing they watch passes silently when nobody looks.
+  //
+  // Every one of them stops at drafting. None asks the agent to send, file or advise, because the
+  // skills they lean on will refuse anyway and a report whose instruction fights its own skill
+  // produces an argument instead of a report.
+  legal: [
+    {
+      title: "Deadlines this week",
+      blurb: "Every date landing in the next seven days, and whose move it is.",
+      prompt:
+        "Go through my open matters and use your key-dates skill. List everything due in the" +
+        " next seven days: the date, the matter, what has to happen, and whose move it is." +
+        " Anything already overdue goes at the top. For a notice window, give me the date I" +
+        " need to ACT by, not the date it expires. If nothing is due, say so in one line.",
+      hour: 7,
+      days: "weekdays",
+    },
+    {
+      // Ninety days rather than seven, and separate from the report above on purpose: a notice
+      // window found the week it closes is a window you have already lost. This is the report
+      // that exists because auto-renewal is the most expensive clause in commercial contracting.
+      title: "Renewals ahead",
+      blurb: "Auto-renewals and notice windows opening in the next 90 days.",
+      prompt:
+        "Look 90 days out across my agreements and list every auto-renewal, notice window and" +
+        " termination right coming up. For each: the agreement, the date the window opens and" +
+        " closes, what has to be done and how it has to be delivered, and what happens if we" +
+        " miss it - including the new term and price. Sort by the date I need to act, not by" +
+        " the date it expires.",
+      hour: 8,
+      days: "monday",
+    },
+    {
+      title: "Sitting with you",
+      blurb: "Drafts and reviews waiting on a sign-off, oldest first.",
+      prompt:
+        "List everything I have drafted or reviewed that is waiting on my sign-off before it" +
+        " can move, oldest first. For each: what it is, who is waiting, how long it has been" +
+        " sitting, and what happens next once I approve it. Check my stated turnaround and" +
+        " flag anything that has already blown it. Do not send anything.",
+      hour: 17,
+      days: "weekdays",
+    },
+    {
+      title: "Matters gone quiet",
+      blurb: "Open matters with no movement in two weeks, and what would unstick each one.",
+      prompt:
+        "List every open matter with no movement in fourteen days or more, oldest first. For" +
+        " each: where it stands, what it is waiting on, and who owes the next move - me, the" +
+        " client, or the other side. Say in one line what would unstick it, and draft the" +
+        " chaser where a chaser is the answer. Flag any where the delay itself is becoming a" +
+        " problem.",
+      hour: 8,
+      days: "wednesday",
+    },
+    {
+      title: "Intake queue",
+      blurb: "What came in, what is still unscoped, and anything that needs a conflicts check.",
+      prompt:
+        "Use your matter-intake skill on everything that has arrived and not yet been scoped." +
+        " For each: who asked, what they want, the deadline and whether it is real. Flag" +
+        " anything that still needs a conflicts check, anything where the scope is ambiguous," +
+        " and anything that looks outside our practice areas. Rank by my stated turnaround.",
+      hour: 8,
+      days: "weekdays",
+    },
+  ],
 };
 
 export function suggestedReportsFor(agentTypeId: string | null | undefined): SuggestedReport[] {

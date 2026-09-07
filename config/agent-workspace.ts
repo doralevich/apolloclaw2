@@ -18,6 +18,10 @@ export const CONTEXT_FILENAME = "BUSINESS-CONTEXT.md";
  *  cost more than it is worth on the turns that never mention a property. */
 export const LISTINGS_FILENAME = "LISTINGS.md";
 
+/** The practice's open matters (lib/matters.ts), rewritten whenever one changes. Reference
+ *  material for the same reason as the two above. */
+export const MATTERS_FILENAME = "MATTERS.md";
+
 /** The auto-loaded files we generate from the questionnaire. The rest of OpenClaw's eight —
  *  SOUL (template's persona), MEMORY (the agent's own), HEARTBEAT and BOOTSTRAP (runtime
  *  mechanics) — are not ours to write. */

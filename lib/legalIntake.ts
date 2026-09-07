@@ -60,6 +60,7 @@ const PRACTICE: IndustryBranch = {
         "Corporate / M&A",
         "Real estate",
         "Intellectual property",
+        "Personal injury",
         "Litigation support",
         "Immigration",
         "Privacy & data protection",
@@ -68,6 +69,139 @@ const PRACTICE: IndustryBranch = {
         "Family",
         "Other",
       ],
+      helper: "Pick what you actually do. Each one you tick asks you one more question about it.",
+    },
+
+    // ─── One question per area they picked ───────────────────────────────────
+    //
+    // WHY THESE EXIST. The list above was collected and then never used: an agent for a patent
+    // prosecutor and an agent for a plaintiff-side PI firm were handed the identical brief, and
+    // "legal work" is not a practice. Both would then spend the first week being told, one
+    // correction at a time, what the person in front of them actually does.
+    //
+    // WHY ONE EACH, AND CONDITIONAL. This page set has been cut twice on the rule that every
+    // question in front of somebody who has already decided to buy is a chance to close the tab.
+    // Twelve unconditional questions would break that rule badly. Twelve CONDITIONAL ones do not:
+    // a solo who does contracts and employment answers two, right under the boxes they just
+    // ticked, and never sees the other ten. The form gets longer only for people who genuinely
+    // do more, and for them the extra length is the thing they were hoping we would ask.
+    //
+    // The specificity lives in the placeholders. Nobody writes a useful answer to "tell us about
+    // your practice"; almost everybody writes one when shown the shape of a good answer. That is
+    // also why each asks for the SIDE and the SUBTYPE where those change the work - plaintiff or
+    // defense, prosecution or enforcement, employer or employee - since those are the splits an
+    // agent cannot infer and must not get wrong.
+    {
+      key: "commercial_contracts_detail",
+      label: "Commercial contracts: what paper do you see most?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Commercial contracts" },
+      placeholder:
+        "e.g. mostly SaaS and vendor MSAs on the customer side, plus NDAs in volume. We rarely draft first - we are reviewing the other side's template 80% of the time.",
+      helper: "The document types, and whether you are usually drafting or reviewing.",
+    },
+    {
+      key: "employment_detail",
+      label: "Employment: which side, and what kind of matters?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Employment" },
+      placeholder:
+        "e.g. employer side only. Offer letters, handbooks, separation agreements, and the occasional discrimination charge response. No union work.",
+      helper:
+        "Employer or employee changes every document you produce, so say which. Advice work, disputes, or both.",
+    },
+    {
+      key: "corporate_detail",
+      label: "Corporate and M&A: what kind of deals, and how big?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Corporate / M&A" },
+      placeholder:
+        "e.g. lower middle market asset purchases, $5M to $40M. Formations and cap table cleanup, seed and Series A financings. We run diligence off a checklist I will share.",
+      helper: "Deal types, typical size, and whether you handle diligence, drafting, or both.",
+    },
+    {
+      key: "real_estate_detail",
+      label: "Real estate: transactions, leasing, or land use?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Real estate" },
+      placeholder:
+        "e.g. commercial leasing for landlords, plus purchase and sale for a handful of investor clients. No residential closings, no zoning.",
+      helper: "What you handle, and whose side you are usually on.",
+    },
+    {
+      key: "intellectual_property_detail",
+      label: "Intellectual property: which kind?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Intellectual property" },
+      placeholder:
+        "e.g. patent prosecution, software and electronics, mostly US non-provisionals with some PCT. Office action responses are the bulk of it. No litigation, no trademarks.",
+      helper:
+        "Patents, trademarks, copyright or trade secrets - and prosecution, licensing or enforcement. These are different jobs and the agent should only learn yours.",
+    },
+    {
+      key: "personal_injury_detail",
+      label: "Personal injury: plaintiff or defense, and what kind of cases?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Personal injury" },
+      placeholder:
+        "e.g. plaintiff side. Auto and premises, occasional trucking. Most settle pre-suit. We deal with records requests, liens and demand packages constantly.",
+      helper:
+        "Which side, the case types, and how much of the work is records, liens and demand packages versus litigation.",
+    },
+    {
+      key: "litigation_detail",
+      label: "Litigation: which courts, and what stage do you live in?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Litigation support" },
+      placeholder:
+        "e.g. state court commercial disputes in Illinois, some N.D. Ill. Mostly written discovery and motion practice. Rarely trial.",
+      helper:
+        "Courts and venues, the kind of disputes, and the stages you actually spend time in. Deadlines here are unforgiving and vary by court, so be specific about where you appear.",
+    },
+    {
+      key: "immigration_detail",
+      label: "Immigration: employment based, family based, or both?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Immigration" },
+      placeholder:
+        "e.g. employment based. H-1B and PERM for two tech clients, plus O-1s. Some adjustment of status. No removal defense, no asylum.",
+      helper: "The categories you file, and anything you deliberately do not take.",
+    },
+    {
+      key: "privacy_detail",
+      label: "Privacy: which regimes do you work under?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Privacy & data protection" },
+      placeholder:
+        "e.g. GDPR and CCPA, plus HIPAA for two healthcare clients. DPAs, privacy policies, and breach response. Not much litigation.",
+      helper: "The frameworks that actually apply to your clients, and the work they generate.",
+    },
+    {
+      key: "regulatory_detail",
+      label: "Regulatory: which regulators and rules?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Regulatory & compliance" },
+      placeholder:
+        "e.g. FDA for a medical device client, plus state licensing for healthcare staffing. Mostly submissions and audit response.",
+      helper: "Who regulates your clients, and what you produce for them.",
+    },
+    {
+      key: "estate_planning_detail",
+      label: "Estate planning: what do you draft, and for whom?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Estate planning" },
+      placeholder:
+        "e.g. revocable trusts, pour-over wills, powers of attorney for families in the $2M to $15M range. Some irrevocable trust work. Probate only for existing clients.",
+      helper: "The instruments, the typical estate size, and whether you handle probate.",
+    },
+    {
+      key: "family_law_detail",
+      label: "Family: what kind of matters, and how contested?",
+      type: "textarea",
+      showIf: { key: "practice_areas", includes: "Family" },
+      placeholder:
+        "e.g. divorce and custody, mostly negotiated. A lot of collaborative work and mediation. We take contested custody but not high-conflict cases.",
+      helper: "Matter types, and whether your work is usually negotiated or litigated.",
     },
     {
       key: "clientele",

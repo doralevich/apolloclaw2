@@ -32,6 +32,7 @@ const TITLES: Array<[string, string]> = [
   ["/dashboard/settings", "Settings"],
   ["/dashboard/start-here", "Welcome"],
   ["/dashboard/listings", "Listings"],
+  ["/dashboard/matters", "Matters"],
   ["/dashboard/checklist", "Checklist"],
   ["/dashboard/integrations", "Connections"],
   ["/dashboard/channels", "Channels"],
