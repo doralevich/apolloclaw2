@@ -51,6 +51,16 @@ const PRACTICE: IndustryBranch = {
     "Who you are in the business. This sets whether your agent is working for one producer, a team, or a whole office.",
   stepLabel: "Practice",
   fields: [
+    // FIRST, David's call. It is the question a realtor can answer without thinking, it is the
+    // one that most changes what the agent may say (brokerage name and licence number belong on
+    // the advertising it writes), and opening on it reads as a form built for them rather than a
+    // generic intake that got to real estate eventually.
+    {
+      key: "brokerage",
+      label: "What brokerage are you with?",
+      type: "text",
+      placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
+    },
     {
       key: "role",
       label: "What is your role in real estate?",
@@ -96,12 +106,6 @@ const PRACTICE: IndustryBranch = {
       label: "How many people are in your operation?",
       type: "dropdown",
       options: ["Just me", "2-3", "4-8", "9-20", "21-50", "More than 50"],
-    },
-    {
-      key: "brokerage",
-      label: "What brokerage are you with?",
-      type: "text",
-      placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
     },
     {
       key: "license_states",
@@ -336,7 +340,7 @@ const AGENT: IndustryBranch = {
     },
     {
       key: "listing_voice",
-      label: "How do you want listing copy to sound?",
+      label: "How do you want your listing copy to sound?",
       type: "textarea",
       placeholder:
         "e.g. warm and specific, never 'stunning' or 'must see', always lead with the thing a buyer actually cares about.",
@@ -362,7 +366,7 @@ const AGENT: IndustryBranch = {
     },
     {
       key: "compliance_rules",
-      label: "Any advertising or compliance rules it must follow?",
+      label: "Any advertising or compliance rules we must follow?",
       type: "textarea",
       placeholder:
         "e.g. brokerage name and license number on every ad, fair housing language reviewed before anything is published, no claims about schools.",

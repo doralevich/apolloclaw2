@@ -154,7 +154,18 @@ export function isChannelId(value: string): value is ChannelId {
   return BY_ID.has(value as ChannelId);
 }
 
-// Off means the nav entry and the page are not there at all, rather than present and failing — a
-// tab that takes you somewhere broken is worse than a tab that isn't there yet. On in production
-// since Telegram was confirmed working end to end.
-export const CHANNELS_ENABLED = process.env.NEXT_PUBLIC_CHANNELS_ENABLED === "true";
+// Off means the page and the Start Here tile are not there at all, rather than present and
+// failing — a tile that takes you somewhere broken is worse than a tile that isn't there yet.
+//
+// DEFAULTS ON NOW, David's call. This was `=== "true"`, so it was off unless an environment
+// variable said otherwise, which is the right default for a feature nobody has proven and the
+// wrong one for a feature that works: the comment here already said "on in production since
+// Telegram was confirmed working end to end", and the flag was the last thing standing between
+// that work and the people paying for it.
+//
+// Inverted rather than deleted so there is still a kill switch: set
+// NEXT_PUBLIC_CHANNELS_ENABLED=false to turn it off again.
+//
+// WORTH KNOWING IF YOU FLIP IT: NEXT_PUBLIC_* is inlined at BUILD time, not read at runtime.
+// Changing this variable in Vercel does nothing until the next deploy.
+export const CHANNELS_ENABLED = process.env.NEXT_PUBLIC_CHANNELS_ENABLED !== "false";

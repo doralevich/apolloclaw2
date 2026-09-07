@@ -173,7 +173,12 @@ export default function CompanyRepeater({
                 color: i === primaryIndex ? T.red : T.grey,
               }}
             >
-              {i === primaryIndex ? "Primary business" : `Business ${i + 1}`}
+              {/* "Primary business" was here and is gone, David's call. It labelled the first
+                  card, and with one business - which is nearly everyone - it labelled the ONLY
+                  card, so it distinguished nothing while implying there was something to
+                  distinguish. The numbering still appears once a second business exists, which
+                  is the only moment it means anything. */}
+              {companies.length > 1 ? `Business ${i + 1}` : ""}
             </span>
             {companies.length > 1 && i !== 0 && (
               <button

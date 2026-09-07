@@ -10,6 +10,7 @@ import { CHECKLIST_CATEGORIES, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
 import { SchedulePanel } from "@/components/SchedulePanel";
 import { ChannelsPanel } from "@/components/ChannelsView";
+import { CHANNELS_ENABLED } from "@/config/channels";
 import { HelpFooter } from "@/components/HelpFooter";
 import { cn } from "@/lib/utils";
 
@@ -144,16 +145,26 @@ export function ChecklistView() {
               asked to leave the communication setup on it. Same reuse rule as ever: the Channels
               page's own panel and SchedulePanel, so the surfaces cannot drift. */}
           <section>
-            <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                Where your agent answers you
-              </h2>
-            </div>
-            <p className="mb-3 px-1 text-sm text-muted-foreground">
-              Pick a chat app and your agent messages you there - these connect with a few setup
-              steps, not a Connect button. Open a card for its walkthrough.
-            </p>
-            <ChannelsPanel agentId={agentId} agentName={active.name} showHeading={false} />
+            {/* The channels half is gated on the same flag as /dashboard/channels, and was not.
+                That made the flag a half-truth: with it off the Channels page 404'd and the Start
+                Here tile hid, while this page went on rendering the very same cards, so the
+                feature was "off" and reachable at the same time. A kill switch that does not kill
+                is worse than none, because it is believed. The schedule is not gated - it does
+                not depend on the flag and reads fine on its own. */}
+            {CHANNELS_ENABLED && (
+              <>
+                <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Where your agent answers you
+                  </h2>
+                </div>
+                <p className="mb-3 px-1 text-sm text-muted-foreground">
+                  Pick a chat app and your agent messages you there - these connect with a few
+                  setup steps, not a Connect button. Open a card for its walkthrough.
+                </p>
+                <ChannelsPanel agentId={agentId} agentName={active.name} showHeading={false} />
+              </>
+            )}
             <ScheduleBlock agentId={agentId} />
           </section>
         </>
