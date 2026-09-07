@@ -47,6 +47,14 @@ export function toChannel(row: ChannelRow): Channel {
     // verify token they cannot read is a setup they cannot finish. It proves a callback URL is
     // ours during a one-time handshake and unlocks nothing else.
     verifyToken: decryptSecret(row.verify_token),
+    // Whether anybody has actually messaged it yet - NOT who, which is why this is a boolean and
+    // not the chat id.
+    //
+    // It matters because a channel is "connected" the moment a token validates, and it does not
+    // work until the first message binds an owner. The card said Connected for both, so somebody
+    // who pasted a token and closed the tab had a channel that looked finished and answered
+    // nobody. This is what lets the card tell the two apart.
+    linked: !!row.owner_chat_id,
     updatedAt: row.updated_at ? Date.parse(row.updated_at) : null,
   };
 }

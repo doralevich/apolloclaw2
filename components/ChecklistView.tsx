@@ -153,7 +153,7 @@ export function ChecklistView() {
               Pick a chat app and your agent messages you there - these connect with a few setup
               steps, not a Connect button. Open a card for its walkthrough.
             </p>
-            <ChannelsPanel agentId={agentId} showHeading={false} />
+            <ChannelsPanel agentId={agentId} agentName={active.name} showHeading={false} />
             <ScheduleBlock agentId={agentId} />
           </section>
         </>

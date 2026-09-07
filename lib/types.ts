@@ -348,6 +348,15 @@ export interface Channel {
    * nothing else — unlike the access token and app secret, which never leave the server.
    */
   verifyToken?: string | null;
+  /**
+   * True once somebody has messaged the channel and been bound as its owner.
+   *
+   * A credential that validates is not a channel that works: every one of these answers exactly
+   * one person, and that person is whoever writes to it first. Until they do, the agent is
+   * reachable by nobody. A boolean rather than the chat id, because the UI only needs to know
+   * whether it happened, not who.
+   */
+  linked?: boolean;
   updatedAt?: number | null;
 }
 
