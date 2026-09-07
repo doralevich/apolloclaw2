@@ -83,6 +83,22 @@ const CONFIG = {
   browserNoSandbox: ["browser", "noSandbox"] as const,
   browserProfile: ["browser", "defaultProfile"] as const,
   browserProfileValue: "openclaw",
+
+  // AND THE TOOL ITSELF, which is a different switch from the subsystem above.
+  //
+  // browser.enabled:false turns the browser OFF. It does not take the tool off the list the model
+  // is shown, so the agent still sees a browser it can call, calls it, and tells its owner it needs
+  // a browser session. Switching off the engine does not stop the offer.
+  //
+  // tools.deny does. OpenClaw's own docs are explicit that a denied tool is "not sent to model
+  // providers" — it never reaches the model, so there is nothing to mention. Deny beats allow,
+  // matching is case-insensitive.
+  //
+  // An ARRAY, so it is appended to and filtered rather than overwritten: anything else the customer
+  // or a template denied stays denied. Removed again the moment a box has a Chrome, otherwise
+  // installing one would leave a browser that works and a tool nobody can call.
+  toolsDeny: ["tools", "deny"] as const,
+  browserToolName: "browser",
 };
 
 /** What the first backfill wrote. Wrong, and removed from any box still carrying it. */
@@ -192,6 +208,8 @@ export async function applyInstanceDefaults(
     browserNoSandboxPath: CONFIG.browserNoSandbox,
     browserProfilePath: CONFIG.browserProfile,
     browserProfileValue: CONFIG.browserProfileValue,
+    toolsDenyPath: CONFIG.toolsDeny,
+    browserToolName: CONFIG.browserToolName,
   });
   const b64 = Buffer.from(payload, "utf8").toString("base64");
 
@@ -224,9 +242,20 @@ export async function applyInstanceDefaults(
     // it needs a browser session. That is the message on the new instance. Turning the tool off
     // explicitly is what makes the agent stop offering something it cannot do and use search
     // instead.
+    // Read tools.deny as it stands, so ours is added to the customer's list rather than over it.
+    'const get=(obj,keys)=>{let c=obj;for(const k of keys){if(!c||typeof c!=="object")return undefined;c=c[k];}return c;};' +
+    'const denyNow=get(cfg,o.toolsDenyPath);' +
+    'const deny=Array.isArray(denyNow)?denyNow.slice():[];' +
+    'const isBrowser=(x)=>typeof x==="string"&&x.toLowerCase()===o.browserToolName;' +
     'let br=false;' +
-    'if(process.env.APOLLO_CHROME){set(cfg,o.browserEnabledPath,true);set(cfg,o.browserHeadlessPath,true);set(cfg,o.browserNoSandboxPath,true);set(cfg,o.browserProfilePath,o.browserProfileValue);br=true;}' +
-    'else{set(cfg,o.browserEnabledPath,false);}' +
+    'if(process.env.APOLLO_CHROME){' +
+    'set(cfg,o.browserEnabledPath,true);set(cfg,o.browserHeadlessPath,true);set(cfg,o.browserNoSandboxPath,true);set(cfg,o.browserProfilePath,o.browserProfileValue);' +
+    // A box that has gained a Chrome must lose the deny, or the tool stays invisible to the model
+    // and the working browser is unreachable.
+    'if(deny.some(isBrowser)){const kept=deny.filter(x=>!isBrowser(x));if(kept.length){set(cfg,o.toolsDenyPath,kept);}else{del(cfg,o.toolsDenyPath);if(cfg.tools&&Object.keys(cfg.tools).length===0)delete cfg.tools;}}' +
+    'br=true;}' +
+    'else{set(cfg,o.browserEnabledPath,false);' +
+    'if(!deny.some(isBrowser)){deny.push(o.browserToolName);set(cfg,o.toolsDenyPath,deny);}}' +
     'fs.writeFileSync(file,JSON.stringify(cfg,null,2));' +
     'console.log("DEFAULTS_WROTE:"+file+":memory=local"+(legacy?",legacy=removed":"")+(tav?",tavily=on":",tavily=skip")+(br?",browser=on":",browser=skip"));';
 
@@ -314,6 +343,13 @@ export async function revertInstanceDefaults(
     // and the bare enabled:false we leave on a box with no Chrome.
     'if(cfg.browser&&cfg.browser.defaultProfile==="openclaw"){delete cfg.browser;removed.push("browser");}' +
     'else if(cfg.browser&&cfg.browser.enabled===false&&Object.keys(cfg.browser).length===1){delete cfg.browser;removed.push("browser.enabled");}' +
+    // And our tools.deny entry. Only "browser" and only that one string, so any other tool the
+    // customer denied survives an undo. If they had independently denied the browser themselves,
+    // this hands it back - the mildest thing that can go wrong here, since a browser with no Chrome
+    // behind it cannot do anything either way.
+    'if(cfg.tools&&Array.isArray(cfg.tools.deny)){const kept=cfg.tools.deny.filter(x=>!(typeof x==="string"&&x.toLowerCase()==="browser"));' +
+    'if(kept.length!==cfg.tools.deny.length){removed.push("tools.deny[browser]");' +
+    'if(kept.length){cfg.tools.deny=kept;}else{delete cfg.tools.deny;if(Object.keys(cfg.tools).length===0)delete cfg.tools;}}}' +
     'fs.writeFileSync(file,JSON.stringify(cfg,null,2));' +
     'console.log("REVERTED:"+file+":"+(removed.join(",")||"none"));';
 
@@ -339,6 +375,10 @@ export interface InspectResult {
   tavilyPresent?: boolean;
   tavilyEnabled?: boolean;
   browserEnabled?: boolean;
+  /** True when "browser" is in tools.deny — the switch that stops the model being offered it. */
+  browserDenied?: boolean;
+  /** The whole deny list, so an unexpected entry is visible rather than inferred. */
+  toolsDeny?: string[];
   /** Path to a Chrome binary on the box, or null. Decides whether the browser tool can work. */
   chrome?: string | null;
   note?: string;
@@ -361,7 +401,8 @@ export async function inspectInstanceDefaults(agentId: string): Promise<InspectR
     'const mp=ms?ms.provider:undefined;' +
     'const lm=cfg.memory&&cfg.memory.search?cfg.memory.search.provider:undefined;' +
     'const tav=cfg.plugins&&cfg.plugins.entries?cfg.plugins.entries.tavily:undefined;' +
-    'console.log("INSPECT:"+JSON.stringify({file:file,memoryProvider:mp===undefined?null:mp,legacyMemoryProvider:lm===undefined?null:lm,tavilyPresent:!!tav,tavilyEnabled:tav?!!tav.enabled:false,browserEnabled:cfg.browser?!!cfg.browser.enabled:false}));';
+    'const dn=cfg.tools&&Array.isArray(cfg.tools.deny)?cfg.tools.deny:[];' +
+    'console.log("INSPECT:"+JSON.stringify({file:file,memoryProvider:mp===undefined?null:mp,legacyMemoryProvider:lm===undefined?null:lm,tavilyPresent:!!tav,tavilyEnabled:tav?!!tav.enabled:false,browserEnabled:cfg.browser?!!cfg.browser.enabled:false,browserDenied:dn.some(x=>typeof x==="string"&&x.toLowerCase()==="browser"),toolsDeny:dn}));';
 
   // The Chrome probe rides along: whether the browser tool CAN work is a fact about the image,
   // and it is the first thing anyone asks after reading browserEnabled:false.
@@ -381,6 +422,8 @@ export async function inspectInstanceDefaults(agentId: string): Promise<InspectR
       tavilyPresent: boolean;
       tavilyEnabled: boolean;
       browserEnabled: boolean;
+      browserDenied: boolean;
+      toolsDeny: string[];
     };
     return { ok: true, ...parsed, chrome };
   } catch {
