@@ -21,6 +21,7 @@ import { MENTAL_MODEL_SKILLS } from "@/config/skills/mental-models";
 import { EXECUTIVE_SKILLS } from "@/config/skills/executive";
 import { SALES_SKILLS } from "@/config/skills/sales";
 import { WRITING_SKILLS } from "@/config/skills/writing";
+import { REAL_ESTATE_SKILLS } from "@/config/skills/real-estate";
 
 export type AgentSkill = {
   /** Directory name under plugin-skills, and the name the runtime lists it under. */
@@ -31,6 +32,21 @@ export type AgentSkill = {
   emoji: string;
   /** The body of SKILL.md, below the frontmatter. */
   body: string;
+
+  // ── Who gets it ────────────────────────────────────────────────────────────
+  // Both default to "everyone", so a skill written without thinking about agent types is
+  // universal, and a NEW agent type inherits a working set rather than an empty one. Narrowing
+  // is the deliberate act; breadth is free.
+
+  /** Agent types this is NOT for. The usual shape: a good skill that is noise for one role.
+   *
+   *  An EMPTY array is meaningful and deliberate: "excluded from nobody", which overrides a
+   *  family that is switched off. That is how a money skill stays on a Real Estate agent while
+   *  the rest of the C-suite family does not. */
+  notFor?: string[];
+  /** Agent types this is ONLY for. For domain skills that would be meaningless elsewhere - a
+   *  listing-copy skill on a CFO agent is clutter with a straight face. */
+  onlyFor?: string[];
 };
 
 /**
@@ -78,7 +94,17 @@ function yamlQuote(value: string): string {
  * field on each skill — that one is written for the runtime deciding whether a skill applies,
  * and reads like a trigger because that is its job.
  */
-export type SkillFamily = { title: string; blurb: string; skills: AgentSkill[] };
+export type SkillFamily = {
+  title: string;
+  blurb: string;
+  skills: AgentSkill[];
+  /** Whole family off for these agent types. The granularity that matters: "mental models are
+   *  noise for a realtor" is one decision about seventeen skills, and writing it seventeen times
+   *  is how it ends up applied to fifteen of them. A skill inside can still opt back in. */
+  notFor?: string[];
+  /** Whole family only for these types - how a domain family is declared in one line. */
+  onlyFor?: string[];
+};
 
 export const SKILL_FAMILIES: SkillFamily[] = [
   {
@@ -92,11 +118,21 @@ export const SKILL_FAMILIES: SkillFamily[] = [
     skills: REASONING_SKILLS,
   },
   {
+    // OFF FOR REAL ESTATE. Seventeen frames for boardroom decisions - Buffett on moats, Bezos on
+    // one-way doors, blue ocean strategy - on an agent whose owner is deciding whether to hold an
+    // open house on Saturday. They are good skills and they are the wrong seventeen: a listing
+    // question answered through an M&A frame is the particular kind of wrong that reads as
+    // fluent, and every one of them is context on every turn besides.
+    notFor: ["realestate"],
     title: "Mental models",
     blurb: "Frames worth reaching for when a decision is genuinely hard.",
     skills: MENTAL_MODEL_SKILLS,
   },
   {
+    // Mostly off for the same reason. A solo agent has no board to communicate with and no
+    // acquisition to evaluate - but the money half of this family is exactly what a realtor on
+    // commission does need, so cash-flow, P&L and pricing come back individually below.
+    notFor: ["realestate"],
     title: "The C-suite you don't have",
     blurb: "Finance, operations, people - the questions a bigger company has someone for.",
     skills: EXECUTIVE_SKILLS,
@@ -111,9 +147,60 @@ export const SKILL_FAMILIES: SkillFamily[] = [
     blurb: "Your voice, from what you told us at setup.",
     skills: WRITING_SKILLS,
   },
+  {
+    // The first domain family, and the shape every later one should copy: `onlyFor` in one line
+    // and nothing else in this file to keep in step. It sits last so a real estate agent reads
+    // the general skills first and these as the specialism, which is also the order they were
+    // sold in.
+    onlyFor: ["realestate"],
+    title: "The real estate job",
+    blurb: "Listings, comps, offers and follow-up, done the way the business actually works.",
+    skills: REAL_ESTATE_SKILLS,
+  },
 ];
 
+/** Every skill we ship, regardless of who gets it. The admin install route and the duplicate
+ *  check below work on this; provisioning does not. */
 export const AGENT_SKILLS: AgentSkill[] = SKILL_FAMILIES.flatMap((f) => f.skills);
+
+/**
+ * The skills ONE agent type gets.
+ *
+ * Two reasons this exists, and the second one is the bigger.
+ *
+ * A Real Estate agent carrying `ma-evaluation` and `board-comms` is a worse assistant than one
+ * carrying neither: every irrelevant skill is a thing it might reach for, and a listing question
+ * answered through a mergers-and-acquisitions frame is exactly the kind of wrong that reads as
+ * fluent.
+ *
+ * And every installed skill is listed in `available_skills` at session start, which is context on
+ * EVERY turn, forever, on a fleet where input tokens per turn is already a live cost problem.
+ * Cutting a set is not tidying; it is a permanent discount on every message a customer sends.
+ * Today: 66 in the catalogue, 58 to a generic Apollo agent, 34 to a real estate one - and the 34
+ * includes eight it is the only type to get.
+ *
+ * The rules compose as you would expect, and the skill wins over its family - a family excluded
+ * for a type can still carry one skill that type needs.
+ */
+export function skillsForType(agentTypeId: string | null | undefined): AgentSkill[] {
+  const type = agentTypeId ?? "";
+  const allowed = (rule: { notFor?: string[]; onlyFor?: string[] }): boolean | null => {
+    if (rule.onlyFor) return rule.onlyFor.includes(type);
+    if (rule.notFor) return !rule.notFor.includes(type);
+    return null; // no opinion
+  };
+
+  return SKILL_FAMILIES.flatMap((family) => {
+    const familySays = allowed(family);
+    return family.skills.filter((skill) => {
+      const skillSays = allowed(skill);
+      // The skill's own answer wins where it has one, so a family switched off wholesale can
+      // still keep the one member a role genuinely uses.
+      if (skillSays !== null) return skillSays;
+      return familySays !== false;
+    });
+  });
+}
 
 // Two skills sharing a slug would silently overwrite each other on the box — same directory, last
 // write wins — and the loss would show up as "why does the agent never use X". Cheap to catch at

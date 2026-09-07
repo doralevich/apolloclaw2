@@ -15,7 +15,7 @@ import { applyInstanceDefaults } from "@/lib/instance-defaults";
 import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
-import { AGENT_SKILLS, skillFile, type AgentSkill } from "@/config/skills";
+import { AGENT_SKILLS, skillFile, skillsForType, type AgentSkill } from "@/config/skills";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -143,10 +143,17 @@ export async function injectAgentFile(
  * whose text we have improved should improve everywhere rather than only on agents created after
  * the change.
  */
-export async function installAgentSkills(agentId: string): Promise<string[]> {
+export async function installAgentSkills(
+  agentId: string,
+  agentTypeId?: string | null
+): Promise<string[]> {
+  // The set for THIS agent, not all of them. Without a type - the admin backfill route, which
+  // acts on an instance id alone - it stays the full set, because installing too much is
+  // recoverable and installing too little leaves an agent quietly missing what it needs.
+  const skills = agentTypeId ? skillsForType(agentTypeId) : AGENT_SKILLS;
   const installed: string[] = [];
 
-  for (const batch of batchSkills()) {
+  for (const batch of batchSkills(skills)) {
     // One JSON blob of { slug: fileContents }, base64'd so no quoting in any skill body can
     // escape the shell. Node does the writing because mkdir -p plus a heredoc per file is
     // exactly the fiddly shell this replaces.
@@ -188,10 +195,14 @@ export async function installAgentSkills(agentId: string): Promise<string[]> {
     }
   }
 
+  // Against the set this agent was MEANT to get, not the catalogue. Now that a type gets a subset,
+  // a correct install of a real estate agent would otherwise log 34/66 and read as a partial
+  // failure every single time.
   console.log(
     "[provision:skills-installed]",
     agentId,
-    `${installed.length}/${AGENT_SKILLS.length}`
+    `${installed.length}/${skills.length}`,
+    agentTypeId ?? "all-types"
   );
   return installed;
 }
@@ -203,13 +214,13 @@ export async function installAgentSkills(agentId: string): Promise<string[]> {
  * and a fixed count would make batch size a lottery. 48 KB leaves generous room under the usual
  * ~2 MB ARG_MAX and under whatever the exec API will accept.
  */
-function batchSkills(): AgentSkill[][] {
+function batchSkills(skills: AgentSkill[]): AgentSkill[][] {
   const MAX_ENCODED = 48 * 1024;
   const batches: AgentSkill[][] = [];
   let current: AgentSkill[] = [];
   let size = 0;
 
-  for (const skill of AGENT_SKILLS) {
+  for (const skill of skills) {
     // base64 is 4 bytes per 3, plus JSON escaping overhead — approximated generously.
     const encoded = Math.ceil((skillFile(skill).length * 4) / 3) + skill.slug.length + 16;
     if (current.length && size + encoded > MAX_ENCODED) {
@@ -547,7 +558,7 @@ async function injectAfterProvision(
 
   // Alongside the persona, and for the same reason: both are ours, neither depends on the
   // questionnaire, and an agent whose answers never arrive should still know how to work.
-  const skills = await installAgentSkills(agentId);
+  const skills = await installAgentSkills(agentId, type.id);
 
   const db = createAdminClient();
   const { data: setup } = await db

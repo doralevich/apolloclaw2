@@ -236,6 +236,8 @@ ${NOT_ADVICE}
 
   // ─── CFO ───────────────────────────────────────────────────────────────────────────────────
   {
+    // Kept for real estate even though the family is not. Planning a year of uneven closings is the same question, smaller.
+    notFor: [],
     slug: "budget-forecasting",
     emoji: "📈",
     description:
@@ -279,6 +281,8 @@ ${NOT_ADVICE}
 `,
   },
   {
+    // Kept for real estate even though the family is not. Their own numbers: splits, marketing spend, what a deal actually netted.
+    notFor: [],
     slug: "pl-analysis",
     emoji: "🧾",
     description:
@@ -317,6 +321,8 @@ ${NOT_ADVICE}
 `,
   },
   {
+    // Kept for real estate even though the family is not. Commission income is lumpy and a realtor's whole year turns on it.
+    notFor: [],
     slug: "cash-flow",
     emoji: "💧",
     description:

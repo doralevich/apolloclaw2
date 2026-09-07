@@ -23,6 +23,10 @@ Draft it, hand it over, stop.
 
 export const SALES_SKILLS: AgentSkill[] = [
   {
+    // A realtor never writes a statement of work. The document at the equivalent moment is the
+    // listing presentation, which is a different job with different objections, and it has its
+    // own skill in the real estate family.
+    notFor: ["realestate"],
     slug: "proposals-sows",
     emoji: "📑",
     description:
