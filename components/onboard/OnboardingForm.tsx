@@ -176,11 +176,26 @@ function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
 // The default is ApolloClaw's own red, so anything rendered outside a provider (and the plain
 // /onboard flow, which is pinned to no agent) looks exactly as it did before.
 const APOLLO_BRAND: AgentBrand = { color: R, colorRgb: "215, 43, 43" };
-const BrandCtx = createContext<AgentBrand>(APOLLO_BRAND);
+/** The brand plus the name for its wordmark ("Real Estate" -> "The Real Estate [Agent]"). */
+type FunnelBrand = AgentBrand & { name?: string };
+const BrandCtx = createContext<FunnelBrand>(APOLLO_BRAND);
 /** The accent for the agent this funnel is pinned to. `a` is the hex, `rgb` the triplet for alpha washes. */
 function useAccent() {
   const b = useContext(BrandCtx);
-  return { a: b.color, rgb: b.colorRgb, mascot: b.mascot };
+  return { a: b.color, rgb: b.colorRgb, mascot: b.mascot, name: b.name };
+}
+
+/**
+ * The mark in the corner: the agent's own where the funnel is pinned to one, Apollo[Claw]'s
+ * otherwise.
+ *
+ * Every screen between the paywall and the questionnaire used to hardcode Apollo[Claw]'s, which
+ * is how somebody could pay for a Real Estate Agent and be told "Payment Received" in ApolloClaw
+ * red under ApolloClaw's logo. The handoff was branded at both ends and generic in the middle.
+ */
+function FunnelWordmark({ size = 17 }: { size?: number }) {
+  const { a, name } = useAccent();
+  return name ? <AgentWordmark name={name} accent={a} ink={TX} size={size} /> : <ApolloWordmark size={size} />;
 }
 // ════════════════════════════════════════════════════════════
 // OPTION LISTS
@@ -224,11 +239,10 @@ const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint",
 // BROKEN_AREAS (the "which areas feel most broken?" options) lived here until the Operations &
 // Pain Points page was removed at David's call. It was that page's only consumer, so it went with it.
 const KIDS_COUNT   = ["None","1","2","3","4","5 or more"];
-const MARITAL      = ["Single","In a relationship","Engaged","Married","Domestic partnership","Divorced / Separated","Widowed","Prefer not to say"];
-const LIFE_STAGE   = ["Building - early, grinding hard","Scaling - growing fast, feeling stretched","Optimizing - established, refining","Exiting - preparing to sell or step back","Pivoting - changing direction","Surviving - navigating a hard period"];
-const DECISION_STYLE = ["Data-first - I need numbers before I commit","Gut-first - I move on instinct, validate later","Consensus - I loop in my team / advisors first","Vision-first - I decide based on my 3-year picture","Risk-averse - I need proof it works elsewhere first","Opportunity-driven - big upside = fast move","Other"];
-const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive"];
-const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, no fluff","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Brene Brown - vulnerable, human-centered","Steve Jobs - visionary, minimalist","Warren Buffett - plainspoken, folksy wisdom","Rachel Hollis - motivational, relatable","Other"];
+// Nine, not eight, so the three-column grid closes as a 3x3 rather than leaving a ragged last
+// row of two. "Calm & measured" is the register the other eight were missing - the one that does
+// not push, which is how a lot of people write to clients they have had for years.
+const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive","Calm & measured"];
 const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
@@ -426,7 +440,7 @@ function KeyPeople({ people, onChange }: { people: KeyPerson[]; onChange: (p: Ke
   const update = (i: number, patch: Partial<KeyPerson>) => onChange(people.map((p, n) => (n === i ? { ...p, ...patch } : p)));
   const remove = (i: number) => onChange(people.length > 1 ? people.filter((_, n) => n !== i) : [{ name: "", role: "" }]);
   return (
-    <FF label="Key people we should know about" hint="The names that come up in your day - who they are and what they run. Optional, and you can add more later.">
+    <FF label="Are there any key people in your business we should know about?" hint="Partner, attorney, accountant, VP, whoever comes up in your day - who they are and what they run. Optional, and you can add more later.">
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
         {people.map((p, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -677,6 +691,11 @@ export interface PersonalizeData {
 }
 
 function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: PersonalizeData) => void }) {
+  // `name` below is the name the customer types for their agent, so the brand name gets its own
+  // identifier. Getting these two confused renders the customer's own input back at them in a
+  // sentence that is supposed to say what they bought.
+  const { a, name: brandName } = useAccent();
+  const productName = brandName ? `${brandName} Agent` : agentLabel;
   const [name, setName] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -685,7 +704,6 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
 
   // Upload, portrait and colour are mutually exclusive — picking any one clears the other two,
   // so the preview always shows the thing that will actually be saved.
-  const pickPreset = (color: string) => { setPresetColor(color); setPresetImage(null); setAvatarFile(null); setAvatarPreview(null); };
   const pickPortrait = (src: string) => { setPresetImage(src); setPresetColor(null); setAvatarFile(null); setAvatarPreview(null); };
   const handleUpload = (file: File | null) => {
     if (!file) return;
@@ -711,7 +729,10 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={previewUrl} alt="Agent avatar preview" width={84} height={84} style={{ borderRadius: "50%", margin: "0 auto 20px", display: "block" }} />
         <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 8px" }}>Make it yours</h2>
-        <p style={{ fontSize: 14, color: TXM, margin: "0 0 28px" }}>Give your {agentLabel} a name and a face. Totally optional - skip either and we&apos;ll use a default.</p>
+        <p style={{ fontSize: 14, color: TXM, margin: "0 0 28px" }}>
+          Give your {productName} a name and a face.<br />
+          Totally optional - skip either, and we&apos;ll use a default.
+        </p>
 
         <div style={{ textAlign: "left", marginBottom: 24 }}>
           <FF label="What would you like to call your agent?">
@@ -726,14 +747,22 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
         </div>
 
         <div style={{ textAlign: "left" }}>
-          {/* The portraits, first.
-              A row of mascot poses used to be here and came out at David's call - it left every
-              agent looking like every other agent, because it was seven poses of one robot. The
-              presets are forty photographs of different people now, which is the opposite
-              problem solved: they are the fastest way to a face that is not a coloured letter,
-              and this screen is the first place anyone is asked to choose one.
-              Same 68px tiles as the dashboard pickers, scrolling after three rows. */}
+          {/* UPLOAD FIRST, David's call, and it reads better for the reason it was moved: somebody
+              who has a photograph of themselves ready does not want to scroll a grid of strangers
+              to find the small link underneath it. The people who have one are served in one
+              click, and the presets are still right there for everyone else.
+
+              The colour swatches that used to close this block are gone with it. "Pick a colour
+              and we will use your initials" was a third way to answer a question that already had
+              two better ones, and a coloured letter is the least personal of the three. It is
+              still what you GET if you skip the screen - see the default passed on Continue - it
+              is just no longer offered as a choice. */}
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXM, marginBottom: 10 }}>Avatar</p>
+          <label style={{ display: "inline-block", border: `1px dashed rgba(0,0,0,0.25)`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", background: SRF2, color: TXM, fontSize: 13, fontWeight: 700, marginBottom: 14 }}>
+            Upload your own
+            <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { handleUpload(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
+          </label>
+          <p style={{ fontSize: 11, color: TXD, margin: "0 0 10px" }}>Or choose one of these</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(68px, 1fr))", gap: 10, maxHeight: 250, overflowY: "auto", paddingRight: 4, marginBottom: 14 }}>
             {AVATAR_PRESETS.map((p) => {
               const on = presetImage === p.src;
@@ -744,7 +773,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
                   onClick={() => pickPortrait(p.src)}
                   aria-label={p.label}
                   aria-pressed={on}
-                  style={{ width: "100%", aspectRatio: "1", borderRadius: "50%", overflow: "hidden", padding: 0, background: SRF2, border: on ? `2px solid ${R}` : `1px solid ${BDR}`, boxShadow: on ? `0 0 0 2px ${SRF}, 0 0 0 3px ${R}` : "none", cursor: "pointer" }}
+                  style={{ width: "100%", aspectRatio: "1", borderRadius: "50%", overflow: "hidden", padding: 0, background: SRF2, border: on ? `2px solid ${a}` : `1px solid ${BDR}`, boxShadow: on ? `0 0 0 2px ${SRF}, 0 0 0 3px ${a}` : "none", cursor: "pointer" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -752,23 +781,12 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
               );
             })}
           </div>
-          <label style={{ display: "inline-block", border: `1px dashed rgba(0,0,0,0.25)`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", background: SRF2, color: TXM, fontSize: 13, fontWeight: 700 }}>
-            Or upload your own
-            <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { handleUpload(e.target.files?.[0] ?? null); e.currentTarget.value = ""; }} />
-          </label>
-          <p style={{ fontSize: 11, color: TXD, margin: "10px 0 8px" }}>Or pick a color and we&apos;ll use your agent&apos;s initials</p>
-          <div style={{ display: "flex", gap: 10 }}>
-            {AVATAR_COLORS.map((c) => {
-              const on = presetColor === c && !avatarFile && !presetImage;
-              return <button key={c} type="button" onClick={() => pickPreset(c)} aria-label={`Pick ${c}`} style={{ width: 32, height: 32, borderRadius: "50%", background: c, border: on ? `2px solid ${TX}` : "2px solid transparent", boxShadow: on ? `0 0 0 2px ${SRF}, 0 0 0 3px ${TX}` : "none", cursor: "pointer" }} />;
-            })}
-          </div>
         </div>
 
         {/* avatarPresetImage was hardcoded null while there were no image presets to send. The
             downstream handling never went away - /api/agent-setup and /api/onboard/complete both
             still read it - so wiring it back up is this one argument. */}
-        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor, avatarPresetImage: presetImage })} style={{ width: "100%", marginTop: 28, background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
+        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor ?? AVATAR_COLORS[0], avatarPresetImage: presetImage })} style={{ width: "100%", marginTop: 28, background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
           Continue →
         </button>
       </div>
@@ -832,14 +850,15 @@ function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLas
 // handled on David's side now. The plain lead form keeps its own "return to the site" ending.
 // (The /setup form still exists and is reachable directly for any build that needs it.)
 function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) {
+  const { a, rgb } = useAccent();
   const message = "This is one of the most comprehensive applications we receive. That tells us you're serious - and we take that seriously.";
   // The plain white-glove finish (no payment link) is a warm close now, so its header greets
   // rather than restates "Application Submitted" (which the body would otherwise repeat).
   const headline = nextStep && !payUrl ? "Thank You" : "Application Submitted";
   return (
     <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
-      <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 24px" }}>
-        <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${a}`, background: `rgba(${rgb},0.1)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 24px" }}>
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={a} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>
       <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>{headline}</h2>
       {payUrl ? (
@@ -848,19 +867,19 @@ function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) 
             We have everything we need to build your agent. One step left: complete your payment,
             and we will get started.
           </p>
-          <a href={payUrl} style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Complete Your Payment →</a>
+          <a href={payUrl} style={{ display: "inline-block", background: a, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Complete Your Payment →</a>
         </>
       ) : nextStep ? (
         <>
           <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 480, margin: "0 auto 26px" }}>
             Your application has been submitted. We&apos;ll get back to you shortly with our next steps.
           </p>
-          <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
+          <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: a, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
         </>
       ) : (
         <>
           <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 26px" }}>{message}</p>
-          <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
+          <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: a, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
         </>
       )}
     </div>
@@ -875,6 +894,7 @@ function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) 
 // and the account is created from the completed checkout by the Stripe webhook.
 
 function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => void; agentTypeId?: string }) {
+  const { a, rgb } = useAccent();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   // Standard Setup is the only self-serve tier now (Custom Setup books a call instead of
@@ -914,9 +934,9 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
 
   return (
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
+      <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(${rgb},0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "48px 32px 40px", textAlign: "center" }}>
         <h1 style={{ fontSize: "clamp(28px,5vw,48px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px", color: TX }}>
-          Let&apos;s Make It <span style={{ color: R }}>Yours.</span>
+          Let&apos;s Make It <span style={{ color: a }}>Yours.</span>
         </h1>
         <p style={{ fontSize: 15, color: TXM, maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>
           We do not sell an off-the-shelf bot. We build one around your business, and the
@@ -926,7 +946,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${R},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${a},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
           {/* Two ways in, symmetric cards each with its OWN same-size button: Standard Setup is
               the self-serve buy; Custom Setup books a call instead of a checkout. Wraps to one
@@ -934,14 +954,14 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
               includes list in. */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
             {/* Standard Setup — self-serve buy; the button runs checkout. */}
-            <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: "rgba(215,43,43,0.04)", border: `1px solid ${R}`, borderRadius: 10, padding: "20px 18px" }}>
+            <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: `rgba(${rgb},0.04)`, border: `1px solid ${a}`, borderRadius: 10, padding: "20px 18px" }}>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>Standard Setup</p>
               <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>You set it up, in your own time.</p>
               <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{tier.priceLabel}</p>
               <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
                 {tier.includes.map((line) => (
                   <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
-                    <span aria-hidden style={{ color: R, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                    <span aria-hidden style={{ color: a, fontWeight: 800, flexShrink: 0 }}>✓</span>
                     {line}
                   </li>
                 ))}
@@ -950,7 +970,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                 type="button"
                 onClick={go}
                 disabled={loading}
-                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
+                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
               >
                 {loading ? "Taking you to checkout…" : "Get Started"}
               </button>
@@ -971,7 +991,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                   "Direct access to David after launch",
                 ].map((line) => (
                   <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
-                    <span aria-hidden style={{ color: R, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                    <span aria-hidden style={{ color: a, fontWeight: 800, flexShrink: 0 }}>✓</span>
                     {line}
                   </li>
                 ))}
@@ -980,7 +1000,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                 href={SCHEDULE_CONSULT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: R, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
+                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: a, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
               >
                 Schedule a Call
               </a>
@@ -999,7 +1019,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
             and we will email you a link to set your password.
           </p>
 
-          {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
+          {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: `rgba(${rgb},0.1)`, border: `1px solid rgba(${rgb},0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
 
           <button type="button" onClick={onBack} disabled={loading} style={{ width: "100%", marginTop: 20, background: "transparent", border: "none", color: TXD, fontFamily: "inherit", fontSize: 13, padding: "8px", cursor: loading ? "default" : "pointer" }}>
             ← Back
@@ -1028,6 +1048,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
 // confirmation is exactly the thing that generates a worried email. This is not the receipt
 // — Stripe emails that — and the copy says so.
 function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: string; email?: string; onContinue: () => void }) {
+  const { a, rgb } = useAccent();
   const [detail, setDetail] = useState<{ amountTotal: number | null; currency: string | null; email: string | null } | null>(null);
 
   useEffect(() => {
@@ -1054,17 +1075,17 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
   return (
     <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column" }}>
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", height: 60, borderBottom: `1px solid ${BDR}`, background: "rgba(250,250,247,0.97)" }}>
-        <ApolloWordmark size={17} />
+        <FunnelWordmark />
         <span style={{ fontSize: 12, color: TXM }}>Order Confirmed</span>
       </nav>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%)` }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 26px" }}>
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(${rgb},0.14) 0%,transparent 70%)` }}>
+        <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${a}`, background: `rgba(${rgb},0.1)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 26px" }}>
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={a} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
 
         <h1 style={{ fontSize: "clamp(28px,5vw,46px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px", textAlign: "center" }}>
-          Payment Received.<br /><span style={{ color: R }}>Welcome aboard.</span>
+          Payment Received.<br /><span style={{ color: a }}>Welcome aboard.</span>
         </h1>
 
         <div style={{ width: "100%", maxWidth: 460, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "22px 26px", margin: "18px 0 28px" }}>
@@ -1095,7 +1116,7 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
           your agent starts day one already knowing it.
         </p>
 
-        <button type="button" onClick={onContinue} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 16, padding: "16px 44px", borderRadius: 8, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
+        <button type="button" onClick={onContinue} style={{ background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 16, padding: "16px 44px", borderRadius: 8, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
           Continue to the Questions →
         </button>
       </div>
@@ -1107,23 +1128,24 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
 // PAYMENT SPLASH (customer mode, fresh from Stripe checkout)
 // ════════════════════════════════════════════════════════════
 function PaymentSplash({ agentLabel, onStart }: { agentLabel: string; onStart: () => void }) {
+  const { a, rgb } = useAccent();
   return (
     <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column" }}>
       <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", height: 60, borderBottom: `1px solid ${BDR}`, background: "rgba(250,250,247,0.97)" }}>
-        <ApolloWordmark size={17} />
+        <FunnelWordmark />
         <span style={{ fontSize: 12, color: TXM }}>{agentLabel} Setup</span>
       </nav>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(215,43,43,0.14) 0%,transparent 70%)` }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${R}`, background: "rgba(215,43,43,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 26px" }}>
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={R} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center", background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(${rgb},0.14) 0%,transparent 70%)` }}>
+        <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid ${a}`, background: `rgba(${rgb},0.1)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 26px" }}>
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke={a} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
         <h1 style={{ fontSize: "clamp(30px,5vw,52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px" }}>
-          Payment Received.<br /><span style={{ color: R }}>Your {agentLabel} is ready to be built.</span>
+          Payment Received.<br /><span style={{ color: a }}>Your {agentLabel} is ready to be built.</span>
         </h1>
         <p style={{ fontSize: 15, color: TXM, maxWidth: 520, margin: "0 auto 32px", lineHeight: 1.65 }}>
           Next, tell us about your business so your agent starts day one already knowing you.
         </p>
-        <button type="button" onClick={onStart} style={{ background: R, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 16, padding: "16px 44px", borderRadius: 8, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
+        <button type="button" onClick={onStart} style={{ background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 16, padding: "16px 44px", borderRadius: 8, border: "none", cursor: "pointer", letterSpacing: "0.01em" }}>
           Click Here to Get Started →
         </button>
       </div>
@@ -1322,6 +1344,13 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // A role deep-dive is one or more pages. Normalising to an array here means the rest of the
   // form does not care which, and the page keys are derived rather than hand-listed so a branch
   // can gain a page without touching the ordering below.
+  // Only a funnel pinned to a real agent gets that agent's colour and wordmark. Plain /onboard
+  // is not selling one particular agent, so it stays in ApolloClaw red under the ApolloClaw mark.
+  const shellBrand = roleIntake ? agentBrand(agentTypeId) : undefined;
+  // Declared up here rather than beside the Shell call because the page nodes below use it -
+  // the honesty checkbox on the last page was the final hardcoded red in the questionnaire.
+  const accent = shellBrand?.color ?? R;
+  const accentRgb = shellBrand?.colorRgb ?? "215, 43, 43";
   const rolePages = roleIntake ? (Array.isArray(roleIntake.branch) ? roleIntake.branch : [roleIntake.branch]) : [];
   const roleStepKeys = rolePages.map((_, i) => (i === 0 ? roleIntake!.stepKey : `${roleIntake!.stepKey}-${i}`));
   const isRoleFlow = rolePages.length > 0;
@@ -1448,9 +1477,6 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     try { uploadedFiles = await Promise.all(files.map(readFileAsBase64)); } catch { uploadedFiles = []; }
     onDone({ ...buildData(), uploadedFiles }, "business");
   };
-  // brandLike predates the switch to a multi-select and still initialises as "", so older
-  // in-flight state can be either shape. Normalised once here rather than at each use.
-  const brandLike = Array.isArray(s6.brandLike) ? s6.brandLike : (s6.brandLike ? [s6.brandLike] : []);
   // Generic ask, unless the role agent has a better one (see ROLE_INTAKES.sample).
   const sampleCopy = roleIntake?.sample ?? {
     title: "Share a sample of your writing",
@@ -1634,14 +1660,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
 
           The banned list is the more useful of the two. Telling a writing agent what never to
           say prevents more bad output than any amount of describing what good looks like. */}
-      <Row2>
-        <FF label="Words and phrases you like" hint="Yours, or just ones you notice yourself using.">
-          <TArea value={s6.loveWords} onChange={v => f6("loveWords", v)} placeholder="e.g. straightforward, let's get into it, here's what I'd do" rows={3} />
-        </FF>
-        <FF label="Words and phrases you never want to see" hint="The stronger half. This is what stops your agent sounding like everyone else.">
-          <TArea value={s6.hateWords} onChange={v => f6("hateWords", v)} placeholder="e.g. never 'just circling back', 'synergy', 'reach out', or an exclamation mark" rows={3} />
-        </FF>
-      </Row2>
+      {/* One column each, not two. These are lists of phrases, and half a column turns a
+          comfortable list into a cramped one for no gain - the page has the room. */}
+      <FF label="Words and phrases you like" hint="Yours, or just ones you notice yourself using.">
+        <TArea value={s6.loveWords} onChange={v => f6("loveWords", v)} placeholder="e.g. straightforward, let's get into it, here's what I'd do" rows={3} />
+      </FF>
+      <FF label="Words and phrases you never want to see" hint="The stronger half. This is what stops your agent sounding like everyone else.">
+        <TArea value={s6.hateWords} onChange={v => f6("hateWords", v)} placeholder="e.g. never 'just circling back', 'synergy', 'reach out', or an exclamation mark" rows={3} />
+      </FF>
     </Stack>
     ) },
     // Its own page, at David's call, and it earns one. Every other voice question is a box to
@@ -1728,8 +1754,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <FF label="Upload company materials" hint="Optional, and the more the better. Anything that helps us learn your business: company materials, your resume so we know your background, example emails / memos / documents, SOPs, and templates.">
         <FileUpload files={files} onFiles={setFiles} />
       </FF>
-      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? "rgba(215,43,43,0.12)" : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? R : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? "0 0 0 4px rgba(215,43,43,0.12)" : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
-        <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? R : "rgba(0,0,0,0.28)"}`, background: s8.agree ? R : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? `rgba(${accentRgb},0.12)` : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? accent : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? `0 0 0 4px rgba(${accentRgb},0.12)` : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
+        <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? accent : "rgba(0,0,0,0.28)"}`, background: s8.agree ? accent : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
         </span>
         I&apos;ve answered honestly and I&apos;m ready to get started building my agent.
@@ -1762,9 +1788,6 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
 
   const stepLabels = allPages.map(p => p.label);
   const cur = allPages[step] || allPages[allPages.length - 1];
-  // Only a funnel pinned to a real agent gets that agent's colour and wordmark. Plain /onboard
-  // is not selling one particular agent, so it stays in ApolloClaw red under the ApolloClaw mark.
-  const shellBrand = roleIntake ? agentBrand(agentTypeId) : undefined;
   return <Shell steps={stepLabels} step={step} onBack={back} canBack={step > 0 || !!onExit} onNext={next} onSubmit={submit} isLast={step === allPages.length - 1} submitLabel={submitLabel} brand={shellBrand} agentName={roleIntake ? wordmarkName(roleIntake.roleName) : undefined}>{cur.node}{vErr && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{vErr}</div>}</Shell>;
 }
 // ════════════════════════════════════════════════════════════
@@ -2049,57 +2072,74 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       alert("Something went wrong submitting your application. Please try again.");
     }
   };
-  if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase(skipGate ? "personalize" : "gate")} />;
-  if (phase === "gate") return (
-    <Gatekeeper
-      onPass={handleGate}
-      initial={enteredGate ?? undefined}
-      brand={brand}
-      // Named as early as possible. Someone arriving from therealestateagent.ai should see
-      // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
-      // is pinned to one type, so there is no reason to be vague about which.
-      heading={
-        roleIntake
-          ? <>Let&apos;s Build Your <span style={{ color: brand.color }}>{roleIntake.roleName}.</span></>
-          : isWhiteGlove
-            ? <>Let&apos;s Build <span style={{ color: brand.color }}>Your Agent.</span></>
-            : undefined
-      }
-      intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
-    />
+  // ONE PROVIDER OVER EVERY PHASE, which is what makes the funnel hold its colour end to end.
+  //
+  // The gate and the questionnaire each carried their own provider, and the four screens between
+  // them - splash, paywall, payment confirmation, personalize - carried none. So a Real Estate
+  // buyer met green, then ApolloClaw red at "Payment Received", then green again. Branding the
+  // two ends and leaving the middle generic is worse than not branding at all: it reads as a
+  // handoff to another company at exactly the moment money changes hands.
+  //
+  // `name` rides along so each screen can show that agent's own wordmark rather than
+  // Apollo[Claw]'s. See FunnelWordmark.
+  const phaseContent = (() => {
+    if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase(skipGate ? "personalize" : "gate")} />;
+    if (phase === "gate") return (
+      <Gatekeeper
+        onPass={handleGate}
+        initial={enteredGate ?? undefined}
+        brand={brand}
+        // Named as early as possible. Someone arriving from therealestateagent.ai should see
+        // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
+        // is pinned to one type, so there is no reason to be vague about which.
+        heading={
+          roleIntake
+            ? <>Let&apos;s Build Your <span style={{ color: brand.color }}>{roleIntake.roleName}.</span></>
+            : isWhiteGlove
+              ? <>Let&apos;s Build <span style={{ color: brand.color }}>Your Agent.</span></>
+              : undefined
+        }
+        intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
+      />
+    );
+    if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} agentTypeId={agentTypeId} />;
+    if (phase === "confirm") return (
+      <PaymentConfirmation
+        sessionId={sessionId}
+        email={gate.email || undefined}
+        onContinue={() => setPhase(restored ? "personalize" : "gate")}
+      />
+    );
+    if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
+    if (phase === "submitting") return (
+      <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
+        <div style={{ width: 48, height: 48, border: `3px solid ${SRF2}`, borderTopColor: R, borderRadius: "50%", animation: "oc-spin 1s linear infinite", marginBottom: 24 }} />
+        <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 8px" }}>Building Your Agent…</h2>
+        <p style={{ fontSize: 14, color: TXM }}>This will only take a moment.</p>
+        <style>{`@keyframes oc-spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+    if (phase === "building") return (
+      <BuildScreen
+        agentTypeId={agentTypeId || LICENSE_AGENT_TYPE_ID}
+        agentLabel={personalize.agentName || agentLabel || "Agent"}
+        workspaceId={buildingWorkspaceId}
+        // License buyers have no session to poll the dashboard API with; the paid checkout
+        // session authorizes their status reads instead.
+        sessionId={isCustomer ? undefined : sessionId}
+      />
+    );
+    if (phase === "done") return <Success nextStep={isWhiteGlove} payUrl={payUrl} />;
+    // White glove is the only flow that reaches the questionnaire straight from the gate, so it
+    // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
+    // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
+    // sending them back there would silently drop it, so they keep no Back on step 0.
+    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
+    return null;
+  })();
+  return (
+    <BrandCtx.Provider value={{ ...brand, name: roleIntake ? wordmarkName(roleIntake.roleName) : undefined }}>
+      {phaseContent}
+    </BrandCtx.Provider>
   );
-  if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} agentTypeId={agentTypeId} />;
-  if (phase === "confirm") return (
-    <PaymentConfirmation
-      sessionId={sessionId}
-      email={gate.email || undefined}
-      onContinue={() => setPhase(restored ? "personalize" : "gate")}
-    />
-  );
-  if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
-  if (phase === "submitting") return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
-      <div style={{ width: 48, height: 48, border: `3px solid ${SRF2}`, borderTopColor: R, borderRadius: "50%", animation: "oc-spin 1s linear infinite", marginBottom: 24 }} />
-      <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 8px" }}>Submitting Your Application…</h2>
-      <p style={{ fontSize: 14, color: TXM }}>This will only take a moment.</p>
-      <style>{`@keyframes oc-spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
-  );
-  if (phase === "building") return (
-    <BuildScreen
-      agentTypeId={agentTypeId || LICENSE_AGENT_TYPE_ID}
-      agentLabel={personalize.agentName || agentLabel || "Agent"}
-      workspaceId={buildingWorkspaceId}
-      // License buyers have no session to poll the dashboard API with; the paid checkout
-      // session authorizes their status reads instead.
-      sessionId={isCustomer ? undefined : sessionId}
-    />
-  );
-  if (phase === "done") return <Success nextStep={isWhiteGlove} payUrl={payUrl} />;
-  // White glove is the only flow that reaches the questionnaire straight from the gate, so it
-  // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
-  // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
-  // sending them back there would silently drop it, so they keep no Back on step 0.
-  if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
-  return null;
 }
