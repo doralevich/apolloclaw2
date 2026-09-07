@@ -348,6 +348,11 @@ Ask: **if someone took over tomorrow with no loyalty to how we got here, what wo
 
   // ─── Tier 2: named frameworks ──────────────────────────────────────────────────────────────
   {
+    // KEPT FOR LEGAL, excluded from real estate, while the rest of the family is off for both.
+    // Stripping a question to what is actually true and reasoning up from there is not a frame
+    // borrowed from business strategy here - it is what you do with a question no precedent
+    // squarely answers, which is the hard half of legal work.
+    notFor: ["realestate"],
     slug: "first-principles",
     emoji: "🔬",
     description:
@@ -622,6 +627,10 @@ marketing copy.
 `,
   },
   {
+    // KEPT FOR LEGAL for a plainer reason than the one above: conclusion first, then the support
+    // that carries it, is the structure of every memo and every advice note a lawyer writes. The
+    // family is off for them; this member is the house style.
+    notFor: ["realestate"],
     slug: "mckinsey-pyramid",
     emoji: "🔺",
     description:

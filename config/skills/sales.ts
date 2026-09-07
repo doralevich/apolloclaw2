@@ -204,6 +204,11 @@ ${OWNER_DECIDES}
 `,
   },
   {
+    // OFF FOR LEGAL, and this one is not a judgment call about usefulness. Bar rules on
+    // solicitation restrict what a lawyer may send to someone who has not asked to hear from
+    // them, and the rules differ by state. A skill whose whole method is a researched multi-touch
+    // sequence to strangers is one an agent should not be reaching for on its own here.
+    notFor: ["legal"],
     slug: "cold-outreach",
     emoji: "🎯",
     description:
@@ -254,6 +259,11 @@ ${OWNER_DECIDES}
 `,
   },
   {
+    // OFF FOR LEGAL. A firm's version of this is a matter write-up, and every one of them runs
+    // straight into client confidentiality plus advertising rules about describing past results.
+    // Not worth its place in available_skills on every turn to produce something that needs a
+    // compliance review before it can be shown to anyone.
+    notFor: ["legal"],
     slug: "case-studies",
     emoji: "🏆",
     description:

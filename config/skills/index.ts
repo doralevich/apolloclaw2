@@ -22,6 +22,7 @@ import { EXECUTIVE_SKILLS } from "@/config/skills/executive";
 import { SALES_SKILLS } from "@/config/skills/sales";
 import { WRITING_SKILLS } from "@/config/skills/writing";
 import { REAL_ESTATE_SKILLS } from "@/config/skills/real-estate";
+import { LEGAL_SKILLS } from "@/config/skills/legal";
 
 export type AgentSkill = {
   /** Directory name under plugin-skills, and the name the runtime lists it under. */
@@ -123,7 +124,12 @@ export const SKILL_FAMILIES: SkillFamily[] = [
     // open house on Saturday. They are good skills and they are the wrong seventeen: a listing
     // question answered through an M&A frame is the particular kind of wrong that reads as
     // fluent, and every one of them is context on every turn besides.
-    notFor: ["realestate"],
+    // Also off for legal, for the same reason and with the same two exceptions made below:
+    // seventeen boardroom frames on an agent whose day is contract review. first-principles and
+    // mckinsey-pyramid come back individually - one is how a novel legal question gets taken
+    // apart, the other is how a memo is structured, and both are the job rather than a frame
+    // borrowed from another one.
+    notFor: ["realestate", "legal"],
     title: "Mental models",
     blurb: "Frames worth reaching for when a decision is genuinely hard.",
     skills: MENTAL_MODEL_SKILLS,
@@ -132,7 +138,11 @@ export const SKILL_FAMILIES: SkillFamily[] = [
     // Mostly off for the same reason. A solo agent has no board to communicate with and no
     // acquisition to evaluate - but the money half of this family is exactly what a realtor on
     // commission does need, so cash-flow, P&L and pricing come back individually below.
-    notFor: ["realestate"],
+    // Off for legal too. A law firm is a business, but this agent's job is the legal work, and
+    // vendor-contract-review is the one member of the family that IS that job - it comes back
+    // below. The money three stay for both roles: a firm partner and a realtor on commission are
+    // each running a small business's cash.
+    notFor: ["realestate", "legal"],
     title: "The C-suite you don't have",
     blurb: "Finance, operations, people - the questions a bigger company has someone for.",
     skills: EXECUTIVE_SKILLS,
@@ -156,6 +166,14 @@ export const SKILL_FAMILIES: SkillFamily[] = [
     title: "The real estate job",
     blurb: "Listings, comps, offers and follow-up, done the way the business actually works.",
     skills: REAL_ESTATE_SKILLS,
+  },
+  {
+    // The second domain family, added by copying the line above and nothing else, which was the
+    // point of building it this way.
+    onlyFor: ["legal"],
+    title: "The legal work",
+    blurb: "Review, redlining, drafting, and the dates that decide a contract.",
+    skills: LEGAL_SKILLS,
   },
 ];
 
