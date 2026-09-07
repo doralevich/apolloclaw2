@@ -9,6 +9,7 @@ import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
 import { CHANNELS_ENABLED } from "@/config/channels";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
+import { SetupChecklist } from "@/components/SetupChecklist";
 import { cn } from "@/lib/utils";
 
 // The Home page: a launcher, not a metrics dashboard and not a walkthrough.
@@ -122,6 +123,20 @@ export function StartHereView() {
           desc="Add someone from your team to this workspace."
         />
       </div>
+
+      {/* The checklist, summarised, under the tiles. David's call, and it answers the question
+          that prompted it: whether the Checklist needs to be a tab of its own at all.
+
+          The four tiles above are the same for everybody. This is the part that is not - it is
+          built from the customer's own intake answers, so it names their apps and their handovers.
+          A progress bar and the next three unfinished things, never the whole list: printing all
+          of it would make Home and the Checklist the same page, with the greeting as the longer
+          of the two.
+
+          The component already existed and had been rendering nowhere since Home became a
+          launcher. Same useChecklist hook the full page uses, so the two can never disagree about
+          the count. */}
+      <SetupChecklist agentId={active.agent37_id} />
 
       <HelpFooter />
     </div>
