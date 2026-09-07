@@ -135,6 +135,34 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
     );
   }
 
+  // WHERE THEY ARE IN TIME, and this is here rather than only in USER.md on purpose.
+  //
+  // The timezone was already collected and already written - as a labelled row in a profile, in
+  // among their phone number and their LinkedIn. That is a fact about them, and it is filed like
+  // one, which is precisely why an agent reasoning about "today" walks past it.
+  //
+  // It belongs in this file because it changes BEHAVIOUR. Half the skills we ship are time-shaped:
+  // the daily brief, the end-of-day summary, the weekly plan, every follow-up with "by Thursday"
+  // in it. All of them are wrong by however many hours the box is out.
+  //
+  // And the box IS out. Setting the instance clock needs write access to /etc/localtime that the
+  // runtime user usually does not have, so that step is best-effort and frequently skips. Telling
+  // the agent in words costs nothing, needs no permissions, and is the half that always lands.
+  out.push(
+    ...section(
+      "Their day",
+      [
+        bullet("Timezone", answers.timezone),
+        bullet("Best time to reach them", answers.bestTime),
+        bullet("How they prefer to be contacted", answers.contactMethod),
+      ],
+      `Every date and time you say, write or schedule is in THEIR timezone unless they say` +
+        ` otherwise, and "today" means today where they are. The instance clock may be set to` +
+        ` something else - trust this line over it, and if the two disagree in a way that matters,` +
+        ` say so rather than quietly picking one.`
+    )
+  );
+
   out.push(
     ...section(
       "How they decide",

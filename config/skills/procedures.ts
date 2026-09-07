@@ -1,20 +1,47 @@
-// The three procedures: what to do, in what order, for the jobs this product is sold on.
+// The five procedures: what to do, in what order, for the jobs this product is sold on.
 //
-// Every one is a METHOD, not a capability. It assumes the tools already exist through Connections
-// and says what order to do things in, what to check, and when to stop and ask. A skill that
-// needs an integration the customer hasn't connected should say so and stop rather than inventing
-// an answer — each carries that rule, because a confidently empty daily brief is worse than "your
-// calendar isn't connected yet".
+// Every one is a METHOD, not a capability. It assumes the tools exist through Connections and says
+// what order to do things in, what to check, and when to stop and ask.
+//
+// WHICH MAKES THE MISSING-CONNECTION RULE BELOW LOAD-BEARING, not a footnote. All five of these
+// need a calendar or an inbox, and neither is connected when an agent is handed over, so on a
+// fresh agent every one of them hits that rule on its first step. It is the most-read paragraph
+// in this file.
 
 import type { AgentSkill } from "@/config/skills";
 
+// "Say which one and stop" was the whole rule, and stopping was the wrong second half.
+//
+// Nothing is connected when an agent is handed over - all of Connections waits for the customer to
+// go and do it - so on a fresh agent EVERY one of these procedures hits this rule on its first
+// step. A brand-new assistant whose first act is to name a missing integration and go quiet is
+// technically honest and useless, and it is the first impression the product makes.
+//
+// So the rule now has a third part: do what you still can. Asking the owner what is on today is a
+// real offer and costs them less than connecting anything; memory and BUSINESS-CONTEXT.md are
+// available with no integration at all. The honesty is kept - no guessing, no silent holes - and
+// the dead end is not.
 const MISSING_CONNECTION_RULE = `
 ## When something isn't connected
 
-If a step needs an integration the owner hasn't connected, say which one and stop. Do not guess,
-do not substitute a different source, and do not produce the deliverable with a hole in it. An
-empty brief that says "your calendar isn't connected" is useful. A brief that quietly omits the
-calendar looks like a day with no meetings.
+Nothing is connected until the owner connects it, so expect this rather than treating it as a
+fault. Three things, in order:
+
+1. **Say which one, once.** Name the integration and where it lives - Connections in their
+   dashboard. Once, at the top. Repeating it under every heading turns a brief into a complaint.
+2. **Never fake it.** Do not guess, do not substitute a different source, and do not hand over the
+   deliverable with a silent hole in it. A brief that quietly omits the calendar looks like a day
+   with no meetings, which is worse than no brief.
+3. **Then do what you still can**, and offer the rest:
+   - Ask them. "Tell me what's on today and I'll do the rest" is a genuine offer, and for one
+     meeting or one week it is less work for them than connecting anything.
+   - Use what needs no integration: your memory of earlier conversations, USER.md, AGENTS.md and
+     BUSINESS-CONTEXT.md are all yours already.
+   - Produce the blocks that do not depend on the missing piece, and mark the ones that do as
+     waiting on it.
+
+A short brief built from what they told you is worth more than a complete one you invented, and
+far more than silence.
 `.trim();
 
 export const PROCEDURE_SKILLS: AgentSkill[] = [
