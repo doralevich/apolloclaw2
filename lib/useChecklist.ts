@@ -26,7 +26,9 @@ type ChecklistResponse = {
   personalized: boolean;
 };
 
-function isActiveConnection(c: IntegrationConnection): boolean {
+/** Exported because Home renders this checklist and the connect prompt side by side, and two
+ *  definitions of "connected" on one page will eventually disagree in front of a customer. */
+export function isActiveConnection(c: IntegrationConnection): boolean {
   return (c.status || "").toUpperCase() === "ACTIVE" && !c.isDisabled;
 }
 

@@ -11,6 +11,7 @@ import { CHANNELS_ENABLED } from "@/config/channels";
 import { hiddenForEveryone } from "@/config/nav";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { SetupChecklist } from "@/components/SetupChecklist";
+import { ConnectFirstPrompt } from "@/components/ConnectFirstPrompt";
 import { cn } from "@/lib/utils";
 
 // The Home page: a launcher, not a metrics dashboard and not a walkthrough.
@@ -94,6 +95,14 @@ export function StartHereView() {
           </p>
         </div>
       </div>
+
+      {/* ABOVE THE TILES, and only until something is connected.
+
+          The tiles are the same four for everybody and none of them is urgent. This is: four of
+          the five procedure skills we ship stop on their first step without a calendar, so an
+          agent with nothing connected cannot do the things it was sold on. It disappears for good
+          the moment anything is connected, and "Not now" hides it for anyone who means it. */}
+      <ConnectFirstPrompt agentId={active.agent37_id} agentName={agentName} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Telegram first, David's call, and it earns the position: it is the difference between
