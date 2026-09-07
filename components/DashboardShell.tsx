@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -41,6 +41,11 @@ const NAV = [
   // highlights on the daily rail. Guide stayed in Settings; Channels stays off the rail too (still
   // at /dashboard/channels).
   { href: "/dashboard/integrations", label: "Connections", icon: Blocks, exact: false },
+  // My Schedule, directly under Connections - David's call. It was the bottom half of the
+  // Channels page, which made the feature people describe as the reason they bought ("it turns
+  // up on Monday morning without being asked") something you only found by scrolling past a
+  // setup screen you had already finished with.
+  { href: "/dashboard/schedule", label: "My Schedule", icon: Clock, exact: false },
 ];
 
 // The settings area's own rail, grouped, shown INSTEAD of NAV while you're inside it — the
