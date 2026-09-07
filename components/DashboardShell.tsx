@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -36,6 +36,11 @@ const NAV = [
   // day; the checklist is a first-week errand. The daily surface goes higher than the once-through
   // one.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
+  // Directly under Chat, above the setup rows, because it is the only one of these you come back
+  // to daily once you are set up. It holds what the agent surfaced and nobody has dealt with -
+  // the "waiting on you" block from the morning brief, which until now lived in a Telegram
+  // message and was gone by lunchtime.
+  { href: "/dashboard/tasks", label: "What needs you", icon: ListTodo, exact: false },
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   // Connections is back on the daily rail, directly under Checklist - David's call. It also stays
   // reachable from Settings, but the rail is where he wants it day to day, so /dashboard/integrations
