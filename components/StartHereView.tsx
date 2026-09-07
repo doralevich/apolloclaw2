@@ -66,7 +66,11 @@ export function StartHereView() {
         <AgentFace
           src={active.avatar_url}
           name={agentName}
-          className="mt-1 size-12 text-lg sm:size-14 sm:text-xl"
+          // Twice the size it was (48/56px), David's call. At the old size it read as a byline
+          // next to the greeting; at this one it is the agent, and the greeting is what it is
+          // saying. The initial-fallback type scales with it - the ratio of letter to circle is
+          // kept from the original rather than left at a size that would swim in it.
+          className="mt-1 size-24 text-4xl sm:size-28"
         />
         <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
