@@ -208,6 +208,65 @@ export async function installAgentSkills(
 }
 
 /**
+ * Remove skills the agent should no longer have.
+ *
+ * WHY INSTALLING IS NOT ENOUGH. installAgentSkills writes the intended set and touches nothing
+ * else, which was right while every agent got every skill: rewriting 58 files over 58 files
+ * leaves the box correct. It stopped being right the moment a type could get a SUBSET. Re-running
+ * the install on a real estate agent that already has all 58 writes 34 files and leaves the other
+ * 24 directories exactly where they are, so the agent goes on listing `ma-evaluation` and the
+ * seventeen mental models in available_skills forever. The cut we just made would have applied to
+ * nobody who already owns an agent.
+ *
+ * THE SAFETY RULE, and it is the whole design: this only ever deletes a directory whose name is a
+ * slug WE SHIP. A stock OpenClaw box carries 50+ built-in skills, and on some images they live in
+ * this same directory. A prune that removed "everything not in the intended set" would take
+ * OpenClaw's own skills with it and break the box in a way no customer could diagnose. So the
+ * removable set is computed as (our catalogue) minus (what this agent should have), and anything
+ * we do not recognise is left alone, forever, by construction.
+ *
+ * Returns the slugs actually removed.
+ */
+export async function pruneAgentSkills(agentId: string, keep: string[]): Promise<string[]> {
+  const keepSet = new Set(keep);
+  const removable = AGENT_SKILLS.map((s) => s.slug).filter((slug) => !keepSet.has(slug));
+  if (!removable.length) return [];
+
+  // Passed as a base64 JSON array for the same reason the install does: a slug is ours and tame,
+  // but building shell out of a list is how the one day it isn't becomes an incident.
+  const b64 = Buffer.from(JSON.stringify(removable), "utf8").toString("base64");
+  const script =
+    'const fs=require("fs");' +
+    'const root=process.env.OPENCLAW_STATE_DIR||"/home/node/.openclaw";' +
+    'for(const slug of JSON.parse(process.argv[1])){' +
+    'const d=root+"/plugin-skills/"+slug;' +
+    // The SKILL.md test, not merely "the directory exists": it is what tells one of ours from a
+    // directory that happens to share the name, and it is the same test listAgentSkills uses.
+    'if(!fs.existsSync(d+"/SKILL.md"))continue;' +
+    'fs.rmSync(d,{recursive:true,force:true});' +
+    'console.log("SKILL_REMOVED:"+slug);}';
+
+  const cmd =
+    'ROOT="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}"; ' +
+    '[ -d "$ROOT" ] || { echo NOT_OPENCLAW; exit 0; }; ' +
+    'command -v node >/dev/null 2>&1 || { echo NO_NODE; exit 1; }; ' +
+    `node -e '${script}' "$(printf '%s' '${b64}' | base64 -d)"`;
+
+  try {
+    const { stdout } = await agent37.exec(agentId, cmd);
+    if (stdout.includes("NOT_OPENCLAW")) return [];
+    const removed = [...stdout.matchAll(/SKILL_REMOVED:(\S+)/g)].map((m) => m[1]);
+    if (removed.length) console.log("[provision:skills-pruned]", agentId, removed.join(","));
+    return removed;
+  } catch (err) {
+    // Same posture as a failed install batch: the agent works with a stale skill present, just
+    // less well, and this is never worth failing a provision or a fleet run over.
+    console.error("[provision:skill-prune-failed]", agentId, (err as Error).message);
+    return [];
+  }
+}
+
+/**
  * Split the skills into batches small enough to pass on a command line.
  *
  * Sized by the base64 payload rather than by count, because skill bodies differ by several times
@@ -559,6 +618,15 @@ async function injectAfterProvision(
   // Alongside the persona, and for the same reason: both are ours, neither depends on the
   // questionnaire, and an agent whose answers never arrive should still know how to work.
   const skills = await installAgentSkills(agentId, type.id);
+  // Prune here too, not only in the admin route. This runs on RE-provision as well as first
+  // provision, and on a re-provision the box may already hold a set from before this type had an
+  // opinion. Costs one exec on a fresh box and finds nothing, which is the right trade for never
+  // having to remember which path an agent came down.
+  //
+  // Keyed to what the agent SHOULD have, not to what just installed. installAgentSkills swallows a
+  // failed batch, so a transient error makes `skills` short - and pruning against that list would
+  // turn one bad exec into the deletion of a working skill that had been there for months.
+  await pruneAgentSkills(agentId, skillsForType(type.id).map((s) => s.slug));
 
   const db = createAdminClient();
   const { data: setup } = await db
