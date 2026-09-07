@@ -12,6 +12,12 @@
  *  agent opens when a question needs it, not context paid for on every turn. */
 export const CONTEXT_FILENAME = "BUSINESS-CONTEXT.md";
 
+/** The customer's current listings and deals (lib/listings.ts), rewritten whenever they change
+ *  one. Reference material for the same reason as BUSINESS-CONTEXT.md rather than an auto-loaded
+ *  file: a book of business is opened a few times a day, and paying for it on every turn would
+ *  cost more than it is worth on the turns that never mention a property. */
+export const LISTINGS_FILENAME = "LISTINGS.md";
+
 /** The auto-loaded files we generate from the questionnaire. The rest of OpenClaw's eight —
  *  SOUL (template's persona), MEMORY (the agent's own), HEARTBEAT and BOOTSTRAP (runtime
  *  mechanics) — are not ours to write. */
