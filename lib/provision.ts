@@ -547,7 +547,7 @@ async function injectAfterProvision(
 
   // Alongside the persona, and for the same reason: both are ours, neither depends on the
   // questionnaire, and an agent whose answers never arrive should still know how to work.
-  await installAgentSkills(agentId);
+  const skills = await installAgentSkills(agentId);
 
   const db = createAdminClient();
   const { data: setup } = await db
@@ -563,7 +563,25 @@ async function injectAfterProvision(
   // and still applies to a blank agent with no setup row. Best-effort - never fails a provision.
   const setupAnswers = (setup?.answers as Record<string, unknown> | undefined) ?? undefined;
   const tz = typeof setupAnswers?.timezone === "string" ? (setupAnswers.timezone as string) : null;
-  await applyInstanceDefaults(agentId, { timezone: tz });
+  const defaults = await applyInstanceDefaults(agentId, { timezone: tz });
+
+  // ONE LINE PER PROVISION saying what the agent actually came up with.
+  //
+  // Every step above is individually forgiving - injectAgentFile returns false, installAgentSkills
+  // swallows a failed batch - which is right, because a missing skill should not cost a customer
+  // their agent. The cost of that forgiveness is silence: an agent could come up with no skills
+  // and no web search and look identical to a healthy one from here.
+  //
+  // So: log the result whatever it is, in a form somebody can search Vercel for. A zero or an
+  // "off" in this line is the difference between "the fleet is configured" and "we think it is".
+  console.log("[provision:capabilities]", agentId, {
+    skills: skills.length,
+    memory: defaults.memory,
+    webSearch: defaults.webSearch,
+    browser: defaults.browser,
+    timezone: defaults.timezone,
+    ...(defaults.note ? { note: defaults.note } : {}),
+  });
 
   if (!setup) return;
 
@@ -789,7 +807,27 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
   // The persona is written on every provision now, not only when the template fell back, so
   // nothing downstream needs to know which image it got. resolveProvisionTemplate still reports
   // and logs the fallback for the operator.
-  after(() => injectAfterProvision(agent.id, type, workspaceId, !!input.callerWritesContext));
+  //
+  // CAUGHT, because this runs after the response has gone. Every step inside is individually
+  // forgiving already, but an unexpected throw here - a client that fails to construct, a network
+  // error where none was expected - would abandon the steps after it AND leave nothing behind
+  // saying so. The customer would have an agent with no skills and no web search, and the first
+  // anyone knew of it would be them asking why it cannot look things up.
+  //
+  // A catch cannot repair it. What it can do is make it findable: the admin has Apply defaults and
+  // Install skills for exactly this, and both need somebody to know which box to point them at.
+  after(async () => {
+    try {
+      await injectAfterProvision(agent.id, type, workspaceId, !!input.callerWritesContext);
+    } catch (err) {
+      console.error(
+        "[provision:post-provision-failed]",
+        agent.id,
+        "skills and capability defaults may be missing - run Apply defaults and Install skills",
+        (err as Error).message
+      );
+    }
+  });
 
   return agent;
 }
