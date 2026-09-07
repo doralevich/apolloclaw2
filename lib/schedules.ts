@@ -8,6 +8,7 @@ import * as slack from "@/lib/channels/slack";
 import * as whatsapp from "@/lib/channels/whatsapp";
 import type { ChannelId } from "@/lib/types";
 import { isDue, localNow } from "@/lib/schedule-timing";
+import { parseTaskBlock, recordTasks, TASK_BLOCK_INSTRUCTION } from "@/lib/agent-tasks";
 
 // Running a skill on a clock, and delivering what comes back.
 //
@@ -116,9 +117,14 @@ export async function runSchedule(row: ScheduleRow): Promise<string> {
     // "give me a rundown of X" written into a box at 11pm does not anticipate arriving as a
     // Telegram message at 8am, and without this every custom report opens with a paragraph about
     // being a scheduled report.
-    const instruction = row.prompt
+    const base = row.prompt
       ? `${row.prompt.trim()}\n\nThis is a scheduled report, so lead with the content - no preamble about it being scheduled, and no restating the request back to me.`
       : `Run your ${row.skill} skill now and give me the result. This is the scheduled run, so lead with the content - no preamble about it being scheduled.`;
+
+    // Every scheduled report already names things that need the owner - "waiting on you", "still
+    // open", "if you only do one thing". Asking for them again as a list costs a few lines of
+    // output and is the difference between a message that scrolls away and a list that does not.
+    const instruction = `${base}${TASK_BLOCK_INSTRUCTION}`;
 
     const result = await runTurn(
       row.agent37_id,
@@ -128,8 +134,16 @@ export async function runSchedule(row: ScheduleRow): Promise<string> {
       null
     );
 
-    const text = answerFrom(result);
-    const channel = await deliver(row.agent37_id, text);
+    // Split the task block off BEFORE delivery. A brief that arrives in Telegram ending in
+    // "<<<TASKS>>>" is worse than having no task list at all, so this is not optional tidying.
+    const { report, tasks } = parseTaskBlock(answerFrom(result));
+
+    // Stored before delivery rather than after, because delivery is the step that can fail and
+    // the tasks are worth keeping either way: a brief that had nowhere to go still worked out
+    // what needs doing.
+    await recordTasks(row.agent37_id, `schedule:${row.skill}`, tasks);
+
+    const channel = await deliver(row.agent37_id, report);
 
     // A brief with nowhere to go is not a failure of the agent, and saying so precisely is what
     // lets the dashboard tell someone to connect a channel rather than "something went wrong".
