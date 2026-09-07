@@ -65,7 +65,11 @@ export function ScheduleView() {
           Settings → My Agent.
         </p>
       )}
-      <SchedulePanel key={`sched-${active.agent37_id}`} agentId={active.agent37_id} />
+      <SchedulePanel
+        key={`sched-${active.agent37_id}`}
+        agentId={active.agent37_id}
+        agentType={active.agent_type}
+      />
       <HelpFooter className="max-w-4xl" />
     </div>
   );

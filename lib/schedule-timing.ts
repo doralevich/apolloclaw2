@@ -61,9 +61,41 @@ export function localNow(timeZone: string, at: Date = new Date()): LocalNow | nu
 
 const WEEKEND = new Set(["saturday", "sunday"]);
 
+/** The weekday names dayMatches will accept as a "just this day" selection, in week order. */
+export const WEEKDAY_NAMES = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
+
+/**
+ * Every value the `days` column may hold.
+ *
+ * ONE LIST, exported, because there were three of them and they disagreed. The API accepted
+ * monday through friday, the timing logic here accepted any weekday name including the weekend,
+ * and the dropdown offered three options. So a realtor who works Saturdays - which is most of
+ * them, and Saturday is the day the showings happen - could not pick Saturday, even though both
+ * the database and this file would have handled it perfectly. The narrowest of the three won by
+ * accident rather than by decision.
+ *
+ * The UI renders from this, the API validates against it, and dayMatches implements it.
+ */
+export const SCHEDULE_DAYS = ["daily", "weekdays", "weekends", ...WEEKDAY_NAMES] as const;
+
+export type ScheduleDays = (typeof SCHEDULE_DAYS)[number];
+
+export function isScheduleDays(value: string): value is ScheduleDays {
+  return (SCHEDULE_DAYS as readonly string[]).includes(value);
+}
+
 export function dayMatches(days: string, weekday: string): boolean {
   if (days === "daily") return true;
   if (days === "weekdays") return !WEEKEND.has(weekday);
+  if (days === "weekends") return WEEKEND.has(weekday);
   // A specific day name, e.g. "monday" for a weekly planning session.
   return days === weekday;
 }

@@ -7,6 +7,7 @@ import {
   isSchedulableSkill,
   type ScheduleRow,
 } from "@/lib/schedules";
+import { isScheduleDays } from "@/lib/schedule-timing";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -101,8 +102,11 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(400, "invalid_request", "A valid timezone is required");
   }
 
+  // Validated against the one list the timing logic actually implements, rather than a copy that
+  // had drifted narrower than it: this used to stop at Friday, so a realtor could not schedule
+  // anything on a Saturday even though dayMatches would have handled it correctly.
   const days = body.days ?? "weekdays";
-  if (!["daily", "weekdays", "monday", "tuesday", "wednesday", "thursday", "friday"].includes(days)) {
+  if (!isScheduleDays(days)) {
     throw new ApiError(400, "invalid_request", "Unsupported day selection");
   }
 
