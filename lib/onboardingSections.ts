@@ -175,46 +175,25 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         { label: "Team Size", value: d.companySize },
         { label: "Monthly Revenue", value: d.revenue },
         { label: "Years in Business", value: d.businessAge },
-        { label: "Business Model", value: d.businessModel },
         { label: "Description", value: d.businessDescription },
         { label: "Differentiation", value: d.differentiator },
-        { label: "Web Platform", value: d.webPlatform },
         { label: "CRM Tools", value: d.crmTools },
         { label: "CRM (Other)", value: d.crmToolsOther },
-        { label: "E-commerce", value: d.ecomTools },
         { label: "Communications", value: d.commsTools },
         { label: "Project Mgmt", value: d.pmTools },
         { label: "Billing Tools", value: d.billingTools },
-        { label: "Marketing Tools", value: d.mktgTools },
-        { label: "Automation Tools", value: d.autoTools },
-        { label: "Support Tools", value: d.supportTools },
       ],
     });
     sections.push({
       title: "Pain Points & Operations",
       rows: [
-        { label: "Main Pain Point", value: d.mainPain },
-        { label: "Broken Areas", value: d.brokenAreas },
-        { label: "Hours/Wk on Manual Tasks", value: d.manualHours },
-        { label: "Busiest Workflow Volume", value: d.opsVolume },
-        { label: "Pain Duration", value: d.painDuration },
         { label: "Task They Hate Most", value: d.hatedTasks },
-        { label: "Already Tried", value: d.triedBefore },
-        { label: "Business Impact", value: d.costImpact },
       ],
     });
     sections.push({
       title: "Family & Life Context",
       rows: [
-        { label: "Relationship Status", value: d.maritalStatus },
         { label: "Children", value: d.children },
-        { label: "Children Ages", value: d.childrenAges },
-        { label: "Caregiving", value: d.caretaking },
-        { label: "Home / Work Situation", value: d.homeLife },
-        { label: "Protecting", value: d.protecting },
-        { label: "Life Stage", value: d.lifeStage },
-        { label: "3-Year Goals", value: d.threeYearGoals },
-        { label: "Personal Vision", value: d.personalGoal },
       ],
     });
     sections.push({
@@ -222,29 +201,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
       rows: [
         { label: "Biggest Goal / Priority (12mo)", value: d.strategicBet },
         { label: "Growth Bottleneck", value: d.growthBottleneck },
-        { label: "Decision Style", value: d.decisionStyle },
-        { label: "Stress Response", value: d.stressResponse },
-        { label: "Motivators", value: d.motivators },
-        { label: "Internal Blockers", value: d.blockers },
-        { label: "Money Mindset", value: d.moneyMindset },
-        { label: "Agency History", value: d.agencyHistory },
         { label: "Tech Trust (1–10)", value: d.techTrust },
-        { label: "Control Comfort (1–10)", value: d.controlComfort },
-        { label: "What Makes It Worth It", value: d.worthIt },
       ],
     });
     sections.push({
       title: "Voice & Communication Style",
       rows: [
         { label: "Writing Tone", value: d.writingTone },
-        { label: "Comfort With Writing", value: d.writingComfort },
-        { label: "Brand Voice Like", value: d.brandVoiceLike },
-        { label: "Brand Voice Like (Other)", value: d.brandVoiceLikeOther },
         { label: "Voice Description", value: d.voiceDescription },
         { label: "Loves These Words/Phrases", value: d.loveWords },
         { label: "Hates These Words/Styles", value: d.hateWords },
-        { label: "Social Presence", value: d.socialPresence },
-        { label: "Platforms", value: d.platforms },
         { label: "Writing Sample", value: d.writingSample },
       ],
     });
@@ -263,15 +229,6 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
     sections.push({
       title: "IT Infrastructure & Scope",
       rows: [
-        { label: "Hosting / Cloud", value: d.hosting },
-        { label: "Operating System", value: d.os },
-        { label: "Security Measures", value: d.securityMeasures },
-        { label: "Data Types Stored", value: d.dataTypes },
-        { label: "Compliance", value: d.compliance },
-        { label: "Budget Range", value: d.budget },
-        { label: "Timeline", value: d.timeline },
-        { label: "Decision Authority", value: d.decisionAuthority },
-        { label: "Engagement Type", value: d.engagement },
         { label: "Internal Tech Resources", value: d.internalTech },
         { label: "Constraints", value: d.constraints },
       ],

@@ -51,20 +51,24 @@ const ROLE_INTAKES: Record<
     //
     // owns -> aiGoals and win -> successMetric, which lib/agent-files.ts reads by name into the
     // agent's "What to push on" section. Unmapped, that section would quietly go empty.
-    coversScope?: { owns: string; win: string };
+    // `guard` names the field on this branch's last page that says what the agent must never
+    // do unasked. It lands in the payload as `autonomyLine`, which lib/agent-files.ts reads
+    // into the Boundaries section of the agent's own instructions. Without it a role agent
+    // reaches its instance with no autonomy limit written down anywhere it will read.
+    coversScope?: { owns: string; win: string; guard?: string };
   }
 > = {
   cfo: {
     branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent",
-    coversScope: { owns: "owns_work", win: "financial_goals" },
+    coversScope: { owns: "owns_work", win: "financial_goals", guard: "approval_line" },
   },
   legal: {
     branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent",
-    coversScope: { owns: "owns_work", win: "legal_goals" },
+    coversScope: { owns: "owns_work", win: "legal_goals", guard: "handoff_line" },
   },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
-    coversScope: { owns: "owns_work", win: "real_estate_goals" },
+    coversScope: { owns: "owns_work", win: "real_estate_goals", guard: "approval_line" },
     sample: {
       title: "Share a listing you were proud of",
       subtitle: "The single most useful thing on this form. One listing you actually wrote teaches your agent more than any list of adjectives.",
@@ -78,27 +82,27 @@ const ROLE_INTAKES: Record<
   },
   ceo: {
     branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
-    coversScope: { owns: "owns_work", win: "ceo_goals" },
+    coversScope: { owns: "owns_work", win: "ceo_goals", guard: "guardrails" },
   },
   marketing: {
     branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent",
-    coversScope: { owns: "owns_work", win: "marketing_goals" },
+    coversScope: { owns: "owns_work", win: "marketing_goals", guard: "publishing_authority" },
   },
   sales: {
     branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent",
-    coversScope: { owns: "owns_work", win: "sales_goals" },
+    coversScope: { owns: "owns_work", win: "sales_goals", guard: "approval_line" },
   },
   recruiting: {
     branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent",
-    coversScope: { owns: "owns_work", win: "recruiting_goals" },
+    coversScope: { owns: "owns_work", win: "recruiting_goals", guard: "approval_line" },
   },
   medical: {
     branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent",
-    coversScope: { owns: "owns_work", win: "medical_goals" },
+    coversScope: { owns: "owns_work", win: "medical_goals", guard: "clinical_boundary" },
   },
   insurance: {
     branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
-    coversScope: { owns: "owns_work", win: "insurance_goals" },
+    coversScope: { owns: "owns_work", win: "insurance_goals", guard: "handoff_line" },
   },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
@@ -1288,10 +1292,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const seed = useMemo(() => (initialAnswers ? hydrateBizState(initialAnswers) : null), [initialAnswers]);
   const [step, setStep] = useState(0);
   const [s2, setS2] = useState(() => seed?.s2 ?? emptyS2());
-  // s3 (mainPain / brokenAreas etc.) is read into the payload but no page sets it any more since
-  // the Operations & Pain Points page was removed, so there is no setter. Edit mode still pre-fills
-  // it through the initial seed.
-  const [s3] = useState(() => seed?.s3 ?? emptyS3());
+  // s3 lost its page (Operations & Pain Points) and with it its setter, which is how `hatedTasks`
+  // came to be read by lib/agent-files.ts and filled by nothing. `hate` is asked again on the
+  // Executive Profile page, so the setter is back; the rest of s3 is gone from the payload.
+  const [s3, setS3] = useState(() => seed?.s3 ?? emptyS3());
   const [s4, setS4] = useState(() => seed?.s4 ?? emptyS4());
   const [s5, setS5] = useState(() => seed?.s5 ?? emptyS5());
   const [s6, setS6] = useState(() => seed?.s6 ?? emptyS6());
@@ -1351,11 +1355,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // Nothing downstream goes empty: buildData feeds the role answers into aiGoals and
   // successMetric, which is what those two questions existed to fill. See buildData below.
   const rolePageKeys = isRoleFlow
-    ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", "goals", ...(roleIntake!.coversScope ? [] : ["scopeai"]), "scope"]
+    ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
     : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
+  const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
   const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
@@ -1374,7 +1379,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const scopeKeys = roleIntake?.coversScope;
   const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
   const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessModel: s2.model, businessDescription: s2.desc, differentiator: s2.differentiate, webPlatform: s2.webplat, crmTools: s2.crm, crmToolsOther: s2.crmOther, ecomTools: s2.ecom, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, mktgTools: s2.mktg, autoTools: s2.auto, supportTools: s2.support, mainPain: s3.pain, brokenAreas: s3.depts, manualHours: s3.hours, opsVolume: s3.opsVolume, painDuration: s3.duration, hatedTasks: s3.hate, triedBefore: s3.tried, costImpact: s3.costImpact, maritalStatus: s4.marital, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, childrenAges: s4.kidsAges, caretaking: s4.caretaking, homeLife: s4.homeLife, protecting: s4.protect, lifeStage: s4.lifeStage, threeYearGoals: s4.timeline3yr, personalGoal: s4.personalGoal, decisionStyle: s5.decStyle, decisionStyleOther: s5.decStyleOther, stressResponse: s5.stressResp, motivators: s5.motivators, blockers: s5.blockers, moneyMindset: s5.moneyMind, agencyHistory: s5.agencyHist, techTrust: s5.techTrust, controlComfort: s5.controlComfort, worthIt: s5.worthIt, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, writingComfort: s6.writingComf, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, socialPresence: s6.socialActive, platforms: s6.platforms, writingSample: s6.sample, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, horizon3Months: s7.horizon3, horizon6Months: s7.horizon6, horizon12Months: s7.horizon12, hosting: s8.hosting, os: s8.os, securityMeasures: s8.security, dataTypes: s8.data, compliance: s8.comply, budgetRange: s8.budget, budget: s8.budget, timeline: s8.timeline, decisionAuthority: s8.decisionAuthority, engagement: s8.engagement, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : undefined, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1490,12 +1495,19 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
       <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={2} split />
       {s5.growthBottleneck.includes("Other") && <FF label="What's the bottleneck?"><TInput value={s5.growthBottleneckOther} onChange={v => f5("growthBottleneckOther", v)} placeholder="In your words" /></FF>}
-      {/* Moved here from Your Voice at David's call, and it reads as an oversight corrected:
-          how you weigh a decision belongs beside your goal and your bottleneck, not beside
-          your tone of voice. It also governs how much the agent decides alone versus brings
-          to you, which is an executive question. */}
-      <CheckGroup label="How do you make big decisions?" hint="Select all that apply" options={DECISION_STYLE} value={s5.decStyle} onChange={v => f5("decStyle", v)} cols={2} split />
-      {s5.decStyle.includes("Other") && <FF label="How do you decide?"><TInput value={s5.decStyleOther} onChange={v => f5("decStyleOther", v)} placeholder="In your words" /></FF>}
+      {/* "How do you make big decisions?" was here and is gone. It governed how much the agent
+          decides alone, which was a good reason to ask it - until every role deep-dive started
+          asking `approval_line` outright ("what must never go out without you seeing it first").
+          A named list of things to check beats a personality category every time, so the
+          category went.
+
+          THIS REPLACES IT, and it is not a new idea: lib/agent-files.ts has always read
+          `hatedTasks` into the "What to push on" section of the agent's own instructions, and
+          nothing has ever asked it. Every agent we have shipped had that line blank while the
+          form asked what kind of decision-maker somebody is. */}
+      <FF label="What work do you hate doing?" hint="The jobs you put off, delegate, or resent. Your agent takes these first.">
+        <TArea value={s3.hate} onChange={v => f3("hate", v)} placeholder="e.g. chasing invoices, writing the same follow-up email for the fourth time, anything involving a spreadsheet on a Friday" rows={3} />
+      </FF>
     </Stack>
     ) },
     ...(branch ? [{ key: "industry", label: "Industry", node: (
@@ -1549,7 +1561,16 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     <Stack key="s4">
       <SHead stepNum={6} total={0} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />
       <button type="button" onClick={next} style={{ alignSelf: "flex-start", background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>Skip this step →</button>
-      <FF label="Relationship status"><TSelect value={s4.marital} onChange={v => f4("marital", v)} options={MARITAL} /></FF>
+      {/* "Relationship status" was here and is gone, along with "Where are you in your business
+          journey?" at the bottom. Both were classifications rather than facts: a dropdown that
+          sorts the customer into a bucket, on the most personal page of the form. Neither told
+          the agent anything it could act on, and asking a stranger to declare their marital
+          status to configure listing software is the moment a form stops feeling professional.
+
+          What stayed is the half that has always earned its place - the NAMES. Knowing your
+          wife is Maria and your daughter is eight lets an agent write "Maria's birthday" into a
+          calendar and understand why Thursday at four is a bad time. A status dropdown cannot
+          do any of that, which is the whole distinction being drawn here. */}
 
       {/* The family, by name.
           `kids` and `kidsAges` have been in state and in the payload all along with no UI to
@@ -1581,8 +1602,6 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         <TArea value={s4.household} onChange={v => f4("household", v)} placeholder="e.g. My mother Anne, who I drive to appointments on Tuesdays. Our office manager Priya." rows={2} />
       </FF>
 
-      <RadioGroup label="Where are you in your business journey?" options={LIFE_STAGE} value={s4.lifeStage} onChange={v => f4("lifeStage", v)} />
-
       {/* Both three-year questions removed at David's call.
           "What do you want your business to do for you in 3 years?" offered a list of owner
           answers - sell it, run without me, pay me more - which assumes the person filling this
@@ -1603,14 +1622,26 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
           case, and that spread is the useful thing to know. */}
       <CheckGroup label="Your natural tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone} onChange={v => f6("tone", v)} cols={2} />
       <CheckGroup label="Describe your ideal voice" hint="Select all that apply" options={["Confident, not arrogant","Clear and direct","Warm and personable","Professional and polished","Casual and conversational","Bold and punchy","Empathetic and supportive","Witty and clever","Never corporate or stiff"]} value={s6.voiceStyle} onChange={v => f6("voiceStyle", v)} cols={2} />
-      <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3" split options={BRAND_LIKE} value={brandLike} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
-      {/* The list is twelve names long and still misses most people. "Other" without somewhere
-          to type is the one answer that tells the agent nothing, so it opens a write-in. */}
-      {brandLike.includes("Other") && (
-        <FF label="Please specify" hint="A person, brand, or publication whose writing you'd want yours to read like.">
-          <TInput value={s6.brandLikeOther} onChange={v => f6("brandLikeOther", v)} placeholder="Someone whose writing sounds the way you want to sound" />
+      {/* "Whose voice do you sound most like?" was here, twelve celebrity names, pick three.
+          It is gone. It read as a personality quiz, and the writing sample on the very next page
+          teaches the agent more about a person's voice than any comparison to Seth Godin.
+
+          THESE TWO REPLACE IT, and they are not new ideas: lib/agent-files.ts has always read
+          `loveWords` and `hateWords` by name into the "How to sound" section of the agent's own
+          instructions. Nothing has ever asked them. Every agent we have shipped was built with
+          those two lines blank, which is why this is a swap rather than a cut - the same number
+          of boxes, aimed at something the agent actually consumes.
+
+          The banned list is the more useful of the two. Telling a writing agent what never to
+          say prevents more bad output than any amount of describing what good looks like. */}
+      <Row2>
+        <FF label="Words and phrases you like" hint="Yours, or just ones you notice yourself using.">
+          <TArea value={s6.loveWords} onChange={v => f6("loveWords", v)} placeholder="e.g. straightforward, let's get into it, here's what I'd do" rows={3} />
         </FF>
-      )}
+        <FF label="Words and phrases you never want to see" hint="The stronger half. This is what stops your agent sounding like everyone else.">
+          <TArea value={s6.hateWords} onChange={v => f6("hateWords", v)} placeholder="e.g. never 'just circling back', 'synergy', 'reach out', or an exclamation mark" rows={3} />
+        </FF>
+      </Row2>
     </Stack>
     ) },
     // Its own page, at David's call, and it earns one. Every other voice question is a box to

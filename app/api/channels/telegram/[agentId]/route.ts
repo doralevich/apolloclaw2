@@ -82,6 +82,38 @@ export async function POST(request: Request, { params }: Ctx) {
     return ok();
   }
 
+  // "/start" is Telegram's own handshake, not a question.
+  //
+  // It matters more since the dashboard started handing out a t.me/<bot>?start link to finish
+  // setup: tapping that button sends exactly this, so for most customers "/start" is now the
+  // FIRST thing their agent ever receives. Running it as a turn means the agent's opening move is
+  // trying to answer a slash command, which is a poor first impression and a wasted turn on the
+  // customer's credits.
+  //
+  // Binding still happens - that is the whole point of the tap - so this is a greeting instead of
+  // a turn, and the next thing they type is answered normally.
+  if (/^\/start(\s|$)/.test(update.text)) {
+    after(async () => {
+      try {
+        if (!config.ownerChatId) {
+          await upsertChannel(agentId, "telegram", {
+            ownerChatId: update.chatId,
+            state: "connected",
+            message: null,
+          });
+        }
+        await telegram.sendMessage(
+          config.token,
+          update.chatId,
+          "You're connected. This chat is yours now, and nobody else who finds this bot gets an answer.\n\nAsk me anything to get started."
+        );
+      } catch (e) {
+        console.error("[channels:telegram] start handshake failed", { agentId, error: String(e) });
+      }
+    });
+    return ok();
+  }
+
   after(async () => {
     try {
       if (!config.ownerChatId) {

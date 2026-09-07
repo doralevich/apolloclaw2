@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Blocks, CalendarClock, MessageSquare, UserPlus, type LucideIcon } from "lucide-react";
+import { ArrowRight, Blocks, CalendarClock, MessageSquare, Send, UserPlus, type LucideIcon } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
+import { CHANNELS_ENABLED } from "@/config/channels";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,22 @@ export function StartHereView() {
           title="Start a conversation"
           desc={`Ask ${agentName} to draft an email, summarize a document, or chase an invoice - whatever is on your plate.`}
         />
+        {/* The tile that was missing, and the reason it matters more than its position suggests:
+            reaching the agent from your phone is what turns it from a website you visit into an
+            assistant you have. Nothing on this page mentioned it, so the only way to find it was
+            to notice a Channels tab in the nav and guess what it was for.
+
+            Deep-links with ?open=telegram so it lands on the open card with its setup steps
+            rather than on three collapsed ones. Hidden entirely when the channels feature is off,
+            because a tile that leads to a 404 is worse than no tile. */}
+        {CHANNELS_ENABLED && (
+          <LauncherTile
+            href="/dashboard/channels?open=telegram"
+            icon={Send}
+            title="Talk to it on Telegram"
+            desc={`Message ${agentName} from your phone like you would a colleague. Takes a couple of minutes to set up.`}
+          />
+        )}
         <LauncherTile
           href="/dashboard/checklist"
           icon={CalendarClock}
