@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Home, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Briefcase, Home, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -14,6 +14,7 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useHiddenNav } from "@/components/sidebar-prefs";
 import { hiddenForEveryone } from "@/config/nav";
 import { hasListings } from "@/config/listings";
+import { hasMatters } from "@/config/matters";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,10 @@ const NAV = [
   // The filter is on agent TYPE rather than on whether any listings exist, on purpose. A row that
   // appears once you have data is a row nobody can find in order to add the first row.
   { href: "/dashboard/listings", label: "Listings", icon: Home, exact: false, forListings: true },
+  // The Law Agent's equivalent, and the second role row. Two of these is the point at which a
+  // third should stop being a new boolean, so if a fourth role wants a section, replace both
+  // flags with one `forTypes: string[]` rather than adding `forMatters` to the filter below.
+  { href: "/dashboard/matters", label: "Matters", icon: Briefcase, exact: false, forMatters: true },
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   // Connections is back on the daily rail, directly under Checklist - David's call. It also stays
   // reachable from Settings, but the rail is where he wants it day to day, so /dashboard/integrations
@@ -104,7 +109,14 @@ const SETTINGS_ROOT = "/dashboard/settings";
 // Which of the rows above this person switched off, and the list of the ones they may.
 
 
-type NavItem = { href: string; label: string; icon: LucideIcon; exact: boolean; forListings?: boolean };
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact: boolean;
+  forListings?: boolean;
+  forMatters?: boolean;
+};
 
 // One row, used by the app rail, the Settings rail, and the Settings entry itself, so the
 // active treatment can't drift between them.
@@ -188,6 +200,7 @@ function SidebarContent({
   const { isHidden } = useHiddenNav();
   const nav = NAV.filter((item) => {
     if (item.forListings && !hasListings(active?.agent_type)) return false;
+    if (item.forMatters && !hasMatters(active?.agent_type)) return false;
     if (hiddenForEveryone(item.href)) return false;
     return !isHidden(item.href) || pathname.startsWith(item.href);
   });

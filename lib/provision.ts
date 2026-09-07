@@ -7,6 +7,7 @@ import {
   AGENTS_FENCE,
   CONTEXT_FILENAME,
   LISTINGS_FILENAME,
+  MATTERS_FILENAME,
   GENERATED_FILES,
   IDENTITY_FENCE,
   TOOLS_FENCE,
@@ -19,6 +20,8 @@ import { personaForAgentType } from "@/config/personas";
 import { AGENT_SKILLS, skillFile, skillsForType, type AgentSkill } from "@/config/skills";
 import { hasListings } from "@/config/listings";
 import { buildListingsMd } from "@/lib/listings-file";
+import { hasMatters } from "@/config/matters";
+import { buildMattersMd } from "@/lib/matters-file";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -98,7 +101,11 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // useful last time.
 export async function injectAgentFile(
   agentId: string,
-  filename: "SOUL.md" | typeof CONTEXT_FILENAME | typeof LISTINGS_FILENAME,
+  filename:
+    | "SOUL.md"
+    | typeof CONTEXT_FILENAME
+    | typeof LISTINGS_FILENAME
+    | typeof MATTERS_FILENAME,
   content: string,
   // Six attempts over 90 seconds is right at PROVISION, where the instance is still booting and
   // the first few execs are expected to fail. It is wrong for a write months later: a box that
@@ -626,6 +633,27 @@ export function buildUserMd(
           `change it on the Listings page.`,
         ]
       : []),
+    // The same wiring for the Law Agent, and the same reason: without a pointer the Matters page
+    // is a spreadsheet, because the scheduled reports for this role open with "go through my open
+    // matters" and nothing tells the agent where that list lives.
+    ...(hasMatters(agentTypeId)
+      ? [
+          ``,
+          `## Their matters`,
+          ``,
+          `There is a file called \`${MATTERS_FILENAME}\` in this same directory listing every`,
+          `matter this practice has open, kept up to date from the Matters page in their`,
+          `dashboard. READ IT whenever a question touches a matter, a client, a deadline or "the`,
+          `file" - it is ground truth, and you should never guess at this list or work from what`,
+          `you remember of an earlier conversation.`,
+          ``,
+          `It is an INDEX, not a case file: who, what kind, and what is due. A thin entry does not`,
+          `mean little is happening, and nothing privileged should be written back into it.`,
+          ``,
+          `You cannot edit it. If something in it is wrong or missing, say so and tell them to`,
+          `change it on the Matters page.`,
+        ]
+      : []),
   ].join("\n");
 }
 
@@ -672,6 +700,9 @@ async function injectAfterProvision(
   // is a real answer.
   if (hasListings(type.id)) {
     await injectAgentFile(agentId, LISTINGS_FILENAME, buildListingsMd([]));
+  }
+  if (hasMatters(type.id)) {
+    await injectAgentFile(agentId, MATTERS_FILENAME, buildMattersMd([]));
   }
 
   const db = createAdminClient();
