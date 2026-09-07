@@ -298,6 +298,16 @@ export default function Footer() {
               >
                 Cookie Policy
               </Link>
+              {/* Terms belong in this row and were simply missing: the site took payments from
+                  $449 upwards with no terms of service anywhere on it, and the agent sites'
+                  terms point here for the purchase agreement. */}
+              <Link
+                href="/terms"
+                className="font-body text-xs transition-colors hover:text-white"
+                style={{ color: WHITE_MUTED }}
+              >
+                Terms of Service
+              </Link>
             </div>
           </div>
         </div>
