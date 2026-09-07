@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ThemePicker } from "@/components/ThemePicker";
+import { SidebarPicker } from "@/components/SidebarPicker";
 
 export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
@@ -57,6 +58,7 @@ export function SettingsView() {
       {/* The logo-upload card that lived here is retired at David's call: the rail always
           shows the ApolloClaw mark now, so a customer logo had nowhere to appear. */}
       <ThemePicker />
+      <SidebarPicker />
 
       <div className="space-y-2">
         <Label htmlFor="ws-name">Workspace name</Label>
