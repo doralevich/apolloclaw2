@@ -34,6 +34,31 @@ export interface ScheduleRow {
   last_run_on: string | null;
   last_status: string | null;
   last_error: string | null;
+  /** The customer's own instruction. When set, this is what the scheduled turn asks for, and
+   *  `skill` is a `custom:<slug>` identifier rather than one of ours. */
+  prompt: string | null;
+  /** What a custom report is called in the dashboard. Null for the built-in three. */
+  title: string | null;
+}
+
+/** Custom rows are identified by their skill prefix alone, so the sweep, the API guard and the UI
+ *  can all recognise one without reading the prompt. The database enforces the pairing. */
+export const CUSTOM_PREFIX = "custom:";
+
+export function isCustomSchedule(skill: string): boolean {
+  return skill.startsWith(CUSTOM_PREFIX);
+}
+
+/** A title to a stable skill key. Lowercase, hyphenated, trimmed to something a column and a URL
+ *  can both hold. Two reports with the same name collide on the unique constraint, which is the
+ *  intended answer rather than a bug: they are the same report. */
+export function customSkillKey(title: string): string {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  return `${CUSTOM_PREFIX}${slug}`;
 }
 
 export { isDue } from "@/lib/schedule-timing";
@@ -86,9 +111,18 @@ export async function runSchedule(row: ScheduleRow): Promise<string> {
   };
 
   try {
+    // A custom report sends the customer's own instruction. The trailing line is the same in both
+    // cases and is the whole reason it is appended rather than left to the customer to remember:
+    // "give me a rundown of X" written into a box at 11pm does not anticipate arriving as a
+    // Telegram message at 8am, and without this every custom report opens with a paragraph about
+    // being a scheduled report.
+    const instruction = row.prompt
+      ? `${row.prompt.trim()}\n\nThis is a scheduled report, so lead with the content - no preamble about it being scheduled, and no restating the request back to me.`
+      : `Run your ${row.skill} skill now and give me the result. This is the scheduled run, so lead with the content - no preamble about it being scheduled.`;
+
     const result = await runTurn(
       row.agent37_id,
-      `Run your ${row.skill} skill now and give me the result. This is the scheduled run, so lead with the content - no preamble about it being scheduled.`,
+      instruction,
       // No session id: a scheduled brief starts clean rather than continuing yesterday's chat,
       // which would drag a week of unrelated context into every morning.
       null

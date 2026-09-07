@@ -70,6 +70,13 @@ export function ChecklistView() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {/* GONE WHEN THERE IS NOTHING TO COUNT, David's call.
+          With no checklist items this card was a heading and a sentence over an empty progress
+          slot - "Getting set up" above "Set up where your agent reaches you, and when it runs",
+          and then the channels panel doing the actual work underneath. The sentence had also gone
+          stale: it promised "and when it runs", which moved to its own My Schedule tab.
+          Where there ARE items the card earns its place, because it carries the count. */}
+      {hasItems && (
       <div className="rounded-xl border bg-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -77,39 +84,34 @@ export function ChecklistView() {
               {complete ? "You are set up." : "Getting set up"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {!hasItems
-                ? "Set up where your agent reaches you, and when it runs."
-                : personalized
-                  ? "Built from what you told us at onboarding, so it only lists what applies to you."
-                  : "The essentials, in the order they matter."}
+              {personalized
+                ? "Built from what you told us at onboarding, so it only lists what applies to you."
+                : "The essentials, in the order they matter."}
             </p>
           </div>
           {/* The number, at the size the number deserves. A progress bar with the count buried
               in 12px grey underneath made the one fact people came for the smallest thing here. */}
-          {hasItems && (
-            <div className="shrink-0 text-right">
-              <div className="text-2xl font-semibold tabular-nums">
-                {doneCount}
-                <span className="text-muted-foreground">/{total}</span>
-              </div>
-              <div className="text-xs text-muted-foreground">{pct}% done</div>
+          <div className="shrink-0 text-right">
+            <div className="text-2xl font-semibold tabular-nums">
+              {doneCount}
+              <span className="text-muted-foreground">/{total}</span>
             </div>
-          )}
+            <div className="text-xs text-muted-foreground">{pct}% done</div>
+          </div>
         </div>
 
-        {hasItems && (
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full rounded-full bg-primary transition-[width] duration-500"
-              style={{ width: `${pct}%` }}
-              role="progressbar"
-              aria-valuenow={doneCount}
-              aria-valuemin={0}
-              aria-valuemax={total}
-            />
-          </div>
-        )}
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{ width: `${pct}%` }}
+            role="progressbar"
+            aria-valuenow={doneCount}
+            aria-valuemin={0}
+            aria-valuemax={total}
+          />
+        </div>
       </div>
+      )}
 
       {loading && items.length === 0 ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
