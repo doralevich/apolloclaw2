@@ -27,8 +27,26 @@ export function ChatPageClient() {
   const [prefill, setPrefill] = useState<string | undefined>(undefined);
   if (q && !prefill) setPrefill(q.slice(0, 2000));
 
-  // Fill the dashboard main area (minus its p-4/p-6 padding) so the rail + pane get real height.
-  const frame = "flex h-[calc(100vh-2rem)] overflow-hidden rounded-xl border bg-card md:h-[calc(100vh-3rem)]";
+  // Fill the slot the shell gives us. h-full, NOT a viewport calculation.
+  //
+  // This was h-[calc(100vh-2rem)] / md:h-[calc(100vh-3rem)], subtracting the p-4/p-6 padding of
+  // the dashboard main area - padding this page does not get. The shell renders chat through a
+  // bare `min-h-0 flex-1` slot precisely so the conversation is not boxed inside a reading
+  // measure, so there was nothing there to subtract.
+  //
+  // What it failed to subtract was the chrome that IS above us: a 3.5rem header, and in support
+  // view a banner on top of that. So the frame stood taller than the space it was given, and the
+  // shell's overflow-hidden cut the difference off the bottom - which is the composer. Half a rem
+  // for everyone, about three when the support banner is up, which is where it was spotted.
+  //
+  // Growing into the slot ends the arithmetic. The slot is already exactly the right height,
+  // ChatView is already h-full min-h-0, and nothing here has to know what sits above it any more.
+  //
+  // The shell's chat slot is now a flex row (it had to become one for this), so height arrives
+  // through align-items:stretch and width through flex-1. No percentage, no viewport sum - which
+  // matters on mobile especially, where that column is sized by min-h-screen rather than a fixed
+  // height and a percentage would have had nothing firm to resolve against.
+  const frame = "flex min-h-0 flex-1 overflow-hidden rounded-xl border bg-card";
 
   if (loading && !active) {
     return (

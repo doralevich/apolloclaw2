@@ -442,7 +442,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             came straight back off; it survives only on the chat WELCOME state (ChatView), the
             screen it was designed for, where there is nothing to read underneath it. */}
         {isChat ? (
-          <div className="min-h-0 flex-1">{children}</div>
+          // A flex row, so the chat frame inside gets its height from align-items:stretch and its
+          // width from flex-1, without a percentage or a viewport sum anywhere.
+          //
+          // It used to be a plain block, which left the page below measuring itself against the
+          // viewport and guessing at the chrome above it - wrong by half a rem normally, and by
+          // the whole support banner in support view, with the composer clipped off the bottom.
+          <div className="flex min-h-0 flex-1">{children}</div>
         ) : (
           <main className="relative min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-7xl p-4 md:p-6">{children}</div>
