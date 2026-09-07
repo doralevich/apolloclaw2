@@ -8,7 +8,6 @@ import { useChatContext } from "@/components/chat/ChatProvider";
 import { useChecklist, type ResolvedItem } from "@/lib/useChecklist";
 import { CHECKLIST_CATEGORIES, type ChecklistIcon } from "@/config/checklist";
 import { Button } from "@/components/ui/button";
-import { SchedulePanel } from "@/components/SchedulePanel";
 import { ChannelsPanel } from "@/components/ChannelsView";
 import { CHANNELS_ENABLED } from "@/config/channels";
 import { HelpFooter } from "@/components/HelpFooter";
@@ -66,7 +65,7 @@ export function ChecklistView() {
   const complete = total > 0 && doneCount === total;
   // No handover items (the white-glove / no-answers cohort, now that the app cards are gone):
   // there is nothing to count, so the progress number and bar would read 0/0. Drop them and let
-  // the channel and schedule panels below be the whole page.
+  // the channels panel below be the whole page.
   const hasItems = total > 0;
 
   return (
@@ -139,34 +138,34 @@ export function ChecklistView() {
             );
           })}
 
-          {/* Where the agent answers you (channels) and when it runs (the schedule). Neither is an
-              app-connect card - they were never in the checklist item list - so they render from
-              their own panels, kept here after David took the tool-connect cards off this page but
-              asked to leave the communication setup on it. Same reuse rule as ever: the Channels
-              page's own panel and SchedulePanel, so the surfaces cannot drift. */}
-          <section>
-            {/* The channels half is gated on the same flag as /dashboard/channels, and was not.
-                That made the flag a half-truth: with it off the Channels page 404'd and the Start
-                Here tile hid, while this page went on rendering the very same cards, so the
-                feature was "off" and reachable at the same time. A kill switch that does not kill
-                is worse than none, because it is believed. The schedule is not gated - it does
-                not depend on the flag and reads fine on its own. */}
-            {CHANNELS_ENABLED && (
-              <>
-                <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Where your agent answers you
-                  </h2>
-                </div>
-                <p className="mb-3 px-1 text-sm text-muted-foreground">
-                  Pick a chat app and your agent messages you there - these connect with a few
-                  setup steps, not a Connect button. Open a card for its walkthrough.
-                </p>
-                <ChannelsPanel agentId={agentId} agentName={active.name} showHeading={false} />
-              </>
-            )}
-            <ScheduleBlock agentId={agentId} />
-          </section>
+          {/* Where the agent answers you. Not an app-connect card - it was never in the checklist
+              item list - so it renders from the Channels page's own panel, kept here after David
+              took the tool-connect cards off this page but asked to leave the communication setup
+              on it. Same reuse rule as ever, so the two surfaces cannot drift.
+
+              The schedule used to sit below this and no longer does: it has its own My Schedule
+              tab now, and a setup panel that exists in two places is one somebody edits in the
+              wrong one.
+
+              Gated on the same flag as /dashboard/channels, which it once was not. That made the
+              flag a half-truth: with it off the Channels page 404'd and the Start Here tile hid,
+              while this page went on rendering the very same cards, so the feature was "off" and
+              reachable at the same time. A kill switch that does not kill is worse than none,
+              because it is believed. */}
+          {CHANNELS_ENABLED && (
+            <section>
+              <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Where your agent answers you
+                </h2>
+              </div>
+              <p className="mb-3 px-1 text-sm text-muted-foreground">
+                Pick a chat app and your agent messages you there - these connect with a few
+                setup steps, not a Connect button. Open a card for its walkthrough.
+              </p>
+              <ChannelsPanel agentId={agentId} agentName={active.name} showHeading={false} />
+            </section>
+          )}
         </>
       )}
 
@@ -186,28 +185,6 @@ export function ChecklistView() {
       </div>
 
       <HelpFooter />
-    </div>
-  );
-}
-
-// The schedule, where the channel cards used to be. David's call, and the swap is the right way
-// round.
-//
-// The channel cards were the Channels page's own component, embedded here so the two could not
-// drift. That was true and still left this page duplicating a whole page of the dashboard: the
-// checklist already carries a "choose where it answers you" row that links to Channels, so the
-// cards below it were the same job done twice, and they were the longest thing on the screen.
-//
-// A schedule is the opposite case. It has no row of its own, it is the step people do not think
-// to look for, and it is the difference between an agent that answers when spoken to and one
-// that turns up on its own on Monday morning - which is the thing customers say sold them. It
-// belongs on the list of things worth setting up.
-//
-// Same reuse rule as before: the Channels page's SchedulePanel, not a copy of it.
-function ScheduleBlock({ agentId }: { agentId: string }) {
-  return (
-    <div className="mt-2">
-      <SchedulePanel agentId={agentId} />
     </div>
   );
 }

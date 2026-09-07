@@ -15,7 +15,9 @@ import { Button } from "@/components/ui/button";
 // without being asked") something you found by scrolling past a setup screen you had already
 // finished with. David's call: its own tab.
 //
-// Same SchedulePanel the Checklist uses, not a copy, so the two surfaces cannot drift.
+// And now the ONLY place it lives. The Checklist carried the same panel for a while, which was a
+// half-move: a tab of its own plus a copy further down the same dashboard is two places to find
+// one setting and one of them to edit by mistake. David's call to take it off the Checklist.
 
 export function ScheduleView() {
   const { active, loading, error, refresh } = useActiveAgent();
