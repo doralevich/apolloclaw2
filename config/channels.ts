@@ -79,9 +79,23 @@ export const CHANNELS: ChannelDef[] = [
     recommended: true,
     tagline: "Your own private bot",
     logo: composioLogoUrl("telegram"),
+    // WRITTEN FOR A REALTOR, not a developer, David's call. The old version was two lines -
+    // "open @BotFather and send /newbot", "copy the token and paste it below" - which is
+    // accurate, complete, and useless to somebody who has never met a bot. It assumed the reader
+    // knew what BotFather is, that /newbot is typed as a message, that two different names are
+    // asked for, and what a token looks like when it arrives.
+    //
+    // Six steps now, each naming what you will SEE rather than what to do in the abstract. The
+    // extra length is the point: this is the one setup in the product that sends somebody into
+    // another app to have a conversation with a robot, and vague instructions there cost far
+    // more than the four lines they save here.
     steps: [
-      "In Telegram, open @BotFather and send /newbot to create a bot.",
-      "Copy the bot token it gives you and paste it below.",
+      "Open Telegram and search for BotFather. Pick the one with the blue check - there are copies.",
+      "Tap Start, then send it the message /newbot",
+      "It asks for a name first. That is the title you will see at the top of the chat, so anything you like: your agent's name is a good choice.",
+      "Then it asks for a username. This one has to be unique across all of Telegram and end in the word bot, which is why the first few you try are usually taken. There is a suggestion below that should be free.",
+      "It replies with a long token that looks like 123456789:ABCdef... Copy the whole thing, including the numbers before the colon.",
+      "Paste it below and press Connect. One more button appears after that - tap it to say hello to your bot, and you are done.",
     ],
     fields: [
       { key: "botToken", label: "Bot token", placeholder: "Paste your bot token (e.g. 123456:ABC-DEF...)" },

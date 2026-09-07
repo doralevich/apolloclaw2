@@ -694,7 +694,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
   // `name` below is the name the customer types for their agent, so the brand name gets its own
   // identifier. Getting these two confused renders the customer's own input back at them in a
   // sentence that is supposed to say what they bought.
-  const { a, name: brandName } = useAccent();
+  const { a, mascot, name: brandName } = useAccent();
   const productName = brandName ? `${brandName} Agent` : agentLabel;
   const [name, setName] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -719,8 +719,15 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
     setName(pool[Math.floor(Math.random() * pool.length)]);
   };
 
-  const previewUrl =
-    avatarPreview || presetImage || initialsAvatarDataUri(name.trim() || agentLabel, presetColor || AVATAR_COLORS[0]);
+  // THE DEFAULT IS THE AGENT'S OWN FACE, David's call. It used to be the customer's initials on a
+  // coloured circle, which is the least personal option on a screen whose whole job is to make the
+  // thing feel like theirs - and it was the one you got by doing nothing, which is what most people
+  // do. A Real Estate buyer now starts on the Real Estate robot they have already seen on the
+  // marketing site, the gate and the questionnaire.
+  //
+  // Initials remain the fallback behind the fallback, for agent types with no mascot yet.
+  const defaultAvatar = mascot ?? initialsAvatarDataUri(name.trim() || agentLabel, AVATAR_COLORS[0]);
+  const previewUrl = avatarPreview || presetImage || defaultAvatar;
   const chipStyle: React.CSSProperties = { background: SRF2, border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 12.5, padding: "6px 14px", borderRadius: 20, cursor: "pointer" };
 
   return (
@@ -786,7 +793,7 @@ function Personalize({ agentLabel, onNext }: { agentLabel: string; onNext: (d: P
         {/* avatarPresetImage was hardcoded null while there were no image presets to send. The
             downstream handling never went away - /api/agent-setup and /api/onboard/complete both
             still read it - so wiring it back up is this one argument. */}
-        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor ?? AVATAR_COLORS[0], avatarPresetImage: presetImage })} style={{ width: "100%", marginTop: 28, background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
+        <button type="button" onClick={() => onNext({ agentName: name.trim(), avatarFile, avatarPresetColor: presetColor ?? AVATAR_COLORS[0], avatarPresetImage: presetImage ?? (mascot ?? null) })} style={{ width: "100%", marginTop: 28, background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
           Continue →
         </button>
       </div>
