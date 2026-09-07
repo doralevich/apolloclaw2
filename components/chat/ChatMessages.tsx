@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Check, ChevronDown, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
+import { Check, ChevronDown, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import { AgentFace } from "@/components/AgentFace";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
@@ -14,32 +15,11 @@ import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
 // pose, or their own logo uploaded - appeared everywhere in the dashboard EXCEPT the place they
 // spend all their time. Every reply came from a generic robot outline.
 //
-// Falls back the same way the picker does: the chosen picture, then the agent's initial. Not a
-// stand-in mascot - that made an unconfigured agent look like it had been given a face. The Bot
-// glyph survives only for an agent with no name to take a letter from.
+// The fallback rules live in AgentFace, which the Home greeting draws from too.
 function AgentBadge() {
   const { active } = useActiveAgent();
-  const [broken, setBroken] = useState(false);
-  const src = active?.avatar_url;
-  const initial = (active?.name || "").trim().charAt(0).toUpperCase();
-
   return (
-    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background text-xs font-semibold text-muted-foreground">
-      {src && !broken ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt=""
-          loading="lazy"
-          className="h-7 w-7 object-cover"
-          onError={() => setBroken(true)}
-        />
-      ) : initial ? (
-        initial
-      ) : (
-        <Bot className="h-4 w-4" />
-      )}
-    </span>
+    <AgentFace src={active?.avatar_url} name={active?.name} className="mt-0.5 h-7 w-7 text-xs" />
   );
 }
 

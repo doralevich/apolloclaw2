@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Blocks, CalendarClock, Send, UserPlus, type LucideIcon } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
+import { AgentFace } from "@/components/AgentFace";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
@@ -15,7 +16,7 @@ import { cn } from "@/lib/utils";
 // It replaced the College-style Welcome card (agent intro + three numbered onboarding steps),
 // David's call once the redesign settled: a returning customer does not want to be introduced to
 // their agent every login, they want one tap into the handful of things they actually do. So the
-// page is a greeting and four action tiles - start a conversation, set a schedule, connect an app,
+// page is a greeting and four action tiles - connect Telegram, connect an app, set a schedule,
 // invite a teammate - each going straight to the surface that does it. The setup guidance the old
 // steps carried still lives on the Checklist tab; nothing was lost, it moved to the page built for
 // it.
@@ -51,32 +52,41 @@ export function StartHereView() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Hey{userFirstName ? " " : ""}
-          {userFirstName && <span className="text-primary">{userFirstName}</span>}.
-        </h1>
-        {/* A WELCOME, not just a prompt, David's call. The line here used to be "What would you
-            like <agent> to take off your plate?" - a question asked of somebody who may have
-            owned the thing for four minutes and does not yet know what it can take. It reads as
-            a search box, not a greeting.
+      {/* THE AGENT SPEAKS HERE, David's call. This page used to talk ABOUT the agent in the third
+          person - "<agent> is built and ready. It already knows your business" - which is how you
+          describe a product to somebody deciding whether to buy it, not how the thing they just
+          bought says hello. First person, with its own face beside the words, is the difference
+          between a dashboard and meeting somebody.
 
-            So: say what they have, say the one thing worth doing first, and point at chat in a
-            sentence rather than spending a tile on it. Chat sits directly under Home on the rail
-            and is the one destination nobody needs a tile to find; the four tiles below are the
-            setup somebody actually has to be told about. */}
-        <p className="mt-3 text-lg text-muted-foreground">
-          {agentName} is built and ready. It already knows your business from the setup
-          questionnaire, so you can{" "}
-          <Link href="/dashboard/chat" className="font-medium text-primary underline-offset-4 hover:underline">
-            start a conversation
-          </Link>{" "}
-          right now and put it to work.
-        </p>
-        <p className="mt-2 text-lg text-muted-foreground">
-          The four below are worth twenty minutes today. The first is the one that changes how it
-          feels to own: reach it from your phone, the way you would a colleague.
-        </p>
+          Its face sits in the left gutter for the same reason it sits beside every message in the
+          transcript: the greeting is a message, and a message has a sender. */}
+      <div className="flex items-start gap-4 sm:gap-5">
+        <AgentFace
+          src={active.avatar_url}
+          name={agentName}
+          className="mt-1 size-12 text-lg sm:size-14 sm:text-xl"
+        />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Hey{userFirstName ? " " : ""}
+            {userFirstName && <span className="text-primary">{userFirstName}</span>}.
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Nice to meet you. I&apos;m {agentName}, and I already know your business from the
+            questionnaire we went through, so{" "}
+            <Link
+              href="/dashboard/chat"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              let&apos;s start a conversation
+            </Link>{" "}
+            and get right to work.
+          </p>
+          <p className="mt-2 text-lg text-muted-foreground">
+            The four below are worthy of 20 minutes today. The first is the one that changes how it
+            feels to own: reach me from your phone, the way you would a colleague.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -89,21 +99,21 @@ export function StartHereView() {
             href="/dashboard/channels?open=telegram"
             icon={Send}
             title="Connect it to Telegram"
-            desc={`Message ${agentName} from your phone like you would a colleague. About two minutes to set up.`}
+            desc="Message me from your phone like you would a colleague. About two minutes to set up."
           />
         )}
         <LauncherTile
           href="/dashboard/integrations"
           icon={Blocks}
           title="Connect an app"
-          desc={`Give ${agentName} access to your mail, calendar, or files so it can work in them for you.`}
+          desc="Give me access to your mail, calendar, or files so I can work in them for you."
         />
         {/* Points at the new My Schedule tab rather than the checklist it used to open. */}
         <LauncherTile
           href="/dashboard/schedule"
           icon={CalendarClock}
           title="Set a schedule"
-          desc={`Have ${agentName} run on its own, like a numbers recap every Monday morning.`}
+          desc="Have me run on my own, like a numbers recap every Monday morning."
         />
         <LauncherTile
           href="/dashboard/settings/members"
