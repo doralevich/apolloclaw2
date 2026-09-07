@@ -8,6 +8,7 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { HelpFooter } from "@/components/HelpFooter";
 import { getAgentType } from "@/config/agent-types";
 import { CHANNELS_ENABLED } from "@/config/channels";
+import { hiddenForEveryone } from "@/config/nav";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { SetupChecklist } from "@/components/SetupChecklist";
 import { cn } from "@/lib/utils";
@@ -103,19 +104,28 @@ export function StartHereView() {
             desc="Message me from your phone like you would a colleague. About two minutes to set up."
           />
         )}
-        <LauncherTile
-          href="/dashboard/integrations"
-          icon={Blocks}
-          title="Connect an app"
-          desc="Give me access to your mail, calendar, or files so I can work in them for you."
-        />
+        {/* These two follow the product-wide switch in config/nav.ts, the same way the Telegram
+            tile follows the channels flag and for the same reason: a section taken out of the
+            product should not still be advertised from its front page. The PER-PERSON setting is
+            deliberately not consulted here - hiding a rail row is a tidying preference, and it
+            must not quietly delete the route somebody was pointed at. */}
+        {!hiddenForEveryone("/dashboard/integrations") && (
+          <LauncherTile
+            href="/dashboard/integrations"
+            icon={Blocks}
+            title="Connect an app"
+            desc="Give me access to your mail, calendar, or files so I can work in them for you."
+          />
+        )}
         {/* Points at the new My Schedule tab rather than the checklist it used to open. */}
-        <LauncherTile
-          href="/dashboard/schedule"
-          icon={CalendarClock}
-          title="Set a schedule"
-          desc="Have me run on my own, like a numbers recap every Monday morning."
-        />
+        {!hiddenForEveryone("/dashboard/schedule") && (
+          <LauncherTile
+            href="/dashboard/schedule"
+            icon={CalendarClock}
+            title="Set a schedule"
+            desc="Have me run on my own, like a numbers recap every Monday morning."
+          />
+        )}
         <LauncherTile
           href="/dashboard/settings/members"
           icon={UserPlus}

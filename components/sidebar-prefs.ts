@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
+import { HIDEABLE_NAV } from "@/config/nav";
 
 // Which daily-rail rows this person has chosen not to see.
 //
@@ -23,18 +24,12 @@ import { useCallback, useSyncExternalStore } from "react";
 
 export const HIDDEN_NAV_STORAGE_KEY = "apolloclaw-hidden-nav";
 
-/**
- * The rows a person is allowed to hide.
- *
- * Home and Chat are deliberately absent. Home is where every login lands, and Chat is the
- * product - a rail that can be emptied of both is a way to lose the thing you paid for behind a
- * checkbox you ticked once and forgot.
- */
-export const HIDEABLE_NAV = [
-  { href: "/dashboard/checklist", label: "Checklist" },
-  { href: "/dashboard/integrations", label: "Connections" },
-  { href: "/dashboard/schedule", label: "My Schedule" },
-] as const;
+// The list of rows that can be hidden lives in config/nav.ts, next to the platform-wide switch,
+// so there is one answer to "which rows are these?" rather than two that can drift.
+//
+// Home and Chat are absent from it deliberately. Home is where every login lands, and Chat is the
+// product - a rail that can be emptied of both is a way to lose the thing you paid for behind a
+// checkbox you ticked once and forgot.
 
 // Set<string>, not the literal union `as const` infers: every caller checks an href that arrives
 // as a plain string (a pathname, a parsed storage value), and a union-typed Set rejects those at

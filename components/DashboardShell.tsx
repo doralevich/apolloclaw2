@@ -12,6 +12,7 @@ import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useHiddenNav } from "@/components/sidebar-prefs";
+import { hiddenForEveryone } from "@/config/nav";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -153,14 +154,22 @@ function SidebarContent({
   // Home always shows now (David's call): it is a launcher you come back to, not a getting-started
   // page you outgrow, so the tab is never hidden and there is no retire-after-N-logins rule.
   //
-  // What CAN go is whatever this person switched off in Settings > General - Checklist,
-  // Connections, My Schedule. Per person and per device, like Appearance; see sidebar-prefs.
+  // What CAN go, in two layers that do not mean the same thing.
   //
-  // The row you are standing on is never hidden. Someone who follows a link into Connections with
-  // Connections switched off should still see where they are, and a rail that silently drops the
-  // highlighted tab reads as the app losing its place rather than as a preference being honoured.
+  // PRODUCT-WIDE (config/nav.ts, NEXT_PUBLIC_HIDDEN_NAV): every workspace, every user, every
+  // device. This is a decision about what ApolloClaw ships with, so it is absolute - it applies
+  // even on the page itself, and no customer setting can bring the row back.
+  //
+  // PER PERSON (Settings > General): one person, one device, a convenience. This one yields to
+  // the page you are standing on. Follow a link into Connections having hidden Connections and the
+  // tab is there, highlighted; a rail that silently drops the tab you are on reads as the app
+  // losing its place rather than as a preference being honoured. The product-wide switch gets no
+  // such exception, because there the row is not meant to exist for you at all.
   const { isHidden } = useHiddenNav();
-  const nav = NAV.filter((item) => !isHidden(item.href) || pathname.startsWith(item.href));
+  const nav = NAV.filter((item) => {
+    if (hiddenForEveryone(item.href)) return false;
+    return !isHidden(item.href) || pathname.startsWith(item.href);
+  });
 
   const { current, workspaces, isPlatformAdmin } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;
