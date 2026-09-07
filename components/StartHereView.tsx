@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Blocks, CalendarClock, MessageSquare, Send, UserPlus, type LucideIcon } from "lucide-react";
+import { ArrowRight, Blocks, CalendarClock, Send, UserPlus, type LucideIcon } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { HelpFooter } from "@/components/HelpFooter";
@@ -56,46 +56,54 @@ export function StartHereView() {
           Hey{userFirstName ? " " : ""}
           {userFirstName && <span className="text-primary">{userFirstName}</span>}.
         </h1>
+        {/* A WELCOME, not just a prompt, David's call. The line here used to be "What would you
+            like <agent> to take off your plate?" - a question asked of somebody who may have
+            owned the thing for four minutes and does not yet know what it can take. It reads as
+            a search box, not a greeting.
+
+            So: say what they have, say the one thing worth doing first, and point at chat in a
+            sentence rather than spending a tile on it. Chat sits directly under Home on the rail
+            and is the one destination nobody needs a tile to find; the four tiles below are the
+            setup somebody actually has to be told about. */}
         <p className="mt-3 text-lg text-muted-foreground">
-          What would you like {agentName} to take off your plate?
+          {agentName} is built and ready. It already knows your business from the setup
+          questionnaire, so you can{" "}
+          <Link href="/dashboard/chat" className="font-medium text-primary underline-offset-4 hover:underline">
+            start a conversation
+          </Link>{" "}
+          right now and put it to work.
+        </p>
+        <p className="mt-2 text-lg text-muted-foreground">
+          The four below are worth twenty minutes today. The first is the one that changes how it
+          feels to own: reach it from your phone, the way you would a colleague.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <LauncherTile
-          primary
-          href="/dashboard/chat"
-          icon={MessageSquare}
-          title="Start a conversation"
-          desc={`Ask ${agentName} to draft an email, summarize a document, or chase an invoice - whatever is on your plate.`}
-        />
-        {/* The tile that was missing, and the reason it matters more than its position suggests:
-            reaching the agent from your phone is what turns it from a website you visit into an
-            assistant you have. Nothing on this page mentioned it, so the only way to find it was
-            to notice a Channels tab in the nav and guess what it was for.
-
-            Deep-links with ?open=telegram so it lands on the open card with its setup steps
-            rather than on three collapsed ones. Hidden entirely when the channels feature is off,
-            because a tile that leads to a 404 is worse than no tile. */}
+        {/* Telegram first, David's call, and it earns the position: it is the difference between
+            a website somebody visits and an assistant they have. Hidden when the channels
+            feature is off, because a tile leading to a 404 is worse than no tile. */}
         {CHANNELS_ENABLED && (
           <LauncherTile
+            primary
             href="/dashboard/channels?open=telegram"
             icon={Send}
-            title="Talk to it on Telegram"
-            desc={`Message ${agentName} from your phone like you would a colleague. Takes a couple of minutes to set up.`}
+            title="Connect it to Telegram"
+            desc={`Message ${agentName} from your phone like you would a colleague. About two minutes to set up.`}
           />
         )}
-        <LauncherTile
-          href="/dashboard/checklist"
-          icon={CalendarClock}
-          title="Set a schedule"
-          desc={`Have ${agentName} run on its own, like a numbers recap every Monday morning.`}
-        />
         <LauncherTile
           href="/dashboard/integrations"
           icon={Blocks}
           title="Connect an app"
           desc={`Give ${agentName} access to your mail, calendar, or files so it can work in them for you.`}
+        />
+        {/* Points at the new My Schedule tab rather than the checklist it used to open. */}
+        <LauncherTile
+          href="/dashboard/schedule"
+          icon={CalendarClock}
+          title="Set a schedule"
+          desc={`Have ${agentName} run on its own, like a numbers recap every Monday morning.`}
         />
         <LauncherTile
           href="/dashboard/settings/members"
