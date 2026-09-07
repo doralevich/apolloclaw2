@@ -1,7 +1,12 @@
 import { requireAgentAccess } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isSchedulableSkill, type ScheduleRow } from "@/lib/schedules";
+import {
+  CUSTOM_PREFIX,
+  customSkillKey,
+  isSchedulableSkill,
+  type ScheduleRow,
+} from "@/lib/schedules";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -18,6 +23,12 @@ function toApi(row: ScheduleRow) {
     enabled: row.enabled,
     lastRunOn: row.last_run_on,
     lastStatus: row.last_status,
+    // Exposed so the dashboard can say WHY a run failed rather than showing nothing, which is
+    // what it did: a schedule whose turn threw looked exactly like one that had never run.
+    // Truncated because this is an upstream error string, not copy - it is a clue, not a story.
+    lastError: row.last_error ? row.last_error.slice(0, 200) : null,
+    prompt: row.prompt,
+    title: row.title,
   };
 }
 
@@ -44,10 +55,42 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
     days?: string;
     timezone?: string;
     enabled?: boolean;
+    /** A custom report: the customer's own instruction, plus what to call it. Sending either of
+     *  these switches this from "schedule one of our skills" to "schedule this request". */
+    prompt?: string;
+    title?: string;
   }>(request);
 
-  if (!body.skill || !isSchedulableSkill(body.skill)) {
-    throw new ApiError(400, "invalid_request", "Unknown or unschedulable skill");
+  // Two shapes through one endpoint, because from the UI's point of view they are the same
+  // question - what should the agent send me, and when.
+  const wantsCustom = typeof body.prompt === "string" || typeof body.title === "string";
+
+  let skill: string;
+  let prompt: string | null = null;
+  let title: string | null = null;
+
+  if (wantsCustom) {
+    title = (body.title ?? "").trim();
+    prompt = (body.prompt ?? "").trim();
+    if (!title) throw new ApiError(400, "invalid_request", "Give the report a name");
+    if (title.length > 60) throw new ApiError(400, "invalid_request", "Name must be 60 characters or fewer");
+    if (!prompt) throw new ApiError(400, "invalid_request", "Say what the report should contain");
+    // Bounded because it is sent as an agent turn every time it fires. A prompt long enough to
+    // matter here is a document, and documents belong in the conversation, not the clock.
+    if (prompt.length > 2000) {
+      throw new ApiError(400, "invalid_request", "Keep the request under 2000 characters");
+    }
+    skill = customSkillKey(title);
+    // A title of nothing but punctuation slugs to an empty key, which would collide with every
+    // other such title and read as `custom:` in the database.
+    if (skill === `${CUSTOM_PREFIX}`) {
+      throw new ApiError(400, "invalid_request", "Give the report a name with letters or numbers in it");
+    }
+  } else {
+    if (!body.skill || !isSchedulableSkill(body.skill)) {
+      throw new ApiError(400, "invalid_request", "Unknown or unschedulable skill");
+    }
+    skill = body.skill;
   }
   if (typeof body.hour !== "number" || body.hour < 0 || body.hour > 23) {
     throw new ApiError(400, "invalid_request", "Hour must be between 0 and 23");
@@ -69,11 +112,13 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
     .upsert(
       {
         agent37_id: id,
-        skill: body.skill,
+        skill,
         hour: body.hour,
         days,
         timezone: body.timezone,
         enabled: body.enabled ?? true,
+        prompt,
+        title,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "agent37_id,skill" }
