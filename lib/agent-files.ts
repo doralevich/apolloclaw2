@@ -99,12 +99,9 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
     ...section(
       "What to push on",
       [
-        bullet("The problem they hired you for", answers.mainPain),
         bullet("What they want most in the next 12 months", answers.strategicBet),
         bullet("What's holding growth back", answers.growthBottleneck),
         bullet("Work they hate doing", answers.hatedTasks),
-        bullet("Hours a week lost to manual work", answers.manualHours),
-        bullet("Parts of the business that are breaking", answers.brokenAreas),
         bullet("How they'll judge whether you're working", answers.successMetric),
         bullet("What they want from an AI agent", answers.aiGoals),
       ],
@@ -118,11 +115,8 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
       [
         bullet("Tone", answers.writingTone),
         bullet("How they'd describe their voice", answers.voiceDescription),
-        bullet("Brands whose voice they like", withWriteIn(answers.brandVoiceLike, answers.brandVoiceLikeOther)),
         bullet("Words and phrases they like", answers.loveWords),
         bullet("Words and styles they hate", answers.hateWords),
-        bullet("Their comfort writing themselves", answers.writingComfort),
-        bullet("Where they post", answers.platforms),
       ],
       `Anything you draft in their name follows this. The words they hate are a hard rule, not` +
         ` a preference.`
@@ -145,18 +139,11 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
     ...section(
       "How they decide",
       [
-        bullet("Decision style", answers.decisionStyle),
-        bullet("Under pressure", answers.stressResponse),
-        bullet("What motivates them", answers.motivators),
-        bullet("What gets in their own way", answers.blockers),
-        bullet("How they think about money", answers.moneyMindset),
         bullet("Trust in technology (1–10)", answers.techTrust),
-        bullet("Comfort handing over control (1–10)", answers.controlComfort),
-        bullet("Past experience with agencies", answers.agencyHistory),
         bullet("Past experience with AI", answers.pastExperience),
       ],
-      `Read the room with this. A low control-comfort score means propose and wait; a high one` +
-        ` means act and report.`
+      `Read the room with this. A low score means propose and wait; a high one means act and` +
+        ` report.`
     )
   );
 
@@ -164,11 +151,12 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
     ...section(
       "Boundaries",
       [
-        bullet("Compliance they're under", answers.compliance),
-        bullet("Sensitive data in the business", answers.dataTypes),
-        bullet("Security measures in place", answers.securityMeasures),
+        // The single most important line in this file when it is filled. Role agents ask it
+        // outright on their last page ("what must never go out without you seeing it first"),
+        // and it arrives here through ROLE_INTAKES.coversScope.guard. A named list of things to
+        // check beats every inferred autonomy score this file used to carry.
+        bullet("Never do this without asking first", answers.autonomyLine),
         bullet("Stated constraints", answers.constraints),
-        bullet("Who signs off on decisions", answers.decisionAuthority),
         bullet("In-house technical help", answers.internalTech),
       ],
       `Treat these as limits on what you do unprompted, not trivia. If a task would touch` +
@@ -177,15 +165,14 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
   );
 
   out.push(
+    // Names, not categories. The marital-status and life-stage bullets that used to sit here
+    // went with the questions behind them: they sorted the owner into a bucket and told the
+    // agent nothing it could act on. What is left is what it can use - knowing the partner is
+    // called Maria, and that Thursday at four is the school run.
     ...section("Life around the work", [
-      bullet("Family", [str(answers.maritalStatus), str(answers.children)].filter(Boolean).join("; ")),
-      bullet("Children's ages", answers.childrenAges),
-      bullet("Caregiving", answers.caretaking),
-      bullet("Home and work setup", answers.homeLife),
-      bullet("What they're protecting", answers.protecting),
-      bullet("Where they are in life", answers.lifeStage),
-      bullet("Three-year goals", answers.threeYearGoals),
-      bullet("What makes it worth it", answers.worthIt),
+      bullet("Partner", answers.partnerName),
+      bullet("Children", [str(answers.children), str(answers.childrenDetails)].filter(Boolean).join(" - ")),
+      bullet("Others who come up in their week", answers.household),
     ], `They told us this so you'd hold it, not so you'd bring it up. Let it shape your timing and` +
       ` your judgement about what's urgent.`)
   );
@@ -225,17 +212,10 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
  */
 export function buildToolsMd(answers: Record<string, unknown>): string {
   const rows = [
-    bullet("Website platform", answers.webPlatform),
     bullet("CRM", [str(answers.crmTools), str(answers.crmToolsOther)].filter(Boolean).join(", ")),
-    bullet("E-commerce", answers.ecomTools),
     bullet("Communications", answers.commsTools),
     bullet("Project management", answers.pmTools),
     bullet("Billing and invoicing", answers.billingTools),
-    bullet("Marketing", answers.mktgTools),
-    bullet("Automation", answers.autoTools),
-    bullet("Support and helpdesk", answers.supportTools),
-    bullet("Hosting / cloud", answers.hosting),
-    bullet("Operating system", answers.os),
   ].filter((r): r is string => !!r);
 
   if (!rows.length) {
