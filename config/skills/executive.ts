@@ -456,6 +456,11 @@ ${NOT_ADVICE}
 `,
   },
   {
+    // KEPT FOR LEGAL. The one member of this family that is not "a question a bigger company has
+    // someone for" but the job itself: unfavourable terms, auto-renewals and where the leverage
+    // is. Excluded from real estate, where a purchase contract is a different document with its
+    // own skill.
+    notFor: ["realestate"],
     slug: "vendor-contract-review",
     emoji: "📋",
     description:
