@@ -11,6 +11,7 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { useHiddenNav } from "@/components/sidebar-prefs";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -85,6 +86,9 @@ const SETTINGS_NAV = [
 
 const SETTINGS_ROOT = "/dashboard/settings";
 
+// Which of the rows above this person switched off, and the list of the ones they may.
+
+
 type NavItem = { href: string; label: string; icon: LucideIcon; exact: boolean };
 
 // One row, used by the app rail, the Settings rail, and the Settings entry itself, so the
@@ -148,7 +152,15 @@ function SidebarContent({
 
   // Home always shows now (David's call): it is a launcher you come back to, not a getting-started
   // page you outgrow, so the tab is never hidden and there is no retire-after-N-logins rule.
-  const nav = NAV;
+  //
+  // What CAN go is whatever this person switched off in Settings > General - Checklist,
+  // Connections, My Schedule. Per person and per device, like Appearance; see sidebar-prefs.
+  //
+  // The row you are standing on is never hidden. Someone who follows a link into Connections with
+  // Connections switched off should still see where they are, and a rail that silently drops the
+  // highlighted tab reads as the app losing its place rather than as a preference being honoured.
+  const { isHidden } = useHiddenNav();
+  const nav = NAV.filter((item) => !isHidden(item.href) || pathname.startsWith(item.href));
 
   const { current, workspaces, isPlatformAdmin } = useWorkspace();
   const hasManyWorkspaces = workspaces.length > 1;
