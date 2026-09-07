@@ -21,6 +21,7 @@ import { MENTAL_MODEL_SKILLS } from "@/config/skills/mental-models";
 import { EXECUTIVE_SKILLS } from "@/config/skills/executive";
 import { SALES_SKILLS } from "@/config/skills/sales";
 import { WRITING_SKILLS } from "@/config/skills/writing";
+import { REAL_ESTATE_SKILLS } from "@/config/skills/real-estate";
 
 export type AgentSkill = {
   /** Directory name under plugin-skills, and the name the runtime lists it under. */
@@ -146,6 +147,16 @@ export const SKILL_FAMILIES: SkillFamily[] = [
     blurb: "Your voice, from what you told us at setup.",
     skills: WRITING_SKILLS,
   },
+  {
+    // The first domain family, and the shape every later one should copy: `onlyFor` in one line
+    // and nothing else in this file to keep in step. It sits last so a real estate agent reads
+    // the general skills first and these as the specialism, which is also the order they were
+    // sold in.
+    onlyFor: ["realestate"],
+    title: "The real estate job",
+    blurb: "Listings, comps, offers and follow-up, done the way the business actually works.",
+    skills: REAL_ESTATE_SKILLS,
+  },
 ];
 
 /** Every skill we ship, regardless of who gets it. The admin install route and the duplicate
@@ -164,8 +175,9 @@ export const AGENT_SKILLS: AgentSkill[] = SKILL_FAMILIES.flatMap((f) => f.skills
  *
  * And every installed skill is listed in `available_skills` at session start, which is context on
  * EVERY turn, forever, on a fleet where input tokens per turn is already a live cost problem.
- * Cutting a set from 58 to 30 is not tidying; it is a permanent discount on every message a
- * customer sends.
+ * Cutting a set is not tidying; it is a permanent discount on every message a customer sends.
+ * Today: 66 in the catalogue, 58 to a generic Apollo agent, 34 to a real estate one - and the 34
+ * includes eight it is the only type to get.
  *
  * The rules compose as you would expect, and the skill wins over its family - a family excluded
  * for a type can still carry one skill that type needs.

@@ -195,10 +195,14 @@ export async function installAgentSkills(
     }
   }
 
+  // Against the set this agent was MEANT to get, not the catalogue. Now that a type gets a subset,
+  // a correct install of a real estate agent would otherwise log 34/66 and read as a partial
+  // failure every single time.
   console.log(
     "[provision:skills-installed]",
     agentId,
-    `${installed.length}/${AGENT_SKILLS.length}`
+    `${installed.length}/${skills.length}`,
+    agentTypeId ?? "all-types"
   );
   return installed;
 }

@@ -260,6 +260,10 @@ ${DRAFT_RULE}
 `,
   },
   {
+    // Keynotes and panels, for a job that does them twice a year if at all. The talking that
+    // matters to a realtor is the listing appointment, which has its own skill. Not worth its
+    // place in available_skills on every turn.
+    notFor: ["realestate"],
     slug: "speech-writing",
     emoji: "🎤",
     description:
