@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { customSkillKey } from "@/lib/schedule-keys";
+import { suggestedReportsFor, type SuggestedReport } from "@/config/scheduled-reports";
 
 // When the agent should message you first.
 //
@@ -66,15 +68,47 @@ const SCHEDULABLE = [
     defaultHour: 8,
     defaultDays: "monday",
   },
+  {
+    // David's ask. Early, because the whole value is having read it before the first one starts -
+    // 7am rather than 8, on the reasoning that a brief about your 8:30 is worthless at 8:15.
+    //
+    // Note what this is NOT: it does not fire before each meeting, it arrives once and covers the
+    // day. Firing per meeting needs the calendar to drive the clock, which the hourly sweep
+    // cannot do.
+    skill: "meeting-prep",
+    label: "Pre-meeting brief",
+    blurb: "Before the day starts: who you're meeting, what happened last time, and what's open.",
+    defaultHour: 7,
+    defaultDays: "weekdays",
+  },
 ] as const;
 
+// Every value the timing logic actually implements, rendered in the order somebody would look for
+// them. This offered three - weekdays, every day, Mondays - while the code underneath had always
+// handled any weekday, so a realtor who works Saturdays could not choose Saturday. David's ask.
 const DAY_OPTIONS = [
   { value: "weekdays", label: "Weekdays" },
   { value: "daily", label: "Every day" },
+  { value: "weekends", label: "Weekends" },
   { value: "monday", label: "Mondays only" },
+  { value: "tuesday", label: "Tuesdays only" },
+  { value: "wednesday", label: "Wednesdays only" },
+  { value: "thursday", label: "Thursdays only" },
+  { value: "friday", label: "Fridays only" },
+  { value: "saturday", label: "Saturdays only" },
+  { value: "sunday", label: "Sundays only" },
 ] as const;
 
-export function SchedulePanel({ agentId }: { agentId: string }) {
+export function SchedulePanel({
+  agentId,
+  agentType,
+}: {
+  agentId: string;
+  /** Which suggestions to offer. Absent or unknown means none, which is the right default: a
+   *  suggestion nobody wrote for this role is worse than no suggestion, because it arrives with
+   *  our name on it. */
+  agentType?: string | null;
+}) {
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
 
   const load = useCallback(() => {
@@ -135,8 +169,111 @@ export function SchedulePanel({ agentId }: { agentId: string }) {
           />
         ))}
 
+      {/* Offered, not created. Nothing here exists until it is clicked, which is what keeps a
+          fleet of agents from each burning a turn every morning delivering into no_channel. */}
+      <SuggestedReports
+        agentId={agentId}
+        agentType={agentType}
+        saved={schedules}
+        onAdded={load}
+      />
+
       <CustomReportForm agentId={agentId} onCreated={load} />
     </div>
+  );
+}
+
+// Reports worth having, for this kind of agent, one click each.
+//
+// The gap this fills is the blank page. Custom reports let anybody ask for anything on a clock and
+// left the floor where it was: a realtor opens this page, sees generic toggles and an empty box
+// headed "write your own", and writes nothing. The hard part was never the typing, it was knowing
+// what to ask for.
+//
+// A suggestion disappears once it is added, because from then on it is a real row rendered above
+// with a time, a status and a delete button. Matching is by the same `custom:<slug>` key the row
+// is saved under, so an added report is recognised even after the customer has renamed nothing
+// and changed everything else.
+function SuggestedReports({
+  agentId,
+  agentType,
+  saved,
+  onAdded,
+}: {
+  agentId: string;
+  agentType?: string | null;
+  saved: Schedule[] | null;
+  onAdded: () => void;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const offers = suggestedReportsFor(agentType);
+  // Wait for the load rather than flashing the full set and removing half of it a moment later.
+  if (!offers.length || saved === null) return null;
+
+  const already = new Set(saved.map((s) => s.skill));
+  const remaining = offers.filter((o) => !already.has(customSkillKey(o.title)));
+  if (!remaining.length) return null;
+
+  function add(report: SuggestedReport) {
+    setBusy(report.title);
+    apiFetch(`/api/agents/${agentId}/schedules`, {
+      method: "PUT",
+      body: JSON.stringify({
+        title: report.title,
+        prompt: report.prompt,
+        hour: report.hour,
+        days: report.days,
+        // The browser's, same as everywhere else on this page. Onboarding never collected one.
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        enabled: true,
+      }),
+    })
+      .then(() => onAdded())
+      .catch((e) => toast.error((e as Error).message))
+      .finally(() => setBusy(null));
+  }
+
+  return (
+    <section className="rounded-xl border border-dashed bg-card/50 p-5">
+      <h3 className="text-base font-semibold">Worth having</h3>
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        Set up for your line of work. Add one and it behaves like any other report: change the
+        time, edit what it asks for, or delete it.
+      </p>
+
+      <ul className="mt-4 space-y-2">
+        {remaining.map((report) => (
+          <li
+            key={report.title}
+            className="flex items-start justify-between gap-4 rounded-lg border bg-card p-4"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{report.title}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{report.blurb}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {DAY_OPTIONS.find((d) => d.value === report.days)?.label ?? report.days} at{" "}
+                {String(report.hour).padStart(2, "0")}:00
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              disabled={busy !== null}
+              onClick={() => add(report)}
+            >
+              {busy === report.title ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Add
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

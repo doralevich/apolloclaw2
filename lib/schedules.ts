@@ -22,7 +22,32 @@ import { parseTaskBlock, recordTasks, TASK_BLOCK_INSTRUCTION } from "@/lib/agent
 // says so in last_status. Connect Telegram and it starts working.
 
 /** Skills that make sense on a clock. The rest are things you ask for, not things that arrive. */
-export const SCHEDULABLE = new Set(["daily-brief", "eod-summary", "weekly-planning"]);
+export const SCHEDULABLE = new Set([
+  "daily-brief",
+  "eod-summary",
+  "weekly-planning",
+  "meeting-prep",
+]);
+
+/**
+ * What a scheduled run of a skill should ASK FOR, where "run the skill" is not specific enough.
+ *
+ * The default instruction names the skill and stops, which works for the three that are already
+ * about a period of time: a daily brief knows it means today. meeting-prep does not - it is
+ * written to brief ONE meeting, and the skill's own first question is which one. Scheduled at 7am
+ * with the generic wording it would ask the customer to pick a meeting, at 7am, by message, which
+ * is the opposite of the point.
+ *
+ * So the clock supplies the scope the skill deliberately leaves open. The METHOD still lives in
+ * the skill file; this only says which meetings to point it at.
+ */
+const SCHEDULED_INSTRUCTION: Record<string, string> = {
+  "meeting-prep":
+    "Run your meeting-prep skill for every meeting on my calendar today, in time order. One" +
+    " short brief each: who is in it, what happened last time, and the open items. If a meeting" +
+    " needs nothing from me, say so in one line rather than padding it out. If there is nothing" +
+    " on the calendar today, reply with one line saying so and nothing else.",
+};
 
 export interface ScheduleRow {
   id: number;
@@ -42,25 +67,10 @@ export interface ScheduleRow {
   title: string | null;
 }
 
-/** Custom rows are identified by their skill prefix alone, so the sweep, the API guard and the UI
- *  can all recognise one without reading the prompt. The database enforces the pairing. */
-export const CUSTOM_PREFIX = "custom:";
-
-export function isCustomSchedule(skill: string): boolean {
-  return skill.startsWith(CUSTOM_PREFIX);
-}
-
-/** A title to a stable skill key. Lowercase, hyphenated, trimmed to something a column and a URL
- *  can both hold. Two reports with the same name collide on the unique constraint, which is the
- *  intended answer rather than a bug: they are the same report. */
-export function customSkillKey(title: string): string {
-  const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-  return `${CUSTOM_PREFIX}${slug}`;
-}
+// Naming and recognising a custom report now lives in lib/schedule-keys.ts, which the dashboard
+// can import - this file cannot be, being server-only. Re-exported so nothing that already asks
+// this module for them has to change.
+export { CUSTOM_PREFIX, isCustomSchedule, customSkillKey } from "@/lib/schedule-keys";
 
 export { isDue } from "@/lib/schedule-timing";
 
@@ -119,7 +129,10 @@ export async function runSchedule(row: ScheduleRow): Promise<string> {
     // being a scheduled report.
     const base = row.prompt
       ? `${row.prompt.trim()}\n\nThis is a scheduled report, so lead with the content - no preamble about it being scheduled, and no restating the request back to me.`
-      : `Run your ${row.skill} skill now and give me the result. This is the scheduled run, so lead with the content - no preamble about it being scheduled.`;
+      : `${
+          SCHEDULED_INSTRUCTION[row.skill] ??
+          `Run your ${row.skill} skill now and give me the result.`
+        } This is the scheduled run, so lead with the content - no preamble about it being scheduled.`;
 
     // Every scheduled report already names things that need the owner - "waiting on you", "still
     // open", "if you only do one thing". Asking for them again as a list costs a few lines of
