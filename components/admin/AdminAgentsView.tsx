@@ -154,18 +154,30 @@ export function AdminAgentsView() {
     await load();
   }
 
-  // Backfill capability defaults (memory embeddings, Tavily search, clock) onto an existing box,
-  // then it restarts to pick them up. New agents get these at provision automatically.
+  // Backfill capability defaults (memory embeddings, Tavily search, browser, clock) onto an
+  // existing box, then it restarts to pick them up. New agents get these at provision
+  // automatically. The note carries what was SKIPPED and why (no Tavily key, no Chrome on the
+  // image), which is the part worth reading - "applied" on its own hides a half-configured box.
   async function applyDefaults(agent: AdminAgentOverview) {
     setApplyingId(agent.agent37_id);
     try {
-      const r = await apiFetch<{ applied: boolean; memory: boolean; webSearch: boolean; timezone: boolean; note?: string }>(
-        `/api/admin/agents/${agent.agent37_id}/apply-defaults`,
-        { method: "POST" }
-      );
+      const r = await apiFetch<{
+        applied: boolean;
+        memory: boolean;
+        webSearch: boolean;
+        browser: boolean;
+        timezone: boolean;
+        note?: string;
+      }>(`/api/admin/agents/${agent.agent37_id}/apply-defaults`, { method: "POST" });
       if (r.applied) {
+        const landed = [
+          r.memory ? "memory" : null,
+          r.webSearch ? "web search" : null,
+          r.browser ? "browser" : null,
+          r.timezone ? "clock" : null,
+        ].filter(Boolean);
         toast.success(
-          `Defaults applied: memory${r.webSearch ? " + web search" : ""}${r.timezone ? " + clock" : ""}. Instance restarting.` +
+          `Defaults applied: ${landed.join(" + ") || "nothing"}. Instance restarting.` +
             (r.note ? ` (${r.note})` : "")
         );
       } else {

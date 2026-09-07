@@ -17,19 +17,29 @@ import { agent37 } from "@/lib/agent37";
 //   read from TAVILY_API_KEY. If that env var is unset the search step is skipped and logged, so
 //   the rest still applies.
 //
+//   BROWSER — off by default, and it is a different thing from search. The browser tool drives a
+//   real isolated Chrome profile over CDP, which is why an instance without one says it needs a
+//   browser session instead of quietly falling back to fetching the page. We write the config only
+//   where the image actually ships a Chrome; where it does not, the fix is the image, not this
+//   file, and the result says so rather than switching on a tool with nothing behind it.
+//
 // TIMEZONE is mostly handled already (captured at onboarding, written into USER.md, used by
 // schedules). We additionally set the box's own clock, best-effort, so timestamps line up. The
 // clock step touches the OS only, never openclaw.json, so it is always safe to run.
 //
 // ── SAFETY: config writes are GATED OFF by default ──────────────────────────────────────────
-// The exact openclaw.json keys below were taken from the OpenClaw docs, not a live box. On the
-// first real backfill a wrong key took a customer instance's agent runtime down: after the
-// config was written and the box restarted, chat returned "The 'openclaw' harness is not
-// available on this instance." The memory/Tavily writes are therefore disabled unless
-// INSTANCE_DEFAULTS_CONFIG=on, so neither a provision nor a manual apply can brick a box while
-// the keys are unverified. The clock step still runs. Use inspectInstanceDefaults against a
-// known-good box to learn the real shape, fix CONFIG below, then flip the flag on. If a box was
-// already bricked, revertInstanceDefaults removes exactly the keys we set and restarts it.
+// The keys here were taken from a docs page rather than a live box. On the first real backfill a
+// wrong key took a customer instance's agent runtime down: after the config was written and the
+// box restarted, chat returned "The 'openclaw' harness is not available on this instance."
+//
+// THE MEMORY KEY WAS THE WRONG ONE, and is now fixed - see CONFIG below. That is the likeliest
+// explanation for the outage, but it is an explanation, not a test: nothing here has been run
+// against a live instance since. The flag therefore stays as it is. Flip it only after
+// inspectInstanceDefaults on a real box confirms the shapes, and then on ONE box before the
+// fleet. If a box was already bricked, revertInstanceDefaults removes exactly the keys we set
+// (old path and new) and restarts it.
+//
+// The clock and the Chrome probe are unaffected and always run: neither writes config.
 
 /** Master switch for the openclaw.json writes (memory + Tavily). Off until the keys below are
  *  verified against a live instance. The clock step is unaffected and always runs. */
@@ -40,13 +50,50 @@ const CONFIG_WRITES_ENABLED = process.env.INSTANCE_DEFAULTS_CONFIG === "on";
 /** Dotted paths into the OpenClaw config (openclaw.json), set via a deep-merge that preserves
  *  everything else. */
 const CONFIG = {
-  /** Local embeddings: node-llama-cpp resolves the default GGUF and auto-downloads it. */
-  memorySearchProvider: ["memory", "search", "provider"] as const,
-  memorySearchProviderValue: "local",
-  /** Tavily web-search plugin. */
+  // MEMORY. The path below was `memory.search.provider`, taken from a docs page, and it is not
+  // where OpenClaw reads this. The real one is under agents.defaults - two bug reports against
+  // the runtime (openclaw#70836, openclaw#72875) both quote the same shape while arguing about
+  // something else, which is the most reliable kind of evidence for a config key: nobody in
+  // either thread is trying to convince anyone what the path is.
+  //
+  // That wrong path is the likeliest cause of the harness going down on the first backfill. A key
+  // OpenClaw does not know is not necessarily ignored; `memory` is a real top-level section and we
+  // were writing a `search` object into it that its schema had no room for.
+  memoryEnabled: ["agents", "defaults", "memorySearch", "enabled"] as const,
+  memoryProvider: ["agents", "defaults", "memorySearch", "provider"] as const,
+  memoryProviderValue: "local",
+  // A model path is REQUIRED - "local" with nothing to load is not a working config, and the
+  // original write set no model at all. The hf: form lets the runtime resolve and cache the GGUF
+  // itself (~0.3 GB, once per box). Overridable so a swap doesn't need a deploy.
+  memoryModelPath: ["agents", "defaults", "memorySearch", "local", "modelPath"] as const,
+  memoryModelValue:
+    process.env.OPENCLAW_EMBED_MODEL?.trim() ||
+    "hf:ggml-org/embeddinggemma-300m-qat-q8_0-GGUF/embeddinggemma-300m-qat-Q8_0.gguf",
+
+  /** Tavily web-search plugin. STILL UNVERIFIED - see the note above the flag. */
   tavilyEnabled: ["plugins", "entries", "tavily", "enabled"] as const,
   tavilyApiKeyPath: ["plugins", "entries", "tavily", "config", "webSearch", "apiKey"] as const,
+
+  // BROWSER. Written only when the box actually has a Chrome to drive (see CHROME_PROBE). The
+  // browser tool is not a plugin and not search: it drives a real isolated Chrome profile over
+  // CDP, which is why a fresh instance asks for a browser session rather than falling back to
+  // fetching a page. headless and noSandbox are both required in a container.
+  browserEnabled: ["browser", "enabled"] as const,
+  browserHeadless: ["browser", "headless"] as const,
+  browserNoSandbox: ["browser", "noSandbox"] as const,
+  browserProfile: ["browser", "defaultProfile"] as const,
+  browserProfileValue: "openclaw",
 };
+
+/** What the first backfill wrote. Wrong, and removed from any box still carrying it. */
+const LEGACY_MEMORY_PATH = ["memory", "search", "provider"] as const;
+
+/** Chrome under any of the names the common images use. Empty output means no browser on the box,
+ *  and then we write no browser config at all - a tool switched on with nothing behind it is how
+ *  an agent ends up promising to open a page it cannot open. */
+const CHROME_PROBE =
+  'CHROME=""; for b in google-chrome google-chrome-stable chromium chromium-browser; do ' +
+  'if command -v "$b" >/dev/null 2>&1; then CHROME="$(command -v "$b")"; break; fi; done; ';
 
 export interface InstanceDefaultsOptions {
   /** IANA timezone (e.g. "America/New_York"); best-effort sets the box clock. */
@@ -62,6 +109,8 @@ export interface InstanceDefaultsResult {
   applied: boolean;
   memory: boolean;
   webSearch: boolean;
+  /** True only when the box had a Chrome binary and the browser block was written. */
+  browser: boolean;
   timezone: boolean;
   note?: string;
 }
@@ -106,26 +155,43 @@ export async function applyInstanceDefaults(
   // When config writes are disabled we still do the clock, then stop — no openclaw.json touch,
   // so there is nothing that can take the harness down.
   if (!CONFIG_WRITES_ENABLED) {
-    const cmd = GUARD + tzStep + 'echo "CONFIG_WRITES_DISABLED";';
+    // Still probe for Chrome, so a dry run reports whether the image would support the browser
+    // tool. Reading which binaries exist changes nothing on the box.
+    const cmd = GUARD + tzStep + CHROME_PROBE + 'echo "CHROME:$CHROME"; echo "CONFIG_WRITES_DISABLED";';
     const res = await runWithRetries(agentId, cmd);
-    if (res.note) return { applied: false, memory: false, webSearch: false, timezone: false, note: res.note };
+    if (res.note) {
+      return { applied: false, memory: false, webSearch: false, browser: false, timezone: false, note: res.note };
+    }
+    const chrome = /CHROME:(\S+)/.exec(res.stdout)?.[1] ?? "";
     return {
       applied: /TZ_SET:/.test(res.stdout),
       memory: false,
       webSearch: false,
+      browser: false,
       timezone: /TZ_SET:/.test(res.stdout),
-      note: "config-writes-disabled: memory/web-search held pending schema verification (set INSTANCE_DEFAULTS_CONFIG=on once keys are confirmed)",
+      note:
+        "config-writes-disabled: memory/web-search/browser held pending schema verification " +
+        `(set INSTANCE_DEFAULTS_CONFIG=on once keys are confirmed). Chrome on box: ${chrome || "none"}`,
     };
   }
 
   // The instruction blob the on-box script reads. Keys are the config paths above so the script
   // stays dumb and the contract lives in one place.
   const payload = JSON.stringify({
-    memoryProviderPath: CONFIG.memorySearchProvider,
-    memoryProviderValue: CONFIG.memorySearchProviderValue,
+    memoryEnabledPath: CONFIG.memoryEnabled,
+    memoryProviderPath: CONFIG.memoryProvider,
+    memoryProviderValue: CONFIG.memoryProviderValue,
+    memoryModelPath: CONFIG.memoryModelPath,
+    memoryModelValue: CONFIG.memoryModelValue,
+    legacyMemoryPath: LEGACY_MEMORY_PATH,
     tavilyEnabledPath: CONFIG.tavilyEnabled,
     tavilyApiKeyPath: CONFIG.tavilyApiKeyPath,
     tavilyApiKey: tavilyKey || null,
+    browserEnabledPath: CONFIG.browserEnabled,
+    browserHeadlessPath: CONFIG.browserHeadless,
+    browserNoSandboxPath: CONFIG.browserNoSandbox,
+    browserProfilePath: CONFIG.browserProfile,
+    browserProfileValue: CONFIG.browserProfileValue,
   });
   const b64 = Buffer.from(payload, "utf8").toString("base64");
 
@@ -140,41 +206,68 @@ export async function applyInstanceDefaults(
     'let cfg={};' +
     'if(file){try{cfg=JSON.parse(fs.readFileSync(file,"utf8"));}catch(e){console.log("CONFIG_PARSE_FAIL:"+file);process.exit(0);}}else{file=cands[0];}' +
     'const set=(obj,keys,val)=>{let c=obj;for(let i=0;i<keys.length-1;i++){if(typeof c[keys[i]]!=="object"||c[keys[i]]===null)c[keys[i]]={};c=c[keys[i]];}c[keys[keys.length-1]]=val;};' +
+    // Drop the wrong path from the first backfill before writing the right one, so a box that got
+    // the bad write is repaired by the same pass that fixes everyone else.
+    'const del=(obj,keys)=>{let c=obj;for(let i=0;i<keys.length-1;i++){if(!c[keys[i]]||typeof c[keys[i]]!=="object")return false;c=c[keys[i]];}if(!(keys[keys.length-1] in c))return false;delete c[keys[keys.length-1]];return true;};' +
+    'const legacy=del(cfg,o.legacyMemoryPath);' +
+    'if(legacy&&cfg.memory&&cfg.memory.search&&Object.keys(cfg.memory.search).length===0){delete cfg.memory.search;if(Object.keys(cfg.memory).length===0)delete cfg.memory;}' +
+    'set(cfg,o.memoryEnabledPath,true);' +
     'set(cfg,o.memoryProviderPath,o.memoryProviderValue);' +
+    'set(cfg,o.memoryModelPath,o.memoryModelValue);' +
     'let tav=false;' +
     'if(o.tavilyApiKey){set(cfg,o.tavilyEnabledPath,true);set(cfg,o.tavilyApiKeyPath,o.tavilyApiKey);tav=true;}' +
+    // Browser only where there is a Chrome to drive. No binary, no block: switching the tool on
+    // with nothing behind it buys an agent that offers to open pages and then cannot.
+    'let br=false;' +
+    'if(process.env.APOLLO_CHROME){set(cfg,o.browserEnabledPath,true);set(cfg,o.browserHeadlessPath,true);set(cfg,o.browserNoSandboxPath,true);set(cfg,o.browserProfilePath,o.browserProfileValue);br=true;}' +
     'fs.writeFileSync(file,JSON.stringify(cfg,null,2));' +
-    'console.log("DEFAULTS_WROTE:"+file+":memory=local"+(tav?",tavily=on":",tavily=skip"));';
+    'console.log("DEFAULTS_WROTE:"+file+":memory=local"+(legacy?",legacy=removed":"")+(tav?",tavily=on":",tavily=skip")+(br?",browser=on":",browser=skip"));';
 
   const cmd =
     GUARD +
     tzStep +
+    CHROME_PROBE +
+    'echo "CHROME:$CHROME"; ' +
     `printf '%s' '${b64}' | base64 -d > /tmp/apollo-defaults.json; ` +
-    `node -e '${script}'; ` +
+    `APOLLO_CHROME="$CHROME" node -e '${script}'; ` +
     "rm -f /tmp/apollo-defaults.json";
 
   const res = await runWithRetries(agentId, cmd);
-  if (res.note) return { applied: false, memory: false, webSearch: false, timezone: false, note: res.note };
+  if (res.note) {
+    return { applied: false, memory: false, webSearch: false, browser: false, timezone: false, note: res.note };
+  }
   if (/CONFIG_PARSE_FAIL/.test(res.stdout)) {
     console.error("[instance-defaults:parse-fail]", agentId, "left existing config untouched");
-    return { applied: false, memory: false, webSearch: false, timezone: false, note: "config-parse-fail" };
+    return {
+      applied: false, memory: false, webSearch: false, browser: false, timezone: false,
+      note: "config-parse-fail",
+    };
   }
   const wrote = /DEFAULTS_WROTE:(\S+)/.exec(res.stdout);
   if (wrote) {
     const webSearch = /tavily=on/.test(res.stdout);
+    const browser = /browser=on/.test(res.stdout);
     const timezone = /TZ_SET:/.test(res.stdout);
-    console.log("[instance-defaults:applied]", agentId, wrote[1], { webSearch, timezone });
+    console.log("[instance-defaults:applied]", agentId, wrote[1], { webSearch, browser, timezone });
     if (opts.restart) await restartQuietly(agentId);
+    const skipped = [
+      ...(webSearch ? [] : ["TAVILY_API_KEY not set - web search left off"]),
+      ...(browser ? [] : ["no Chrome on the box - browser tool left off"]),
+    ];
     return {
       applied: true,
       memory: true,
       webSearch,
+      browser,
       timezone,
-      ...(webSearch ? {} : { note: "TAVILY_API_KEY not set - web search left off" }),
+      ...(skipped.length ? { note: skipped.join("; ") } : {}),
     };
   }
   console.error("[instance-defaults:failed]", agentId, "no confirmation after retries");
-  return { applied: false, memory: false, webSearch: false, timezone: false, note: "no-confirmation" };
+  return {
+    applied: false, memory: false, webSearch: false, browser: false, timezone: false,
+    note: "no-confirmation",
+  };
 }
 
 export interface RevertResult {
@@ -203,8 +296,15 @@ export async function revertInstanceDefaults(
     'if(!file){console.log("NO_CONFIG");process.exit(0);}' +
     'let cfg;try{cfg=JSON.parse(fs.readFileSync(file,"utf8"));}catch(e){console.log("CONFIG_PARSE_FAIL:"+file);process.exit(0);}' +
     'const removed=[];' +
+    // The wrong path from the first backfill. Still removed, because the boxes that took it are
+    // exactly the ones most likely to need this.
     'if(cfg.memory&&cfg.memory.search&&cfg.memory.search.provider==="local"){delete cfg.memory.search.provider;removed.push("memory.search.provider");if(Object.keys(cfg.memory.search).length===0)delete cfg.memory.search;if(cfg.memory&&Object.keys(cfg.memory).length===0)delete cfg.memory;}' +
+    // The right path. Only ours if it still says "local" - a customer or a template that set a
+    // different provider owns that value, and an undo is not a licence to take it.
+    'if(cfg.agents&&cfg.agents.defaults&&cfg.agents.defaults.memorySearch&&cfg.agents.defaults.memorySearch.provider==="local"){delete cfg.agents.defaults.memorySearch;removed.push("agents.defaults.memorySearch");if(Object.keys(cfg.agents.defaults).length===0)delete cfg.agents.defaults;if(cfg.agents&&Object.keys(cfg.agents).length===0)delete cfg.agents;}' +
     'if(cfg.plugins&&cfg.plugins.entries&&cfg.plugins.entries.tavily){delete cfg.plugins.entries.tavily;removed.push("plugins.entries.tavily");if(Object.keys(cfg.plugins.entries).length===0)delete cfg.plugins.entries;if(cfg.plugins&&Object.keys(cfg.plugins).length===0)delete cfg.plugins;}' +
+    // Same test for the browser: our block is the one pointing at the "openclaw" profile.
+    'if(cfg.browser&&cfg.browser.defaultProfile==="openclaw"){delete cfg.browser;removed.push("browser");}' +
     'fs.writeFileSync(file,JSON.stringify(cfg,null,2));' +
     'console.log("REVERTED:"+file+":"+(removed.join(",")||"none"));';
 
@@ -223,9 +323,15 @@ export async function revertInstanceDefaults(
 export interface InspectResult {
   ok: boolean;
   file?: string;
+  /** What sits at the CORRECT path, agents.defaults.memorySearch.provider. */
   memoryProvider?: string | null;
+  /** What sits at the path the first backfill wrote. Non-null means this box still carries it. */
+  legacyMemoryProvider?: string | null;
   tavilyPresent?: boolean;
   tavilyEnabled?: boolean;
+  browserEnabled?: boolean;
+  /** Path to a Chrome binary on the box, or null. Decides whether the browser tool can work. */
+  chrome?: string | null;
   note?: string;
 }
 
@@ -242,25 +348,32 @@ export async function inspectInstanceDefaults(agentId: string): Promise<InspectR
     'const file=cands.find(f=>fs.existsSync(f));' +
     'if(!file){console.log("NO_CONFIG");process.exit(0);}' +
     'let cfg;try{cfg=JSON.parse(fs.readFileSync(file,"utf8"));}catch(e){console.log("CONFIG_PARSE_FAIL");process.exit(0);}' +
-    'const mp=cfg.memory&&cfg.memory.search?cfg.memory.search.provider:undefined;' +
+    'const ms=cfg.agents&&cfg.agents.defaults?cfg.agents.defaults.memorySearch:undefined;' +
+    'const mp=ms?ms.provider:undefined;' +
+    'const lm=cfg.memory&&cfg.memory.search?cfg.memory.search.provider:undefined;' +
     'const tav=cfg.plugins&&cfg.plugins.entries?cfg.plugins.entries.tavily:undefined;' +
-    'console.log("INSPECT:"+JSON.stringify({file:file,memoryProvider:mp===undefined?null:mp,tavilyPresent:!!tav,tavilyEnabled:tav?!!tav.enabled:false}));';
+    'console.log("INSPECT:"+JSON.stringify({file:file,memoryProvider:mp===undefined?null:mp,legacyMemoryProvider:lm===undefined?null:lm,tavilyPresent:!!tav,tavilyEnabled:tav?!!tav.enabled:false,browserEnabled:cfg.browser?!!cfg.browser.enabled:false}));';
 
-  const cmd = GUARD + `node -e '${script}'`;
+  // The Chrome probe rides along: whether the browser tool CAN work is a fact about the image,
+  // and it is the first thing anyone asks after reading browserEnabled:false.
+  const cmd = GUARD + CHROME_PROBE + 'echo "CHROME:$CHROME"; ' + `node -e '${script}'`;
   const res = await runWithRetries(agentId, cmd);
   if (res.note) return { ok: false, note: res.note };
   if (/NO_CONFIG/.test(res.stdout)) return { ok: false, note: "no-config-file" };
   if (/CONFIG_PARSE_FAIL/.test(res.stdout)) return { ok: false, note: "config-parse-fail" };
   const m = /INSPECT:(\{.*\})/.exec(res.stdout);
   if (!m) return { ok: false, note: "no-output" };
+  const chrome = /CHROME:(\S+)/.exec(res.stdout)?.[1] || null;
   try {
     const parsed = JSON.parse(m[1]) as {
       file: string;
       memoryProvider: string | null;
+      legacyMemoryProvider: string | null;
       tavilyPresent: boolean;
       tavilyEnabled: boolean;
+      browserEnabled: boolean;
     };
-    return { ok: true, ...parsed };
+    return { ok: true, ...parsed, chrome };
   } catch {
     return { ok: false, note: "parse-output-failed" };
   }
