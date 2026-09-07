@@ -296,7 +296,7 @@ export async function storeAgentSetup(input: SetupInput): Promise<SetupResult> {
         return null;
       });
 
-      const ok = await injectOwnerProfile(id, buildUserMd(type.label, answers, context?.summary));
+      const ok = await injectOwnerProfile(id, buildUserMd(type.label, answers, context?.summary, type.id));
       // The file alone doesn't reach the agent — SOUL.md has to point at it.
       if (ok) await ensureUserMdPointer(id);
       // Only written once the profile that names it has landed, so the agent is never

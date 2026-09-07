@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Home, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -13,6 +13,8 @@ import { AgentSwitcher } from "@/components/AgentSwitcher";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useHiddenNav } from "@/components/sidebar-prefs";
 import { hiddenForEveryone } from "@/config/nav";
+import { hasListings } from "@/config/listings";
+import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,6 +43,13 @@ const NAV = [
   // the "waiting on you" block from the morning brief, which until now lived in a Telegram
   // message and was gone by lunchtime.
   { href: "/dashboard/tasks", label: "What needs you", icon: ListTodo, exact: false },
+  // ROLE-SPECIFIC, and the first row that is. It appears only for agent types that have listings
+  // (config/listings.ts), which today is Real Estate. Directly under What needs you because for a
+  // realtor it is the same kind of surface: the thing you glance at daily, not a setting.
+  //
+  // The filter is on agent TYPE rather than on whether any listings exist, on purpose. A row that
+  // appears once you have data is a row nobody can find in order to add the first row.
+  { href: "/dashboard/listings", label: "Listings", icon: Home, exact: false, forListings: true },
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   // Connections is back on the daily rail, directly under Checklist - David's call. It also stays
   // reachable from Settings, but the rail is where he wants it day to day, so /dashboard/integrations
@@ -95,7 +104,7 @@ const SETTINGS_ROOT = "/dashboard/settings";
 // Which of the rows above this person switched off, and the list of the ones they may.
 
 
-type NavItem = { href: string; label: string; icon: LucideIcon; exact: boolean };
+type NavItem = { href: string; label: string; icon: LucideIcon; exact: boolean; forListings?: boolean };
 
 // One row, used by the app rail, the Settings rail, and the Settings entry itself, so the
 // active treatment can't drift between them.
@@ -170,8 +179,15 @@ function SidebarContent({
   // tab is there, highlighted; a rail that silently drops the tab you are on reads as the app
   // losing its place rather than as a preference being honoured. The product-wide switch gets no
   // such exception, because there the row is not meant to exist for you at all.
+  //
+  // A THIRD LAYER, for role rows: a section that only some agent types have at all. Unlike the
+  // two above it is not a preference, so it gets no standing-on-the-page exception - the page
+  // itself says the same thing, and a rail row for a feature this agent does not have would be a
+  // link to that sentence.
+  const { active } = useActiveAgent();
   const { isHidden } = useHiddenNav();
   const nav = NAV.filter((item) => {
+    if (item.forListings && !hasListings(active?.agent_type)) return false;
     if (hiddenForEveryone(item.href)) return false;
     return !isHidden(item.href) || pathname.startsWith(item.href);
   });

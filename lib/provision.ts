@@ -6,6 +6,7 @@ import type { AgentType } from "@/config/agent-types";
 import {
   AGENTS_FENCE,
   CONTEXT_FILENAME,
+  LISTINGS_FILENAME,
   GENERATED_FILES,
   IDENTITY_FENCE,
   TOOLS_FENCE,
@@ -16,6 +17,8 @@ import { buildOwnerContext } from "@/lib/enrichment";
 import { buildIntakeSections, sectionsToMarkdown } from "@/lib/onboardingSections";
 import { personaForAgentType } from "@/config/personas";
 import { AGENT_SKILLS, skillFile, skillsForType, type AgentSkill } from "@/config/skills";
+import { hasListings } from "@/config/listings";
+import { buildListingsMd } from "@/lib/listings-file";
 import { usdToMicros } from "@/lib/format";
 import { ApiError } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -95,8 +98,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // useful last time.
 export async function injectAgentFile(
   agentId: string,
-  filename: "SOUL.md" | typeof CONTEXT_FILENAME,
-  content: string
+  filename: "SOUL.md" | typeof CONTEXT_FILENAME | typeof LISTINGS_FILENAME,
+  content: string,
+  // Six attempts over 90 seconds is right at PROVISION, where the instance is still booting and
+  // the first few execs are expected to fail. It is wrong for a write months later: a box that
+  // refuses one exec will refuse the next, and holding a function open for a minute and a half
+  // to find that out costs more than the write is worth. Callers writing to a running agent pass
+  // a smaller number.
+  attempts = 6
 ): Promise<boolean> {
   const b64 = Buffer.from(content, "utf8").toString("base64");
   const cmd =
@@ -104,7 +113,7 @@ export async function injectAgentFile(
     `for D in $DIRS; do printf '%s' '${b64}' | base64 -d > "$D/${filename}" && echo "WROTE:$D"; done; ` +
     `echo WRITE_OK`;
 
-  for (let attempt = 1; attempt <= 6; attempt++) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       const { stdout } = await agent37.exec(agentId, cmd);
       if (stdout.includes("WRITE_OK")) {
@@ -115,7 +124,9 @@ export async function injectAgentFile(
     } catch {
       // instance still provisioning/booting — wait and retry
     }
-    await sleep(15_000);
+    // Not after the last one: sleeping 15 seconds to then give up anyway is time nobody gets back,
+    // and on the two-attempt path it was half the total wait.
+    if (attempt < attempts) await sleep(15_000);
   }
   console.error("[provision:file-inject-failed]", agentId, filename);
   return false;
@@ -568,7 +579,9 @@ export function buildUserMd(
   /** One line describing what landed in BUSINESS-CONTEXT.md ("2 pages from their website and
    *  3 uploaded documents"). Omitted when enrichment found nothing — an agent told to read a
    *  file that isn't there is worse than one that was never told about it. */
-  contextSummary?: string
+  contextSummary?: string,
+  /** The agent type, for the sections only some roles get. */
+  agentTypeId?: string | null
 ): string {
   const sections = buildIntakeSections({ ...answers, trackType: "business" });
   return [
@@ -588,6 +601,29 @@ export function buildUserMd(
           `when you need the detail - what they sell, how they describe themselves, their own`,
           `words. Prefer it over guessing, and treat anything in it as a snapshot from setup`,
           `rather than as today's truth.`,
+        ]
+      : []),
+    // WITHOUT THIS THE LISTINGS PAGE IS A SPREADSHEET. The file is written to the box on every
+    // edit, but a file nothing points at is a file the agent never opens, and the scheduled
+    // reports we ship for this role open with "for each of my active listings". So the pointer
+    // is not documentation, it is the wiring.
+    //
+    // Written for every real estate agent whether or not they have added anything yet: the file
+    // says so itself when it is empty, which is a better answer than the agent inventing a book
+    // of business because nobody told it where the real one lives.
+    ...(hasListings(agentTypeId)
+      ? [
+          ``,
+          `## Their listings and deals`,
+          ``,
+          `There is a file called \`${LISTINGS_FILENAME}\` in this same directory holding every`,
+          `listing and deal your owner is working on, kept up to date from the Listings page in`,
+          `their dashboard. READ IT whenever a question touches a property, a client, a deadline`,
+          `or "my listings" - it is ground truth and you should never guess at this list or work`,
+          `from what you remember of an earlier conversation.`,
+          ``,
+          `You cannot edit it. If something in it is wrong or missing, say so and tell them to`,
+          `change it on the Listings page.`,
         ]
       : []),
   ].join("\n");
@@ -627,6 +663,16 @@ async function injectAfterProvision(
   // failed batch, so a transient error makes `skills` short - and pruning against that list would
   // turn one bad exec into the deletion of a working skill that had been there for months.
   await pruneAgentSkills(agentId, skillsForType(type.id).map((s) => s.slug));
+
+  // An EMPTY listings file for the roles that have one, and it has to be written here rather than
+  // waiting for the first listing. USER.md tells a real estate agent to read LISTINGS.md and to
+  // treat it as ground truth; if the file is not there until somebody adds a property, then on
+  // day one the agent is pointed at nothing, which is the failure the BUSINESS-CONTEXT pointer
+  // is careful to avoid. The empty version says the list is empty and where to fill it in, which
+  // is a real answer.
+  if (hasListings(type.id)) {
+    await injectAgentFile(agentId, LISTINGS_FILENAME, buildListingsMd([]));
+  }
 
   const db = createAdminClient();
   const { data: setup } = await db
@@ -697,7 +743,7 @@ async function injectAfterProvision(
         return null;
       });
 
-  const ok = await injectOwnerProfile(agentId, buildUserMd(type.label, answers, context?.summary));
+  const ok = await injectOwnerProfile(agentId, buildUserMd(type.label, answers, context?.summary, type.id));
   if (ok) await ensureUserMdPointer(agentId);
   if (ok && context) await injectAgentFile(agentId, CONTEXT_FILENAME, context.markdown);
   if (ok) {

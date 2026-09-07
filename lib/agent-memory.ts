@@ -314,7 +314,7 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
         return null;
       });
 
-      const md = buildUserMd(type?.label ?? "Apollo Agent", answers, context?.summary);
+      const md = buildUserMd(type?.label ?? "Apollo Agent", answers, context?.summary, type?.id);
       const wrote = await injectOwnerProfile(id, md);
       if (!wrote) {
         results.push({ id, name, outcome: "failed", detail: "could not write the profile into USER.md on the instance" });
