@@ -216,10 +216,17 @@ export async function applyInstanceDefaults(
     'set(cfg,o.memoryModelPath,o.memoryModelValue);' +
     'let tav=false;' +
     'if(o.tavilyApiKey){set(cfg,o.tavilyEnabledPath,true);set(cfg,o.tavilyApiKeyPath,o.tavilyApiKey);tav=true;}' +
-    // Browser only where there is a Chrome to drive. No binary, no block: switching the tool on
-    // with nothing behind it buys an agent that offers to open pages and then cannot.
+    // Browser only where there is a Chrome to drive.
+    //
+    // Where there is none we write enabled:FALSE rather than nothing, and that is the whole point
+    // of this branch. An unconfigured browser tool is not absent - the agent can still see it, so
+    // it reaches for it, fails to attach to a Chrome that was never started, and tells its owner
+    // it needs a browser session. That is the message on the new instance. Turning the tool off
+    // explicitly is what makes the agent stop offering something it cannot do and use search
+    // instead.
     'let br=false;' +
     'if(process.env.APOLLO_CHROME){set(cfg,o.browserEnabledPath,true);set(cfg,o.browserHeadlessPath,true);set(cfg,o.browserNoSandboxPath,true);set(cfg,o.browserProfilePath,o.browserProfileValue);br=true;}' +
+    'else{set(cfg,o.browserEnabledPath,false);}' +
     'fs.writeFileSync(file,JSON.stringify(cfg,null,2));' +
     'console.log("DEFAULTS_WROTE:"+file+":memory=local"+(legacy?",legacy=removed":"")+(tav?",tavily=on":",tavily=skip")+(br?",browser=on":",browser=skip"));';
 
@@ -303,8 +310,10 @@ export async function revertInstanceDefaults(
     // different provider owns that value, and an undo is not a licence to take it.
     'if(cfg.agents&&cfg.agents.defaults&&cfg.agents.defaults.memorySearch&&cfg.agents.defaults.memorySearch.provider==="local"){delete cfg.agents.defaults.memorySearch;removed.push("agents.defaults.memorySearch");if(Object.keys(cfg.agents.defaults).length===0)delete cfg.agents.defaults;if(cfg.agents&&Object.keys(cfg.agents).length===0)delete cfg.agents;}' +
     'if(cfg.plugins&&cfg.plugins.entries&&cfg.plugins.entries.tavily){delete cfg.plugins.entries.tavily;removed.push("plugins.entries.tavily");if(Object.keys(cfg.plugins.entries).length===0)delete cfg.plugins.entries;if(cfg.plugins&&Object.keys(cfg.plugins).length===0)delete cfg.plugins;}' +
-    // Same test for the browser: our block is the one pointing at the "openclaw" profile.
+    // The browser, in both shapes we write it: the full block pointing at our "openclaw" profile,
+    // and the bare enabled:false we leave on a box with no Chrome.
     'if(cfg.browser&&cfg.browser.defaultProfile==="openclaw"){delete cfg.browser;removed.push("browser");}' +
+    'else if(cfg.browser&&cfg.browser.enabled===false&&Object.keys(cfg.browser).length===1){delete cfg.browser;removed.push("browser.enabled");}' +
     'fs.writeFileSync(file,JSON.stringify(cfg,null,2));' +
     'console.log("REVERTED:"+file+":"+(removed.join(",")||"none"));';
 
