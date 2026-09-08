@@ -20,6 +20,12 @@ export const metadata: Metadata = {
 };
 
 const uc = {
+  agent: {
+    typeId: "sales",
+    buildSlug: "sales",
+    badge: "Apollo[Claw] Sales Edition",
+    punch: "The Sales Agent. More Than AI. Your Pipeline Operating System.",
+  },
   label: "Sales",
   title: "AI for",
   subtitle: "Sales Teams",

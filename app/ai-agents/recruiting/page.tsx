@@ -19,6 +19,12 @@ export const metadata: Metadata = {
 };
 
 const uc = {
+  agent: {
+    typeId: "recruiting",
+    buildSlug: "recruiting",
+    badge: "Apollo[Claw] Recruiting Edition",
+    punch: "The Recruiting Agent. More Than AI. Your Hiring Operating System.",
+  },
   label: "Recruiting & Staffing",
   logo: { name: "Recruiting", accent: "#D72B2B" },
   title: "AI for",

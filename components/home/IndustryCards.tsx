@@ -3,7 +3,7 @@ import { INDUSTRIES } from "@/config/navigation";
 import { BodyLarge, BracketLabel, H2, NAVY, PAPER, PAPER_MUTED, RED, Section } from "@/components/home/ui";
 
 // Homepage card grid for the Industries axis, reading the same list the nav flyout renders
-// (config/navigation.ts) so the two can never disagree. Departments is the other axis and uses
+// (config/navigation.ts) so the two can never disagree. Agents is the other axis and uses
 // the identical card, so switching this section over is a one-line change.
 export function IndustryCards() {
   return (

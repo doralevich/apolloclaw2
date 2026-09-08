@@ -6,13 +6,13 @@ import {
 } from "lucide-react";
 
 // Single source of truth for the two navigation axes: which business you run (Industries) and
-// which job you are hiring the agent into (Departments). Lives here rather than in Navbar.tsx
+// which agent you want (Agents). Lives here rather than in Navbar.tsx
 // because the homepage renders the same lists as cards, and the two must not drift apart.
 
 export type NavItem = { label: string; description: string; to: string; Icon: LucideIcon };
 
 
-// Industries: which business you run. Same icon-tile treatment as Departments (David's call)
+// Industries: which business you run. Same icon-tile treatment as Agents (David's call)
 // so the two flyouts read as one system. Academics points at the real, already-live education
 // landing page rather than a /industries/* route.
 export const INDUSTRIES: NavItem[] = [
@@ -27,20 +27,31 @@ export const INDUSTRIES: NavItem[] = [
   { label: "Financial Services", Icon: Landmark, to: "/industries/financial-services", description: "Client onboarding, review prep, and compliance-aware follow-up." },
   { label: "Professional Services", Icon: Users, to: "/industries/professional-services", description: "Intake, project admin, and client follow-up, so billable people stay billable." },
   { label: "Academics", Icon: GraduationCap, to: "/ai-consulting-education", description: "Admissions, student services, and campus operations without adding headcount." },
+  // Moved out of the agent list at David's call. Neither is a product with a site of its own,
+  // and neither is a job title anybody hires for the way they hire a CFO - they are functions a
+  // business needs covered, which is the question this axis answers. Destinations are unchanged.
+  { label: "Reception & Front Desk", Icon: Phone, to: "/ai-agents/receptionist", description: "Answer calls, route messages, and book appointments, keep the front line covered." },
+  { label: "Human Resources", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
 ];
 
-// Departments: the role you're hiring the agent into, purely functional. Deliberately holds no
-// vertical names. Legal, Medical, Real Estate, and Insurance used to sit here too, but each one
-// resolves to the same page as its Industries entry (David caught this: "I see a law firms and a
-// Legal page, is that redundant?"), so the verticals live under Industries only and this list
-// stays the "which job" axis. Same destinations as the Footer's AI Agents column.
-export const DEPARTMENTS: NavItem[] = [
-  { label: "Receptionist", Icon: Phone, to: "/ai-agents/receptionist", description: "Answer calls, route messages, and book appointments, keep the front line covered." },
-  { label: "CEO", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
-  { label: "CFO", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
-  { label: "Sales", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
-  { label: "Marketing", Icon: Megaphone, to: "/ai-agents/marketing", description: "Draft content, run the campaign calendar, and nurture leads, keep reporting current." },
-  { label: "Recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
-  { label: "Human Resources", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
-  { label: "Personal", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
+// Agents: the product family, named the way each one is actually sold. "The CFO Agent" is what
+// the site, the funnel and the invoice all call it, so the nav calling it "CFO" made the menu
+// read as a list of job titles rather than a list of things you can buy.
+//
+// Renamed from DEPARTMENTS at David's call, along with the flyout's label. The two axes are now
+// Industries (which business you run) and Agents (which one you want).
+//
+// Real Estate is back after being dropped from the old Departments list for resolving to the
+// same page as its Industries entry. That redundancy is real and is accepted here: it has a site
+// of its own like the rest of the family, and leaving the flagship agent out of the agent menu
+// to avoid a duplicate link was the worse trade. It still points at the Industries page, because
+// there is no /ai-agents/real-estate.
+export const AGENTS: NavItem[] = [
+  { label: "The CEO Agent", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
+  { label: "The CFO Agent", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
+  { label: "The Sales Agent", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
+  { label: "The Marketing Agent", Icon: Megaphone, to: "/ai-agents/marketing", description: "Draft content, run the campaign calendar, and nurture leads, keep reporting current." },
+  { label: "The Recruiting Agent", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
+  { label: "The Real Estate Agent", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
+  { label: "The Personal Agent", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
 ];

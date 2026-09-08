@@ -1,4 +1,5 @@
 import ScrollReveal from "@/components/ScrollReveal";
+import AgentHero from "@/components/AgentHero";
 import { CheckCircle } from "lucide-react";
 
 interface UseCase {
@@ -12,92 +13,110 @@ interface UseCase {
   results: string[];
   /** No longer rendered. Hero banners carry no sub-brand wordmark per David's call. */
   logo?: { name: string; accent: string };
+  /** OPT IN to the agent-branded hero the standalone sites use: the agent's own colour and
+   *  mascot, a badge, a brand-coloured punch line and a Build My Agent button.
+   *
+   *  Opt-in rather than automatic because this template also serves pages with no agent behind
+   *  them - receptionist and hr are functions, not products, and have no site, no mascot and no
+   *  /build funnel to send anybody to. Those keep the plain centred hero. */
+  agent?: { typeId: string; buildSlug?: string; badge: string; punch: string };
 }
 
 // Hero is headline + description only: no category pill, no sub-brand wordmark.
 export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
   return (
     <>
-      {/* HERO - dark navy + grid */}
-      <section
-        style={{ background: "#0B1729", color: "#ffffff" }}
-        className="relative overflow-hidden"
-      >
-        {/* grid overlay */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-            pointerEvents: "none",
-          }}
+      {/* HERO - the agent's own brand when there is one, plain dark navy otherwise */}
+      {uc.agent ? (
+        <AgentHero
+          agentTypeId={uc.agent.typeId}
+          buildSlug={uc.agent.buildSlug}
+          badge={uc.agent.badge}
+          title={<>{uc.title} {uc.subtitle}</>}
+          punch={uc.agent.punch}
+          sub={uc.description}
         />
-        {/* red glow */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: "-20%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "70%",
-            height: "120%",
-            background:
-              "radial-gradient(ellipse at center, rgba(215,43,43,0.10) 0%, transparent 60%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div className="container mx-auto px-5 md:px-8 py-24 md:py-32 text-center max-w-5xl relative z-10">
-          <h1
-            className="font-display leading-[1.05] tracking-tight"
+      ) : (
+        <section
+          style={{ background: "#0B1729", color: "#ffffff" }}
+          className="relative overflow-hidden"
+        >
+          {/* grid overlay */}
+          <div
+            aria-hidden
             style={{
-              fontSize: "clamp(38px, 5.6vw, 72px)",
-              fontWeight: 800,
-              color: "#ffffff",
-              margin: 0,
-              textWrap: "balance",
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+              pointerEvents: "none",
             }}
-          >
-            {uc.title}{" "}
-            <span style={{ color: "#D72B2B" }}>{uc.subtitle}</span>
-          </h1>
-          <p
-            className="font-body"
+          />
+          {/* red glow */}
+          <div
+            aria-hidden
             style={{
-              fontSize: "clamp(15px, 1.15vw, 18px)",
-              lineHeight: 1.7,
-              color: "rgba(255,255,255,0.7)",
-              maxWidth: 940,
-              margin: "24px auto 0",
+              position: "absolute",
+              top: "-20%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "70%",
+              height: "120%",
+              background:
+                "radial-gradient(ellipse at center, rgba(215,43,43,0.10) 0%, transparent 60%)",
+              pointerEvents: "none",
             }}
-          >
-            {uc.description}
-          </p>
-          <div style={{ marginTop: 36 }}>
-            <a
-              href="https://cal.com/therealdaveo/apollo-claw"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+          />
+          <div className="container mx-auto px-5 md:px-8 py-24 md:py-32 text-center max-w-5xl relative z-10">
+            <h1
+              className="font-display leading-[1.05] tracking-tight"
               style={{
-                background: "#D72B2B",
+                fontSize: "clamp(38px, 5.6vw, 72px)",
+                fontWeight: 800,
                 color: "#ffffff",
-                fontSize: 13,
-                letterSpacing: "0.1em",
-                padding: "14px 30px",
-                borderRadius: 4,
-                textDecoration: "none",
-                boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
+                margin: 0,
+                textWrap: "balance",
               }}
             >
-              Schedule Today
-            </a>
+              {uc.title}{" "}
+              <span style={{ color: "#D72B2B" }}>{uc.subtitle}</span>
+            </h1>
+            <p
+              className="font-body"
+              style={{
+                fontSize: "clamp(15px, 1.15vw, 18px)",
+                lineHeight: 1.7,
+                color: "rgba(255,255,255,0.7)",
+                maxWidth: 940,
+                margin: "24px auto 0",
+              }}
+            >
+              {uc.description}
+            </p>
+            <div style={{ marginTop: 36 }}>
+              <a
+                href="https://cal.com/therealdaveo/apollo-claw"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                style={{
+                  background: "#D72B2B",
+                  color: "#ffffff",
+                  fontSize: 13,
+                  letterSpacing: "0.1em",
+                  padding: "14px 30px",
+                  borderRadius: 4,
+                  textDecoration: "none",
+                  boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
+                }}
+              >
+                Schedule Today
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CHALLENGES - cream */}
       <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
