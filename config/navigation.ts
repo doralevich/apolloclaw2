@@ -9,7 +9,15 @@ import {
 // which agent you want (Agents). Lives here rather than in Navbar.tsx
 // because the homepage renders the same lists as cards, and the two must not drift apart.
 
-export type NavItem = { label: string; description: string; to: string; Icon: LucideIcon };
+export type NavItem = {
+  label: string;
+  description: string;
+  to: string;
+  Icon: LucideIcon;
+  /** Keys agentBrand() in lib/agentBrand.ts, so a card or tile can take the agent's own colour
+   *  instead of ApolloClaw red. Only set on AGENTS; an industry is not one agent. */
+  agentTypeId?: string;
+};
 
 
 // Industries: which business you run. Same icon-tile treatment as Agents (David's call)
@@ -47,11 +55,11 @@ export const INDUSTRIES: NavItem[] = [
 // to avoid a duplicate link was the worse trade. It still points at the Industries page, because
 // there is no /ai-agents/real-estate.
 export const AGENTS: NavItem[] = [
-  { label: "The CEO Agent", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
-  { label: "The CFO Agent", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
-  { label: "The Sales Agent", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
-  { label: "The Marketing Agent", Icon: Megaphone, to: "/ai-agents/marketing", description: "Draft content, run the campaign calendar, and nurture leads, keep reporting current." },
-  { label: "The Recruiting Agent", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
-  { label: "The Real Estate Agent", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
-  { label: "The Personal Agent", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
+  { label: "The CEO Agent", agentTypeId: "ceo", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
+  { label: "The CFO Agent", agentTypeId: "cfo", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
+  { label: "The Sales Agent", agentTypeId: "sales", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
+  { label: "The Marketing Agent", agentTypeId: "marketing", Icon: Megaphone, to: "/ai-agents/marketing", description: "Draft content, run the campaign calendar, and nurture leads, keep reporting current." },
+  { label: "The Recruiting Agent", agentTypeId: "recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
+  { label: "The Real Estate Agent", agentTypeId: "realestate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
+  { label: "The Personal Agent", agentTypeId: "personal", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
 ];

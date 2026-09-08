@@ -5,6 +5,7 @@ import { Proof } from "@/components/home/Proof";
 import { TwoFoldModel } from "@/components/home/TwoFoldModel";
 import { TrustStrip } from "@/components/home/TrustStrip";
 import { IndustryCards } from "@/components/home/IndustryCards";
+import { AgentCards } from "@/components/home/AgentCards";
 import { LatestFromBlog } from "@/components/home/LatestFromBlog";
 import { LogoStrip } from "@/components/home/LogoStrip";
 import { OG_IMAGES } from "@/lib/seo";
@@ -43,6 +44,10 @@ export default function HomePage() {
       <Proof />
       <WhatWeDo />
       <IndustryCards />
+      {/* The nav's two axes, in the same order the menu lists them. Agents sits on the elevated
+          navy so the pair reads as one idea rather than as the stacked-navy accident the comment
+          below warns about. */}
+      <AgentCards />
       {/* "Self hosted and cloud hosted" sits below the blog, per David's call. It also breaks
           up two adjacent navy bands: industry cards (navy) -> blog (tan) -> deploy options
           (navy) alternates, where the previous order stacked the two navy sections. */}
