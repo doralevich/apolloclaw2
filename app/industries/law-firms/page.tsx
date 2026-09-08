@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/industries/law-firms",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("legal"),
     title: "AI for Law Firms | Client Intake & Case Follow-Up Automation | Apollo[Claw]",
     description:
       "The Law Agent automates client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable work, not admin.",

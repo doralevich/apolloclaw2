@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/industries/real-estate",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("realestate"),
     title: "AI Follow-Up for Realtors | Client Communication & Lead Automation",
     description:
       "AI client communication and follow-up for real estate agents. Responds to leads in under 2 minutes, manages your CRM, and coordinates showings automatically.",

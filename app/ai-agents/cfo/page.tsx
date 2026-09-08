@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/ai-agents/cfo",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("cfo"),
     title: "The CFO Agent: AI Financial Agent for Small Business",
     description: "The CFO Agent is your AI financial advisor for small business: automated financial reporting AI that handles your close cycle so you focus on decisions.",
     url: "https://apolloclaw.ai/ai-agents/cfo",
