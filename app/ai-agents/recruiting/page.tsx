@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "AI agents for recruiters and staffing agencies. Automate resume screening, interview scheduling, and candidate follow-up so your team fills roles faster.",
   alternates: {
-    canonical: "https://apolloclaw.ai/ai-agents/recruiting",
+    canonical: "https://therecruitingagent.ai",
   },
   openGraph: {
     images: OG_IMAGES,

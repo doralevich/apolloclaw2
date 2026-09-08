@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "An AI agent that qualifies leads, follows up with prospects, and keeps your sales pipeline moving - 24/7.",
   alternates: {
-    canonical: "https://apolloclaw.ai/ai-agents/sales",
+    canonical: "https://thesalesagent.ai",
   },
   openGraph: {
     images: OG_IMAGES,

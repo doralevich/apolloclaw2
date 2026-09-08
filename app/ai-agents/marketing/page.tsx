@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: { absolute: "AI for Marketing Teams | Apollo[Claw]" },
   description:
     "The Marketing Agent drafts content, runs the campaign calendar, nurtures leads, and keeps reporting current, so a small team publishes like a bigger one.",
-  alternates: { canonical: "https://apolloclaw.ai/ai-agents/marketing" },
+  alternates: { canonical: "https://themarketingagent.ai" },
   openGraph: {
     images: OG_IMAGES,
     title: "The Marketing Agent | AI for Content, Campaigns & Nurture",
