@@ -28,7 +28,7 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
       { label: "Email", value: d.email },
       { label: "Phone", value: d.phone },
       { label: "Track", value: trackLabel[track] || track },
-      { label: "Contact Preference", value: d.contactMethod },
+      // Contact Preference is gone: it was never asked, so the row was always blank.
       { label: "Best Time to Reach", value: d.bestTime },
       { label: "Timezone", value: d.timezone },
       { label: "Job Title", value: d.jobTitle },

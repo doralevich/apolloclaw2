@@ -151,10 +151,13 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
   out.push(
     ...section(
       "Their day",
+      // contactMethod is gone. The questionnaire never asked it - buildData hardcoded "" - so
+      // this bullet shipped blank on every agent ever provisioned, and the agent works through
+      // whatever channel it is given rather than choosing one. Timezone and bestTime are now
+      // actually collected, on the gate screen next to the phone number.
       [
         bullet("Timezone", answers.timezone),
         bullet("Best time to reach them", answers.bestTime),
-        bullet("How they prefer to be contacted", answers.contactMethod),
       ],
       `Every date and time you say, write or schedule is in THEIR timezone unless they say` +
         ` otherwise, and "today" means today where they are. The instance clock may be set to` +
