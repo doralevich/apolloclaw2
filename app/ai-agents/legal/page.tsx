@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/ai-agents/legal",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("legal"),
     title: "The Law Agent: AI Contract Drafting and Review for Business",
     description: "The Law Agent is your AI legal drafting assistant: it drafts from your templates, redlines against your positions, and never lets a renewal date slip.",
     url: "https://apolloclaw.ai/ai-agents/legal",

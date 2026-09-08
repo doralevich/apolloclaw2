@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation | Apollo[Claw]" },
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/ai-agents/personal-assistant",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("personal"),
     title: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation",
     description:
       "Apollo[Claw] AI personal assistant for executives and business owners. Inbox, calendar, research, and task management so you focus on what matters.",

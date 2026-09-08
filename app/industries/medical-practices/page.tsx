@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/industries/medical-practices",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("medical"),
     title: "AI for Medical & Dental Practices | Appointment Reminders & Patient Intake",
     description:
       "The Medical Agent automates appointment reminders, patient intake, and follow-up for medical and dental practices. HIPAA-aware. Reduce no-shows within 30 days.",

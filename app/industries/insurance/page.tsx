@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://apolloclaw.ai/industries/insurance",
   },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("insurance"),
     title: "AI Agent for Insurance Agencies | Renewals, Quotes & Claims Automation",
     description:
       "Apollo[Claw] builds AI agents for insurance agencies and brokers. Automate policy renewal outreach, quote follow-up, and claims status so your team focuses on closing, not chasing.",

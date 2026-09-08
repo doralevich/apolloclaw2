@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: { absolute: "AI Assistant for CEOs | Apollo[Claw]" },
   description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck; let your bot run the details.",
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("ceo"),
     title: "AI Assistant for CEOs | Automate Executive Workflows",
     description: "The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.",
     url: "https://apolloclaw.ai/ai-agents/ceo",

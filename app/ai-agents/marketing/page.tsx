@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
-import { OG_IMAGES } from "@/lib/seo";
+import { agentOgImages } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "AI for Marketing Teams | Apollo[Claw]" },
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "The Marketing Agent drafts content, runs the campaign calendar, nurtures leads, and keeps reporting current, so a small team publishes like a bigger one.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/marketing" },
   openGraph: {
-    images: OG_IMAGES,
+    images: agentOgImages("marketing"),
     title: "The Marketing Agent | AI for Content, Campaigns & Nurture",
     description:
       "Drafts content, runs the campaign calendar, nurtures leads, and keeps reporting current.",

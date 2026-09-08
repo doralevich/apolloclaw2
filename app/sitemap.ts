@@ -52,9 +52,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/ai-101",       priority: 0.7 },
     { path: "/security",       priority: 0.6 },
     { path: "/ai-agents/personal-assistant", priority: 0.8 },
-    { path: "/contact",      priority: 0.7 },
-    { path: "/what-we-do",   priority: 0.8 },
     { path: "/accessibility", priority: 0.3 },
+    // Both of these are public, indexable pages that were simply never added here.
+    { path: "/create-an-agent", priority: 0.8 },
+    { path: "/blog/ai-assistant-for-ceo", priority: 0.6 },
   ].map(({ path, priority }) => ({
     url: `https://apolloclaw.ai${path}`,
     lastModified: new Date(),
@@ -77,5 +78,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  return [...staticPages, ...blogPages];
+  // Dedupe across the whole sitemap, not just the Sanity posts. /contact and /what-we-do had
+  // each been listed twice in the static array, and /blog/ai-assistant-for-ceo is a hand-built
+  // post that may also exist in Sanity - either way the URL should appear once. First entry
+  // wins, so the static priority is the one that survives a collision.
+  const byUrl = new Map<string, MetadataRoute.Sitemap[number]>();
+  for (const page of [...staticPages, ...blogPages]) {
+    if (!byUrl.has(page.url)) byUrl.set(page.url, page);
+  }
+  return [...byUrl.values()];
 }
