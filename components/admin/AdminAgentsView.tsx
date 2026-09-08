@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Wrench } from "lucide-react";
+import { Clock, CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Wrench } from "lucide-react";
+import { timezoneOptions } from "@/config/timezones";
 import { openWorkspaceInApolloClaw } from "@/components/admin/workspace-instances";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -112,6 +113,7 @@ export function AdminAgentsView() {
   const [adoptBusy, setAdoptBusy] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [revertingId, setRevertingId] = useState<string | null>(null);
+  const [tzBusyId, setTzBusyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FleetFilter>("all");
 
   const load = useCallback(async () => {
@@ -187,6 +189,45 @@ export function AdminAgentsView() {
       toast.error((e as Error).message);
     } finally {
       setApplyingId(null);
+    }
+  }
+
+  // Record the customer's timezone on an agent set up before the onboarding gate asked for one,
+  // and push it. The agent's AGENTS.md carries a "Their day" section built from this answer, so
+  // until it exists that instruction is blank and the box clock was never set - which is every
+  // agent provisioned before the question was added.
+  //
+  // Reloads afterwards rather than patching state locally: the route also restarts the instance,
+  // so presence and live_status may have moved too, and a stale card is how somebody ends up
+  // setting the same zone twice.
+  async function setTimezone(agent: AdminAgentOverview, timezone: string) {
+    setTzBusyId(agent.agent37_id);
+    try {
+      const r = await apiFetch<{
+        timezone: string;
+        profile: boolean;
+        files: string[];
+        clock: boolean;
+      }>(`/api/admin/agents/${agent.agent37_id}/set-timezone`, {
+        method: "POST",
+        body: JSON.stringify({ timezone }),
+      });
+      if (r.profile) {
+        // The clock is the part that has never worked, so it is named explicitly either way
+        // rather than folded into a generic success - "set" on its own would hide a box whose
+        // filesystem we could not write to.
+        toast.success(
+          `Timezone set: ${r.timezone}. ${r.clock ? "Clock set." : "Clock not set (no write access on the box)."}` +
+            ` ${r.files.length} file${r.files.length === 1 ? "" : "s"} updated. Instance restarting.`
+        );
+      } else {
+        toast.error("Saved the answer, but could not write the profile to the instance.");
+      }
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setTzBusyId(null);
     }
   }
 
@@ -331,7 +372,7 @@ export function AdminAgentsView() {
           ) : (
             <div className="space-y-3">
               {visible.map((a) => (
-                <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} />
+                <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} onSetTimezone={tz => setTimezone(a, tz)} settingTimezone={tzBusyId === a.agent37_id} />
               ))}
             </div>
           )}
@@ -459,6 +500,8 @@ function AgentCard({
   onApplyDefaults,
   applying = false,
   onRevertDefaults,
+  onSetTimezone,
+  settingTimezone,
   reverting = false,
 }: {
   agent: AdminAgentOverview;
@@ -469,6 +512,8 @@ function AgentCard({
   onApplyDefaults: () => void;
   applying?: boolean;
   onRevertDefaults: () => void;
+  onSetTimezone: (timezone: string) => void;
+  settingTimezone?: boolean;
   reverting?: boolean;
 }) {
   const presence = PRESENCE[agent.presence];
@@ -594,6 +639,39 @@ function AgentCard({
             <Sparkles className="h-4 w-4" />
             {applying ? "Applying..." : "Apply defaults"}
           </Button>
+        )}
+        {/* The customer's timezone. Shown as a select rather than a button because there is
+            nothing to guess: the value IS the action. An agent with none is the common case for
+            anything set up before the onboarding gate asked, and until it is set that agent's
+            "Their day" section is blank and its clock was never set — so the empty state says
+            "Set timezone" rather than pretending a default. */}
+        {agent.presence !== "ghost" && !trashed && !readOnly && agent.workspace_id && (
+          <div className="inline-flex items-center gap-1.5">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <select
+              className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+              value={agent.timezone ?? ""}
+              disabled={settingTimezone}
+              title={
+                agent.timezone
+                  ? `Timezone: ${agent.timezone}. Changing it rewrites the agent's files and restarts the instance.`
+                  : "No timezone recorded — this agent's “Their day” section is blank and its clock was never set."
+              }
+              onChange={(e) => {
+                const tz = e.target.value;
+                // A select fires on every change including one back to the placeholder, and this
+                // action restarts a customer's box. Only act on a real zone.
+                if (tz) onSetTimezone(tz);
+              }}
+            >
+              <option value="">{settingTimezone ? "Setting…" : "Set timezone"}</option>
+              {timezoneOptions(agent.timezone).map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
         )}
         {/* Recovery: undo the defaults on a box whose harness they took down. Removes exactly the
             keys Apply defaults set and restarts the instance. */}

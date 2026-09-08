@@ -47,11 +47,17 @@ export const GET = route(async () => {
   await requirePlatformAdmin();
   const db = createAdminClient();
 
-  const [agentsRes, wsRes, live] = await Promise.all([
+  const [agentsRes, wsRes, setupRes, live] = await Promise.all([
     // Soft-deleted rows ARE included here (no deleted_at filter): the overview is where an admin
     // sees the trash and restores or purges from it. deleted_at/purge_after drive that UI.
     db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, avatar_url, owner_id, created_at, deleted_at, purge_after"),
     db.from("workspaces").select("id, name, owner_id"),
+    // Just the timezone out of each setup blob, so the overview can show which agents still have
+    // none. Selecting the whole `answers` column would drag every customer's full questionnaire
+    // through this response to read one string.
+    // The alias is explicit on purpose: PostgREST does name a `->>` accessor after its last key,
+    // but relying on that would make every agent silently show "no timezone" if it ever stopped.
+    db.from("agent_setup").select("workspace_id, agent_type, timezone:answers->>timezone"),
     // Live truth, or null when Agent37 is unreachable - in which case presence can't be judged
     // and every row is reported as such rather than guessed at.
     agent37.listAgents().then(
@@ -64,6 +70,15 @@ export const GET = route(async () => {
 
   const workspaces = new Map(
     (wsRes.data ?? []).map((w) => [w.id as string, { name: w.name as string, owner_id: w.owner_id as string }])
+  );
+  // Keyed the way a setup row is identified everywhere else: workspace AND type, since one
+  // workspace can hold several agents of different types with different answers. A failed read
+  // is not fatal - the overview is still worth rendering without the timezone column.
+  const timezones = new Map(
+    (setupRes.error ? [] : setupRes.data ?? []).map((s) => [
+      `${s.workspace_id as string}:${s.agent_type as string}`,
+      (s.timezone as string | null) || null,
+    ])
   );
   const emails = await resolveEmails(db, [
     ...(agentsRes.data ?? []).map((a) => a.owner_id),
@@ -93,6 +108,7 @@ export const GET = route(async () => {
       created_at: a.created_at as string,
       deleted_at: (a.deleted_at as string | null) ?? null,
       purge_after: (a.purge_after as string | null) ?? null,
+      timezone: timezones.get(`${a.workspace_id as string}:${a.agent_type as string}`) ?? null,
     };
   });
 
@@ -134,6 +150,8 @@ export const GET = route(async () => {
           : null,
         deleted_at: null,
         purge_after: null,
+        // An orphan has no row here at all, so there are no setup answers to read one from.
+        timezone: null,
       });
     }
   }

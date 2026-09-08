@@ -8,6 +8,7 @@ import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { fieldVisible, getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
+import { timezoneOptions } from "@/config/timezones";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
 import { LEGAL_BRANCH } from "@/lib/legalIntake";
 import { REALESTATE_BRANCH } from "@/lib/realEstateIntake";
@@ -538,46 +539,6 @@ function SHead({ stepNum, total, title, subtitle, badge, art }: { stepNum: numbe
 // ════════════════════════════════════════════════════════════
 interface GateData { first: string; last: string; email: string; phone: string; linkedin: string; company: string; timezone: string; bestTime: string }
 
-// WHERE THEY ARE IN TIME, asked here rather than nowhere.
-//
-// AGENTS.md carries a "Their day" section built from answers.timezone, and it tells the agent
-// that "today" means today where the customer is and to trust that line over the box clock. Until
-// now nothing ever collected the answer, so that instruction shipped blank on every agent while
-// half the skills we sell are time-shaped - the daily brief, the end-of-day summary, the weekly
-// plan, every follow-up with "by Thursday" in it.
-//
-// Values are IANA ids because that is what isValidTz() and /etc/localtime need; labels are what
-// somebody actually calls the zone they live in. US zones first because that is who buys, then
-// the rest of the common list. A zone we have not listed still works: the detected one is
-// appended at render if it is missing, so somebody in Lisbon is not forced to claim London.
-const TIMEZONES: Array<{ value: string; label: string }> = [
-  { value: "America/New_York", label: "Eastern - New York" },
-  { value: "America/Chicago", label: "Central - Chicago" },
-  { value: "America/Denver", label: "Mountain - Denver" },
-  { value: "America/Phoenix", label: "Mountain, no DST - Phoenix" },
-  { value: "America/Los_Angeles", label: "Pacific - Los Angeles" },
-  { value: "America/Anchorage", label: "Alaska - Anchorage" },
-  { value: "Pacific/Honolulu", label: "Hawaii - Honolulu" },
-  { value: "America/Toronto", label: "Eastern - Toronto" },
-  { value: "America/Vancouver", label: "Pacific - Vancouver" },
-  { value: "America/Mexico_City", label: "Central - Mexico City" },
-  { value: "America/Sao_Paulo", label: "Brasilia - Sao Paulo" },
-  { value: "Europe/London", label: "UK - London" },
-  { value: "Europe/Dublin", label: "Ireland - Dublin" },
-  { value: "Europe/Paris", label: "Central European - Paris" },
-  { value: "Europe/Berlin", label: "Central European - Berlin" },
-  { value: "Europe/Madrid", label: "Central European - Madrid" },
-  { value: "Europe/Athens", label: "Eastern European - Athens" },
-  { value: "Asia/Dubai", label: "Gulf - Dubai" },
-  { value: "Asia/Kolkata", label: "India - Kolkata" },
-  { value: "Asia/Singapore", label: "Singapore" },
-  { value: "Asia/Hong_Kong", label: "Hong Kong" },
-  { value: "Asia/Tokyo", label: "Japan - Tokyo" },
-  { value: "Australia/Sydney", label: "Eastern - Sydney" },
-  { value: "Australia/Perth", label: "Western - Perth" },
-  { value: "Pacific/Auckland", label: "New Zealand - Auckland" },
-];
-
 const BEST_TIMES = ["Early morning", "Morning", "Midday", "Afternoon", "Evening", "Anytime"];
 
 /** The browser's own zone, or "" where it cannot be read. Used as the CLIENT snapshot of a
@@ -727,11 +688,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
                 <TSelect
                   value={timezone}
                   onChange={v => set("timezone", v)}
-                  options={
-                    timezone && !TIMEZONES.some(t => t.value === timezone)
-                      ? [...TIMEZONES, { value: timezone, label: timezone }]
-                      : TIMEZONES
-                  }
+                  options={timezoneOptions(timezone)}
                   placeholder="Select your timezone…"
                 />
               </FF>
