@@ -7,6 +7,10 @@ import { AdminShell } from "@/components/admin/AdminShell";
 // layers protect it: the proxy bounces logged-out users to /login, and here a logged-in
 // non-admin gets a hard notFound() so the route's existence never leaks. Auth is read
 // from the session only (user.email), so it's agnostic to how login works.
+// noindex, to match the "the route's existence never leaks" intent above. A non-admin gets a
+// notFound(), but without this the route still inherited the root layout's indexable metadata.
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user } = await getSession();
   if (!user) redirect("/login?next=/admin");

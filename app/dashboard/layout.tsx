@@ -20,6 +20,12 @@ async function loadWorkspaces(db: AdminDB, userId: string): Promise<WorkspaceWit
   return mapMembershipsToWorkspaces(data);
 }
 
+// noindex for the whole signed-in dashboard. Without a rule here every screen under /dashboard
+// inherited the root layout's metadata, canonical included - so each one told Google it was
+// apolloclaw.ai. The proxy bounces logged-out visitors to /login, but the URLs are still
+// linkable, and an indexed /dashboard/settings/billing is not a search result anybody wants.
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user } = await getSession();
   if (!user) redirect("/login");
