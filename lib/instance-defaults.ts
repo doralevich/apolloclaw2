@@ -162,10 +162,37 @@ export async function applyInstanceDefaults(
   const tz = opts.timezone && isValidTz(opts.timezone) ? opts.timezone : "";
 
   // Best-effort clock, before node so its output is separable. Needs write access we may not
-  // have (the runtime user is often not root); a failure is a logged skip, and USER.md already
-  // carries the timezone for the agent regardless.
+  // have (the runtime user is often not root); a failure is a logged skip, and AGENTS.md carries
+  // the timezone in words for the agent regardless.
+  //
+  // WHEN IT SKIPS, SAY WHY. Every agent to date reports timezone:false and the only information
+  // that carried was "it did not work" - which is not enough to choose a fix, and guessing one
+  // is how a wrong config key took an instance's harness down before. So on the failing branch
+  // the box reports what it actually permits: who we are, whether /etc is writable, whether
+  // passwordless sudo exists, what TZ the process already carries, and where /etc/localtime
+  // currently points. All of it is read-only; none of it changes the box.
+  //
+  // TZ is the interesting one. Node reads the TZ environment variable ahead of /etc/localtime,
+  // so a box that cannot be given a system clock can still be given a correct one per process -
+  // but only if something in the startup path can set it, which is what these facts settle.
+  //
+  // The diagnostic is ONE shell word with no spaces in it. Written across lines with backslash
+  // continuations it becomes seven arguments to echo, joined by spaces, and the reader below
+  // then captures only the first - which is how six of seven facts disappear while the code
+  // looks right. The JS concatenation here is line-broken; the shell it emits is not.
+  const tzFacts = [
+    'user=$(id -un 2>/dev/null || echo ?)',
+    ',etc_writable=$([ -w /etc ] && echo yes || echo no)',
+    ',sudo=$(sudo -n true 2>/dev/null && echo yes || echo no)',
+    `,zoneinfo=$([ -e "/usr/share/zoneinfo/${tz}" ] && echo yes || echo no)`,
+    ',TZ=${TZ:-unset}',
+    ',localtime=$(readlink -f /etc/localtime 2>/dev/null || echo none)',
+    ',date=$(date +%Z%z 2>/dev/null)',
+  ].join("");
   const tzStep = tz
-    ? `if ln -sf "/usr/share/zoneinfo/${tz}" /etc/localtime 2>/dev/null; then echo "${tz}" > /etc/timezone 2>/dev/null; echo "TZ_SET:${tz}"; else echo "TZ_SKIP"; fi; `
+    ? `if ln -sf "/usr/share/zoneinfo/${tz}" /etc/localtime 2>/dev/null; then ` +
+      `echo "${tz}" > /etc/timezone 2>/dev/null; echo "TZ_SET:${tz}"; ` +
+      `else echo "TZ_SKIP:${tzFacts}"; fi; `
     : "";
 
   // When config writes are disabled we still do the clock, then stop — no openclaw.json touch,
@@ -286,9 +313,15 @@ export async function applyInstanceDefaults(
     const timezone = /TZ_SET:/.test(res.stdout);
     console.log("[instance-defaults:applied]", agentId, wrote[1], { webSearch, browser, timezone });
     if (opts.restart) await restartQuietly(agentId);
+    // The clock's skip reason rides out with the others. It is the one that has never succeeded
+    // on any box, so "clock not set" alone is the least useful thing this could report.
+    // To end of line, not \S+: the facts are emitted space-free, but a reader that silently
+    // truncates at the first space is exactly how this went wrong once already.
+    const tzWhy = /TZ_SKIP:(.+)/.exec(res.stdout)?.[1]?.trim();
     const skipped = [
       ...(webSearch ? [] : ["TAVILY_API_KEY not set - web search left off"]),
       ...(browser ? [] : ["no Chrome on the box - browser tool left off"]),
+      ...(tz && !timezone ? [`clock not set (${tzWhy ?? "no reason reported"})`] : []),
     ];
     return {
       applied: true,
