@@ -20,6 +20,12 @@ export const metadata: Metadata = {
 };
 
 const uc = {
+  agent: {
+    typeId: "personal",
+    buildSlug: "personal",
+    badge: "Apollo[Claw] Personal Edition",
+    punch: "The Personal Agent. More Than AI. Your Personal Operating System.",
+  },
   label: "Personal Productivity",
   title: "Your Personal",
   subtitle: "AI Assistant",

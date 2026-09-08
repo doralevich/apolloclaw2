@@ -7,11 +7,11 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Company · Industries · Departments ·
-// Case Studies · Blog · Contact. Industries (which business you run) and Departments (which role
+// Site IA, current top-level order per David's direct call: Company · Industries · Agents ·
+// Case Studies · Blog · Contact. Industries (which business you run) and Agents (which one you want
 // you're hiring) are two separate triggers, briefly merged into one two-column "Solutions"
 // mega-menu and then split back out as too dense. The two lists are now strictly non-overlapping:
-// Legal, Medical, Real Estate, and Insurance were dropped from Departments because each resolves
+// Legal, Medical and Insurance stay out of the Agents list because each resolves
 // to the same page as its Industries counterpart. Company is a small dropdown (About, Security).
 //
 // Blog is back as a top-level link. It had been dropped along with the rest of Resources, which
@@ -46,7 +46,7 @@ const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "david@apolloclaw.ai";
-import { DEPARTMENTS, INDUSTRIES } from "@/config/navigation";
+import { AGENTS, INDUSTRIES } from "@/config/navigation";
 
 const COMPANY = [
   { label: "About", to: "/about" },
@@ -152,12 +152,12 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
   );
 }
 
-// Industries and Departments are two separate flyouts again (David: "let's do by Industry and
+// Industries and Agents are two separate flyouts again (David: "let's do by Industry and
 // By Departments, that's too much, should be separated"). They were briefly merged into one
 // 820px-wide two-column mega-menu, which read as too dense. Industries stays a plain text list
-// (vertical keywords, SEO-important), Departments keeps the icon-tile treatment.
+// (vertical keywords, SEO-important), Agents keeps the icon-tile treatment.
 // Both category flyouts render the same way: a two-column grid of icon tiles. Shared so
-// Industries and Departments cannot drift apart visually.
+// Industries and Agents cannot drift apart visually.
 function tilePanel(
   items: { label: string; description: string; to: string; Icon: LucideIcon }[],
   pathname: string,
@@ -209,8 +209,8 @@ export default function Navbar() {
     setOpenSection(null);
   }, [pathname]);
 
-  // Top-level order per David's direct call: Company (About, Security), Industries, Departments,
-  // Case Studies, Blog, Contact. Industries and Departments are two separate triggers again after
+  // Top-level order per David's direct call: Company (About, Security), Industries, Agents,
+  // Case Studies, Blog, Contact. Industries and Agents are two separate triggers again after
   // a brief run as one merged "Solutions" mega-menu. Blog sits second-to-last so Contact keeps
   // the end of the row, which is where people look for it.
   const navEntries: NavEntry[] = [
@@ -234,10 +234,10 @@ export default function Navbar() {
     },
     {
       kind: "group",
-      label: "Departments",
+      label: "Agents",
       active: (p) => p.startsWith("/ai-agents"),
-      mobileItems: DEPARTMENTS,
-      render: () => tilePanel(DEPARTMENTS, pathname, 560),
+      mobileItems: AGENTS,
+      render: () => tilePanel(AGENTS, pathname, 560),
     },
     {
       kind: "link",

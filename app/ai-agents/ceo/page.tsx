@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
+import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Assistant for CEOs | Apollo[Claw]" },
@@ -160,31 +161,14 @@ export default function CeoPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      {/* Hero */}
-      <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
-        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
-        <div aria-hidden style={{ position: "absolute", top: "-20%", left: "50%", transform: "translateX(-50%)", width: "70%", height: "120%", background: "radial-gradient(ellipse at center, rgba(215,43,43,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-5xl relative z-10">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/the-ceo-agent-white.png"
-            alt="The CEO Agent"
-            style={{ height: 52, width: "auto", margin: "0 auto 32px" }}
-          />
-          <h1 className="font-display leading-[1.05] tracking-tight" style={{ fontSize: "3.75em", fontWeight: 800, color: "#ffffff", margin: 0 }}>
-            Run Your Company.<br />Let Your Bot Run Everything Else.
-          </h1>
-          <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 820, margin: "24px auto 0" }}>
-            The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.
-          </p>
-          <div style={{ marginTop: 36 }}>
-            <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
-              Schedule Your Consultation
-            </a>
-          </div>
-        </div>
-      </section>
-
+      <AgentHero
+        agentTypeId="ceo"
+        buildSlug="ceo"
+        badge="Apollo[Claw] CEO Edition"
+        title={<>Run Your Company.<br />Let Your Bot Run Everything Else.</>}
+        punch="The CEO Agent. More Than AI. Your Executive Operating System."
+        sub="The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do."
+      />
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">

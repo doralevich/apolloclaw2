@@ -19,17 +19,17 @@ const navLinks = [
 ];
 
 // Moved here from the top nav (Navbar.tsx), David's call that a 10-item mega-menu isn't
-// needed up top for a site this size. Roles only: the verticals moved to industryLinks above
-// once the footer gained an Industries column, so the two lists no longer repeat each other.
+// needed up top for a site this size. This is the product family, named the way each agent is
+// sold, and it mirrors AGENTS in config/navigation.ts - the two must not drift apart. Real Estate
+// appears in both columns on purpose: it is an agent you can buy and a vertical you can be.
 const agentLinks = [
-  { label: "AI Receptionist", to: "/ai-agents/receptionist" },
-  { label: "CEO Agent", to: "/ai-agents/ceo" },
-  { label: "CFO Agent", to: "/ai-agents/cfo" },
-  { label: "Sales Agent", to: "/ai-agents/sales" },
-  { label: "Marketing Agent", to: "/ai-agents/marketing" },
-  { label: "Recruiting Agent", to: "/ai-agents/recruiting" },
-  { label: "Human Resources Agent", to: "/ai-agents/hr" },
-  { label: "Personal Agent", to: "/ai-agents/personal-assistant" },
+  { label: "The CEO Agent", to: "/ai-agents/ceo" },
+  { label: "The CFO Agent", to: "/ai-agents/cfo" },
+  { label: "The Sales Agent", to: "/ai-agents/sales" },
+  { label: "The Marketing Agent", to: "/ai-agents/marketing" },
+  { label: "The Recruiting Agent", to: "/ai-agents/recruiting" },
+  { label: "The Real Estate Agent", to: "/industries/real-estate" },
+  { label: "The Personal Agent", to: "/ai-agents/personal-assistant" },
 ];
 
 const industryLinks = [
@@ -40,6 +40,8 @@ const industryLinks = [
   { label: "Accounting Firms", to: "/industries/accounting-firms" },
   { label: "Financial Services", to: "/industries/financial-services" },
   { label: "Professional Services", to: "/industries/professional-services" },
+  { label: "Reception & Front Desk", to: "/ai-agents/receptionist" },
+  { label: "Human Resources", to: "/ai-agents/hr" },
   { label: "Private Equity", to: "/industries/private-equity" },
 ];
 
