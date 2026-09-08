@@ -17,6 +17,7 @@ import { SALES_BRANCH } from "@/lib/salesIntake";
 import { RECRUITING_BRANCH } from "@/lib/recruitingIntake";
 import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
+import { PERSONAL_BRANCH } from "@/lib/personalIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
 // add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
@@ -41,6 +42,12 @@ const ROLE_INTAKES: Record<
     // of, because that is a thing they can find in thirty seconds and it is exactly the writing
     // the agent will be asked to produce. Left unset, the page keeps its generic copy.
     sample?: { title: string; subtitle: string; label: string; hint: string; placeholder: string; upload: string; uploadHint: string; footnote: string };
+    // Overrides the masthead's second line. The default says "we need to understand your
+    // business", which is true for eight of the nine role agents and wrong for the ninth: a
+    // Personal Agent is bought by a person, sometimes not on behalf of a business at all, and
+    // opening by asking about their business is the wrong first impression. Left unset, the
+    // page keeps its generic copy.
+    intro?: string;
     // OPT IN to dropping the generic "What your agent should take on" page, by naming the two
     // fields in this branch that already ask its two questions. Only set it once the branch
     // genuinely covers both - the whole point is to stop asking twice, not to stop asking.
@@ -103,6 +110,11 @@ const ROLE_INTAKES: Record<
   insurance: {
     branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
     coversScope: { owns: "owns_work", win: "insurance_goals", guard: "handoff_line" },
+  },
+  personal: {
+    branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "Your Day", detailsKey: "personalDetails", roleName: "Personal Agent",
+    coversScope: { owns: "owns_work", win: "personal_goals", guard: "never_unattended" },
+    intro: "Before we build your assistant, we need to understand your day and what it may see. Takes about 15 minutes. The more detail, the better the result.",
   },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
@@ -2106,7 +2118,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
               ? <>Let&apos;s Build <span style={{ color: brand.color }}>Your Agent.</span></>
               : undefined
         }
-        intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
+        intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : roleIntake?.intro}
       />
     );
     if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} agentTypeId={agentTypeId} />;
