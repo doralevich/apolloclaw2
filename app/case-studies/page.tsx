@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/case-studies" },
   title: { absolute: "Case Studies | Apollo[Claw]" },
   description: "Real businesses. Real results. See how Apollo[Claw] AI agents are transforming operations across industries.",
 };

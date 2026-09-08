@@ -3,6 +3,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/ai-101" },
   title: { absolute: "AI 101 for Business Owners | Apollo[Claw]" },
   description:
     "A plain-English guide to AI for business owners. What AI agents are, what they can do, and how to get started without the hype.",

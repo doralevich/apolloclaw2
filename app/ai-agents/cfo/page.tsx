@@ -6,7 +6,10 @@ export const metadata: Metadata = {
   title: { absolute: "CFO AI Agent | Financial Intelligence for Finance Leaders | Apollo[Claw]" },
   description: "The CFO Agent handles reporting, forecasting, and financial communications. AI built specifically for finance executives.",
   alternates: {
-    canonical: "https://thecfoagent.ai",
+    // Self-referencing on purpose. This used to point at thecfoagent.ai, which told Google to
+    // index that page instead of this one. Both properties are meant to rank on their own; the
+    // standalone site is a second front door, not a replacement for this page.
+    canonical: "https://apolloclaw.ai/ai-agents/cfo",
   },
   openGraph: {
     images: OG_IMAGES,

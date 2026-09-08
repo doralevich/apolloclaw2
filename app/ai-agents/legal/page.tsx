@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/seo";
+import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
   title: { absolute: "Law AI Agent | Contract Drafting & Review for Businesses | Apollo[Claw]" },
   description: "The Law Agent drafts and reviews contracts, summarizes documents in plain English, and tracks obligations and renewals. AI built for businesses that live in contracts.",
   alternates: {
-    canonical: "https://thelawagent.ai",
+    // Self-referencing on purpose. This used to point at thelawagent.ai, which told Google to
+    // index that page instead of this one. Both properties are meant to rank on their own; the
+    // standalone site is a second front door, not a replacement for this page.
+    canonical: "https://apolloclaw.ai/ai-agents/legal",
   },
   openGraph: {
     images: OG_IMAGES,
@@ -133,24 +137,14 @@ export default function LegalPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      {/* Hero */}
-      <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
-        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
-        <div aria-hidden style={{ position: "absolute", top: "-20%", left: "50%", transform: "translateX(-50%)", width: "70%", height: "120%", background: "radial-gradient(ellipse at center, rgba(215,43,43,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-5xl relative z-10">
-          <h1 className="font-display leading-[1.05] tracking-tight" style={{ fontSize: "3.75em", fontWeight: 800, color: "#ffffff", margin: 0 }}>
-            Draft Faster.<br />Review Smarter.
-          </h1>
-          <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 820, margin: "24px auto 0" }}>
-            The Law Agent handles the recurring, time-intensive legal production that clogs your week; drafting from your templates, redlining incoming contracts, and tracking every obligation, so the people who make the judgment calls stop producing paperwork.
-          </p>
-          <div style={{ marginTop: 36 }}>
-            <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 30px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
-              Schedule Your Consultation
-            </a>
-          </div>
-        </div>
-      </section>
+      <AgentHero
+        agentTypeId="legal"
+        buildSlug="law"
+        badge="Apollo[Claw] Law Edition"
+        title={<>Draft Faster.<br />Review Smarter.</>}
+        punch="The Law Agent. More Than AI. Your Legal Operating System."
+        sub="The Law Agent handles the recurring, time-intensive legal production that clogs your week; drafting from your templates, redlining incoming contracts, and tracking every obligation, so the people who make the judgment calls stop producing paperwork."
+      />
 
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
