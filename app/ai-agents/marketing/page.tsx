@@ -18,6 +18,15 @@ export const metadata: Metadata = {
 };
 
 const uc = {
+  // The Marketing Agent has a brand and a mascot but no site of its own yet, and there is a
+  // /build/marketing funnel. The hero carries both, so this page reads like the rest of the
+  // family the day the site does exist.
+  agent: {
+    typeId: "marketing",
+    buildSlug: "marketing",
+    badge: "Apollo[Claw] Marketing Edition",
+    punch: "The Marketing Agent. More Than AI. Your Content Operating System.",
+  },
   label: "Marketing",
   title: "AI for",
   subtitle: "Marketing Teams",

@@ -29,6 +29,10 @@ export async function generateMetadata({
     return {
       title: post.seoTitle || post.title,
       description: post.seoDescription || post.excerpt || "",
+      // Without this every post inherits the root layout's canonical, which points at the
+      // homepage - so each post told Google it was a duplicate of apolloclaw.ai and none of
+      // them could rank on their own.
+      alternates: { canonical: `https://apolloclaw.ai/blog/${slug}` },
     };
   } catch {
     return { title: "Blog Post" };

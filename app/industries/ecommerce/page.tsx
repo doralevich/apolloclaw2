@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/industries/ecommerce" },
   title: "AI for E-Commerce Businesses",
   description: "Apollo[Claw] AI agents for e-commerce operators. Automate customer service, order management, inventory alerts, and marketing follow-up.",
 };

@@ -15,6 +15,7 @@ import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 // Tailwind tokens (text-primary = brand red), and section-dividers between bands.
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/create-an-agent" },
   title: { absolute: "Create Your Agent | Apollo[Claw]" },
   description:
     "Get a private AI agent built around your business: your people, your stack, the work you keep meaning to hand off. See how it works, what it does, and how to start.",

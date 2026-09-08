@@ -3,6 +3,7 @@ import { OG_IMAGES } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/ai-agents/ceo" },
   title: { absolute: "AI Assistant for CEOs | Apollo[Claw]" },
   description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck; let your bot run the details.",
   openGraph: {

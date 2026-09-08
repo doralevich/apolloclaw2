@@ -4,6 +4,7 @@ import ContactClient from "./ContactClient";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/contact" },
   title: { absolute: "Contact Apollo[Claw] | Schedule a Consultation" },
   description: "Schedule a consultation with Apollo[Claw] and find out exactly which AI agent fits your business. We scope every engagement individually.",
   openGraph: {

@@ -3,6 +3,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://apolloclaw.ai/accessibility" },
   title: "Accessibility Statement",
   description: "Apollo[Claw] accessibility statement and our commitment to inclusive design.",
 };
