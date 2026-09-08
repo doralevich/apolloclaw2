@@ -298,14 +298,23 @@ function TArea({ value, onChange, placeholder, rows = 3 }: { value: string; onCh
   const { a, rgb } = useAccent();
   return <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} className="oc-ph" style={{ ...iBase, resize: "vertical", lineHeight: 1.6, borderColor: focused ? a : BDR, boxShadow: focused ? `0 0 0 3px rgba(${rgb},0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur} />;
 }
-function TSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+// Options are plain strings where the stored value IS the label, which is almost everywhere.
+// Timezone is the exception: the value has to be an IANA id ("America/New_York") because
+// isValidTz() and /etc/localtime both need one, while nobody wants to pick that out of a list.
+// So an option may also be {value,label}, and the two forms mix freely in one list.
+type SelectOption = string | { value: string; label: string };
+
+function TSelect({ value, onChange, options, placeholder = "Select one…" }: { value: string; onChange: (v: string) => void; options: SelectOption[]; placeholder?: string }) {
   const { onFocus, onBlur, focused } = useF();
   const { a, rgb } = useAccent();
   return (
     <div style={{ position: "relative" }}>
       <select value={value} onChange={e => onChange(e.target.value)} style={{ ...iBase, appearance: "none", cursor: "pointer", paddingRight: 36, borderColor: focused ? a : BDR, boxShadow: focused ? `0 0 0 3px rgba(${rgb},0.1)` : "none" }} onFocus={onFocus} onBlur={onBlur}>
-        <option value="">Select one…</option>
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
+        <option value="">{placeholder}</option>
+        {options.map(o => {
+          const [v, label] = typeof o === "string" ? [o, o] : [o.value, o.label];
+          return <option key={v} value={v}>{label}</option>;
+        })}
       </select>
       <svg style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="12" height="12" viewBox="0 0 12 12" fill="none">
         <path d="M2 4l4 4 4-4" stroke={a} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -527,7 +536,60 @@ function SHead({ stepNum, total, title, subtitle, badge, art }: { stepNum: numbe
 // ════════════════════════════════════════════════════════════
 // GATEKEEPER
 // ════════════════════════════════════════════════════════════
-interface GateData { first: string; last: string; email: string; phone: string; linkedin: string; company: string }
+interface GateData { first: string; last: string; email: string; phone: string; linkedin: string; company: string; timezone: string; bestTime: string }
+
+// WHERE THEY ARE IN TIME, asked here rather than nowhere.
+//
+// AGENTS.md carries a "Their day" section built from answers.timezone, and it tells the agent
+// that "today" means today where the customer is and to trust that line over the box clock. Until
+// now nothing ever collected the answer, so that instruction shipped blank on every agent while
+// half the skills we sell are time-shaped - the daily brief, the end-of-day summary, the weekly
+// plan, every follow-up with "by Thursday" in it.
+//
+// Values are IANA ids because that is what isValidTz() and /etc/localtime need; labels are what
+// somebody actually calls the zone they live in. US zones first because that is who buys, then
+// the rest of the common list. A zone we have not listed still works: the detected one is
+// appended at render if it is missing, so somebody in Lisbon is not forced to claim London.
+const TIMEZONES: Array<{ value: string; label: string }> = [
+  { value: "America/New_York", label: "Eastern - New York" },
+  { value: "America/Chicago", label: "Central - Chicago" },
+  { value: "America/Denver", label: "Mountain - Denver" },
+  { value: "America/Phoenix", label: "Mountain, no DST - Phoenix" },
+  { value: "America/Los_Angeles", label: "Pacific - Los Angeles" },
+  { value: "America/Anchorage", label: "Alaska - Anchorage" },
+  { value: "Pacific/Honolulu", label: "Hawaii - Honolulu" },
+  { value: "America/Toronto", label: "Eastern - Toronto" },
+  { value: "America/Vancouver", label: "Pacific - Vancouver" },
+  { value: "America/Mexico_City", label: "Central - Mexico City" },
+  { value: "America/Sao_Paulo", label: "Brasilia - Sao Paulo" },
+  { value: "Europe/London", label: "UK - London" },
+  { value: "Europe/Dublin", label: "Ireland - Dublin" },
+  { value: "Europe/Paris", label: "Central European - Paris" },
+  { value: "Europe/Berlin", label: "Central European - Berlin" },
+  { value: "Europe/Madrid", label: "Central European - Madrid" },
+  { value: "Europe/Athens", label: "Eastern European - Athens" },
+  { value: "Asia/Dubai", label: "Gulf - Dubai" },
+  { value: "Asia/Kolkata", label: "India - Kolkata" },
+  { value: "Asia/Singapore", label: "Singapore" },
+  { value: "Asia/Hong_Kong", label: "Hong Kong" },
+  { value: "Asia/Tokyo", label: "Japan - Tokyo" },
+  { value: "Australia/Sydney", label: "Eastern - Sydney" },
+  { value: "Australia/Perth", label: "Western - Perth" },
+  { value: "Pacific/Auckland", label: "New Zealand - Auckland" },
+];
+
+const BEST_TIMES = ["Early morning", "Morning", "Midday", "Afternoon", "Evening", "Anytime"];
+
+/** The browser's own zone, or "" where it cannot be read. Used as the CLIENT snapshot of a
+ *  useSyncExternalStore whose server snapshot is "", which is what keeps the two renders in
+ *  agreement — reading this during a plain render would break hydration. */
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  } catch {
+    return "";
+  }
+}
 // `heading`/`intro` are overridable so the white-glove entry point can say plainly that this
 // is an invited flow, rather than reusing self-serve copy that would read as a sales page to
 // someone David has already spoken to.
@@ -539,7 +601,17 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
   // ApolloClaw red otherwise.
   const accent = brand?.color ?? R;
   const accentRgb = brand?.colorRgb ?? "215, 43, 43";
-  const [d, setD] = useState<GateData>(initial ?? { first: "", last: "", email: "", phone: "", linkedin: "", company: "" });
+  const [d, setD] = useState<GateData>(initial ?? { first: "", last: "", email: "", phone: "", linkedin: "", company: "", timezone: "", bestTime: "" });
+
+  // The browser's own zone, read the same way this file already reads sessionStorage: a server
+  // snapshot of "" and a client snapshot of the real value, so the two renders agree and
+  // hydration is intact. Doing this with setState in an effect works but trips
+  // react-hooks/set-state-in-effect, and there is no reason to add a second cascading render for
+  // a value that never changes.
+  const detected = useSyncExternalStore(subscribeNever, detectTimezone, () => "");
+  // What the field shows and what gets submitted. `d.timezone` wins once they have chosen
+  // anything, and prefill from a saved questionnaire wins over re-detection.
+  const timezone = d.timezone || detected;
 
   const [err, setErr] = useState("");
   // "That address already has an account" is not an error in the same sense as a missing field
@@ -586,7 +658,10 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
       setChecking(false);
     }
 
-    onPass(d);
+    // Hand on the RESOLVED timezone, not the raw state. Somebody who never opens the select
+    // still has one - it is what the field showed them - and passing `d` here would submit ""
+    // for exactly the majority who accepted the default.
+    onPass({ ...d, timezone });
   };
   return (
     // Same provider the questionnaire runs under, so the five fields on this screen focus in
@@ -644,6 +719,24 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
                 under personal life, behind a "Skip this step" button, so the one public
                 professional record of the person we are building an agent for could disappear
                 from the answers entirely. */}
+            {/* Timezone is pre-filled from the browser, so for almost everybody this is a field
+                they read rather than answer. It is here and not buried in an optional step
+                because the agent reasons about "today" from it. */}
+            <Row2>
+              <FF label="Timezone" hint="Your agent schedules and says &ldquo;today&rdquo; in this zone.">
+                <TSelect
+                  value={timezone}
+                  onChange={v => set("timezone", v)}
+                  options={
+                    timezone && !TIMEZONES.some(t => t.value === timezone)
+                      ? [...TIMEZONES, { value: timezone, label: timezone }]
+                      : TIMEZONES
+                  }
+                  placeholder="Select your timezone…"
+                />
+              </FF>
+              <FF label="Best Time to Reach You" hint="Optional."><TSelect value={d.bestTime} onChange={v => set("bestTime", v)} options={BEST_TIMES} /></FF>
+            </Row2>
             <FF label="LinkedIn" hint="Optional. Helps your agent understand your professional background."><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
@@ -1315,7 +1408,10 @@ const emptyS7 = () => ({ goals: [] as string[], goalsOther: "", metric: [] as st
 const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
 
 function hydrateGate(a: PrefillAnswers): GateData {
-  return { first: pfStr(a.firstName), last: pfStr(a.lastName), email: pfStr(a.email), phone: pfStr(a.phone), linkedin: pfStr(a.linkedin), company: pfStr(a.companyName) };
+  // timezone/bestTime prefill like everything else, so re-saving an edited questionnaire keeps
+  // the answer instead of silently re-detecting it. An agent saved before this field existed
+  // hydrates blank, and the effect in Gatekeeper then fills it from the browser.
+  return { first: pfStr(a.firstName), last: pfStr(a.lastName), email: pfStr(a.email), phone: pfStr(a.phone), linkedin: pfStr(a.linkedin), company: pfStr(a.companyName), timezone: pfStr(a.timezone), bestTime: pfStr(a.bestTime) };
 }
 
 function hydrateBizState(a: PrefillAnswers) {
@@ -1453,7 +1549,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const scopeKeys = roleIntake?.coversScope;
   const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
   const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), contactMethod: "", bestTime: "", linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : undefined, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : undefined, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1887,7 +1983,7 @@ export interface OnboardingFormProps {
 // five contact fields they just typed, which are also on the Stripe session.
 const GATE_STORAGE_KEY = "apolloclaw.onboard.gate";
 
-const EMPTY_GATE: GateData = { first: "", last: "", email: "", phone: "", linkedin: "", company: "" };
+const EMPTY_GATE: GateData = { first: "", last: "", email: "", phone: "", linkedin: "", company: "", timezone: "", bestTime: "" };
 
 // The three pieces useSyncExternalStore needs. The snapshot is the RAW string, not a parsed
 // object: React compares snapshots with Object.is, and parsing here would hand it a fresh
@@ -1907,7 +2003,8 @@ function readNoStoredGate(): string | null {
 }
 
 // sessionStorage fires no events for same-tab writes and we only read it once on the way
-// back from Stripe, so there is nothing to subscribe to.
+// back from Stripe, so there is nothing to subscribe to. The gate's timezone read shares this
+// for the same reason: the browser's zone does not change under us either.
 function subscribeNever(): () => void {
   return () => {};
 }
