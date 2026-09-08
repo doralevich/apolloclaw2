@@ -228,6 +228,14 @@ export interface AdminAgentOverview {
   deleted_at: string | null;
   /** When the purge cron may destroy a soft-deleted agent for good. */
   purge_after: string | null;
+  /**
+   * The customer's IANA timezone from their setup answers, or null when they have none - which
+   * is every agent set up before the onboarding gate started asking. Surfaced here because the
+   * admin control that fixes it is useless without a way to see which agents still need it: a
+   * null means the "Their day" section in that agent's AGENTS.md is blank and its box clock was
+   * never set.
+   */
+  timezone: string | null;
 }
 
 // One row in the all-workspaces table. Counts are computed server-side across every
