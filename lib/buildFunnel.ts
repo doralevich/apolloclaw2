@@ -20,6 +20,7 @@ export const BUILD_SLUGS: Record<string, string> = {
   recruiting: "recruiting",
   medical: "medical",
   insurance: "insurance",
+  personal: "personal",
 };
 
 /** Resolve a funnel slug to its agent type, or null if it is not a sellable role agent. */

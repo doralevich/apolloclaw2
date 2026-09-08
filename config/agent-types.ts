@@ -333,6 +333,33 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "ShieldCheck",
   },
+  // The Personal Agent - same role model as the others: an off-the-rack persona
+  // (config/personas.ts -> `personal`) on a stock OpenClaw box, plus a personal intake
+  // (lib/personalIntake.ts) the onboarding form adds when the type is `personal`
+  // (ROLE_INTAKES in OnboardingForm), surfaced as the "Personal Deep-Dive" section
+  // (lib/onboardingSections.ts).
+  //
+  // WHAT MAKES THIS ONE DIFFERENT from its eight siblings is the surface it is pointed at.
+  // Every other role agent reads a bounded thing: contracts, a book of business, a brand guide.
+  // This one reads an inbox and a calendar, which do not separate work from the rest of a life
+  // and which hold other people's information as much as the customer's. So its intake asks what
+  // the agent may read BEFORE it asks what the agent should do, with the narrowest option first,
+  // and the persona holds the same line.
+  //
+  // Same white-glove shape as the other role agents: NO `planKey`, `internal` so only a platform
+  // admin sees the card, and the same stock template and $25 hosting cap as every other agent.
+  {
+    id: "personal",
+    label: "The Personal Agent",
+    description:
+      "A personal assistant for one person: inbox triage and reply drafting, calendar management and defending the blocks that are not meetings, meeting briefs, call notes, tracking what was promised, and research before decisions - scoped to exactly what it has been given access to, and drafting rather than sending unless told otherwise. Set up for one person, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "UserRound",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the

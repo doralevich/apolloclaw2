@@ -81,6 +81,14 @@ const BRANDS: Record<string, AgentBrand> = {
     colorRgb: "60, 91, 170",
     mascot: "/agents/mascots/insurance.png",
   },
+
+  // Wordmark SVG fill sampled directly, same as the rest. Added Sept 8, 2026 alongside
+  // thepersonalagent.ai and the /build/personal funnel.
+  personal: {
+    color: "#61169D",
+    colorRgb: "97, 22, 157",
+    mascot: "/agents/mascots/personal.png",
+  },
 };
 
 /** The brand for an agent type, falling back to ApolloClaw's own. */

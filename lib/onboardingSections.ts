@@ -166,6 +166,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    const perdet = d.personalDetails && typeof d.personalDetails === "object" ? (d.personalDetails as Record<string, unknown>) : {};
+    if (Object.keys(perdet).length) {
+      sections.push({
+        title: "Personal Deep-Dive",
+        rows: Object.entries(perdet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [

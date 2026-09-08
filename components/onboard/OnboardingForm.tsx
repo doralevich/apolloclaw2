@@ -17,6 +17,7 @@ import { SALES_BRANCH } from "@/lib/salesIntake";
 import { RECRUITING_BRANCH } from "@/lib/recruitingIntake";
 import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
+import { PERSONAL_BRANCH } from "@/lib/personalIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
 // add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
@@ -41,6 +42,25 @@ const ROLE_INTAKES: Record<
     // of, because that is a thing they can find in thirty seconds and it is exactly the writing
     // the agent will be asked to produce. Left unset, the page keeps its generic copy.
     sample?: { title: string; subtitle: string; label: string; hint: string; placeholder: string; upload: string; uploadHint: string; footnote: string };
+    // Overrides the masthead's second line. The default says "we need to understand your
+    // business", which is true for eight of the nine role agents and wrong for the ninth: a
+    // Personal Agent is bought by a person, sometimes not on behalf of a business at all, and
+    // opening by asking about their business is the wrong first impression. Left unset, the
+    // page keeps its generic copy.
+    intro?: string;
+    // Pages this role's own deep-dive already covers, dropped from the flow. Same reasoning as
+    // `coversScope` and the missing "scopeai": asked twice, the second time in blander words,
+    // the generic version is the one that loses.
+    dropPages?: readonly string[];
+    // OPT IN to treating the buyer as somebody who may have no business at all.
+    //
+    // Eight of the nine role agents are bought BY a business, so "Your Business" is the right
+    // page and a company name is a fair thing to require. The Personal Agent can be bought by a
+    // person for themselves, and for them the page was not merely awkward: validate("biz")
+    // required a company name and a role, so a private individual could not get past it at all.
+    // Setting this reframes the page, makes the company optional, and drops team size, monthly
+    // revenue and years in business - three questions about a company, asked of a person.
+    personalScale?: { title: string; subtitle: string };
     // OPT IN to dropping the generic "What your agent should take on" page, by naming the two
     // fields in this branch that already ask its two questions. Only set it once the branch
     // genuinely covers both - the whole point is to stop asking twice, not to stop asking.
@@ -103,6 +123,19 @@ const ROLE_INTAKES: Record<
   insurance: {
     branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
     coversScope: { owns: "owns_work", win: "insurance_goals", guard: "handoff_line" },
+  },
+  personal: {
+    branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "Your Day", detailsKey: "personalDetails", roleName: "Personal Agent",
+    coversScope: { owns: "owns_work", win: "personal_goals", guard: "never_unattended" },
+    intro: "Before we build your assistant, we need to understand your day and what it may see. Takes about 15 minutes. The more detail, the better the result.",
+    // The deep-dive opens with "What do you do all day?", required, in the person's own words.
+    // The generic page asks "Describe your business" and requires it, which is the same question
+    // asked worse and unanswerable for somebody who does not have one.
+    dropPages: ["whatyoudo"],
+    personalScale: {
+      title: "You and Where You Work",
+      subtitle: "Enough context to write as you. If you are not attached to a company, leave it blank.",
+    },
   },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
@@ -1348,6 +1381,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // questions. Keyed off the agent type via ROLE_INTAKES, so /onboard/cfo, /onboard/legal and the
   // unlisted /cfo-onboarding and /legal-onboarding links get it and nobody else does.
   const roleIntake = agentTypeId ? ROLE_INTAKES[agentTypeId] : undefined;
+  // Set only by a role whose buyer may not have a business at all. Read by the "biz" page, by
+  // its validation, and by the CompanyRepeater underneath it, so the page, the rules it enforces
+  // and the required marks it draws can never disagree with each other.
+  const personalScale = roleIntake?.personalScale;
   // A role deep-dive is one or more pages. Normalising to an array here means the rest of the
   // form does not care which, and the page keys are derived rather than hand-listed so a branch
   // can gain a page without touching the ordering below.
@@ -1392,6 +1429,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // successMetric, which is what those two questions existed to fill. See buildData below.
   const rolePageKeys = isRoleFlow
     ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
+        .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
   const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
@@ -1420,7 +1458,11 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
       // A role intake hides the Industry field (roleBranch), so it is not required there.
-      if (isRoleFlow) {
+      // personalScale goes further: the buyer may have no company to name, and this check was
+      // the thing that made the page impassable for them.
+      if (personalScale) {
+        // Nothing required here. The deep-dive already asked what they do, in their own words.
+      } else if (isRoleFlow) {
         if (!p?.name?.trim() || !p?.role) return "Please fill in the primary business name and your role.";
       } else {
         if (!p?.name?.trim() || !p?.industry || !p?.role) return "Please fill in the primary business name, industry, and your role.";
@@ -1496,18 +1538,25 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     footnote: "Either way, pick something you did not labour over. A quick reply to a client says more about your voice than anything you edited five times.",
   };
   const allPagesFull: { key: string; label: string; node: React.ReactNode }[] = [
-    { key: "biz", label: "Your Business", node: (
+    { key: "biz", label: personalScale ? "You and Where You Work" : "Your Business", node: (
     <Stack key="s2a">
-      <SHead stepNum={1} total={0} title="Your Business" subtitle="Tell us about the business, or businesses, behind this." badge="Business" />
-      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={isRoleFlow} />
+      <SHead stepNum={1} total={0} title={personalScale?.title ?? "Your Business"} subtitle={personalScale?.subtitle ?? "Tell us about the business, or businesses, behind this."} badge="Business" />
+      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={isRoleFlow} companyOptional={!!personalScale} />
       <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
+      {/* Team size, monthly revenue and years in business are questions about a company. Asked of
+          somebody buying a Personal Agent for themselves they are unanswerable, and answering them
+          about their employer tells the agent nothing it uses. */}
+      {!personalScale && (
       <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
+      )}
       {/* Business Model sat beside this and is gone at David's call. Service-based vs product
           vs SaaS is the kind of self-classification people stall on when their business is two
           of them, and the answers below - what you sell, what is broken, which tools you run -
           say it more accurately than the label would. s2.model stays in state and in the
           payload as an empty string; nothing reads it to decide anything. */}
+      {!personalScale && (
       <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
+      )}
       <KeyPeople people={keyPeople} onChange={setKeyPeople} />
     </Stack>
     ) },
@@ -2106,7 +2155,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
               ? <>Let&apos;s Build <span style={{ color: brand.color }}>Your Agent.</span></>
               : undefined
         }
-        intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : undefined}
+        intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : roleIntake?.intro}
       />
     );
     if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} agentTypeId={agentTypeId} />;

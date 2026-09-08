@@ -106,6 +106,14 @@ interface Props {
   // Hide the Industry field. The industry answer only exists to select the Industry Deep-Dive
   // step, which the CFO intake doesn't use, so asking it there is a dead question.
   hideIndustry?: boolean;
+  // Drop the required marks on name and role, and soften the name label.
+  //
+  // Every other agent is bought BY a business, so a company name is a fair thing to insist on.
+  // The Personal Agent can be bought by a person for themselves, and for them there is no
+  // company to name - insisting turned this into a page they could not get past at all, because
+  // validate("biz") blocks on it. "Company / business name" is also the wrong question to put in
+  // front of somebody who does not have one.
+  companyOptional?: boolean;
 }
 
 // ---- Component ------------------------------------------------------------
@@ -118,6 +126,7 @@ export default function CompanyRepeater({
   portfolio,
   onPortfolioChange,
   hideIndustry = false,
+  companyOptional = false,
 }: Props) {
   const multi = companies.length > 1;
 
@@ -200,7 +209,7 @@ export default function CompanyRepeater({
           </div>
 
           <div style={{ display: "grid", gap: 12 }}>
-            <Field label="Company / business name" required>
+            <Field label={companyOptional ? "Company or organization" : "Company / business name"} required={!companyOptional}>
               <input
                 type="text"
                 value={company.name}
@@ -230,7 +239,7 @@ export default function CompanyRepeater({
                   real answer hiding behind "Other" for anyone whose title was not on it. A role
                   is a thing people know how to type, and "Clinical Director" typed directly
                   beats "Other" plus a second field that only appeared after the wrong pick. */}
-              <Field label="Your role" required>
+              <Field label="Your role" required={!companyOptional}>
                 <input
                   type="text"
                   value={company.role}
