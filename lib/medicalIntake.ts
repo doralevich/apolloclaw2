@@ -58,14 +58,6 @@ const PRACTICE: IndustryBranch = {
       ],
     },
     {
-      key: "front_office",
-      label: "Who runs the front office today?",
-      type: "textarea",
-      placeholder:
-        "e.g. two receptionists share phones and scheduling, my office manager handles billing and insurance, I answer nothing.",
-      helper: "Who does what, and where the work piles up when somebody is out.",
-    },
-    {
       key: "regulated_status",
       label: "Are you a HIPAA covered entity?",
       type: "dropdown",
@@ -108,12 +100,6 @@ const FRONT_OFFICE: IndustryBranch = {
   stepLabel: "Front Office",
   fields: [
     {
-      key: "patient_volume",
-      label: "Roughly how many patients do you see a week?",
-      type: "dropdown",
-      options: ["Fewer than 25", "25-75", "75-150", "150-300", "More than 300"],
-    },
-    {
       key: "patient_comms",
       label: "How does the practice communicate with patients?",
       type: "multiselect",
@@ -128,26 +114,12 @@ const FRONT_OFFICE: IndustryBranch = {
       ],
     },
     {
-      key: "phone_reality",
-      label: "What happens on the phones on a bad day?",
-      type: "textarea",
-      placeholder:
-        "e.g. two lines ring at once during the lunch changeover, voicemails sit until 4pm, people give up and book with somebody else.",
-      helper: "Where the front office actually drowns. This is usually what the agent is bought to fix.",
-    },
-    {
       key: "scheduling_rules",
-      label: "How does scheduling really work?",
+      label: "How does scheduling really work, including no-shows and cancellations?",
       type: "textarea",
       placeholder:
         "e.g. new patients need a 40 minute slot and only on Tuesdays and Thursdays, we hold two same-day slots back, Dr Patel never doubles up after 3pm.",
       helper: "The rules your staff know by heart and nobody has written down.",
-    },
-    {
-      key: "no_shows",
-      label: "How do you handle no-shows and cancellations?",
-      type: "textarea",
-      placeholder: "e.g. two reminders, a fee after the second no-show, we call the waitlist to fill the gap.",
     },
     {
       key: "billing",
@@ -180,13 +152,11 @@ const AGENT: IndustryBranch = {
         "Appointment reminders and confirmations",
         "Rescheduling and waitlist filling",
         "New patient intake paperwork",
-        "Answering routine practice questions (hours, location, parking)",
+        "Answering routine practice questions",
         "Insurance and eligibility chasing",
         "Recall and recare outreach",
         "Referral letters and coordination",
-        "Reviews and patient feedback requests",
-        "Internal notes and handovers",
-        "Supply and vendor admin",
+        "Reviews and feedback requests",
       ],
     },
     // The follow-up to the two options that put the agent in front of a patient in writing.
@@ -194,32 +164,14 @@ const AGENT: IndustryBranch = {
     // asked something clinical, and the customer needs to have decided what happens then BEFORE
     // it happens rather than reading it in a transcript afterwards.
     {
-      key: "patient_message_rules",
-      label: "What may it say to a patient, and what must it hand over?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Answering routine practice questions (hours, location, parking)" },
-      placeholder:
-        "e.g. hours, parking, what to bring, and cost estimates are fine. Anything about a symptom, a medication, or whether they should come in goes straight to a nurse and it says so plainly.",
-      helper: "Assume a patient will ask it a clinical question. What should happen when they do?",
-    },
-    {
       key: "clinical_boundary",
-      label: "Where must a clinician always take over?",
+      label: "Where must a clinician take over, what may it say to a patient, and how must records be handled?",
       type: "textarea",
       required: true,
       placeholder:
-        "e.g. anything about symptoms, medication, results, or urgency. Anything that sounds like it might be an emergency goes to a person immediately.",
+        "e.g. anything about symptoms, medication, results or urgency goes to a person immediately. It may confirm appointments and send reminders. No PHI in SMS, no chart detail in anything outside the EHR, and nothing goes to a patient without a person reading it.",
       helper:
-        "Be generous here. Your agent is an administrative tool, and it must not drift into clinical territory even when a patient asks it to directly.",
-    },
-    {
-      key: "data_handling",
-      label: "Any rules for how patient information must be handled?",
-      type: "textarea",
-      required: true,
-      placeholder:
-        "e.g. no PHI in text messages, first name only in reminders, nothing leaves the EHR, a BAA is required before anything is connected.",
-      helper: "Anything HIPAA, your state, your malpractice carrier, or your own policy requires.",
+        "Three rules in one answer: where a clinician must step in, what the agent may say to a patient on its own, and how patient information must be handled. They were separate questions and each got a shorter answer than this one deserves. Be generous - your agent is an administrative tool and must not drift into clinical territory even when a patient asks it to directly.",
     },
     {
       key: "patient_voice",
@@ -229,23 +181,11 @@ const AGENT: IndustryBranch = {
         "e.g. warm and plain, no jargon, never rushed, our patients are mostly elderly so short sentences and no abbreviations.",
     },
     {
-      key: "approval_line",
-      label: "What must never go out without a person seeing it first?",
-      type: "textarea",
-      placeholder: "e.g. anything to a patient about money, anything about results, anything to another practice.",
-    },
-    {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. nobody's voicemail goes unanswered past the same day.",
       helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "medical_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The time back, the empty slots filled, or the calm you want three months from now.",
     },
   ],
 };

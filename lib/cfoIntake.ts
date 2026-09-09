@@ -54,30 +54,8 @@ const BOOKS: IndustryBranch = {
       helper: "Every number your agent gives you traces back to here.",
     },
     {
-      key: "bookkeeping",
-      label: "Who keeps the books today?",
-      type: "dropdown",
-      options: [
-        "In-house bookkeeper or controller",
-        "Outsourced bookkeeper or firm",
-        "Fractional CFO or accounting firm",
-        "Founder or owner does it",
-        "Nobody consistently",
-        "Other",
-      ],
-    },
-    {
-      key: "finance_team",
-      label: "Who else is involved in the numbers?",
-      type: "textarea",
-      placeholder:
-        "e.g. my controller closes the month, our CPA handles tax and sees everything, my co-founder gets the board pack but not payroll detail.",
-      helper:
-        "Names, roles, and who sees what. This decides who your agent may send a number to without asking you.",
-    },
-    {
       key: "books_state",
-      label: "How current are the books, honestly?",
+      label: "How current are the books, and what does month-end close look like?",
       type: "dropdown",
       options: [
         "Closed and reconciled through last month",
@@ -90,14 +68,6 @@ const BOOKS: IndustryBranch = {
         "There is no wrong answer, and the honest one is the useful one. An agent that thinks the books are current will state stale numbers with confidence.",
     },
     {
-      key: "close_process",
-      label: "What does month-end close look like now?",
-      type: "textarea",
-      placeholder:
-        "e.g. bookkeeper reconciles in the first week, I review the P&L, nobody looks at the balance sheet, it takes about three weeks.",
-      helper: "The steps, who does them, and roughly how long it actually takes.",
-    },
-    {
       key: "entities",
       label: "How many legal entities, and how are they structured?",
       type: "text",
@@ -105,10 +75,10 @@ const BOOKS: IndustryBranch = {
       helper: "Number, structure, and where they file. Consolidation is where reporting goes wrong.",
     },
     {
-      key: "fiscal_year_end",
-      label: "When does your fiscal year end?",
+      key: "reporting_cadence",
+      label: "How often do you want financials?",
       type: "dropdown",
-      options: ["December (calendar year)", "March", "June", "September", "Other"],
+      options: ["Weekly", "Monthly", "Quarterly", "On demand"],
     },
   ],
 };
@@ -136,48 +106,12 @@ const MONEY: IndustryBranch = {
       ],
     },
     {
-      key: "cost_structure",
-      label: "Where does the money actually go?",
-      type: "textarea",
-      placeholder:
-        "e.g. payroll is about 60 percent, then contractors, then ad spend which swings hard month to month.",
-      helper: "Your biggest cost lines, roughly in order. Variance analysis is guesswork without them.",
-    },
-    {
-      key: "unit_economics",
-      label: "What does a good customer look like in numbers?",
-      type: "textarea",
-      placeholder:
-        "e.g. $2k a month, 18 month average life, costs us about $3k to acquire, gross margin around 70 percent.",
-      helper:
-        "Whatever you track, in your own terms. If you do not track this yet, say so and your agent can help build it.",
-    },
-    {
-      key: "runway_watch",
-      label: "What cash number would make you nervous?",
-      type: "text",
-      placeholder: "e.g. under four months of runway, or below $150k in the operating account",
-      helper: "The line where you want to hear from your agent before you have to ask.",
-    },
-    {
       key: "ar_process",
       label: "How does getting paid work?",
       type: "textarea",
       placeholder:
         "e.g. invoice on the first, net 30, two clients always run to 60 and I chase them myself.",
       helper: "Terms, who invoices, and where collections actually stall.",
-    },
-    {
-      key: "forecasting",
-      label: "Do you have a forecast or a model today?",
-      type: "dropdown",
-      options: [
-        "A model I trust and update",
-        "A model that exists but is stale",
-        "A rough spreadsheet",
-        "It is in my head",
-        "Nothing yet",
-      ],
     },
     {
       key: "finance_stack",
@@ -199,6 +133,14 @@ const MONEY: IndustryBranch = {
         "Other",
       ],
     },
+    {
+      key: "compliance_rules",
+      label: "Any audit, lender, or regulatory rules it must follow?",
+      type: "textarea",
+      placeholder:
+        "e.g. we are audited annually, our lender needs a covenant certificate quarterly, revenue recognition follows ASC 606.",
+      helper: "Anything your accountant, auditor, or lender requires belongs here.",
+    },
   ],
 };
 
@@ -215,55 +157,23 @@ const AGENT: IndustryBranch = {
       label: "What do you want your CFO agent to own?",
       type: "multiselect",
       options: [
-        "Monthly close & P&L",
-        "Cash-flow forecast",
+        "Monthly close and P&L",
+        "Cash-flow forecast and runway",
         "Budget vs actual",
-        "KPI / metrics dashboard",
-        "Board deck & investor reporting",
-        "Runway & burn tracking",
+        "KPI dashboard and board reporting",
         "Expense categorization",
-        "Invoicing & AR chasing",
-        "Fundraising prep",
-        "Pricing & margin analysis",
-        "Vendor & spend review",
-        "Payroll review",
+        "Invoicing and AR chasing",
+        "Pricing and margin analysis",
+        "Vendor, spend and payroll review",
       ],
     },
     // Follow-ups to the two options that ask the agent to write for an audience it has never
     // met. Board reporting and fundraising both go OUT of the building, to people whose
     // questions the agent cannot guess, so ticking either opens the question that configures it.
     {
-      key: "board_audience",
-      label: "Who reads the board pack, and what do they push on?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Board deck & investor reporting" },
-      placeholder:
-        "e.g. two investors and an independent, they always go straight to CAC payback and the hiring plan, one hates a slide with no comparison to last quarter.",
-      helper: "The audience and their standing questions. This is what makes a pack land rather than get picked apart.",
-    },
-    {
-      key: "fundraising",
-      label: "Where are you with fundraising?",
-      type: "dropdown",
-      showIf: { key: "owns_work", includes: "Fundraising prep" },
-      options: [
-        "Bootstrapped, not raising",
-        "Planning to raise in the next year",
-        "Actively raising now",
-        "Just closed a round",
-        "Debt or credit facility, not equity",
-      ],
-    },
-    {
-      key: "reporting_cadence",
-      label: "How often do you want financials?",
-      type: "dropdown",
-      options: ["Weekly", "Monthly", "Quarterly", "On demand"],
-    },
-    {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. I want to know my real runway without asking anyone.",
       helper: "This is what your agent gets configured around first.",
     },
@@ -283,20 +193,6 @@ const AGENT: IndustryBranch = {
         "e.g. anything to the board or the bank, any number sent to an investor, anything touching payroll or an employee's compensation.",
       helper:
         "The one question on this form worth being strict about. A finance agent can send a wrong number somewhere it cannot be taken back from.",
-    },
-    {
-      key: "compliance_rules",
-      label: "Any audit, lender, or regulatory rules it must follow?",
-      type: "textarea",
-      placeholder:
-        "e.g. we are audited annually, our lender needs a covenant certificate quarterly, revenue recognition follows ASC 606.",
-      helper: "Anything your accountant, auditor, or lender requires belongs here.",
-    },
-    {
-      key: "financial_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The numbers, reports, or clarity you want in hand three months from now.",
     },
   ],
 };

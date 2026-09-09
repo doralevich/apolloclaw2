@@ -81,15 +81,15 @@ const ROLE_INTAKES: Record<
 > = {
   cfo: {
     branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent",
-    coversScope: { owns: "owns_work", win: "financial_goals", guard: "approval_line" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
   },
   legal: {
     branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent",
-    coversScope: { owns: "owns_work", win: "legal_goals", guard: "handoff_line" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
   },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
-    coversScope: { owns: "owns_work", win: "real_estate_goals", guard: "approval_line" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
     sample: {
       title: "Share a listing you were proud of",
       subtitle: "The single most useful thing on this form. One listing you actually wrote teaches your agent more than any list of adjectives.",
@@ -103,31 +103,31 @@ const ROLE_INTAKES: Record<
   },
   ceo: {
     branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
-    coversScope: { owns: "owns_work", win: "ceo_goals", guard: "guardrails" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "guardrails" },
   },
   marketing: {
     branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent",
-    coversScope: { owns: "owns_work", win: "marketing_goals", guard: "publishing_authority" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "publishing_authority" },
   },
   sales: {
     branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent",
-    coversScope: { owns: "owns_work", win: "sales_goals", guard: "approval_line" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
   },
   recruiting: {
     branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent",
-    coversScope: { owns: "owns_work", win: "recruiting_goals", guard: "approval_line" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "screening_authority" },
   },
   medical: {
     branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent",
-    coversScope: { owns: "owns_work", win: "medical_goals", guard: "clinical_boundary" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "clinical_boundary" },
   },
   insurance: {
     branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
-    coversScope: { owns: "owns_work", win: "insurance_goals", guard: "handoff_line" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
   },
   personal: {
     branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "Your Day", detailsKey: "personalDetails", roleName: "Personal Agent",
-    coversScope: { owns: "owns_work", win: "personal_goals", guard: "never_unattended" },
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "never_unattended" },
     intro: "Before we build your assistant, we need to understand your day and what it may see. Takes about 15 minutes. The more detail, the better the result.",
     // The deep-dive opens with "What do you do all day?", required, in the person's own words.
     // The generic page asks "Describe your business" and requires it, which is the same question

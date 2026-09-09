@@ -38,15 +38,6 @@ const AUDIENCE: IndustryBranch = {
       helper: "Who they are, and what is going on in their week when your marketing reaches them.",
     },
     {
-      key: "audience_pain",
-      label: "What do they already believe or worry about?",
-      type: "textarea",
-      placeholder:
-        "e.g. they think automation means layoffs, they have been burned by a big software rollout, they do not trust anything that needs IT.",
-      helper:
-        "The objection they bring before you say anything. Marketing that does not answer it does not land.",
-    },
-    {
       key: "brand_voice",
       label: "How should the brand sound?",
       type: "textarea",
@@ -87,28 +78,15 @@ const MACHINE: IndustryBranch = {
       options: [
         "Email / newsletter",
         "LinkedIn",
-        "Instagram",
-        "Facebook",
-        "X",
-        "TikTok",
-        "YouTube",
+        "Instagram / Facebook",
+        "TikTok / YouTube",
         "Blog / SEO",
-        "Paid search",
-        "Paid social",
-        "Podcast",
-        "Events and trade shows",
-        "Direct mail",
+        "Paid ads",
+        "Events",
         "Other",
       ],
-    },
-    {
-      key: "channel_reality",
-      label: "Which of those actually works, and which is a chore?",
-      type: "textarea",
-      placeholder:
-        "e.g. the newsletter drives everything, LinkedIn is fine, Instagram is a duty I resent and probably should not bother with.",
       helper:
-        "Be honest. This is what stops your agent spreading effort evenly across channels that do not deserve it.",
+        "Tick where you actually publish, and say in the box which of them works and which is a chore - your agent should spend its time on the first kind.",
     },
     {
       key: "content_types",
@@ -134,13 +112,6 @@ const MACHINE: IndustryBranch = {
       options: ["Daily", "A few times a week", "Weekly", "A few times a month", "Monthly", "Campaign by campaign"],
     },
     {
-      key: "approval_flow",
-      label: "Who signs off on what goes out?",
-      type: "textarea",
-      placeholder: "e.g. I approve everything, or my co-founder reviews anything with a customer name in it.",
-      helper: "Who reviews, and how quickly. A backlog at approval is still a backlog.",
-    },
-    {
       key: "marketing_tools",
       label: "Which marketing tools do you use?",
       type: "multiselect",
@@ -160,21 +131,6 @@ const MACHINE: IndustryBranch = {
         "Other",
       ],
     },
-    {
-      key: "growth_focus",
-      label: "What are you actually trying to grow?",
-      type: "multiselect",
-      options: [
-        "Inbound leads",
-        "Email list",
-        "Brand awareness",
-        "Social following",
-        "Website traffic",
-        "Event attendance",
-        "Customer retention and referrals",
-        "Recruiting and employer brand",
-      ],
-    },
   ],
 };
 
@@ -191,30 +147,19 @@ const AGENT: IndustryBranch = {
       label: "What do you want your marketing agent to own?",
       type: "multiselect",
       options: [
-        "Writing social posts",
-        "Writing the newsletter",
+        "Social posts",
+        "The newsletter",
         "Blog posts and articles",
-        "Ad copy and variations",
-        "Landing page copy",
+        "Ad and landing page copy",
         "Content calendar and planning",
         "Repurposing one piece into many",
         "Competitor and market research",
         "Campaign reporting",
-        "Community and comment replies",
       ],
     },
     // The follow-up to the one option that talks to the public unsupervised. Everything else on
     // this list is drafted and reviewed; replying in the brand's name in a comment thread is
     // published the moment it is written.
-    {
-      key: "community_rules",
-      label: "What are the rules for replying in public?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Community and comment replies" },
-      placeholder:
-        "e.g. thank people and answer simple questions, never argue, never discuss pricing or a competitor, anything about a complaint comes to me instead.",
-      helper: "What it may answer alone, and what it must escalate rather than reply to.",
-    },
     {
       key: "publishing_authority",
       label: "Can it publish, or only draft?",
@@ -225,7 +170,8 @@ const AGENT: IndustryBranch = {
         "Publish social directly, everything else reviewed",
         "Publish anything within the brief",
       ],
-      helper: "There is no wrong answer, and starting cautious costs nothing.",
+      helper:
+        "There is no wrong answer, and starting cautious costs nothing. Use the claims question below to say who signs off on what, and what the rules are for replying in public under your name.",
     },
     {
       key: "claims_rules",
@@ -237,16 +183,10 @@ const AGENT: IndustryBranch = {
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. the newsletter goes out every week without me writing it at midnight.",
       helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "marketing_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The output, the consistency, or the growth you want three months from now.",
     },
   ],
 };

@@ -78,52 +78,12 @@ const PRACTICE: IndustryBranch = {
       ],
     },
     {
-      key: "office_structure",
-      label: "How is your office structured?",
-      type: "dropdown",
-      options: [
-        "Solo agent, no staff",
-        "Solo agent with an assistant or TC",
-        "Member of a team",
-        "I lead a team inside a brokerage",
-        "I own the brokerage, one office",
-        "I own the brokerage, multiple offices",
-        "Partnership between two agents",
-        "Other",
-      ],
-      helper: "Who reports to whom decides what the agent is allowed to do on its own.",
-    },
-    {
-      key: "office_detail",
-      label: "Anything else about how the office runs?",
-      type: "textarea",
-      placeholder:
-        "e.g. two buyer agents and a shared TC, my partner handles listings and I handle buyers, admin works Tuesdays and Thursdays.",
-      helper: "Who does what, who covers whom, and where the handoffs happen.",
-    },
-    {
-      key: "team_size",
-      label: "How many people are in your operation?",
-      type: "dropdown",
-      options: ["Just me", "2-3", "4-8", "9-20", "21-50", "More than 50"],
-    },
-    {
       key: "license_states",
       label: "Which states are you licensed in?",
       type: "text",
       placeholder: "e.g. NY, NJ, CT",
       helper: "So the agent does not draft around rules that do not apply to you.",
     },
-  ],
-};
-
-// ─── Page 2: the market ──────────────────────────────────────────────────────
-const MARKET: IndustryBranch = {
-  stepTitle: "Your Market",
-  stepSubtitle:
-    "Where you work and what you sell. This is what your agent needs to sound like a local rather than a search engine.",
-  stepLabel: "Market",
-  fields: [
     {
       key: "markets",
       label: "Which markets do you work?",
@@ -131,6 +91,17 @@ const MARKET: IndustryBranch = {
       placeholder: "e.g. Austin metro; Round Rock and Cedar Park",
       helper: "Cities, neighborhoods, or regions the agent should know by name.",
     },
+  ],
+};
+
+
+// ─── Page 2: deal flow ───────────────────────────────────────────────────────
+const DEALS: IndustryBranch = {
+  stepTitle: "Your Deal Flow",
+  stepSubtitle:
+    "How business actually moves through your practice, from first contact to closing. The more specific here, the less your agent has to guess.",
+  stepLabel: "Deal Flow",
+  fields: [
     {
       key: "property_types",
       label: "What property types do you handle?",
@@ -149,39 +120,6 @@ const MARKET: IndustryBranch = {
       ],
     },
     {
-      key: "price_band",
-      label: "What is your typical price range?",
-      type: "dropdown",
-      options: [
-        "Under $250k",
-        "$250k - $500k",
-        "$500k - $1M",
-        "$1M - $2.5M",
-        "$2.5M - $5M",
-        "Above $5M",
-        "It varies widely",
-      ],
-      helper: "Price band changes the tone of everything the agent writes.",
-    },
-    {
-      key: "client_profile",
-      label: "Who is your typical client?",
-      type: "textarea",
-      placeholder:
-        "e.g. dual-income families moving out from the city for schools, or downsizing retirees, or investors buying their third door.",
-      helper: "The agent writes to this person in every message it drafts.",
-    },
-  ],
-};
-
-// ─── Page 3: deal flow ───────────────────────────────────────────────────────
-const DEALS: IndustryBranch = {
-  stepTitle: "Your Deal Flow",
-  stepSubtitle:
-    "How business actually moves through your practice, from first contact to closing. The more specific here, the less your agent has to guess.",
-  stepLabel: "Deal Flow",
-  fields: [
-    {
       key: "lead_sources",
       label: "Where do your leads come from?",
       type: "multiselect",
@@ -197,12 +135,6 @@ const DEALS: IndustryBranch = {
         "Builder or developer relationships",
         "Other",
       ],
-    },
-    {
-      key: "followup_cadence",
-      label: "How do you follow up with a lead who does not respond?",
-      type: "textarea",
-      placeholder: "e.g. three calls in the first week then nothing, or a monthly market email.",
     },
     {
       key: "crm",
@@ -223,35 +155,6 @@ const DEALS: IndustryBranch = {
       ],
     },
     {
-      key: "transaction_tools",
-      label: "What do you run transactions on?",
-      type: "multiselect",
-      options: [
-        "Dotloop",
-        "SkySlope",
-        "DocuSign",
-        "zipForm / Lone Wolf",
-        "Brokerage's own system",
-        "Email and folders",
-        "Other",
-      ],
-    },
-    {
-      key: "marketing_tools",
-      label: "What do you use for marketing?",
-      type: "multiselect",
-      options: [
-        "Canva",
-        "Mailchimp or similar",
-        "BombBomb / video email",
-        "Matterport / 3D tours",
-        "A photographer or videographer",
-        "Brokerage templates",
-        "Nothing consistent",
-        "Other",
-      ],
-    },
-    {
       key: "transaction_process",
       label: "Walk us through a deal from accepted offer to closing.",
       type: "textarea",
@@ -260,18 +163,10 @@ const DEALS: IndustryBranch = {
       helper:
         "The dates, the order, and who you chase at each step. This is what the agent turns into your transaction checklist.",
     },
-    {
-      key: "deal_breakdowns",
-      label: "Where do your deals usually go wrong?",
-      type: "textarea",
-      placeholder:
-        "e.g. financing falls apart late, inspection negotiations stall, sellers get cold feet after the appraisal.",
-      helper: "Naming the failure mode is how the agent learns to flag it early.",
-    },
   ],
 };
 
-// ─── Page 4: what the agent owns ─────────────────────────────────────────────
+// ─── Page 3: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
@@ -287,18 +182,14 @@ const AGENT: IndustryBranch = {
       label: "What do you want your real estate agent to own?",
       type: "multiselect",
       options: [
-        "Listing descriptions & marketing copy",
-        "Comps & market research",
+        "Listing descriptions and marketing copy",
+        "Comps and market research",
         "Transaction checklists (offer to close)",
-        "Lead follow-up & nurture",
-        "Past client follow-up & referrals",
-        "Contract & disclosure summaries",
-        "Investment math (cap rate, cash flow, ROI)",
-        "Showing & inspection scheduling",
-        "Social media & newsletters",
-        "CRM hygiene & data entry",
-        "Buyer and seller consultation prep",
-        "Open house follow-up",
+        "Lead and open-house follow-up",
+        "Past client follow-up and referrals",
+        "Contract and disclosure summaries",
+        "Showing and inspection scheduling",
+        "CRM hygiene and data entry",
       ],
     },
     // The two follow-ups to owns_work, and the reason they exist: those two options are the
@@ -312,29 +203,9 @@ const AGENT: IndustryBranch = {
     //
     // Conditional, so the realtor who ticked neither never sees them.
     {
-      key: "investment_criteria",
-      label: "What do the numbers have to clear?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Investment math (cap rate, cash flow, ROI)" },
-      placeholder:
-        "e.g. 8% cap minimum in my market, $300+/door monthly cash flow, nothing needing more than $40k of work, 20 year hold.",
-      helper:
-        "Your rules of thumb, in your words. This is what your agent screens a deal against before it tells you the deal is worth a look.",
-    },
-    {
-      key: "scheduling_setup",
-      label: "What is your agent booking into, and what are the rules?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Showing & inspection scheduling" },
-      placeholder:
-        "e.g. Google Calendar under my work address, showings only Tue to Sat 10-6, 45 minute blocks with 30 minutes of drive time between, never book me before 9am.",
-      helper:
-        "The calendar, the hours you actually show, and anything it must never do without asking you first.",
-    },
-    {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. nobody falls through the cracks after an open house.",
       helper: "This is what your agent gets configured around first.",
     },
@@ -351,12 +222,6 @@ const AGENT: IndustryBranch = {
       helper: "The house style, not an example. There is a page for a listing later.",
     },
     {
-      key: "client_channels",
-      label: "How do your clients prefer to hear from you?",
-      type: "multiselect",
-      options: ["Text", "Phone call", "Email", "WhatsApp", "Social DM", "Whatever they used first"],
-    },
-    {
       key: "approval_line",
       label: "What must never go out without you seeing it first?",
       type: "textarea",
@@ -364,27 +229,12 @@ const AGENT: IndustryBranch = {
         "e.g. anything with a price in it, anything to a client under contract, anything on social.",
       helper: "The agent drafts up to this line and waits.",
     },
-    {
-      key: "compliance_rules",
-      label: "Any advertising or compliance rules we must follow?",
-      type: "textarea",
-      placeholder:
-        "e.g. brokerage name and license number on every ad, fair housing language reviewed before anything is published, no claims about schools.",
-      helper:
-        "Real estate advertising is regulated and fair housing rules apply to every word of listing copy. Anything your brokerage or state requires belongs here.",
-    },
     // "Biggest headache in your business right now?" was here and is gone. The Executive
     // Profile page already asks "Where's the real bottleneck to growth right now?" two pages
     // later, and the answers were the same sentence typed twice. Asking a person to describe
     // their problem twice in one form does not get a better answer, it gets a shorter one.
-    {
-      key: "real_estate_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The deals, systems, or time back you want three months from now.",
-    },
   ],
 };
 
 /** Four pages, one blob. The onboarding form renders these in order. */
-export const REALESTATE_BRANCH: IndustryBranch[] = [PRACTICE, MARKET, DEALS, AGENT];
+export const REALESTATE_BRANCH: IndustryBranch[] = [PRACTICE, DEALS, AGENT];

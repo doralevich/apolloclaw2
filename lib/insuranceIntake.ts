@@ -50,15 +50,6 @@ const AGENCY: IndustryBranch = {
       options: ["Just me", "2-5", "6-15", "16-50", "More than 50"],
     },
     {
-      key: "who_does_what",
-      label: "Who does what in the office?",
-      type: "textarea",
-      placeholder:
-        "e.g. I produce, my CSR handles service and certificates, a part-time processor does renewals, nobody covers when she is out.",
-      helper:
-        "Producers, CSRs, processors, and who is licensed. Your agent has to know who it may hand something to.",
-    },
-    {
       key: "states_licensed",
       label: "Which states are you licensed in?",
       type: "text",
@@ -109,31 +100,12 @@ const BOOK: IndustryBranch = {
       placeholder: "e.g. commercial property for contractors",
     },
     {
-      key: "typical_client",
-      label: "Who is your typical client?",
-      type: "textarea",
-      placeholder: "e.g. local contractors between five and fifty employees, mostly referred by two general contractors.",
-      helper: "Your agent writes to this person in every message it drafts.",
-    },
-    {
-      key: "carriers",
-      label: "Which carriers do you place with most?",
-      type: "textarea",
-      placeholder: "e.g. Travelers, Hartford, and a couple of E&S markets for the harder risks.",
-    },
-    {
       key: "renewal_work",
       label: "How do renewals run today?",
       type: "textarea",
       placeholder:
         "e.g. a list comes out 60 days ahead, my CSR re-markets anything with a rate increase, I only touch the accounts over $10k.",
       helper: "The lead time, who does what, and where it slips.",
-    },
-    {
-      key: "quoting_work",
-      label: "What does quoting a new account look like?",
-      type: "textarea",
-      placeholder: "e.g. gather loss runs and an ACORD, rate three markets, build a comparison, present it myself.",
     },
     {
       key: "service_load",
@@ -168,44 +140,26 @@ const AGENT: IndustryBranch = {
       options: [
         "Certificate requests",
         "Renewal prep and reminders",
-        "Gathering submission information",
-        "Comparing quotes side by side",
+        "Submissions and quote comparison",
         "Client service email and follow-up",
         "Claims intake and status chasing",
         "Policy and endorsement checking",
         "Cross-sell and account rounding prompts",
         "Management system data entry",
-        "Producer prep before a client meeting",
       ],
     },
     // The follow-up to the option that most often crosses the licensing line without anybody
     // noticing. A certificate is a statement about coverage; issuing one that says something the
     // policy does not say is an E&O claim waiting to happen, so the rules are asked for up front.
     {
-      key: "certificate_rules",
-      label: "What are the rules for certificates?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Certificate requests" },
-      placeholder:
-        "e.g. standard certs off an existing policy can go out same day, anything naming an additional insured or with wording changes comes to a licensed person first, never issue against a policy that is not bound.",
-      helper: "What may go out unattended, and what must always be checked by a licensed person.",
-    },
-    {
       key: "handoff_line",
-      label: "Where must a licensed person always take over?",
+      label: "Where must a licensed person take over, and what never goes out without you seeing it?",
       type: "textarea",
       required: true,
       placeholder:
-        "e.g. anything that binds, any advice on whether a loss is covered, any coverage recommendation, any conversation with an adjuster.",
+        "e.g. anything that binds, any advice on whether a loss is covered, any coverage recommendation, any conversation with an adjuster. Nothing goes to a carrier under my code without me reading it, and certificates follow the wording our E&O carrier requires.",
       helper:
-        "Be generous here. Quoting, binding and advising on coverage are licensed activities, and this is the question that keeps your agent on the right side of that line.",
-    },
-    {
-      key: "compliance_rules",
-      label: "Any compliance or carrier rules it must respect?",
-      type: "textarea",
-      placeholder:
-        "e.g. carrier-approved wording only, no premium quoted in writing without a rater printout, state disclosure on every proposal, retain everything for seven years.",
+        "This was three questions - the licensed handoff, the approval line, and carrier or compliance rules - and they are one instinct. Answering it once, at length, gets a better answer than three smaller boxes did. Be generous: quoting, binding and advising on coverage are licensed activities.",
     },
     {
       key: "client_voice",
@@ -215,23 +169,11 @@ const AGENT: IndustryBranch = {
         "e.g. plain English, no policy jargon, never make them feel stupid for asking, always say what happens next and when.",
     },
     {
-      key: "approval_line",
-      label: "What must never go out without you seeing it first?",
-      type: "textarea",
-      placeholder: "e.g. anything with a premium in it, anything to a carrier underwriter, anything about a claim outcome.",
-    },
-    {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. certificates go out same day without me touching them.",
       helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "insurance_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The service load, the renewal retention, or the time back you want three months from now.",
     },
   ],
 };
