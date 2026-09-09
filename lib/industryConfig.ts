@@ -87,11 +87,21 @@ export const INDUSTRY_OPTIONS: string[] = [
   // the questionnaire had no way to say you run a staffing firm. None of these has an
   // industry-branch page yet (industryConfig below), which is fine - an option without a branch
   // just skips the industry step, same as Non-profit always has.
+  //
+  // INSURANCE IS DELIBERATELY NOT HERE. It sat in this list with no branch behind it, so an
+  // agency owner picking it was asked nothing whatsoever about insurance - while The Insurance
+  // Agent exists as its own product, with its own site and its own twelve-question intake that
+  // asks about lines written, carriers, renewals and the licensed handoff. Sending that buyer
+  // down the generic business track was the worst of both: too general to be useful, and it
+  // hid the thing they should have been sold. They belong at /build/insurance.
+  //
+  // The rest below stay. They are real industries with no dedicated agent, and the generic
+  // fallback is the right answer for them - unlike insurance, there is nowhere better to send
+  // somebody who runs a dealership.
   "Automotive / Dealership",
   "Beauty / Personal Care",
   "Fitness / Wellness",
   "Home Services",
-  "Insurance",
   "IT Services / MSP",
   "Staffing / Recruiting",
   "Travel / Tourism",
