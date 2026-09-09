@@ -49,36 +49,6 @@ const SEAT: IndustryBranch = {
         "e.g. Maria runs sales, Dan runs engineering, our COO seat is empty and I am covering it.",
       helper: "Names and remits. Your agent should never ask you who runs something twice.",
     },
-    {
-      key: "key_stakeholders",
-      label: "Who else matters, outside your reports?",
-      type: "textarea",
-      placeholder:
-        "e.g. two board members, our lead investor, my co-founder who is not operational, our biggest customer's COO.",
-      helper:
-        "Board, investors, partners, key customers. The people whose emails change your week.",
-    },
-    {
-      key: "assistant",
-      label: "Do you have an assistant or chief of staff today?",
-      type: "dropdown",
-      options: [
-        "Yes, a full-time chief of staff",
-        "Yes, an executive assistant",
-        "Someone part-time or shared",
-        "No, I run my own calendar and inbox",
-      ],
-      helper: "If you do, your agent works alongside them rather than around them.",
-    },
-    {
-      key: "decision_rights",
-      label: "What comes to you that probably should not?",
-      type: "textarea",
-      placeholder:
-        "e.g. every discount over 10 percent, hiring approvals for junior roles, any customer complaint that reaches a manager.",
-      helper:
-        "The decisions that land on your desk by habit rather than necessity. This is where an agent buys back the most time.",
-    },
   ],
 };
 
@@ -112,14 +82,8 @@ const WEEK: IndustryBranch = {
         "Customer or partner calls",
         "Other",
       ],
-    },
-    {
-      key: "meeting_prep",
-      label: "What does good preparation look like for you?",
-      type: "textarea",
-      placeholder:
-        "e.g. one page before every external meeting: who they are, last three interactions, what they want, what I want.",
-      helper: "What you wish were on your screen before you walk in.",
+      helper:
+        "Tick what is actually in your week. Your agent preps these first, and it learns what good preparation looks like for you from the first few rather than from a description.",
     },
     {
       key: "inbox_reality",
@@ -172,46 +136,26 @@ const AGENT: IndustryBranch = {
       options: [
         "Inbox triage and drafting",
         "Calendar and scheduling",
-        "Meeting prep briefs",
-        "Meeting notes and follow-ups",
+        "Meeting prep and follow-ups",
         "Board and investor updates",
         "Internal comms and announcements",
         "Research before decisions",
         "Tracking what you asked people for",
         "Weekly business review",
-        "Drafting on your behalf",
       ],
     },
     // The follow-up to the option that carries the most risk on this list. An agent writing in a
     // chief executive's name to their own company is a different thing from drafting a document,
     // and "how should it sound" is not enough to configure it safely.
     {
-      key: "ghostwriting_rules",
-      label: "When it writes as you, what are the rules?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Drafting on your behalf" },
-      placeholder:
-        "e.g. never send as me without showing me first, my name goes on nothing about people or performance, short and warm to the team, blunt to vendors.",
-      helper:
-        "Who it may write to as you, what it must never write as you, and whether anything at all goes out without your eyes on it.",
-    },
-    {
-      key: "autonomy",
-      label: "What should it handle alone, and what should always come to you?",
-      type: "textarea",
-      placeholder:
-        "e.g. book anything internal without asking, never accept an external meeting on my behalf, answer scheduling mail directly but never anything about money.",
-      helper: "Where its judgment ends and yours begins.",
-    },
-    {
       key: "guardrails",
-      label: "What must it never do without your say-so?",
+      label: "What may it handle alone, and what must never happen without your say-so?",
       type: "textarea",
       required: true,
       placeholder:
-        "e.g. contact the board, message anyone about their performance or role, commit to a number, reply to press, forward anything from my co-founder.",
+        "e.g. it can book, reschedule, chase and summarize on its own. It must never contact the board, message anyone about their performance or role, commit to a number, or reply to press. When it writes as me it stays short and never makes a promise.",
       helper:
-        "Worth being strict about. Your agent carries your name, and a message sent in it cannot be unsent.",
+        "Both halves in one answer - what it does without asking, and what it never does without asking, including when it writes in your name. Worth being strict: your agent carries your name, and a message sent in it cannot be unsent.",
     },
     {
       key: "comm_style",
@@ -227,16 +171,10 @@ const AGENT: IndustryBranch = {
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. I stop being the reason things wait.",
       helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "ceo_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The time back, the things off your desk, or the clarity you want three months from now.",
     },
   ],
 };

@@ -78,12 +78,6 @@ const HIRING: IndustryBranch = {
       placeholder: "e.g. no valid licence, cannot work the shift pattern, needs sponsorship we cannot provide.",
       helper: "Hard requirements only, please. Preferences belong in the question above.",
     },
-    {
-      key: "volume",
-      label: "Roughly how many roles are open at once?",
-      type: "dropdown",
-      options: ["1-2", "3-5", "6-10", "11-25", "More than 25"],
-    },
   ],
 };
 
@@ -112,28 +106,11 @@ const PROCESS: IndustryBranch = {
     },
     {
       key: "interview_process",
-      label: "What does your interview process look like?",
+      label: "What does your interview process look like, and where do you lose candidates?",
       type: "textarea",
       placeholder:
         "e.g. phone screen with me, a working interview on site, then a reference call. About two weeks end to end.",
       helper: "The stages, who runs each, and how long it really takes.",
-    },
-    {
-      key: "drop_off",
-      label: "Where do you lose candidates?",
-      type: "textarea",
-      placeholder:
-        "e.g. between applying and the first call, because nobody replies for four days and they take another offer.",
-      helper: "The stage where good people disappear. This is usually where the agent pays for itself.",
-    },
-    {
-      key: "candidate_experience",
-      label: "How do you want candidates treated?",
-      type: "textarea",
-      placeholder:
-        "e.g. everybody hears back within 48 hours even if it is a no, nobody gets a form rejection after an interview, always a real name on the email.",
-      helper:
-        "Including the people you do not hire. Most of them are also your customers or your neighbours.",
     },
     {
       key: "ats",
@@ -153,13 +130,6 @@ const PROCESS: IndustryBranch = {
         "Other",
       ],
     },
-    {
-      key: "hiring_team",
-      label: "Who else is involved in a hire?",
-      type: "textarea",
-      placeholder: "e.g. the hiring manager runs interviews, I make the offer, our owner signs anything above a certain rate.",
-      helper: "Who decides, who interviews, and who your agent may chase.",
-    },
   ],
 };
 
@@ -176,16 +146,14 @@ const AGENT: IndustryBranch = {
       label: "What do you want your recruiting agent to own?",
       type: "multiselect",
       options: [
-        "Writing job descriptions and adverts",
+        "Job descriptions and adverts",
         "Reviewing and summarizing applications",
-        "Candidate outreach and sourcing messages",
+        "Candidate outreach and sourcing",
         "Scheduling interviews",
         "Keeping candidates warm and updated",
         "Interview prep and question sets",
-        "Reference and background chasing",
         "Offer letters and paperwork",
-        "ATS hygiene and data entry",
-        "Pipeline reporting",
+        "ATS hygiene and pipeline reporting",
       ],
     },
     // The follow-up to the single highest-risk option on this list. Summarising applications is
@@ -196,7 +164,6 @@ const AGENT: IndustryBranch = {
       key: "screening_authority",
       label: "How far may it go when reviewing applicants?",
       type: "dropdown",
-      showIf: { key: "owns_work", includes: "Reviewing and summarizing applications" },
       required: true,
       options: [
         "Summarize only, I read every application myself",
@@ -205,15 +172,7 @@ const AGENT: IndustryBranch = {
         "Screen out clear misses on hard requirements only",
       ],
       helper:
-        "Hiring decisions carry legal weight and affect real people. Starting at the top of this list costs you very little and is easy to loosen later.",
-    },
-    {
-      key: "fairness_rules",
-      label: "Any fairness or compliance rules it must follow?",
-      type: "textarea",
-      placeholder:
-        "e.g. EEO applies, never infer age or nationality from a CV, never ask about salary history, keep records for a year, follow our accommodation process.",
-      helper: "Anything your policy, your industry, or your jurisdiction requires.",
+        "Hiring decisions carry legal weight and affect real people. Starting at the top of this list costs you very little and is easy to loosen later. Tell us in the box below if you have fairness, EEO or record-keeping rules the agent must follow, and what must never reach a candidate without you reading it.",
     },
     {
       key: "outreach_voice",
@@ -223,24 +182,11 @@ const AGENT: IndustryBranch = {
         "e.g. warm and specific, name what they did that caught our eye, never templated, never oversell the role.",
     },
     {
-      key: "approval_line",
-      label: "What must never go out without you seeing it first?",
-      type: "textarea",
-      placeholder:
-        "e.g. any rejection, any offer or number, anything to a candidate already at interview stage, anything to a client of ours.",
-    },
-    {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. nobody waits more than a day to hear from us.",
       helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "recruiting_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The roles filled, the time back, or the candidate experience you want three months from now.",
     },
   ],
 };

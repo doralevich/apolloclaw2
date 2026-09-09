@@ -110,30 +110,13 @@ const PEOPLE: IndustryBranch = {
       helper: "Your agent surfaces these first and never buries them, whatever else is in the inbox.",
     },
     {
-      key: "low_priority",
-      label: "What can safely wait, or never needs you?",
-      type: "textarea",
-      placeholder:
-        "e.g. every newsletter, recruiter outreach, anything from a vendor we already said no to, calendar invites I am optional on.",
-      helper:
-        "The other half of triage. An agent that only knows what is important still shows you everything.",
-    },
-    {
       key: "voice_tells",
-      label: "How do you sound in writing?",
+      label: "How do you sound in writing, and does that change depending on who it is?",
       type: "textarea",
       placeholder:
         "e.g. short, no greeting, sign off with just my initial, never use exclamation marks, never say 'circling back' or 'per my last email'.",
       helper:
         "The tells matter more than the description: your greeting, your sign-off, and the phrases you would never send.",
-    },
-    {
-      key: "tone_by_person",
-      label: "Does your tone change depending on who it is?",
-      type: "textarea",
-      placeholder:
-        "e.g. two lines to my team, careful and complete to the board, warm to customers I have known for years.",
-      helper: "Most people have two or three registers. Naming them stops everything sounding the same.",
     },
     {
       key: "recurring_asks",
@@ -162,28 +145,17 @@ const AGENT: IndustryBranch = {
         "Inbox triage and sorting",
         "Drafting replies",
         "Scheduling and rescheduling",
-        "Meeting briefs before calls",
-        "Call notes and next steps",
+        "Meeting briefs and call notes",
         "Tracking what I promised people",
         "Chasing replies I am waiting on",
         "Research before decisions",
-        "Travel and logistics",
-        "Expenses and receipts",
+        "Travel and expenses",
       ],
     },
     // The follow-up to the one option that talks to other people without a document in between.
     // Everything else on the list is internal or produces a draft the customer reads; scheduling
     // is the agent negotiating in the customer's name in real time, and it is the first thing
     // people are tempted to let run unattended.
-    {
-      key: "scheduling_rules",
-      label: "What are the rules for booking on your behalf?",
-      type: "textarea",
-      showIf: { key: "owns_work", includes: "Scheduling and rescheduling" },
-      placeholder:
-        "e.g. it can confirm and reschedule anything internal, never move a customer call without asking me, never accept anything before 10am, always leave 15 minutes between calls.",
-      helper: "What it may agree to alone, and what has to come back to you first.",
-    },
     {
       key: "sending_authority",
       label: "Can it send, or only draft?",
@@ -211,16 +183,10 @@ const AGENT: IndustryBranch = {
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in month one, what should it be?",
-      type: "text",
+      label: "If it only fixed one thing in the first 90 days, what should it be?",
+      type: "textarea",
       placeholder: "e.g. I want to stop opening my inbox to two hundred unread and no idea where to start.",
       helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "personal_goals",
-      label: "What would a great first 90 days look like?",
-      type: "textarea",
-      placeholder: "The hours back, the things that stop slipping, or the part of the week you want returned.",
     },
   ],
 };
