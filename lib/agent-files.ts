@@ -1,5 +1,6 @@
 import "server-only";
 import { CONTEXT_FILENAME } from "@/config/agent-workspace";
+import { roleToolFields } from "@/config/role-tools";
 
 // The files an OpenClaw agent auto-loads, generated from the setup questionnaire.
 //
@@ -242,12 +243,24 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
  * promise something it cannot do — which is worse than asking.
  */
 export function buildToolsMd(answers: Record<string, unknown>): string {
-  const rows = [
+  // The four generic keys, all collected on the Tech Stack page. A ROLE agent never sees that
+  // page (its deep-dive replaces it), so for those these are all empty and the role rows below
+  // are the entire file.
+  const generic = [
     bullet("CRM", [str(answers.crmTools), str(answers.crmToolsOther)].filter(Boolean).join(", ")),
     bullet("Communications", answers.commsTools),
     bullet("Project management", answers.pmTools),
     bullet("Billing and invoicing", answers.billingTools),
-  ].filter((r): r is string => !!r);
+  ];
+
+  // Whatever the role's own deep-dive asked about software. Without this a Property Management
+  // Agent whose owner typed "AppFolio for accounting and the owner portal" was handed a TOOLS.md
+  // saying they had not listed any software - on the same instance whose USER.md said otherwise
+  // three sections up. See config/role-tools.ts.
+  const role = roleToolFields(answers);
+  const roleRows = role ? role.fields.map((f) => bullet(f.label, role.blob[f.key])) : [];
+
+  const rows = [...generic, ...roleRows].filter((r): r is string => !!r);
 
   if (!rows.length) {
     return [
@@ -272,8 +285,13 @@ export function buildToolsMd(answers: Record<string, unknown>): string {
     `Unless you have been given a working integration or credentials, you cannot read from or`,
     `write to any of it.`,
     ``,
-    `So: use these names to talk about their business the way they do - reference their actual`,
-    `CRM, not "your CRM" - and ask before promising to do anything inside one of them.`,
+    // The example used to be "reference their actual CRM, not 'your CRM'", which stopped being
+    // safe once role agents started populating this file: a property manager's stack has no CRM
+    // in it, and an example naming a tool the list above does not contain is a small invitation
+    // to invent one.
+    `So: use the names above to talk about their business the way they do - name the actual`,
+    `system rather than saying "your CRM" or "your system" - and ask before promising to do`,
+    `anything inside one of them.`,
   ].join("\n");
 }
 
