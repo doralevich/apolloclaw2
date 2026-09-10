@@ -569,7 +569,14 @@ function detectTimezone(): string {
 // `initial` re-seeds the five fields when someone steps BACK here from the questionnaire.
 // Without it the screen would remount empty and the trip back to fix one typo would cost
 // them all five.
-function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand }) {
+// `askBestTime` is off for a paying customer and on for everyone else, and the split is about
+// who the answer is FOR. On /onboard and /white-glove-onboarding the submission is a sales lead:
+// it lands in the CRM and in the intake email, where "Best Time to Reach" sits under the phone
+// number and tells a person when to call. On /onboard/[agent] the person has already paid and
+// nobody is calling them - the agent does not initiate contact, they open the chat - so there it
+// was a question with no reader. Timezone stays on every track, because that one is for the
+// agent: it decides what "today" means (lib/agent-files.ts, "Their day").
+function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; askBestTime?: boolean }) {
   // The accent is the agent's own colour when the funnel is pinned to one, and
   // ApolloClaw red otherwise.
   const accent = brand?.color ?? R;
@@ -704,7 +711,14 @@ function Gatekeeper({ onPass, heading, intro, initial, brand }: { onPass: (d: Ga
                   placeholder="Select your timezone…"
                 />
               </FF>
-              <FF label="Best Time to Reach You" hint="Optional."><TSelect value={d.bestTime} onChange={v => set("bestTime", v)} options={BEST_TIMES} /></FF>
+              {/* Row2 is auto-fit, so with this gone the timezone field takes the full width
+                  rather than leaving a hole beside itself. Note that hiding the field does not
+                  clear the value: `initial` still seeds d.bestTime from a saved questionnaire and
+                  buildData still submits it, so a customer who answered this on the lead form and
+                  later edits their setup keeps the answer instead of silently losing it. */}
+              {askBestTime && (
+                <FF label="Best Time to Reach You" hint="Optional."><TSelect value={d.bestTime} onChange={v => set("bestTime", v)} options={BEST_TIMES} /></FF>
+              )}
             </Row2>
             <FF label="LinkedIn" hint="Optional. Helps your agent understand your professional background."><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
           </Stack>
@@ -2219,6 +2233,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         onPass={handleGate}
         initial={enteredGate ?? undefined}
         brand={brand}
+        askBestTime={!isCustomer}
         // Named as early as possible. Someone arriving from therealestateagent.ai should see
         // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
         // is pinned to one type, so there is no reason to be vague about which.
