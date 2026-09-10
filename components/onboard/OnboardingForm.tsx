@@ -1504,7 +1504,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // feel built for the person. UNLIKE the generic flow (ordered by allPageKeys), a role agent takes
   // its order straight from this list, so the role deep-dive comes first and the executive profile
   // sits after it - David's call. Both pageKeys and allPages below derive from this list, so the
-  // step-order assertion stays satisfied.
+  // step-order assertion stays satisfied. ("First" now means first outright, not just before the
+  // executive profile - see the note on rolePageKeys.)
   // NOTE the missing "scopeai". A role agent does NOT get the generic "What your agent should
   // take on" page, because its own deep-dive already asked both of that page's questions in the
   // customer's own vocabulary. A realtor was picking their agent's jobs twice: once from
@@ -1514,8 +1515,21 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   //
   // Nothing downstream goes empty: buildData feeds the role answers into aiGoals and
   // successMetric, which is what those two questions existed to fill. See buildData below.
+  //
+  // THE ROLE DEEP-DIVE IS FIRST, ahead of the company pages, and that is the whole point of it
+  // being a separate list. It used to open on "Your Business" and "What You Do" - company name,
+  // team size, monthly revenue, years in business - and only reach the role's own questions on
+  // page three of ten. So somebody who clicked The Property Management Agent was asked their
+  // revenue band before a single question about a building, and reasonably concluded the thing
+  // knew nothing about property management. The same was true of all ten roles; property
+  // management is just where it got noticed, because it is the newest and got looked at hardest.
+  //
+  // A role funnel is pinned to one agent. The buyer arrived from that agent's own site or picked
+  // that card, so the first screen should be the one that could not belong to any other agent.
+  // The company questions still get asked - they feed USER.md and they matter - they are just no
+  // longer the greeting.
   const rolePageKeys = isRoleFlow
-    ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
+    ? [...roleStepKeys, "biz", "whatyoudo", "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
         .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
@@ -1908,10 +1922,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     ) },
   ];
   // Trim to the role set when it's a role agent, mirroring the pageKeys filter above so the two
-  // stay in lockstep. Filtering preserves order, so a role flow reads biz -> whatyoudo -> role -> scope.
-  // For a role agent, order the pages by rolePageKeys (not allPagesFull's natural order), so the
-  // executive profile can sit AFTER the role deep-dive. Both this and pageKeys above read from
-  // rolePageKeys, so the assertion below still holds.
+  // stay in lockstep. A role flow now reads role deep-dive -> biz -> whatyoudo -> exec -> ... ->
+  // scope. Mapping over rolePageKeys rather than filtering allPagesFull is what allows that: the
+  // order comes from the key list, not from the order the pages happen to be declared in. Both
+  // this and pageKeys above read from rolePageKeys, so the assertion below still holds.
   const allPages = isRoleFlow
     ? rolePageKeys
         .map((k) => allPagesFull.find((p) => p.key === k))
