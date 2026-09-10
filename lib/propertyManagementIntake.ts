@@ -39,6 +39,12 @@
 
 import type { IndustryBranch } from "@/lib/industryConfig";
 
+// A NOTE ON KEY NAMES, because they leak. Every key here becomes a heading in the USER.md the
+// agent reads as ground truth, via a generic title-caser in lib/onboardingSections.ts that only
+// splits on underscores: `pm_type` renders as "Pm Type" and `voice_two_ways` as "Voice Two Ways".
+// Both of those were in this file until the demo walkthrough rendered the actual file and showed
+// them. So: no abbreviations, and phrase the key the way you would want the heading to read.
+
 // ─── Page 1: the portfolio ───────────────────────────────────────────────────
 const PORTFOLIO: IndustryBranch = {
   stepTitle: "Your Portfolio",
@@ -47,7 +53,7 @@ const PORTFOLIO: IndustryBranch = {
   stepLabel: "Portfolio",
   fields: [
     {
-      key: "pm_type",
+      key: "management_type",
       label: "What kind of management is it?",
       type: "dropdown",
       required: true,
@@ -87,7 +93,7 @@ const PORTFOLIO: IndustryBranch = {
         "Down to the city where it matters. Notice periods, deposit rules and entry rights are local, and this is the single most common way a confident answer goes wrong.",
     },
     {
-      key: "pm_systems",
+      key: "management_systems",
       label: "What do you run the business on?",
       type: "textarea",
       placeholder:
@@ -210,7 +216,7 @@ const AGENT: IndustryBranch = {
         "Be generous here. Evictions and legal notices, screening decisions and the reasons behind them, deposit deductions, anything binding a lease or a rent, and anything that is a habitability emergency. Your agent drafts up to this line and stops.",
     },
     {
-      key: "voice_two_ways",
+      key: "tenant_owner_voice",
       label: "How should it sound to a tenant, and how should it sound to an owner?",
       type: "textarea",
       placeholder:

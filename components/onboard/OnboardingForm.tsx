@@ -576,7 +576,7 @@ function detectTimezone(): string {
 // nobody is calling them - the agent does not initiate contact, they open the chat - so there it
 // was a question with no reader. Timezone stays on every track, because that one is for the
 // agent: it decides what "today" means (lib/agent-files.ts, "Their day").
-function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; askBestTime?: boolean }) {
+function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true, skipEmailCheck = false }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; askBestTime?: boolean; skipEmailCheck?: boolean }) {
   // The accent is the agent's own colour when the funnel is pinned to one, and
   // ApolloClaw red otherwise.
   const accent = brand?.color ?? R;
@@ -620,6 +620,10 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true
     //
     // Failure to reach the check does NOT block: the endpoint fails open for the same reason,
     // and a network blip must not cost a sale.
+    // The demo skips it. Nothing is being created, so there is no collision to prevent, and the
+    // person walking it is almost always signed in already - the check would stop the demo dead
+    // on its first screen with "that address already has an account".
+    if (!skipEmailCheck) {
     setChecking(true);
     try {
       const res = await fetch("/api/onboard/check-email", {
@@ -636,6 +640,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true
       // Deliberately ignored - see above.
     } finally {
       setChecking(false);
+    }
     }
 
     // Hand on the RESOLVED timezone, not the raw state. Somebody who never opens the select
@@ -1950,7 +1955,19 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
 // ════════════════════════════════════════════════════════════
 // ROOT
 // ════════════════════════════════════════════════════════════
-export type OnboardingFormMode = "lead" | "customer" | "whiteglove";
+// "demo" is the fourth mode and the only one that builds nothing. It exists so the whole
+// journey - pick an agent, name it, answer its questions, see what comes out - can be walked
+// without a card and without provisioning a VPS (app/demo).
+//
+// It runs the REAL form, deliberately. A demo that renders its own copy of the questionnaire
+// proves the copy works, and the copy is the thing that drifts: the questions, the dropdowns,
+// the conditional fields, the validation and the page order here are the ones a customer gets,
+// because they ARE the ones a customer gets.
+//
+// Nothing that writes is reachable from it. handleDone hands the answers to `onDemoComplete`
+// and returns before the submit branch, so /api/agent-setup, /api/intake and
+// /api/onboard/complete are all unreachable; isPaywalled keys on "lead", so Stripe is too.
+export type OnboardingFormMode = "lead" | "customer" | "whiteglove" | "demo";
 
 export interface OnboardingFormProps {
   mode: OnboardingFormMode;
@@ -1980,6 +1997,9 @@ export interface OnboardingFormProps {
    *  "Complete Your Payment" pointing here — how a custom, offline-priced deal is closed after
    *  the questionnaire. Passed as ?pay= on the white-glove URL (validated to a Stripe domain). */
   payUrl?: string;
+  /** Demo mode only: called INSTEAD of submitting, with everything the walkthrough collected.
+   *  The demo page owns what happens next; this component's job ends at the last question. */
+  onDemoComplete?: (payload: { answers: Record<string, unknown>; agentName: string }) => void;
 }
 
 // Stripe takes the buyer off-site, so the "Start Here" answers have to survive a full page
@@ -2042,8 +2062,9 @@ function clearStoredGate(): void {
   }
 }
 
-export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser, initialAnswers, initialAgentName, payUrl }: OnboardingFormProps) {
+export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser, initialAnswers, initialAgentName, payUrl, onDemoComplete }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
+  const isDemo = mode === "demo";
   // A returning customer changing existing answers, not a first-time setup. Drives straight to
   // the pre-filled questionnaire and seeds the contact/name fields from what was saved.
   const isEditing = isCustomer && !!initialAnswers && !justPaid;
@@ -2132,7 +2153,9 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // happens post-payment, never on the free lead form).
   const handleGate = (info: GateData) => {
     setGate(info);
-    if (isCustomer) return setPhase("personalize");
+    // Demo walks the same order a paying customer walks: contact, then name and avatar, then the
+    // questions. Naming the agent is half of what makes the walkthrough feel like a purchase.
+    if (isCustomer || isDemo) return setPhase("personalize");
     // Persist before the paywall, because the next click leaves the site for Stripe.
     if (isPaywalled && !justPaid) {
       writeStoredGate(info);
@@ -2145,6 +2168,12 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   };
   const handlePersonalize = (d: PersonalizeData) => { setPersonalize(d); setPhase("form"); };
   const handleDone = async (data: Record<string, unknown>, trackType: string) => {
+    // The demo stops here, before any network call and before the submitting spinner. Everything
+    // below this line either provisions an agent or files a lead, and the demo does neither.
+    if (isDemo) {
+      onDemoComplete?.({ answers: data, agentName: personalize.agentName });
+      return;
+    }
     setPhase("submitting");
     try {
       if (isCustomer) {
@@ -2248,6 +2277,9 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         initial={enteredGate ?? undefined}
         brand={brand}
         askBestTime={!isCustomer}
+        // The demo must not tell David his own address already has an account, which it would,
+        // every time, on the one screen he is trying to show somebody.
+        skipEmailCheck={isDemo}
         // Named as early as possible. Someone arriving from therealestateagent.ai should see
         // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
         // is pinned to one type, so there is no reason to be vague about which.
@@ -2293,7 +2325,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
     // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
     // sending them back there would silently drop it, so they keep no Back on step 0.
-    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
+    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : isDemo ? "Build My Agent →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
     return null;
   })();
   return (
