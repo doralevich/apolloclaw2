@@ -576,7 +576,7 @@ function detectTimezone(): string {
 // nobody is calling them - the agent does not initiate contact, they open the chat - so there it
 // was a question with no reader. Timezone stays on every track, because that one is for the
 // agent: it decides what "today" means (lib/agent-files.ts, "Their day").
-function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; askBestTime?: boolean }) {
+function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true, skipEmailCheck = false }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; askBestTime?: boolean; skipEmailCheck?: boolean }) {
   // The accent is the agent's own colour when the funnel is pinned to one, and
   // ApolloClaw red otherwise.
   const accent = brand?.color ?? R;
@@ -620,6 +620,10 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true
     //
     // Failure to reach the check does NOT block: the endpoint fails open for the same reason,
     // and a network blip must not cost a sale.
+    // The demo skips it. Nothing is being created, so there is no collision to prevent, and the
+    // person walking it is almost always signed in already - the check would stop the demo dead
+    // on its first screen with "that address already has an account".
+    if (!skipEmailCheck) {
     setChecking(true);
     try {
       const res = await fetch("/api/onboard/check-email", {
@@ -636,6 +640,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true
       // Deliberately ignored - see above.
     } finally {
       setChecking(false);
+    }
     }
 
     // Hand on the RESOLVED timezone, not the raw state. Somebody who never opens the select
@@ -1504,7 +1509,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // feel built for the person. UNLIKE the generic flow (ordered by allPageKeys), a role agent takes
   // its order straight from this list, so the role deep-dive comes first and the executive profile
   // sits after it - David's call. Both pageKeys and allPages below derive from this list, so the
-  // step-order assertion stays satisfied.
+  // step-order assertion stays satisfied. ("First" now means first outright, not just before the
+  // executive profile - see the note on rolePageKeys.)
   // NOTE the missing "scopeai". A role agent does NOT get the generic "What your agent should
   // take on" page, because its own deep-dive already asked both of that page's questions in the
   // customer's own vocabulary. A realtor was picking their agent's jobs twice: once from
@@ -1514,8 +1520,21 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   //
   // Nothing downstream goes empty: buildData feeds the role answers into aiGoals and
   // successMetric, which is what those two questions existed to fill. See buildData below.
+  //
+  // THE ROLE DEEP-DIVE IS FIRST, ahead of the company pages, and that is the whole point of it
+  // being a separate list. It used to open on "Your Business" and "What You Do" - company name,
+  // team size, monthly revenue, years in business - and only reach the role's own questions on
+  // page three of ten. So somebody who clicked The Property Management Agent was asked their
+  // revenue band before a single question about a building, and reasonably concluded the thing
+  // knew nothing about property management. The same was true of all ten roles; property
+  // management is just where it got noticed, because it is the newest and got looked at hardest.
+  //
+  // A role funnel is pinned to one agent. The buyer arrived from that agent's own site or picked
+  // that card, so the first screen should be the one that could not belong to any other agent.
+  // The company questions still get asked - they feed USER.md and they matter - they are just no
+  // longer the greeting.
   const rolePageKeys = isRoleFlow
-    ? ["biz", "whatyoudo", ...roleStepKeys, "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
+    ? [...roleStepKeys, "biz", "whatyoudo", "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
         .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
   const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
@@ -1908,10 +1927,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     ) },
   ];
   // Trim to the role set when it's a role agent, mirroring the pageKeys filter above so the two
-  // stay in lockstep. Filtering preserves order, so a role flow reads biz -> whatyoudo -> role -> scope.
-  // For a role agent, order the pages by rolePageKeys (not allPagesFull's natural order), so the
-  // executive profile can sit AFTER the role deep-dive. Both this and pageKeys above read from
-  // rolePageKeys, so the assertion below still holds.
+  // stay in lockstep. A role flow now reads role deep-dive -> biz -> whatyoudo -> exec -> ... ->
+  // scope. Mapping over rolePageKeys rather than filtering allPagesFull is what allows that: the
+  // order comes from the key list, not from the order the pages happen to be declared in. Both
+  // this and pageKeys above read from rolePageKeys, so the assertion below still holds.
   const allPages = isRoleFlow
     ? rolePageKeys
         .map((k) => allPagesFull.find((p) => p.key === k))
@@ -1936,7 +1955,19 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
 // ════════════════════════════════════════════════════════════
 // ROOT
 // ════════════════════════════════════════════════════════════
-export type OnboardingFormMode = "lead" | "customer" | "whiteglove";
+// "demo" is the fourth mode and the only one that builds nothing. It exists so the whole
+// journey - pick an agent, name it, answer its questions, see what comes out - can be walked
+// without a card and without provisioning a VPS (app/demo).
+//
+// It runs the REAL form, deliberately. A demo that renders its own copy of the questionnaire
+// proves the copy works, and the copy is the thing that drifts: the questions, the dropdowns,
+// the conditional fields, the validation and the page order here are the ones a customer gets,
+// because they ARE the ones a customer gets.
+//
+// Nothing that writes is reachable from it. handleDone hands the answers to `onDemoComplete`
+// and returns before the submit branch, so /api/agent-setup, /api/intake and
+// /api/onboard/complete are all unreachable; isPaywalled keys on "lead", so Stripe is too.
+export type OnboardingFormMode = "lead" | "customer" | "whiteglove" | "demo";
 
 export interface OnboardingFormProps {
   mode: OnboardingFormMode;
@@ -1966,6 +1997,9 @@ export interface OnboardingFormProps {
    *  "Complete Your Payment" pointing here — how a custom, offline-priced deal is closed after
    *  the questionnaire. Passed as ?pay= on the white-glove URL (validated to a Stripe domain). */
   payUrl?: string;
+  /** Demo mode only: called INSTEAD of submitting, with everything the walkthrough collected.
+   *  The demo page owns what happens next; this component's job ends at the last question. */
+  onDemoComplete?: (payload: { answers: Record<string, unknown>; agentName: string }) => void;
 }
 
 // Stripe takes the buyer off-site, so the "Start Here" answers have to survive a full page
@@ -2028,8 +2062,9 @@ function clearStoredGate(): void {
   }
 }
 
-export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser, initialAnswers, initialAgentName, payUrl }: OnboardingFormProps) {
+export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser, initialAnswers, initialAgentName, payUrl, onDemoComplete }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
+  const isDemo = mode === "demo";
   // A returning customer changing existing answers, not a first-time setup. Drives straight to
   // the pre-filled questionnaire and seeds the contact/name fields from what was saved.
   const isEditing = isCustomer && !!initialAnswers && !justPaid;
@@ -2118,7 +2153,9 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // happens post-payment, never on the free lead form).
   const handleGate = (info: GateData) => {
     setGate(info);
-    if (isCustomer) return setPhase("personalize");
+    // Demo walks the same order a paying customer walks: contact, then name and avatar, then the
+    // questions. Naming the agent is half of what makes the walkthrough feel like a purchase.
+    if (isCustomer || isDemo) return setPhase("personalize");
     // Persist before the paywall, because the next click leaves the site for Stripe.
     if (isPaywalled && !justPaid) {
       writeStoredGate(info);
@@ -2131,6 +2168,12 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   };
   const handlePersonalize = (d: PersonalizeData) => { setPersonalize(d); setPhase("form"); };
   const handleDone = async (data: Record<string, unknown>, trackType: string) => {
+    // The demo stops here, before any network call and before the submitting spinner. Everything
+    // below this line either provisions an agent or files a lead, and the demo does neither.
+    if (isDemo) {
+      onDemoComplete?.({ answers: data, agentName: personalize.agentName });
+      return;
+    }
     setPhase("submitting");
     try {
       if (isCustomer) {
@@ -2234,6 +2277,9 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         initial={enteredGate ?? undefined}
         brand={brand}
         askBestTime={!isCustomer}
+        // The demo must not tell David his own address already has an account, which it would,
+        // every time, on the one screen he is trying to show somebody.
+        skipEmailCheck={isDemo}
         // Named as early as possible. Someone arriving from therealestateagent.ai should see
         // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
         // is pinned to one type, so there is no reason to be vague about which.
@@ -2279,7 +2325,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
     // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
     // sending them back there would silently drop it, so they keep no Back on step 0.
-    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
+    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : isDemo ? "Build My Agent →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
     return null;
   })();
   return (
