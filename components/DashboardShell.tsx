@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Briefcase, Home, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Home, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -14,7 +14,6 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useHiddenNav } from "@/components/sidebar-prefs";
 import { hiddenForEveryone } from "@/config/nav";
 import { hasListings } from "@/config/listings";
-import { hasMatters } from "@/config/matters";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,10 +50,15 @@ const NAV = [
   // The filter is on agent TYPE rather than on whether any listings exist, on purpose. A row that
   // appears once you have data is a row nobody can find in order to add the first row.
   { href: "/dashboard/listings", label: "Listings", icon: Home, exact: false, forListings: true },
-  // The Law Agent's equivalent, and the second role row. Two of these is the point at which a
-  // third should stop being a new boolean, so if a fourth role wants a section, replace both
-  // flags with one `forTypes: string[]` rather than adding `forMatters` to the filter below.
-  { href: "/dashboard/matters", label: "Matters", icon: Briefcase, exact: false, forMatters: true },
+  // MATTERS IS NOT HERE, and its absence is a decision rather than an oversight. The Law Agent's
+  // equivalent of Listings sat directly below this line, filtered by hasMatters (config/matters.ts,
+  // legal only). David took it off the rail on Sept 10, 2026.
+  //
+  // Only the ROW is gone. /dashboard/matters still renders, the API and the table are untouched,
+  // and provisioning still gives a legal instance its matters skill (lib/provision.ts) - so the
+  // agent keeps working the book of matters, and anything already linking to the page still lands.
+  // Putting the row back is this line plus the `forMatters` flag on the type and the filter, all
+  // three of which are still in the file's history. Nothing else was unpicked.
   { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
   // Connections is back on the daily rail, directly under Checklist - David's call. It also stays
   // reachable from Settings, but the rail is where he wants it day to day, so /dashboard/integrations
@@ -115,7 +119,6 @@ type NavItem = {
   icon: LucideIcon;
   exact: boolean;
   forListings?: boolean;
-  forMatters?: boolean;
 };
 
 // One row, used by the app rail, the Settings rail, and the Settings entry itself, so the
@@ -200,7 +203,6 @@ function SidebarContent({
   const { isHidden } = useHiddenNav();
   const nav = NAV.filter((item) => {
     if (item.forListings && !hasListings(active?.agent_type)) return false;
-    if (item.forMatters && !hasMatters(active?.agent_type)) return false;
     if (hiddenForEveryone(item.href)) return false;
     return !isHidden(item.href) || pathname.startsWith(item.href);
   });
