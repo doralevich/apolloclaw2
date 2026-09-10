@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Bot,
   Briefcase,
+  Building2,
   Calculator,
   GraduationCap,
   Home,
@@ -16,6 +17,7 @@ import {
   Stethoscope,
   TrendingUp,
   UserPlus,
+  UserRound,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -42,9 +44,15 @@ import type { Agent } from "@/lib/types";
 
 // Registry icons are stored as lucide icon NAMES (plain strings, so the config stays
 // server-safe); resolve them here with a generic fallback.
+//
+// A NAME MISSING FROM THIS MAP FAILS SILENTLY - the card renders the generic Bot and nothing
+// says why. UserRound was missing, so The Personal Agent's card had been showing the fallback
+// since that type shipped; it is in the map now, alongside Building2 for property management.
+// If you add a type to config/agent-types.ts with an `icon`, add the name here in the same pass.
 const TYPE_ICONS: Record<string, LucideIcon> = {
   GraduationCap,
   Briefcase,
+  Building2,
   Calculator,
   Scale,
   Stethoscope,
@@ -53,6 +61,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   Megaphone,
   TrendingUp,
   UserPlus,
+  UserRound,
   Wallet,
   SquareDashed,
 };

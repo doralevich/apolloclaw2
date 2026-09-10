@@ -166,6 +166,16 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    const pmdet = d.propertyManagementDetails && typeof d.propertyManagementDetails === "object" ? (d.propertyManagementDetails as Record<string, unknown>) : {};
+    if (Object.keys(pmdet).length) {
+      sections.push({
+        title: "Property Management Deep-Dive",
+        rows: Object.entries(pmdet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     const perdet = d.personalDetails && typeof d.personalDetails === "object" ? (d.personalDetails as Record<string, unknown>) : {};
     if (Object.keys(perdet).length) {
       sections.push({

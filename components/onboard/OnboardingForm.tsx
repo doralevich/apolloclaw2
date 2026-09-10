@@ -19,6 +19,7 @@ import { RECRUITING_BRANCH } from "@/lib/recruitingIntake";
 import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
 import { PERSONAL_BRANCH } from "@/lib/personalIntake";
+import { PROPERTY_MANAGEMENT_BRANCH } from "@/lib/propertyManagementIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
 // add a role-specific deep-dive and trim the flow to the pages that matter for that role. One entry
@@ -123,6 +124,17 @@ const ROLE_INTAKES: Record<
   },
   insurance: {
     branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
+    coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
+  },
+  // `guard` is the handoff line, same slot the Law and Insurance agents use, and it is carrying
+  // the most of any agent in the family: fair housing, eviction and legal notices, deposit
+  // deductions, binding a lease, and habitability emergencies. The persona
+  // (config/personas.ts -> `propertymanagement`) names all five itself rather than trusting the
+  // answer alone, because the customer who leaves this short still must not get an agent that
+  // writes its own screening rejections.
+  propertymanagement: {
+    branch: PROPERTY_MANAGEMENT_BRANCH, stepKey: "propertymanagement", stepLabel: "Portfolio",
+    detailsKey: "propertyManagementDetails", roleName: "Property Management Agent",
     coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
   },
   personal: {
@@ -1387,6 +1399,12 @@ function hydrateBizState(a: PrefillAnswers) {
     industryDetails: a.industryDetails && typeof a.industryDetails === "object" ? (a.industryDetails as Record<string, string | string[]>) : {},
     // Either role blob, whichever a prior save wrote. Only one role applies to a given form, so at
     // most one is present; the component reads it back through its own role's detailsKey.
+    //
+    // EVERY ROLE IN ROLE_INTAKES NEEDS A LINE HERE, and forgetting one fails quietly in the worst
+    // place: the answers save fine and render fine in the summary, and then a true edit opens the
+    // deep-dive blank and the customer retypes twelve questions. `personalDetails` had been
+    // missing since The Personal Agent shipped, which is what this list looked like before
+    // property management was added to it.
     roleDetails:
       (a.cfoDetails && typeof a.cfoDetails === "object" ? (a.cfoDetails as Record<string, string | string[]>) : null) ??
       (a.legalDetails && typeof a.legalDetails === "object" ? (a.legalDetails as Record<string, string | string[]>) : null) ??
@@ -1397,6 +1415,8 @@ function hydrateBizState(a: PrefillAnswers) {
       (a.recruitingDetails && typeof a.recruitingDetails === "object" ? (a.recruitingDetails as Record<string, string | string[]>) : null) ??
       (a.medicalDetails && typeof a.medicalDetails === "object" ? (a.medicalDetails as Record<string, string | string[]>) : null) ??
       (a.insuranceDetails && typeof a.insuranceDetails === "object" ? (a.insuranceDetails as Record<string, string | string[]>) : null) ??
+      (a.personalDetails && typeof a.personalDetails === "object" ? (a.personalDetails as Record<string, string | string[]>) : null) ??
+      (a.propertyManagementDetails && typeof a.propertyManagementDetails === "object" ? (a.propertyManagementDetails as Record<string, string | string[]>) : null) ??
       {},
   };
 }
