@@ -360,6 +360,34 @@ export const AGENT_TYPES: AgentType[] = [
     internal: true,
     icon: "UserRound",
   },
+  // The Property Management Agent - the tenth role, and the first one carved OUT of an existing
+  // type rather than added beside them. Property management was two tick-boxes on the real estate
+  // questionnaire (`re_focus` in lib/industryConfig.ts, `role` in lib/realEstateIntake.ts) and
+  // ticking either changed nothing: the buyer still got the transaction persona and the
+  // offer-to-closing intake, neither of which describes a job with no closings in it.
+  //
+  // Same white-glove shape as its siblings: persona in config/personas.ts -> `propertymanagement`,
+  // intake in lib/propertyManagementIntake.ts wired through ROLE_INTAKES in OnboardingForm, and
+  // surfaced as the "Property Management Deep-Dive" section (lib/onboardingSections.ts). NO
+  // `planKey`, so it never goes through self-serve checkout, and `internal` so only a platform
+  // admin sees the card. Stock template and the same $25 hosting cap as every other agent.
+  //
+  // NO BUILD FUNNEL, NO SITE, NO MASCOT YET, deliberately. lib/buildFunnel.ts has no slug for it,
+  // so /build/property-management 404s rather than half-existing, and agentBrand falls back to
+  // ApolloClaw red with no mascot - which is exactly where /build/insurance sat for its first
+  // weeks. Adding those is a slug and two artwork files when there is something to point them at.
+  {
+    id: "propertymanagement",
+    label: "The Property Management Agent",
+    description:
+      "An agent for a property management company: first response on tenant messages, maintenance triage and vendor dispatch, leasing enquiries, rent and delinquency follow-up, renewals, turnovers, and the owner reporting that goes with all of it - built around the portfolio you manage and the spending authority you have, and stopping short of screening decisions, legal notices and anything that commits an owner's money. Set up for one management company, white-glove.",
+    template: "agent37-openclaw",
+    templateAliases: ["apollo-agent", "college-agent"],
+    ...PAID_AGENT,
+    available: true,
+    internal: true,
+    icon: "Building2",
+  },
   // The Blank Agent - a stock OpenClaw box and nothing else. No role persona (config/personas.ts
   // has no `blank` key, so provisioning writes no SOUL.md over the image's own) and no
   // questionnaire (`noSetup`). It is the SAME empty box the Apollo Agent starts from, minus the

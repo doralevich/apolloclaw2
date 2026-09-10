@@ -303,6 +303,12 @@ export const industryConfig: Record<string, IndustryBranch> = {
         label: "Primary focus",
         type: "dropdown",
         required: true,
+        // "Property management" STAYS, unlike Insurance in INDUSTRY_OPTIONS above, and the
+        // difference is that there is nowhere better to send this person yet. The Property
+        // Management Agent now exists as a type (config/agent-types.ts) with its own persona and
+        // intake, but it is white-glove only: no planKey, no /build slug, so there is no funnel
+        // to route them to the way insurance routes to /build/insurance. When one exists, this
+        // option should send them there and come out of this list.
         options: [
           "Residential brokerage",
           "Commercial",
