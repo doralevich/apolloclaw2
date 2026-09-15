@@ -113,9 +113,13 @@ This split exists because we broke it once — the same file was edited from bot
 changes were applied and reverted twice.
 
 - **Donna owns infrastructure**: the hetzner-4 server, creating GitHub repos, Vercel
-  projects, DNS, domain cutovers, retiring old copies.
+  projects, DNS, domain cutovers, retiring old copies. Plus content that lives outside a
+  repo, which today means Sanity - see the blog note further down.
 - **Claude owns file contents**: anything inside a repo. Once a repo exists and is
-  attached, Claude edits, commits and pushes directly — no copy-paste relay.
+  attached, Claude edits, commits and pushes directly — no copy-paste relay. This includes
+  the SEO surface: sitemap, metadata, the `/ai-agents` and `/industries` pages, and the
+  marketing copy inside them. Donna does not push to a repo, and AGENTS.md said she did
+  until Sep 12, 2026.
 
 The handoff is: Donna creates the repo and reports its name; Claude attaches it and takes
 over the contents.
