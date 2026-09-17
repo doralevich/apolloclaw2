@@ -63,14 +63,20 @@ export async function GET(request: Request) {
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) return response;
-    // Logged because the two ways this fails look identical to the person clicking - a link that
-    // expired, and a link already spent by an email scanner that fetched it before they did.
+    // Logged because the ways this fails look identical to the person clicking - expired,
+    // already used, superseded by a newer request, or spent by a scanner that fetched it first.
     console.error("[auth/callback] verifyOtp failed:", type, error.message);
   } else {
     console.error("[auth/callback] no code and no token_hash on the link");
   }
 
-  response = NextResponse.redirect(new URL("/login?error=auth", url.origin));
+  // NOT /login. A dead link used to bounce there with ?error=auth, which raised a toast over a
+  // clean login form, and three people in a row read that as the link doing nothing. The page
+  // below says what actually happened - almost always a single-use link clicked twice, or an
+  // older email clicked after requesting a newer one - and offers a new link on the spot.
+  const expired = new URL("/auth/link-expired", url.origin);
+  if (type) expired.searchParams.set("type", type);
+  response = NextResponse.redirect(expired);
   return response;
 }
 
