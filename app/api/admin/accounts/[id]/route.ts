@@ -7,6 +7,10 @@ import { graceUntilIso } from "@/lib/entitlement";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+// Matches the floor on the customer-facing forms (app/reset-password, the onboarding set-password
+// step) so a password David sets by hand is never one the customer could not have set themselves.
+const MIN_PASSWORD = 8;
+
 // The three levers David has over an account's access, and what each writes. Kept here (not in
 // the client) so the grace math is the same one the webhook and gate use.
 //   live       — full access, no grace window.
@@ -50,8 +54,47 @@ export const DELETE = route(async (request: Request, { params }: Ctx) => {
 export const PATCH = route(async (request: Request, { params }: Ctx) => {
   const { user } = await requirePlatformAdmin();
   const { id } = await params;
-  const body = await readJson<{ action?: string; newEmail?: string }>(request);
+  const body = await readJson<{ action?: string; newEmail?: string; password?: string }>(request);
   const db = createAdminClient();
+
+  // Set the account's password by hand, and hand it over out of band.
+  //
+  // This is the path that works when the emailed one does not, which happens more than the
+  // reset flow being correct would suggest. A recovery link is single-use and every new one
+  // invalidates the last, so a customer who requests three and clicks the first lands on the
+  // login screen three times and reasonably concludes the link is broken - Ira Stahlberger,
+  // Sep 17 2026, and Graham before him. Corporate mail that pre-fetches links spends the token
+  // before the human clicks, with the same result. Neither is something the customer can debug.
+  //
+  // David could always do this in the Supabase dashboard, so this grants no new power - it puts
+  // it next to the account it belongs to, with an audit line the dashboard does not write.
+  //
+  // NOT the password itself in the audit metadata, obviously. That it was set, by whom, for
+  // whom, is the whole record.
+  if (body.password !== undefined) {
+    const password = body.password;
+    if (password.length < MIN_PASSWORD) {
+      throw new ApiError(400, "bad_request", `Password must be at least ${MIN_PASSWORD} characters.`);
+    }
+
+    const { data: authUser } = await db.auth.admin.getUserById(id);
+    const targetEmail = authUser?.user?.email?.trim().toLowerCase() ?? null;
+    if (!targetEmail) throw new ApiError(404, "not_found", "No account found for that id");
+
+    // email_confirm so an account that never confirmed can sign in with what was just set,
+    // rather than being handed a password and still bounced at the door.
+    const { error } = await db.auth.admin.updateUserById(id, { password, email_confirm: true });
+    if (error) throw new ApiError(500, "db_error", error.message);
+
+    await logAudit({
+      actorEmail: user.email,
+      action: "account.password_set",
+      target: targetEmail,
+      metadata: { user_id: id, by: "admin" },
+      request,
+    });
+    return json({ ok: true, email: targetEmail });
+  }
 
   // Change the account's email. Moves BOTH the auth login and the entitlement row (which is keyed
   // by email) so access is never lost in the swap. email_confirm:true marks the new address

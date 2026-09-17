@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, LogOut, Mail, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, KeyRound, LogOut, Mail, MoreHorizontal, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -45,6 +45,24 @@ import {
 
 type EntitlementAction = "live" | "grace" | "deactivate";
 
+/** Mirrors the server's floor in app/api/admin/accounts/[id], which mirrors the customer-facing
+ *  forms. Checked here only so the dialog can say so before a round trip. */
+const MIN_PASSWORD = 8;
+
+// A password worth handing to a customer: long enough not to be guessed, and readable enough to
+// be typed off a phone screen or dictated over the phone, which is how it will actually travel.
+//
+// No I, l, 1, O or 0 for that reason. crypto.getRandomValues rather than Math.random - this is a
+// credential, and the browser has a real CSPRNG sitting right there.
+const PW_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+function generatePassword(length = 16): string {
+  const bytes = new Uint32Array(length);
+  crypto.getRandomValues(bytes);
+  // Modulo bias is negligible at 2^32 over a 54-character alphabet and irrelevant at this
+  // strength, but the rejection-free form is worth a note so nobody "fixes" it into Math.random.
+  return Array.from(bytes, (n) => PW_ALPHABET[n % PW_ALPHABET.length]).join("");
+}
+
 function licenseBadge(account: AdminAccount) {
   if (account.entitlement === "active") return { label: "active", variant: "success" as const };
   if (inGrace(account.grace_until)) {
@@ -70,6 +88,9 @@ export function AdminCustomersView() {
   const [emailEditing, setEmailEditing] = useState<AdminAccount | null>(null);
   const [emailValue, setEmailValue] = useState("");
   const [emailSaving, setEmailSaving] = useState(false);
+  const [pwEditing, setPwEditing] = useState<AdminAccount | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
   const [newAcct, setNewAcct] = useState({ email: "", first: "", last: "", password: "" });
   const [creatingAcct, setCreatingAcct] = useState(false);
 
@@ -249,6 +270,30 @@ export function AdminCustomersView() {
       toast.error((e as Error).message);
     } finally {
       setEmailSaving(false);
+    }
+  }
+
+  // Set a customer's password by hand, for when the emailed reset does not reach them or does not
+  // survive the trip - a spent single-use link, or corporate mail that fetches it first. The
+  // password is shown once, here, for David to relay out of band; we never mail it.
+  async function savePassword() {
+    if (!pwEditing) return;
+    if (pwValue.length < MIN_PASSWORD) {
+      return toast.error(`Password must be at least ${MIN_PASSWORD} characters.`);
+    }
+    setPwSaving(true);
+    try {
+      await apiFetch(`/api/admin/accounts/${pwEditing.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ password: pwValue }),
+      });
+      toast.success(`Password set for ${pwEditing.email}. Send it to them yourself - it is not emailed.`);
+      setPwEditing(null);
+      setPwValue("");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setPwSaving(false);
     }
   }
 
@@ -454,6 +499,15 @@ export function AdminCustomersView() {
                             <Mail className="h-4 w-4" />
                             Change email
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setPwValue(generatePassword());
+                              setPwEditing(a);
+                            }}
+                          >
+                            <KeyRound className="h-4 w-4" />
+                            Set password
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem variant="destructive" onClick={() => setDeleting(a)}>
                             <Trash2 className="h-4 w-4" />
@@ -557,6 +611,53 @@ export function AdminCustomersView() {
             </Button>
             <Button onClick={saveEmail} disabled={emailSaving}>
               {emailSaving ? "Saving..." : "Change email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!pwEditing} onOpenChange={(open) => { if (!open) { setPwEditing(null); setPwValue(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set password</DialogTitle>
+            <DialogDescription>
+              Sets the password immediately and marks the address verified, so they can sign in
+              with it straight away. Nothing is emailed - copy it and send it to them yourself.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="new-password">New password</Label>
+            <div className="flex gap-2">
+              <Input
+                id="new-password"
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={pwValue}
+                onChange={(e) => setPwValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") savePassword();
+                }}
+              />
+              {/* Shown in the clear on purpose: the whole point is to read it off and pass it on,
+                  and a masked field you cannot read is a field you retype wrong. */}
+              <Button type="button" variant="outline" onClick={() => setPwValue(generatePassword())}>
+                Regenerate
+              </Button>
+            </div>
+            {pwEditing && (
+              <p className="text-xs text-muted-foreground">
+                For <span className="font-medium text-foreground">{pwEditing.email}</span>. Their
+                existing sessions stay signed in; this only changes what the password is.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setPwEditing(null); setPwValue(""); }} disabled={pwSaving}>
+              Cancel
+            </Button>
+            <Button onClick={savePassword} disabled={pwSaving}>
+              {pwSaving ? "Setting..." : "Set password"}
             </Button>
           </DialogFooter>
         </DialogContent>
