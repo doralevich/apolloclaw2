@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -53,17 +53,11 @@ export default function LoginPage() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
-  // /auth/callback bounces here with ?error=auth when a confirmation/recovery link
-  // fails (expired, already used, or opened in a different browser). Surface it —
-  // otherwise the user lands on a pristine form with no clue the link broke.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("error") !== "auth") return;
-    toast.error("That link is invalid or has expired. Log in, or request a new one.");
-    params.delete("error");
-    const qs = params.toString();
-    window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
-  }, []);
+  // A ?error=auth handler used to live here, raising a toast when /auth/callback bounced a dead
+  // sign-in link to this page. Both halves are gone: the callback now sends those to
+  // /auth/link-expired, which explains what happened and offers a new link, and nothing emits
+  // ?error=auth any more. A toast was the wrong carrier anyway - four seconds, gone on reload,
+  // floating over a login form the person has already decided is a dead end.
 
   async function onSignIn(e: React.FormEvent) {
     e.preventDefault();
