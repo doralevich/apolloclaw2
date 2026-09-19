@@ -110,10 +110,14 @@ export function ConnectFlow() {
         // A live mail connection is not a guess, it is the answer. Somebody returning to this
         // page mid-way picks up where they stopped rather than being asked again.
         const known = (Object.keys(MAIL_SLUG) as VendorId[]).find((v) => set.has(MAIL_SLUG[v]));
-        if (known) {
-          setVendor(known);
-          setIndex(firstOpenStep(known, set));
-        }
+        // Assigned unconditionally, INCLUDING the null case, because this effect re-runs whenever
+        // the agent changes - which is what switching workspace from the rail does. Setting these
+        // only when `known` was found left the previous agent's vendor and step index in place, so
+        // the new agent inherited a half-finished flow and never got asked the one question.
+        setVendor(known ?? null);
+        setIndex(known ? firstOpenStep(known, set) : 0);
+        setWaitingFor(null);
+        setTimedOut(false);
       })
       .catch(() => {
         // Connections failing to load is not a reason to hide the flow - the connect links still
@@ -261,6 +265,10 @@ export function ConnectFlow() {
               onPick={() => {
                 setVendor(v.id);
                 setIndex(firstOpenStep(v.id, connected));
+                // Both cleared, or a timeout from the vendor they just backed out of shows up as
+                // an amber warning over the first step of the one they picked instead.
+                setWaitingFor(null);
+                setTimedOut(false);
               }}
             />
           ))}
