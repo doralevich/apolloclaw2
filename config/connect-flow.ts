@@ -95,7 +95,9 @@ export const VENDORS: Record<VendorId, Vendor> = {
         slug: slug("gmail"),
         appName: "Gmail",
         logo: composioLogoUrl("gmail"),
-        heading: "Let's connect your email",
+        // NAMES THE APP, and the chooser before it does not. Both screens used to be headed
+        // "Let's connect your email", so picking Google appeared to do nothing at all.
+        heading: "Let's connect Gmail",
         blurb:
           "Gmail is where most of your work arrives. Connecting it lets me read what comes in, draft replies in your voice, and chase the threads that go quiet.",
         gained: "your inbox",
@@ -135,7 +137,7 @@ export const VENDORS: Record<VendorId, Vendor> = {
         slug: slug("outlook"),
         appName: "Outlook",
         logo: composioLogoUrl("outlook"),
-        heading: "Let's connect your email",
+        heading: "Let's connect Outlook",
         blurb:
           "Outlook is where most of your work arrives. Connecting it lets me read what comes in, draft replies in your voice, and chase the threads that go quiet. It covers your calendar in the same step.",
         gained: "your inbox",

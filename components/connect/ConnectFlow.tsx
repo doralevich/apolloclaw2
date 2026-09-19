@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, ExternalLink, Loader2, SkipForward } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Loader2 } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { AgentFace } from "@/components/AgentFace";
@@ -230,32 +230,27 @@ export function ConnectFlow() {
   const heading = uncovered?.heading ?? step?.heading;
   const blurb = uncovered?.blurb ?? step?.blurb;
 
-  const header = (title: string) => (
-    <div className="flex items-start gap-4">
-      <AgentFace
-        src={active.avatar_url}
-        name={agentName}
-        className="mt-0.5 size-14 shrink-0 text-xl"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-muted-foreground">{agentName}</p>
-        <h1 className="mt-0.5 text-2xl font-bold tracking-tight">{title}</h1>
-      </div>
+  // The agent, named, above the headline. Small on purpose: on Home its face is the size of the
+  // greeting because the greeting IS the agent introducing itself, but here the headline is a
+  // question and the face is the byline on it.
+  const speaker = (
+    <div className="flex items-center gap-2.5">
+      <AgentFace src={active.avatar_url} name={agentName} className="size-7 text-xs" />
+      <span className="text-sm font-medium text-muted-foreground">{agentName}</span>
     </div>
   );
 
   // ── The one question ────────────────────────────────────────────────────────────────────────
   if (!vendor) {
     return (
-      <div className="mx-auto max-w-xl space-y-8 py-4">
-        {header("Let's connect your email")}
-        <p className="text-muted-foreground">
+      <Page eyebrow={speaker} title="Let's connect your email">
+        <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
           {userFirstName ? `${userFirstName}, before ` : "Before "}I can be much use I need to see
-          what you see. Your email is the first and biggest piece of that, and the answer sorts out
-          your calendar and your files at the same time.
+          what you see. Your email is the biggest piece of that, and your answer sorts out your
+          calendar and your files at the same time. You can disconnect any of it at any time.
         </p>
 
-        <div className="space-y-3">
+        <div className="mt-10 space-y-3">
           {VENDOR_LIST.map((v) => (
             <VendorChoice
               key={v.id}
@@ -274,63 +269,63 @@ export function ConnectFlow() {
           ))}
         </div>
 
-        <div className="space-y-3 border-t pt-5 text-sm">
-          <p className="text-muted-foreground">
-            Running on something else? Every other mail provider we support is in Connections, and
-            you can come back to this any time.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/dashboard/integrations">Browse all apps</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/start-here">Skip for now</Link>
-            </Button>
-          </div>
+        {/* Centered and low contrast, the way the reference handles "Skip for now": present, and
+            plainly not the thing you came here to press. */}
+        <div className="mt-10 flex flex-col items-center gap-3 text-sm">
+          <Link
+            href="/dashboard/integrations"
+            className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            I use something else
+          </Link>
+          <Link href="/dashboard/start-here" className="text-muted-foreground/60 hover:text-foreground">
+            Skip for now
+          </Link>
         </div>
-      </div>
+      </Page>
     );
   }
 
   // ── Closing screen ──────────────────────────────────────────────────────────────────────────
   if (!step) {
     const live = steps.filter((s) => connected.has(s.slug.toLowerCase()));
-    const missed = steps.filter(
-      (s) => !connected.has(s.slug.toLowerCase()) && !s.coveredByPrevious
-    );
+    const missed = steps.filter((s) => !connected.has(s.slug.toLowerCase()) && !s.coveredByPrevious);
     // De-duplicated because Outlook satisfies two steps and should be read back once.
     const can = Array.from(new Set(live.map((s) => s.gained)));
 
     return (
-      <div className="mx-auto max-w-xl space-y-8 py-4">
-        {/* Not "You're all set" unconditionally: somebody who skipped every step would be told
-            they were finished with nothing connected, which is the one thing this page exists to
-            prevent being believed. */}
-        {header(can.length > 0 ? "You're all set" : "Nothing connected yet")}
-        {can.length > 0 ? (
-          <p className="text-muted-foreground">
-            That is the part that matters. I can work in {joinPhrases(can)} now, so ask me for
-            something real rather than something to try.
-          </p>
-        ) : (
-          <p className="text-muted-foreground">
-            No harm done, and nothing is broken. I can still think out loud with you, I just
-            can&apos;t act in your inbox or calendar until one of these is in.
-          </p>
-        )}
+      <Page
+        eyebrow={speaker}
+        // Not "You're all set" unconditionally: somebody who skipped every step would be told they
+        // were finished with nothing connected, which is the one thing this page exists to prevent
+        // being believed.
+        title={can.length > 0 ? "You're all set" : "Nothing connected yet"}
+      >
+        <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+          {can.length > 0 ? (
+            <>
+              That is the part that matters. I can work in {joinPhrases(can)} now, so ask me for
+              something real rather than something to try.
+            </>
+          ) : (
+            <>
+              No harm done, and nothing is broken. I can still think out loud with you, I just
+              can&apos;t act in your inbox or calendar until one of these is in.
+            </>
+          )}
+        </p>
 
-        <ul className="space-y-2">
+        {/* Divided rows rather than bordered cards: three boxes stacked in a column was most of
+            the chrome this screen used to carry. */}
+        <ul className="mt-10 divide-y border-y">
           {steps
             .filter((s) => !s.coveredByPrevious)
             .map((s) => (
-              <li
-                key={s.key}
-                className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm"
-              >
+              <li key={s.key} className="flex items-center gap-3 py-4">
                 <AppLogo logo={s.logo} name={s.appName} />
                 <span className="flex-1 font-medium">{s.appName}</span>
                 {connected.has(s.slug.toLowerCase()) ? (
-                  <span className="inline-flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     <Check className="size-4" />
                     Connected
                   </span>
@@ -339,7 +334,7 @@ export function ConnectFlow() {
                     href={connectHref(agentId, s.slug)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 font-medium text-foreground underline underline-offset-4"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4"
                   >
                     Connect
                     <ExternalLink className="size-3.5" />
@@ -350,27 +345,28 @@ export function ConnectFlow() {
         </ul>
 
         {missed.length > 0 && (
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-muted-foreground">
             You skipped {joinPhrases(missed.map((s) => s.appName))}. Nothing is lost, it is one
             click from Connections whenever you want it.
           </p>
         )}
 
-        <div className="flex flex-wrap gap-3 border-t pt-5">
-          <Button asChild>
-            <Link href="/dashboard/chat">
-              Start a conversation
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/dashboard/start-here">Go to my dashboard</Link>
-          </Button>
-          <Button asChild variant="ghost">
-            <Link href="/dashboard/integrations">Browse all apps</Link>
-          </Button>
+        <Button asChild className="mt-10 h-14 w-full rounded-2xl text-base">
+          <Link href="/dashboard/chat">
+            Start a conversation
+            <ArrowRight className="size-4" />
+          </Link>
+        </Button>
+
+        <div className="mt-8 flex flex-col items-center gap-3 text-sm">
+          <Link href="/dashboard/start-here" className="text-muted-foreground underline underline-offset-4 hover:text-foreground">
+            Go to my dashboard
+          </Link>
+          <Link href="/dashboard/integrations" className="text-muted-foreground/60 hover:text-foreground">
+            Browse all apps
+          </Link>
         </div>
-      </div>
+      </Page>
     );
   }
 
@@ -382,59 +378,58 @@ export function ConnectFlow() {
   };
 
   return (
-    <div className="mx-auto max-w-xl space-y-8 py-4">
-      {header(heading!)}
+    <Page eyebrow={<StepDots total={steps.length} current={index} />} title={heading!}>
+      <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+        {blurb}
+        {step.optional && (
+          <span className="block pt-2 text-base">Optional, and worth the thirty seconds.</span>
+        )}
+      </p>
 
-      <StepDots total={steps.length} current={index} />
-
-      <div className="space-y-5 rounded-xl border bg-card p-6">
-        <div className="flex items-center gap-3">
-          <AppLogo logo={step.logo} name={step.appName} size="lg" />
-          <div className="min-w-0">
-            <p className="text-base font-semibold">{step.appName}</p>
-            {step.optional && (
-              <p className="text-xs text-muted-foreground">Optional, and a good idea</p>
-            )}
-          </div>
-        </div>
-
-        <p className="text-sm leading-relaxed text-muted-foreground">{blurb}</p>
-
+      <div className="mt-10">
         {stepDone ? (
-          // flex-col rather than space-y: the status line and the button are BOTH inline-flex, so
-          // a vertical-margin stack leaves them sharing a line and the button lands on top of the
-          // text. Caught in a screenshot; it is invisible in the markup.
-          <div className="flex flex-col items-start gap-4">
-            <p className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+          <div className="flex flex-col items-stretch gap-4">
+            <p className="flex items-center justify-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
               <Check className="size-4" />
               {step.coveredByPrevious
                 ? `Covered by your ${step.appName} connection`
                 : `${step.appName} is connected`}
             </p>
-            <Button onClick={advance}>
+            <Button onClick={advance} className="h-14 w-full rounded-2xl text-base">
               Continue
               <ArrowRight className="size-4" />
             </Button>
           </div>
         ) : waiting ? (
-          <div className="space-y-4">
-            <p className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" />
-              Waiting for {step.appName} in the other tab. This page moves on by itself the moment
-              it lands.
+          <div className="flex flex-col items-stretch gap-4">
+            <p className="flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
+              <Loader2 className="size-4 shrink-0 animate-spin" />
+              Waiting for {step.appName}. This page moves on by itself.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline" onClick={() => void refresh()}>
-                I finished in the other tab
-              </Button>
-              <Button variant="ghost" onClick={() => setWaitingFor(null)}>
-                Cancel
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => void refresh()}
+              className="h-14 w-full rounded-2xl text-base"
+            >
+              I finished in the other tab
+            </Button>
+            <button
+              type="button"
+              onClick={() => setWaitingFor(null)}
+              className="text-sm text-muted-foreground/60 hover:text-foreground"
+            >
+              Cancel
+            </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            <Button asChild>
+          <>
+            {/* The one button, full width, with the app's own logo in it - the shape the reference
+                uses for "Connect Google", and the reason that screen reads as a single decision. */}
+            <Button
+              asChild
+              variant="outline"
+              className="h-16 w-full rounded-2xl text-base font-semibold"
+            >
               <a
                 href={connectHref(agentId, step.slug)}
                 target="_blank"
@@ -444,52 +439,83 @@ export function ConnectFlow() {
                   setWaitingFor(stepSlug);
                 }}
               >
+                <AppLogo logo={step.logo} name={step.appName} size="lg" />
                 Connect {step.appName}
-                <ExternalLink className="size-4" />
               </a>
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Opens {step.appName} in a new tab so you can approve it. Come straight back here.
+            <p className="mt-3 text-center text-sm text-muted-foreground">
+              Opens in a new tab so you can approve it. Come straight back here.
             </p>
-          </div>
+          </>
         )}
 
         {timedOut && !stepDone && (
-          <p className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+          <p className="mt-5 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             We stopped watching for that one. If you did approve it, press &ldquo;I finished in the
             other tab&rdquo; after trying again. If you closed it, no harm done.
           </p>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        {index === 0 ? (
-          <button
-            type="button"
-            onClick={() => setVendor(null)}
-            className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            I picked the wrong one
-          </button>
-        ) : (
-          <span />
-        )}
+      <div className="mt-10 flex flex-col items-center gap-3 text-sm">
         {!stepDone && (
           <button
             type="button"
-            // Nothing recorded. What was skipped is simply what is not connected at the end,
-            // which stays true if they go and connect it from somewhere else in the meantime.
+            // Nothing recorded. What was skipped is simply what is not connected at the end, which
+            // stays true if they go and connect it from somewhere else in the meantime.
             onClick={() => {
               setWaitingFor(null);
               advance();
             }}
-            className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground/60 hover:text-foreground"
           >
-            <SkipForward className="size-3.5" />
             {index === steps.length - 1 ? "Skip and finish" : "Skip for now"}
           </button>
         )}
+        {index === 0 && (
+          <button
+            type="button"
+            onClick={() => setVendor(null)}
+            className="text-muted-foreground/60 hover:text-foreground"
+          >
+            I picked the wrong one
+          </button>
+        )}
       </div>
+    </Page>
+  );
+}
+
+// ONE PIECE OF PAGE FURNITURE FOR EVERY SCREEN, and it is deliberately sparse.
+//
+// The reference David sent (Instinct's sign-up) does four things this page was not: it puts ONE
+// thing on screen, sets the headline in the display face at a size you cannot miss, drops all card
+// chrome so the words sit on the page rather than inside a box, and makes the way out quiet but
+// obvious. This is that, in ApolloClaw's own display face (Bricolage, the site rebuild's heading
+// font) rather than the serif in the screenshot.
+//
+// `eyebrow` is the small line above the headline: who is talking on the screens where the agent is
+// asking, and where you are in the sequence on the screens where an app is.
+//
+// DECLARED OUT HERE, not inside ConnectFlow. A component defined during render is a new type every
+// render, so React unmounts and remounts its whole subtree each time - which on this page would
+// blow away the focus and the scroll position on every poll tick. Caught by the linter.
+function Page({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-xl px-1 py-10 sm:py-16">
+      {eyebrow}
+      <h1 className="font-heading mt-4 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl">
+        {title}
+      </h1>
+      {children}
     </div>
   );
 }
@@ -512,22 +538,22 @@ function VendorChoice({
       type="button"
       onClick={onPick}
       className={cn(
-        "flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-colors",
-        suggested ? "border-primary bg-primary/5" : "bg-card hover:border-foreground/20"
+        "flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-colors",
+        suggested ? "border-foreground/40 bg-secondary/40" : "hover:border-foreground/20 hover:bg-secondary/30"
       )}
     >
       <AppLogo logo={vendor.logo} name={vendor.label} size="lg" />
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
-          <span className="text-base font-semibold">{vendor.label}</span>
+          <span className="text-lg font-semibold">{vendor.label}</span>
           {suggested && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
               Probably you
             </span>
           )}
         </span>
         <span className="mt-0.5 block text-sm text-muted-foreground">{vendor.examples}</span>
-        {reason && <span className="mt-1.5 block text-xs text-muted-foreground">{reason}</span>}
+        {reason && <span className="mt-2 block text-xs leading-relaxed text-muted-foreground">{reason}</span>}
       </span>
       <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
     </button>
@@ -536,7 +562,7 @@ function VendorChoice({
 
 function StepDots({ total, current }: { total: number; current: number }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
       <span className="font-medium">
         Step {Math.min(current + 1, total)} of {total}
       </span>
@@ -546,7 +572,7 @@ function StepDots({ total, current }: { total: number; current: number }) {
             key={i}
             className={cn(
               "h-1.5 rounded-full transition-all",
-              i < current ? "w-5 bg-primary/40" : i === current ? "w-5 bg-primary" : "w-1.5 bg-border"
+              i < current ? "w-5 bg-foreground/30" : i === current ? "w-5 bg-foreground" : "w-1.5 bg-border"
             )}
           />
         ))}
@@ -555,16 +581,8 @@ function StepDots({ total, current }: { total: number; current: number }) {
   );
 }
 
-function AppLogo({
-  logo,
-  name,
-  size = "sm",
-}: {
-  logo: string;
-  name: string;
-  size?: "sm" | "lg";
-}) {
-  const box = size === "lg" ? "size-10" : "size-7";
+function AppLogo({ logo, name, size = "sm" }: { logo: string; name: string; size?: "sm" | "lg" }) {
+  const box = size === "lg" ? "size-8" : "size-7";
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
