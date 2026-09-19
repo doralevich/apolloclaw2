@@ -119,12 +119,21 @@ export function StartHereView() {
             product should not still be advertised from its front page. The PER-PERSON setting is
             deliberately not consulted here - hiding a rail row is a tidying preference, and it
             must not quietly delete the route somebody was pointed at. */}
+        {/* The guided flow, not the catalogue. This said "Connect an app" and led to Connections,
+            which is eighty apps and no opinion about which of them matters - and the three that
+            decide whether an agent can do anything at all were somewhere in the middle of it.
+            /dashboard/connect asks the one question instead. It is also where the build screen
+            now hands people, so the tile is how somebody who skipped it gets back.
+
+            Still gated on the Connections switch: the flow's escape hatches and its closing
+            screen all lead there, so a product with that section taken out should not advertise
+            the front door to it either. */}
         {!hiddenForEveryone("/dashboard/integrations") && (
           <LauncherTile
-            href="/dashboard/integrations"
+            href="/dashboard/connect"
             icon={Blocks}
-            title="Connect an app"
-            desc="Give me access to your mail, calendar, or files so I can work in them for you."
+            title="Connect your email"
+            desc="Let me into your mail, calendar and files. Two minutes, and it's what turns me from advice into help."
           />
         )}
         {/* Points at the new My Schedule tab rather than the checklist it used to open. */}

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
+import { POST_BUILD_LANDING } from "@/lib/routes";
 import type { MergedAgent } from "@/lib/types";
 
 // Post-submit screen for the paid onboarding flow: polls the workspace's agent list
@@ -82,8 +83,11 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             setPhase("ready");
             // Only the logged-in flow can be walked into the dashboard. A license buyer has
             // no session yet, so they stay here and read the closing instructions.
+            //
+            // Into the connect flow rather than Home: a freshly built agent cannot see an inbox,
+            // a calendar or a file, and this is the one moment somebody is certainly watching.
             if (!viaSession) {
-              setTimeout(() => { if (!cancelled) window.location.assign("/dashboard/start-here"); }, 1800);
+              setTimeout(() => { if (!cancelled) window.location.assign(POST_BUILD_LANDING); }, 1800);
             }
             return;
           }
@@ -133,7 +137,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
       const { error } = await createClient().auth.signInWithPassword({ email: body.email, password: pw });
       // The password IS set at this point, so a sign-in hiccup is not a failure of the thing
       // they just did — /login will now accept exactly what they typed.
-      window.location.assign(error ? "/login" : "/dashboard/start-here");
+      window.location.assign(error ? "/login" : POST_BUILD_LANDING);
     } catch {
       setPwErr("Could not set your password. Please try again.");
     } finally {
