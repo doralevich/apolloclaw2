@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import OnboardingForm from "@/components/onboard/OnboardingForm";
-import { DemoResult, type DemoPreview } from "@/components/demo/DemoResult";
+import { DemoResult, type DemoPreview } from "@/components/davidtest/DemoResult";
 import { apiFetch } from "@/lib/api";
 
 // Runs the real questionnaire in demo mode, then swaps to the result.

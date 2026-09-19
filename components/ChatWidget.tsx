@@ -1,26 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useDonnaChat } from "@/components/donna/useDonnaChat";
 
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
+// Donna in a bubble, bottom right of every marketing page.
+//
+// The conversation is not hers any more — it is useDonnaChat, which she now shares with the full
+// page at /demo. What is left here is the chrome: the button, the panel, the open/closed
+// animation and the hero handoff, none of which /demo has any use for.
+//
+// `token` is CHAT_API_TOKEN, read in the root layout and handed down. See the note on post() in
+// the hook for why it travels this way rather than sitting in the source.
 
-export default function ChatWidget() {
+export default function ChatWidget({ token }: { token: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hi, I'm Donna, Chief Operating Officer for David Oralevich and Apollo[Claw]. How can I help you today?",
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadName, setLeadName] = useState("");
-  const [leadEmail, setLeadEmail] = useState("");
-  const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const { messages, input, setInput, isLoading, send, startWith, lead } = useDonnaChat(token);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,40 +24,20 @@ export default function ChatWidget() {
     }
   }, [isOpen]);
 
+  // The home page hero is a text field that looks like this one. Typing in it fires this event,
+  // the panel opens, and the message is already sent by the time it finishes opening.
   useEffect(() => {
     const handler = (e: Event) => {
       const msg = (e as CustomEvent).detail?.message as string;
       if (!msg) return;
       setIsOpen(true);
-      // Small delay to let the widget open, then send the message
-      setTimeout(() => {
-        const userMessage: Message = { role: "user", content: msg };
-        const newMessages = [
-          { role: "assistant" as const, content: "Hi, I'm Donna, Chief Operating Officer for David Oralevich and Apollo[Claw]. How can I help you today?" },
-          userMessage
-        ];
-        setMessages(newMessages);
-        setIsLoading(true);
-        fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: newMessages.map(m => ({ role: m.role, content: m.content })), _token: "1bee30fc92372432f05e66cfc1b3b536eac147e0da2fd06575e7c7fb777d1bab", _hp: "" }),
-        })
-          .then(r => r.json())
-          .then(data => {
-            const rawMsg = (data.message || "") as string;
-            const hasCapture = rawMsg.includes("##CAPTURE_LEAD##");
-            const cleanMsg = rawMsg.replace(/\n?##CAPTURE_LEAD##/g, "").trim();
-            setMessages([...newMessages, { role: "assistant", content: cleanMsg }]);
-            if (hasCapture && !leadSubmitted) setTimeout(() => setShowLeadForm(true), 3500);
-          })
-          .catch(() => setMessages([...newMessages, { role: "assistant", content: "Something went wrong. Please try again." }]))
-          .finally(() => setIsLoading(false));
-      }, 300);
+      // Sent a beat late so the panel is on screen when her answer lands in it, rather than the
+      // whole exchange happening behind a closed bubble.
+      setTimeout(() => startWith(msg), 300);
     };
     window.addEventListener("hero-chat-open", handler);
     return () => window.removeEventListener("hero-chat-open", handler);
-  }, [leadSubmitted]);
+  }, [startWith]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -71,104 +45,10 @@ export default function ChatWidget() {
     }
   }, [messages, isLoading]);
 
-  const sendMessage = async () => {
-    const text = input.trim();
-    if (!text || isLoading) return;
-
-    const userMessage: Message = { role: "user", content: text };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
-          _token: "1bee30fc92372432f05e66cfc1b3b536eac147e0da2fd06575e7c7fb777d1bab",
-          _hp: "",
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.message) {
-        const rawMsg = data.message as string;
-        const hasCapture = rawMsg.includes("##CAPTURE_LEAD##");
-        const cleanMsg = rawMsg.replace(/\n?##CAPTURE_LEAD##/g, "").trim();
-        setMessages([...newMessages, { role: "assistant", content: cleanMsg }]);
-        if (hasCapture && !leadSubmitted) setTimeout(() => setShowLeadForm(true), 3500);
-      } else {
-        setMessages([
-          ...newMessages,
-          {
-            role: "assistant",
-            content:
-              data.error ||
-              "Something went wrong. Try reaching us at david@apolloclaw.ai",
-          },
-        ]);
-      }
-    } catch {
-      setMessages([
-        ...newMessages,
-        {
-          role: "assistant",
-          content: "Connection error. Please try again or email david@apolloclaw.ai",
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const validateLead = (name: string, email: string): string | null => {
-    const fakeName = /^(test|fake|john doe|jane doe|asdf|foo|bar|abc|xxx|user|anon|anonymous|na|n\/a)$/i;
-    const fakeEmail = /^(test|fake|no|none|nope|asdf|foo|bar|abc|xxx|user|admin|info|hello)@(test|fake|example|mailinator|guerrillamail|yopmail|tempmail|throwaway)\.(com|net|org|io)/i;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    
-    if (!name.trim() || name.trim().length < 2) return "Mind sharing your real name? Even just a first name works.";
-    if (fakeName.test(name.trim())) return "Ha, we appreciate the creativity, but a real name helps us follow up properly.";
-    if (!email.trim() || !emailRegex.test(email.trim())) return "That email doesn't look quite right. Want to double-check it?";
-    if (fakeEmail.test(email.trim())) return "That looks like a temporary email. We promise we promise we won\'t spam you. Can you share your real one?";
-    return null;
-  };
-
-  const [leadError, setLeadError] = useState("");
-
-  const submitLead = async () => {
-    const error = validateLead(leadName, leadEmail);
-    if (error) { setLeadError(error); return; }
-    setLeadError("");
-    setShowLeadForm(false);
-    setLeadSubmitted(true);
-    const leadMsg = `[LEAD: ${leadName.trim()}, ${leadEmail.trim()}]`;
-    const newMessages: Message[] = [...messages, { role: "user", content: leadMsg }];
-    // Send to API - bot will acknowledge and continue with 2 more answers + Calendly
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
-      });
-      const data = await res.json();
-      const rawMsg = (data.message || "") as string;
-      const cleanMsg = rawMsg.replace(/\n?##CAPTURE_LEAD##/g, "").trim();
-      setMessages([...messages, { role: "user", content: `My name is ${leadName.trim()} and my email is ${leadEmail.trim()}` }, { role: "assistant", content: cleanMsg }]);
-    } catch {
-      setMessages([...messages, { role: "assistant", content: `Thanks ${leadName.trim()}! Got your info. What else can I help you with?` }]);
-    } finally {
-      setIsLoading(false);
+      send();
     }
   };
 
@@ -345,7 +225,7 @@ export default function ChatWidget() {
         </div>
 
         {/* Lead Capture Form */}
-        {showLeadForm && !leadSubmitted && (
+        {lead.show && (
           <div style={{
             margin: "8px 12px",
             padding: "14px 16px",
@@ -360,26 +240,26 @@ export default function ChatWidget() {
             <input
               type="text"
               placeholder="Your name"
-              value={leadName}
-              onChange={e => setLeadName(e.target.value)}
+              value={lead.name}
+              onChange={e => lead.setName(e.target.value)}
               style={{ width: "100%", boxSizing: "border-box", marginBottom: "8px", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "8px 10px", fontSize: "13px", fontFamily: "Inter, sans-serif", outline: "none" }}
             />
             <input
               type="email"
               placeholder="Your email"
-              value={leadEmail}
-              onChange={e => setLeadEmail(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && submitLead()}
+              value={lead.email}
+              onChange={e => lead.setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && lead.submit()}
               style={{ width: "100%", boxSizing: "border-box", marginBottom: "10px", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "8px 10px", fontSize: "13px", fontFamily: "Inter, sans-serif", outline: "none" }}
             />
-            {leadError && (
-              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#E8342A", fontFamily: "Inter, sans-serif" }}>{leadError}</p>
+            {lead.error && (
+              <p style={{ margin: "0 0 8px", fontSize: "12px", color: "#E8342A", fontFamily: "Inter, sans-serif" }}>{lead.error}</p>
             )}
             <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={submitLead} style={{ flex: 1, backgroundColor: "#E8342A", color: "#fff", border: "none", borderRadius: "6px", padding: "9px", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+              <button onClick={lead.submit} style={{ flex: 1, backgroundColor: "#E8342A", color: "#fff", border: "none", borderRadius: "6px", padding: "9px", fontSize: "13px", fontWeight: 700, cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
                 Submit
               </button>
-              <button onClick={() => setShowLeadForm(false)} style={{ backgroundColor: "transparent", color: "#999", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "9px 14px", fontSize: "12px", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
+              <button onClick={lead.dismiss} style={{ backgroundColor: "transparent", color: "#999", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "9px 14px", fontSize: "12px", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>
                 Skip
               </button>
             </div>
@@ -418,7 +298,7 @@ export default function ChatWidget() {
             }}
           />
           <button
-            onClick={sendMessage}
+            onClick={send}
             disabled={isLoading || !input.trim()}
             aria-label="Send message"
             style={{

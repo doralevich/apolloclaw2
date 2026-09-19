@@ -295,7 +295,10 @@ export default function RootLayout({
           gtag('config', '${GA_MEASUREMENT_ID}');
         `}</Script>
         <PageViewTracker />
-        <RootShell>{children}</RootShell>
+        {/* CHAT_API_TOKEN travels from here to Donna, in both places she renders. Read in one
+            spot so the value the browser sends and the value app/api/chat/route.ts checks are
+            the same variable and cannot drift; unset, both sides go quiet together. */}
+        <RootShell chatToken={process.env.CHAT_API_TOKEN ?? ""}>{children}</RootShell>
         {/* Outside RootShell so it also shows on the dashboard/login surfaces, which render
             bare children but still load the analytics script from this layout. */}
         <CookieConsent />

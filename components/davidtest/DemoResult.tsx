@@ -159,13 +159,13 @@ export function DemoResult({ preview, typeLabel }: { preview: DemoPreview; typeL
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 36 }}>
           <Link
-            href={`/demo/${preview.type.id}`}
+            href={`/davidtest/purchase/${preview.type.id}`}
             style={{ padding: "11px 22px", borderRadius: 6, background: brand.color, color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}
           >
             Walk it again
           </Link>
           <Link
-            href="/demo"
+            href="/davidtest/purchase"
             style={{ padding: "11px 22px", borderRadius: 6, background: "#fff", border: `1px solid ${BDR}`, color: TXD, fontSize: 13, fontWeight: 700, textDecoration: "none" }}
           >
             Pick another agent

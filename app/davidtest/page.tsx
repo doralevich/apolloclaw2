@@ -8,11 +8,11 @@ export const metadata = { title: "davidtest" };
 
 const CARDS = [
   {
-    href: "/demo",
+    href: "/davidtest/purchase",
     kicker: "Before the agent exists",
     title: "The purchase journey",
-    body: "Pick any agent, answer its real questionnaire, and see the USER.md, AGENTS.md and TOOLS.md it would generate. No payment, no provisioning. This is /demo, unchanged.",
-    cta: "Open /demo",
+    body: "Pick any agent, answer its real questionnaire, and see the USER.md, AGENTS.md and TOOLS.md it would generate. No payment, no provisioning. This lived at /demo until /demo became Donna's chat; the screens are unchanged.",
+    cta: "Walk it",
   },
   {
     href: "/davidtest/connect?vendor=google&conns=none",
