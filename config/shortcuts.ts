@@ -19,12 +19,26 @@
 // to compose their own first prompt is back where they started. Where a name or company would
 // make it land better, `{agent}` and `{company}` are substituted at render time.
 
+/**
+ * What an ask cannot be done without, as a CAPABILITY rather than an app: Gmail and Outlook both
+ * satisfy "mail", so naming the app here would make this disagree with the connect flow the first
+ * time a customer picked the other vendor.
+ *
+ * Deliberately sparse. Only the asks that are literally impossible carry one - "Go through my
+ * inbox" with no mail connected is nothing at all, while "Who owes us money" can still be answered
+ * from what the owner tells the agent. Over-tagging would hide useful asks from people who could
+ * run them today, which is the opposite of the point.
+ */
+export type ShortcutNeeds = "mail" | "calendar";
+
 export interface Shortcut {
   id: string;
   /** The line the customer sends. Substituted and copyable. */
   prompt: string;
   /** What it does, in one line. Written to answer "why would I ask that?" */
   detail: string;
+  /** See ShortcutNeeds. Absent means it works with nothing connected. */
+  needs?: ShortcutNeeds;
 }
 
 export interface ShortcutGroup {
@@ -50,6 +64,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
         id: "triage",
         prompt: "Go through my inbox and tell me what actually needs me.",
         detail: "Separates the three that need you from the forty that don't. Needs email connected.",
+        needs: "mail",
       },
       {
         id: "one-thing",
@@ -60,6 +75,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
         id: "week-ahead",
         prompt: "What does the rest of my week look like?",
         detail: "Compresses five days into something you can read in ten seconds.",
+        needs: "calendar",
       },
     ],
   },
@@ -266,13 +282,15 @@ export interface ChatChip {
   label: string;
   prompt: string;
   /** Lucide icon name, resolved in ChatView. Kept as a string so this file stays free of JSX. */
-  icon: "mail" | "calendar" | "file" | "pen";
+  icon: "mail" | "calendar" | "file" | "pen" | "money" | "people" | "search";
+  /** Carried through from the Shortcut so the chip row can hide what cannot run yet. */
+  needs?: ShortcutNeeds;
 }
 
 const CHAT_CHIP_LABELS: Array<[string, string, ChatChip["icon"]]> = [
   ["triage", "Summarize my emails", "mail"],
   ["week-ahead", "What's on my calendar?", "calendar"],
-  ["summarise", "Find recent documents", "file"],
+  ["summarise", "Summarize a document", "file"],
   ["reply", "Draft a response", "pen"],
 ];
 
@@ -280,8 +298,14 @@ export const CHAT_CHIPS: ChatChip[] = CHAT_CHIP_LABELS.map(([id, label, icon]) =
   const found = SHORTCUT_GROUPS.flatMap((g) => g.shortcuts).find((s) => s.id === id);
   // Same reasoning as FIRST_MOVES: throwing at import beats a chat page with a blank chip on it.
   if (!found) throw new Error(`CHAT_CHIP_LABELS names a shortcut that doesn't exist: ${id}`);
-  return { id, label, prompt: found.prompt, icon };
+  return { id, label, prompt: found.prompt, icon, needs: found.needs };
 });
+
+/** Every ask in the catalogue, by id. config/chat-opening.ts builds a customer's own chip row
+ *  from this, so a prompt improved above improves there too. */
+export const SHORTCUTS_BY_ID: Map<string, Shortcut> = new Map(
+  SHORTCUT_GROUPS.flatMap((g) => g.shortcuts).map((s) => [s.id, s])
+);
 
 /** Swap `{agent}` and `{company}` for the real thing. Falls back to wording that still reads
  *  as a sentence when we don't know the company — "your business" beats an empty gap. */

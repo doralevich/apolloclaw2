@@ -2,11 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, FileText, Loader2, Mail, PenLine } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Mail, PenLine, Receipt, Search, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
+import { CHIP_ROW_SIZE, chipIsUsable, type Opener } from "@/config/chat-opening";
+import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
+import type { ChatChip } from "@/config/shortcuts";
+import type { IntegrationConnection, IntegrationConnectionsResult } from "@/lib/types";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -24,7 +28,15 @@ import { useChatAttachments } from "./useChatAttachments";
 // wording isn't under our control, so match the family of phrasings rather than one string.
 // A false positive still shows a helpful card with the real path to fixing most outages.
 // Chip id -> icon. Lives here rather than in config/shortcuts so that file stays JSX-free.
-const CHIP_ICONS = { mail: Mail, calendar: CalendarDays, file: FileText, pen: PenLine } as const;
+const CHIP_ICONS = {
+  mail: Mail,
+  calendar: CalendarDays,
+  file: FileText,
+  pen: PenLine,
+  money: Receipt,
+  people: Users,
+  search: Search,
+} as const;
 
 function isOutOfCreditsError(message: string): boolean {
   return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
@@ -104,6 +116,61 @@ export function ChatView({
   // forever (config/greetings.ts). Chosen in an effect and not during render because the pick
   // is random: doing it inline would make the server and the browser disagree on the text.
   // Null until then, which is why the block below reserves its height.
+  // THE CUSTOMER'S OWN OPENING, loaded once per agent.
+  //
+  // Both halves come from their questionnaire (config/chat-opening.ts): the line the agent opens
+  // with, and the asks under the composer. Before this, the four chips were hardcoded identical
+  // for every customer on the platform while Home was promising, in the agent's voice, that it
+  // already knew their business.
+  //
+  // Connections are fetched alongside because the chips are the only place in the product that
+  // should hide an ask rather than let it fail: "Go through my inbox" with no mail connected is
+  // nothing at all. Everything without a `needs` stays, and the agent's own missing-connection
+  // rule handles the softer cases in the answer.
+  //
+  // Both default to what shipped before, so every failure here is invisible rather than an empty
+  // screen: no answers, a dead endpoint or a dead connections call all land on the generic four.
+  const [opener, setOpener] = useState<Opener | null>(null);
+  const [chipPool, setChipPool] = useState<ChatChip[]>(CHAT_CHIPS);
+  const [connected, setConnected] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ opener: Opener | null; chips: ChatChip[] }>(`/api/agents/${agentId}/opening`)
+      .then((res) => {
+        if (cancelled) return;
+        setOpener(res.opener);
+        if (res.chips.length) setChipPool(res.chips);
+      })
+      .catch(() => {
+        // The generic four are already in state. A chat screen that loads without its
+        // personalization is a worse screen; one that loads without chips is a broken one.
+      });
+    apiFetch<IntegrationConnectionsResult>(`/api/agents/${agentId}/integrations/connections`)
+      .then((res) => {
+        if (cancelled) return;
+        setConnected(
+          new Set(
+            res.connections
+              .filter((c: IntegrationConnection) => (c.status || "").toUpperCase() === "ACTIVE" && !c.isDisabled)
+              .map((c: IntegrationConnection) => (c.toolkitSlug || "").toLowerCase())
+              .filter(Boolean)
+          )
+        );
+      })
+      .catch(() => {
+        // Null means "we could not tell", which is deliberately different from an empty set: an
+        // empty set would hide the mail and calendar asks from somebody who has them connected.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId]);
+
+  // Null connections means the check failed, so show everything rather than hide what might work.
+  const chips = (
+    connected ? chipPool.filter((c) => chipIsUsable(c, connected)) : chipPool
+  ).slice(0, CHIP_ROW_SIZE);
+
   const [greeting, setGreeting] = useState<Greeting | null>(null);
   useEffect(() => {
     if (!showWelcome) return;
@@ -166,7 +233,35 @@ export function ChatView({
                         the violet pass and it went with it. Weight carries the line instead. */}
                     {greeting.headline}
                   </h1>
-                  <p className="text-lg text-foreground/75">{greeting.subline}</p>
+                  {/*
+                    THE AGENT SPEAKS FIRST when it has something of theirs to say.
+
+                    `greeting.subline` is a generic invitation, deliberately written to be true of
+                    any workspace. When the questionnaire gave us something better, this quotes
+                    the owner back to themselves instead - their own words about the work they
+                    most want gone - and clicking it opens that conversation.
+
+                    A button, not a paragraph: the whole point is that it is one tap from being
+                    read to being started. It fills the composer rather than sending, the same as
+                    the chips below, because the first message is worth a glance before it goes.
+                  */}
+                  {opener ? (
+                    <button
+                      type="button"
+                      onClick={() => setPicked((p) => ({ text: opener.prompt, n: (p?.n ?? 0) + 1 }))}
+                      // No standing underline: across two wrapped lines it reads as a broken
+                      // hyperlink rather than as the agent talking. The arrow carries the
+                      // affordance at rest and the underline arrives on hover.
+                      className="group max-w-xl text-lg text-foreground/75 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                    >
+                      {opener.text}
+                      <span aria-hidden="true" className="ml-1.5 inline-block transition-transform group-hover:translate-x-0.5">
+                        &rarr;
+                      </span>
+                    </button>
+                  ) : (
+                    <p className="text-lg text-foreground/75">{greeting.subline}</p>
+                  )}
                 </>
               )}
             </div>
@@ -225,7 +320,7 @@ export function ChatView({
               than sending: several want a name or a document swapped in first, and firing one off
               unedited produces exactly the weak first answer this is meant to prevent. */}
           <div className="flex flex-wrap items-center justify-center gap-2">
-            {CHAT_CHIPS.map((chip) => {
+            {chips.map((chip) => {
               const Icon = CHIP_ICONS[chip.icon];
               return (
                 <button
