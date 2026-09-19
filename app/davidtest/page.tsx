@@ -18,7 +18,7 @@ const CARDS = [
     href: "/davidtest/connect?vendor=google&conns=none",
     kicker: "First screen after the build",
     title: "The connect flow",
-    body: "Where a new owner lands off the build screen. Pressing Connect flips the connection on instead of opening a consent tab, and the real component's own polling finds it and moves on, so the pacing is the real pacing.",
+    body: "Where a new owner lands off the build screen: email, calendar, files, then which chat app you want to reach it in. Pressing Connect flips the connection on instead of opening a consent tab, and the real component's own polling finds it and moves on, so the pacing is the real pacing. The channel step walks too - a token of any shape is accepted, and tapping through to the bot stands in for messaging it.",
     cta: "Walk it",
   },
   {
@@ -88,10 +88,11 @@ export default function DavidTestPage() {
       <div className="mt-10 rounded-xl border bg-secondary/30 p-5 text-sm leading-relaxed text-muted-foreground">
         <p className="font-medium text-foreground">What this does not cover</p>
         <p className="mt-2">
-          Sending a message in chat, which needs a live agent. The channel setup, which is a
-          credential pasted from BotFather or Slack and cannot be faked usefully. And the OAuth
-          handshake itself, which is the one thing only a real Google or Microsoft account can
-          prove.
+          Sending a message in chat, which needs a live agent. The OAuth handshake itself, which
+          is the one thing only a real Google or Microsoft account can prove. And the two halves
+          of channel setup that happen in somebody else&apos;s app: whether BotFather really gave
+          you that token, and whether Slack really accepted the Request URL. The screens around
+          them are real; the credential is not.
         </p>
       </div>
     </main>
