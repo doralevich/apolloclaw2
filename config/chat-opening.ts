@@ -112,6 +112,54 @@ const AREA_ASKS: Record<string, string[]> = {
 };
 
 /**
+ * What to offer someone who said they want the agent to own this.
+ *
+ * THIS IS THE LIVE SIGNAL AND AREA_ASKS ABOVE IS NOT. `brokenAreas` came from the "Operations &
+ * Pain Points" page, which was removed at David's call - its fields stay in the payload as empty
+ * defaults, so nothing has written a broken area since. Of the four intakes in production when
+ * this was written, one had `brokenAreas` (from before the removal) and three had `aiGoals`.
+ * Keying the chips on the dead field meant every new customer got the generic row, which is the
+ * thing this file exists to stop.
+ *
+ * AREA_ASKS is kept rather than deleted because those records still exist and still deserve their
+ * own screen. It is read first, then this.
+ *
+ * Keys are the exact strings AI_GOALS stores (components/onboard/OnboardingForm.tsx).
+ */
+const GOAL_ASKS: Record<string, string[]> = {
+  "Inbox & email management": ["triage", "reply"],
+  "Lead qualification & follow-up": ["gone-quiet", "followup"],
+  "Customer support / chat": ["reply", "say-no"],
+  "Appointment scheduling": ["week-ahead", "brief-me"],
+  "Proposals & quotes": ["quote", "proposal-followup"],
+  "Content & social media": ["post"],
+  "Research & competitive intel": ["competitor", "supplier"],
+  "CRM data entry & updates": ["brief-me", "gone-quiet"],
+  "Invoicing & billing": ["who-owes", "chase"],
+  "Internal workflow automation": ["remind", "watch"],
+};
+
+/**
+ * A ROLE agent's goals are not from that list at all.
+ *
+ * Role flows write `aiGoals: roleOwns` - the deep-dive's own "what should it own" answer, in that
+ * role's vocabulary. A legal agent in production holds "Client or internal intake", "Research
+ * memos" and "Document organisation and filing", none of which GOAL_ASKS knows.
+ *
+ * So: a small keyword pass, and deliberately a small one. Every word here maps to an ask that is
+ * right whenever the word appears at all, because the failure mode of a longer list is a
+ * confidently wrong chip, which is worse than the generic one it replaced.
+ */
+const GOAL_KEYWORDS: Array<[RegExp, string[]]> = [
+  [/\bintake\b/i, ["followup", "reply"]],
+  [/\bdocument|\bfiling\b/i, ["summarise", "extract"]],
+  [/\bmemo|\bresearch\b/i, ["competitor", "summarise"]],
+  [/\bschedul/i, ["week-ahead", "brief-me"]],
+  [/\binvoic|\bbilling\b/i, ["who-owes", "chase"]],
+  [/\bproposal|\bquote/i, ["quote", "proposal-followup"]],
+];
+
+/**
  * ASSERTED AT IMPORT, because the failure mode here is silent.
  *
  * An id in the tables above that has no face or no catalogue entry does not throw and does not
@@ -123,17 +171,21 @@ const AREA_ASKS: Record<string, string[]> = {
  * The same reasoning as the slug check in config/integration-rail.ts: a table that can only be
  * wrong in a way nobody sees has to be checked by the build instead.
  */
-for (const [area, asks] of Object.entries(AREA_ASKS)) {
+for (const [area, asks] of [
+  ...Object.entries(AREA_ASKS),
+  ...Object.entries(GOAL_ASKS),
+  ...GOAL_KEYWORDS.map(([re, asks]) => [String(re), asks] as [string, string[]]),
+]) {
   for (const id of asks) {
     if (!SHORTCUTS_BY_ID.has(id)) {
       throw new Error(
-        `chat-opening: AREA_ASKS["${area}"] names "${id}", which is not in the catalogue in ` +
+        `chat-opening: the asks for "${area}" name "${id}", which is not in the catalogue in ` +
           `config/shortcuts.ts. Fix the id, or add the ask.`
       );
     }
     if (!CHIP_FACE[id]) {
       throw new Error(
-        `chat-opening: AREA_ASKS["${area}"] names "${id}", which has no entry in CHIP_FACE, so it ` +
+        `chat-opening: the asks for "${area}" name "${id}", which has no entry in CHIP_FACE, so it ` +
           `would be dropped silently and that area would fall back to the generic asks. Give it a ` +
           `label and an icon.`
       );
@@ -177,8 +229,22 @@ function answerText(answers: Record<string, unknown> | null, key: string): strin
  */
 export function buildChips(answers: Record<string, unknown> | null): ChatChip[] {
   const ids: string[] = [];
+  // Legacy first: the handful of records written before the Operations & Pain Points page came
+  // off still carry real answers and should get the screen they earned.
   for (const area of answerList(answers, "brokenAreas")) {
     for (const id of AREA_ASKS[area] ?? []) ids.push(id);
+  }
+  // Then the live one. Exact match for the generic flow's AI_GOALS, then the keyword pass for a
+  // role agent, whose goals are written in that role's own vocabulary.
+  for (const goal of answerList(answers, "aiGoals")) {
+    const exact = GOAL_ASKS[goal];
+    if (exact) {
+      ids.push(...exact);
+      continue;
+    }
+    for (const [pattern, asks] of GOAL_KEYWORDS) {
+      if (pattern.test(goal)) ids.push(...asks);
+    }
   }
   ids.push(...GENERIC_ASKS);
 
@@ -240,11 +306,24 @@ export function buildOpener(answers: Record<string, unknown> | null): Opener | n
     };
   }
 
+  // Legacy, and rare: nothing has written a broken area since the Operations & Pain Points page
+  // came off. Read first anyway, because the records that have one said it outright.
   const [area] = answerList(answers, "brokenAreas");
   if (area) {
     const lower = area.toLowerCase();
     return {
       text: `You said ${lower} is where it hurts. Want to start there?`,
+      prompt: `Let's start with ${lower}. Ask me whatever you need to know to take it off my plate.`,
+    };
+  }
+
+  // The live one. "What do you want it to own" is a weaker claim than "what do you hate", so the
+  // line is weaker too: it says you asked for this, not that it is the worst part of your week.
+  const [goal] = answerList(answers, "aiGoals");
+  if (goal) {
+    const lower = goal.toLowerCase();
+    return {
+      text: `You asked me to take on ${lower}. Want to start there?`,
       prompt: `Let's start with ${lower}. Ask me whatever you need to know to take it off my plate.`,
     };
   }
