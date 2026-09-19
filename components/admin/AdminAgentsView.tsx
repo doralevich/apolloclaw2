@@ -208,6 +208,7 @@ export function AdminAgentsView() {
         profile: boolean;
         files: string[];
         clock: boolean;
+        note?: string;
       }>(`/api/admin/agents/${agent.agent37_id}/set-timezone`, {
         method: "POST",
         body: JSON.stringify({ timezone }),
@@ -216,8 +217,14 @@ export function AdminAgentsView() {
         // The clock is the part that has never worked, so it is named explicitly either way
         // rather than folded into a generic success - "set" on its own would hide a box whose
         // filesystem we could not write to.
+        //
+        // AND IT SAYS WHY, from the box rather than from here. This used to read "Clock not set
+        // (no write access on the box)" - a hardcoded guess, written before anything measured it,
+        // and printed identically whatever the real reason was. The route now returns the
+        // diagnostic in `note`; a guess that cannot be wrong on screen is a guess nobody can
+        // correct.
         toast.success(
-          `Timezone set: ${r.timezone}. ${r.clock ? "Clock set." : "Clock not set (no write access on the box)."}` +
+          `Timezone set: ${r.timezone}. ${r.clock ? "Clock set." : `Clock not set: ${r.note ?? "no reason reported"}`}` +
             ` ${r.files.length} file${r.files.length === 1 ? "" : "s"} updated. Instance restarting.`
         );
       } else {

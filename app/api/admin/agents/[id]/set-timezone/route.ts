@@ -104,7 +104,26 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // set — which is the half of this that the agent cannot read but every timestamp depends on.
   const defaults = await applyInstanceDefaults(id, { timezone, restart: true });
 
-  const result = { timezone, bestTime, profile, pointer, files, clock: defaults.timezone };
+  // `note` CARRIES THE CLOCK DIAGNOSTIC, and dropping it is why nobody has ever seen one.
+  //
+  // applyInstanceDefaults builds seven read-only facts about the box when the clock step fails -
+  // who we are, whether /etc is writable, whether passwordless sudo exists, whether the zoneinfo
+  // file is there, what TZ the process carries, where /etc/localtime points, what date reports -
+  // precisely so a fix can be chosen instead of guessed. It hands them back in `note`.
+  //
+  // This line used to list the fields one by one, and `note` was not among them. So the facts
+  // were computed on the box, returned to this route, and discarded here: the audit log recorded
+  // `clock: false` and nothing else, and the browser was handed a result with no reason in it.
+  // Running the diagnostic and finding no trace of it afterwards is not a mystery, it is this.
+  const result = {
+    timezone,
+    bestTime,
+    profile,
+    pointer,
+    files,
+    clock: defaults.timezone,
+    ...(defaults.note ? { note: defaults.note } : {}),
+  };
   await logAudit({
     actorEmail: user.email,
     action: "agent.timezone_set",
