@@ -17,11 +17,29 @@ const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard', '/build', '/white-
 // Dashboard surfaces render their own chrome — no marketing nav/footer/chat.
 const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite', '/admin'];
 
+// Marketing pages that keep the nav and footer but NOT the floating chat bubble.
+//
+// One entry, and it is the page that IS the chat: /demo renders Donna full size from the same
+// hook the bubble uses, so the bubble there would be a second Donna in the corner, holding a
+// second conversation, one message behind the one the visitor is having. The nav and footer stay
+// — the visit ends either with her booking the call or with them going to read something.
+const NO_CHAT_ROUTES = ['/demo'];
+
 const matches = (pathname: string, routes: string[]) =>
   routes.some((r) => pathname === r || pathname.startsWith(r + '/'));
 
-export default function RootShell({ children }: { children: React.ReactNode }) {
+export default function RootShell({
+  children,
+  chatToken,
+}: {
+  children: React.ReactNode;
+  // CHAT_API_TOKEN, read in app/layout.tsx. It reaches the browser either way — it is in the
+  // page the moment it renders — but it is no longer written into the repository, and the one
+  // variable now feeds both the client that sends it and the route that checks it.
+  chatToken: string;
+}) {
   const pathname = usePathname();
+  const showChat = !matches(pathname, NO_CHAT_ROUTES);
 
   // Dashboard/login/auth/invite: bare. The dashboard's own layout supplies chrome.
   if (matches(pathname, DASHBOARD_ROUTES)) {
@@ -33,7 +51,7 @@ export default function RootShell({ children }: { children: React.ReactNode }) {
     return (
       <>
         {children}
-        <ChatWidget />
+        {showChat && <ChatWidget token={chatToken} />}
       </>
     );
   }
@@ -51,7 +69,7 @@ export default function RootShell({ children }: { children: React.ReactNode }) {
       {/* Standing discovery-call + newsletter bands, identical on every marketing page. */}
       <PreFooter />
       <Footer />
-      <ChatWidget />
+      {showChat && <ChatWidget token={chatToken} />}
     </>
   );
 }

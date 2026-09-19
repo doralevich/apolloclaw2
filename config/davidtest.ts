@@ -1,10 +1,10 @@
 // The scenarios /davidtest can put the product into.
 //
-// WHY THIS EXISTS. /demo walks the purchase journey - pick an agent, answer the questionnaire,
-// see the files it would generate - and stops at the moment the agent is built. Everything after
-// that moment could only be seen by buying a licence, paying, provisioning a real VPS and
-// connecting a real Google account. So the screens a new owner actually meets first were the
-// hardest ones in the product to look at.
+// WHY THIS EXISTS. /davidtest/purchase walks the purchase journey - pick an agent, answer the
+// questionnaire, see the files it would generate - and stops at the moment the agent is built.
+// Everything after that moment could only be seen by buying a licence, paying, provisioning a
+// real VPS and connecting a real Google account. So the screens a new owner actually meets first
+// were the hardest ones in the product to look at.
 //
 // This is the other half: the post-build screens, rendered from the REAL components against
 // fabricated API answers. Not a mockup of them - the actual ConnectFlow and ChatView, wired to a

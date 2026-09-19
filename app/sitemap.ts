@@ -56,6 +56,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Both of these are public, indexable pages that were simply never added here.
     { path: "/create-an-agent", priority: 0.8 },
     { path: "/blog/ai-assistant-for-ceo", priority: 0.6 },
+    // Donna, full size. High, because it is the page the whole site is trying to get somebody
+    // to: every other page argues that the agents work and this one lets them find out.
+    { path: "/demo", priority: 0.9 },
   ].map(({ path, priority }) => ({
     url: `https://apolloclaw.ai${path}`,
     lastModified: new Date(),
