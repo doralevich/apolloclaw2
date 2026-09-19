@@ -1,4 +1,5 @@
 import { composioLogoUrl, DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
+import type { ChannelId } from "@/lib/types";
 
 // The guided connect flow: the three connections that decide whether a new agent can do anything,
 // asked one at a time, in the order a person would think of them.
@@ -182,6 +183,31 @@ export const VENDOR_LIST: Vendor[] = [VENDORS.google, VENDORS.microsoft];
 export const CONNECT_FLOW_SLUGS: string[] = Array.from(
   new Set(VENDOR_LIST.flatMap((v) => v.steps.map((s) => s.slug.toLowerCase())))
 );
+
+// ── The channel step ───────────────────────────────────────────────────────────────────────────
+//
+// WHERE IT SITS, and why it sits there. Last, after the apps, on a screen of its own.
+//
+// The app steps above are a click, a consent screen and a click back: fifteen seconds each, which
+// is what lets the flow say "everything after the one question is a button". A channel is not that.
+// Telegram is six steps of conversation with a robot in another app before a token exists to
+// paste; Slack is seven, one of which is pasting a URL back into Slack's own admin. Dropping a
+// five-minute errand between "connect your calendar" and "connect your files" is how somebody
+// stops before the files step, and the files step is the one that makes it useful on documents.
+//
+// It is also a different question in kind. The apps settle whether the agent can DO anything. The
+// channel settles WHERE you talk to it - and there is already an answer to that, the chat in this
+// dashboard, which works the moment the agent is built. So this is the one genuinely additive
+// step in the flow, and additive things go last, where skipping them costs nothing.
+//
+// WHY THESE TWO. David's call, and the numbers agree: every channel connected by anyone so far is
+// a Telegram one. WhatsApp is deliberately not offered here even though the Channels page carries
+// it - it is Meta's Cloud API, which wants a business app, a verification, and a phone number that
+// is not already on WhatsApp. That is not a first-run step, and putting the most recognizable logo
+// in front of the longest setup is how somebody's first ten minutes get spent on the wrong thing.
+
+/** The channels the guided flow offers, in the order it offers them. */
+export const FLOW_CHANNELS: ChannelId[] = ["telegram", "slack"];
 
 /** The mail app per vendor, lowercased. Used to recognize a vendor from what is already connected. */
 export const MAIL_SLUG: Record<VendorId, string> = {

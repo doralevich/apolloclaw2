@@ -17,6 +17,8 @@ import {
   type VendorGuess,
   type VendorId,
 } from "@/config/connect-flow";
+import { ChannelStep } from "@/components/connect/ChannelStep";
+import { AppLogo, joinPhrases, Page, StepDots } from "@/components/connect/ui";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { IntegrationConnection, IntegrationConnectionsResult } from "@/lib/types";
@@ -80,6 +82,9 @@ export function ConnectFlow() {
   /** Set while a consent tab is open for this slug: it is what turns the polling on. */
   const [waitingFor, setWaitingFor] = useState<string | null>(null);
   const [timedOut, setTimedOut] = useState(false);
+  /** The channel that ended up live, named, so the closing screen can read it back. Set by the
+   *  channel step when it hands over; null means skipped or never claimed. */
+  const [channelLive, setChannelLive] = useState<string | null>(null);
 
   const refresh = useCallback(async (): Promise<Set<string>> => {
     const res = await apiFetch<IntegrationConnectionsResult>(
@@ -118,6 +123,7 @@ export function ConnectFlow() {
         setIndex(known ? firstOpenStep(known, set) : 0);
         setWaitingFor(null);
         setTimedOut(false);
+        setChannelLive(null);
       })
       .catch(() => {
         // Connections failing to load is not a reason to hide the flow - the connect links still
@@ -286,6 +292,25 @@ export function ConnectFlow() {
     );
   }
 
+  // ── Where you want to reach it ──────────────────────────────────────────────────────────────
+  //
+  // One past the last app step. The apps are what the agent can reach; this is where it answers,
+  // and it is last because it is the only step here that costs more than a click. The reasoning
+  // is written out in config/connect-flow.ts next to FLOW_CHANNELS.
+  if (!step && index === steps.length) {
+    return (
+      <ChannelStep
+        agentId={agentId}
+        agentName={active.name}
+        eyebrow={<StepDots total={steps.length + 1} current={index} />}
+        onDone={(linkedChannel) => {
+          setChannelLive(linkedChannel);
+          setIndex((i) => i + 1);
+        }}
+      />
+    );
+  }
+
   // ── Closing screen ──────────────────────────────────────────────────────────────────────────
   if (!step) {
     const live = steps.filter((s) => connected.has(s.slug.toLowerCase()));
@@ -299,7 +324,9 @@ export function ConnectFlow() {
         // Not "You're all set" unconditionally: somebody who skipped every step would be told they
         // were finished with nothing connected, which is the one thing this page exists to prevent
         // being believed.
-        title={can.length > 0 ? "You're all set" : "Nothing connected yet"}
+        // A live channel counts: somebody who skipped every app but claimed a Telegram bot has
+        // set something up, and "Nothing connected yet" would be telling them otherwise.
+        title={can.length > 0 || channelLive ? "You're all set" : "Nothing connected yet"}
       >
         <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
           {can.length > 0 ? (
@@ -312,6 +339,13 @@ export function ConnectFlow() {
               No harm done, and nothing is broken. I can still think out loud with you, I just
               can&apos;t act in your inbox or calendar until one of these is in.
             </>
+          )}
+          {/* Said as a second sentence rather than folded into the list above, because it is a
+              different fact: that list is what I can reach, this is where you can find me. */}
+          {channelLive && (
+            <span className="block pt-3">
+              And you can reach me in {channelLive} now, without opening any of this.
+            </span>
           )}
         </p>
 
@@ -378,7 +412,7 @@ export function ConnectFlow() {
   };
 
   return (
-    <Page eyebrow={<StepDots total={steps.length} current={index} />} title={heading!}>
+    <Page eyebrow={<StepDots total={steps.length + 1} current={index} />} title={heading!}>
       <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
         {blurb}
         {step.optional && (
@@ -469,7 +503,7 @@ export function ConnectFlow() {
             }}
             className="text-muted-foreground/60 hover:text-foreground"
           >
-            {index === steps.length - 1 ? "Skip and finish" : "Skip for now"}
+            Skip for now
           </button>
         )}
         {index === 0 && (
@@ -483,40 +517,6 @@ export function ConnectFlow() {
         )}
       </div>
     </Page>
-  );
-}
-
-// ONE PIECE OF PAGE FURNITURE FOR EVERY SCREEN, and it is deliberately sparse.
-//
-// The reference David sent (Instinct's sign-up) does four things this page was not: it puts ONE
-// thing on screen, sets the headline in the display face at a size you cannot miss, drops all card
-// chrome so the words sit on the page rather than inside a box, and makes the way out quiet but
-// obvious. This is that, in ApolloClaw's own display face (Bricolage, the site rebuild's heading
-// font) rather than the serif in the screenshot.
-//
-// `eyebrow` is the small line above the headline: who is talking on the screens where the agent is
-// asking, and where you are in the sequence on the screens where an app is.
-//
-// DECLARED OUT HERE, not inside ConnectFlow. A component defined during render is a new type every
-// render, so React unmounts and remounts its whole subtree each time - which on this page would
-// blow away the focus and the scroll position on every poll tick. Caught by the linter.
-function Page({
-  eyebrow,
-  title,
-  children,
-}: {
-  eyebrow: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mx-auto w-full max-w-xl px-1 py-10 sm:py-16">
-      {eyebrow}
-      <h1 className="font-heading mt-4 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl">
-        {title}
-      </h1>
-      {children}
-    </div>
   );
 }
 
@@ -558,46 +558,4 @@ function VendorChoice({
       <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
     </button>
   );
-}
-
-function StepDots({ total, current }: { total: number; current: number }) {
-  return (
-    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-      <span className="font-medium">
-        Step {Math.min(current + 1, total)} of {total}
-      </span>
-      <span className="flex gap-1.5" aria-hidden>
-        {Array.from({ length: total }, (_, i) => (
-          <span
-            key={i}
-            className={cn(
-              "h-1.5 rounded-full transition-all",
-              i < current ? "w-5 bg-foreground/30" : i === current ? "w-5 bg-foreground" : "w-1.5 bg-border"
-            )}
-          />
-        ))}
-      </span>
-    </div>
-  );
-}
-
-function AppLogo({ logo, name, size = "sm" }: { logo: string; name: string; size?: "sm" | "lg" }) {
-  const box = size === "lg" ? "size-8" : "size-7";
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={logo}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      title={name}
-      className={cn(box, "shrink-0 rounded-lg object-contain")}
-    />
-  );
-}
-
-/** "a, b and c" - the agent is talking, and a comma-separated list reads like a form. */
-function joinPhrases(parts: string[]): string {
-  if (parts.length <= 1) return parts[0] ?? "";
-  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 }

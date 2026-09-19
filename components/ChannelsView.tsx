@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Check, ChevronDown, Copy, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
+import { Check, ChevronDown, Loader2, MessageCircle, RefreshCw, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { CHANNELS, isChannelId, type ChannelDef } from "@/config/channels";
+// Shared with the guided connect flow, which sets a channel up too. See components/channels/pieces.tsx.
+import { BotFatherHelp, CopyableValue, FinishLinking, WebhookUrl } from "@/components/channels/pieces";
 import type { Channel, ChannelId, ChannelsResult } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -395,161 +397,6 @@ function ChannelCard({
       />
     </section>
   );
-}
-
-// Telegram usernames must be globally unique and end in "bot", so "step 1: create a bot" is in
-// practice a guessing game against every name already taken. Somebody non-technical hits three
-// rejections from BotFather and concludes the product is broken.
-//
-// This does not automate it - Telegram has no API for creating a bot, and no way to pre-fill a
-// message to BotFather, so the customer really does have to have that conversation. What it does
-// is remove the two things they can get wrong: it opens BotFather directly rather than leaving
-// them to search a name they might mistype (there are impersonator accounts), and it offers a
-// name derived from their own agent, which is far likelier to be free than "assistant_bot".
-function BotFatherHelp({ agentName, seed }: { agentName?: string | null; seed: string }) {
-  // Telegram's rules: 5-32 characters, letters digits and underscores only, must end in "bot".
-  // Suffixed with a short tail because the clean form of any name is usually already taken, and a
-  // suggestion that gets rejected is worse than no suggestion.
-  //
-  // The tail is DERIVED FROM THE AGENT ID, not random. Math.random() here would be impure in
-  // render and, worse, would differ between the server and client passes - so the suggestion
-  // would visibly change on hydration and again on every re-render, which is no way to treat a
-  // value somebody is about to copy. Hashing the agent id gives the same four characters every
-  // time for this agent and different ones for the next.
-  const suggestion = useMemo(() => {
-    const base = (agentName || "apollo").replace(/[^a-zA-Z0-9]/g, "").slice(0, 18) || "apollo";
-    let h = 0;
-    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-    const tail = h.toString(36).slice(0, 4).padStart(4, "0");
-    return `${base}_${tail}_bot`;
-  }, [agentName, seed]);
-
-  return (
-    <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-      <p className="text-xs text-muted-foreground">
-        BotFather asks for a display name (anything you like), then a username that has to be
-        unique and end in <span className="font-mono">bot</span>. That second one is where people
-        get stuck, so here is one that should be free.
-      </p>
-      <CopyableValue label="Suggested username" value={suggestion} />
-      <a
-        href="https://t.me/BotFather"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block text-xs font-medium text-primary underline-offset-2 hover:underline"
-      >
-        Open BotFather in Telegram
-      </a>
-    </div>
-  );
-}
-
-// The credential landed; the channel still answers nobody. This is the nudge that closes it.
-//
-// Every channel binds its owner from the FIRST message sent to it, which means a customer who
-// pastes a token and walks away owns a channel that works for no one. The old card called that
-// "Connected", so there was nothing on screen to suggest otherwise.
-//
-// Telegram gets a button rather than a sentence, because it is the one where we hold enough to
-// build the link: connectTelegram stores the bot's @username from getMe, and https://t.me/<name>
-// opens that exact chat in the app. `?start` makes Telegram show a START button, so it is one tap
-// to send the message that binds it. Slack and WhatsApp have no equivalent - the customer has to
-// find the app or dial the number themselves - so they get the plain instruction.
-//
-// Not an error state. Nothing has gone wrong; the setup is simply one step from done, and the
-// tone says so.
-function FinishLinking({ def, account }: { def: ChannelDef; account: string | null }) {
-  const username = def.id === "telegram" && account?.startsWith("@") ? account.slice(1) : null;
-  // ?start=setup rather than a bare ?start: the payload is what makes Telegram reliably show
-  // the START button instead of an empty chat, and the receiver treats any /start the same way.
-  const url = username ? `https://t.me/${username}?start=setup` : null;
-
-  return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/60 dark:bg-amber-950/40">
-      <p className="text-sm font-medium text-amber-900 dark:text-amber-200">One step left</p>
-      <p className="mt-1 text-xs leading-relaxed text-amber-800 dark:text-amber-200/90">
-        {url ? (
-          <>
-            Send {account} a message and it becomes yours. Nobody else who finds the bot gets an
-            answer after that.
-          </>
-        ) : (
-          <>
-            Message {account ?? `your ${def.name}`} and it becomes yours. Nobody else gets an
-            answer after that.
-          </>
-        )}
-      </p>
-      {url && (
-        <div className="mt-3 space-y-2">
-          <Button asChild size="sm">
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              Open {account} in Telegram
-            </a>
-          </Button>
-          {/* Telegram is mostly a phone app and this page is mostly opened on a desktop, so the
-              button alone strands anyone whose Telegram is not on this machine. A copyable link
-              they can send themselves covers it.
-
-              A QR would be nicer and is deliberately not here: every QR service is somebody
-              else's server, this repo has no encoder, and img-src does not allow one. Handing a
-              third party the bot usernames of paying customers to save one paste is not a trade
-              worth making quietly. */}
-          <CopyableValue label="Or send yourself this link" value={url} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// One labelled value with a copy button. The webhook URL and WhatsApp's verify token are both
-// things the customer has to paste into somebody else's console, and getting either subtly wrong
-// by hand-retyping is a setup that fails with no explanation.
-function CopyableValue({ label, value }: { label: string; value: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = () => {
-    navigator.clipboard
-      .writeText(value)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch(() => toast.error("Couldn't copy - select the text and copy it manually."));
-  };
-
-  return (
-    <div className="space-y-1.5">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="flex items-center gap-2">
-        <code className="min-w-0 flex-1 truncate rounded-lg border bg-muted/50 px-3 py-2 text-xs">
-          {value || "\u2026"}
-        </code>
-        <Button variant="outline" size="sm" onClick={copy} disabled={!value}>
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// The inbound URL for this agent.
-//
-// Built from window.location.origin rather than a server value, so it is always the host the
-// customer is actually looking at — pasting a production URL into Slack or Meta from a preview
-// deploy would send their messages somewhere they didn't expect.
-function WebhookUrl({ agentId, channel }: { agentId: string; channel: ChannelId }) {
-  // window doesn't exist during the server render, so the origin is read through
-  // useSyncExternalStore: empty on the server, real after hydration, and no state written from an
-  // effect to get there.
-  const origin = useSyncExternalStore(
-    () => () => {},
-    () => window.location.origin,
-    () => ""
-  );
-  const url = origin ? `${origin}/api/channels/${channel}/${agentId}` : "";
-  return <CopyableValue label={channel === "whatsapp" ? "Callback URL" : "Request URL"} value={url} />;
 }
 
 function StateBadge({ state, loaded }: { state: Channel["state"]; loaded: boolean }) {

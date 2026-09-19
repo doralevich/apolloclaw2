@@ -22,9 +22,12 @@ import { connectionSet, scenario } from "@/config/davidtest";
 const WORKSPACE = "davidtest-ws";
 const AGENT = "davidtest-agent";
 
+type MockChannel = { channel: string; state: string; account: string | null; linked: boolean };
+
 type MockWindow = Window & {
   __davidtestInstalled?: boolean;
   __davidtestConns?: string[];
+  __davidtestChannels?: MockChannel[];
 };
 
 function params(): URLSearchParams {
@@ -44,6 +47,33 @@ export function mockConnect(slug: string): void {
   const next = new Set(conns());
   next.add(slug.toLowerCase());
   w.__davidtestConns = [...next];
+}
+
+// The channel step's state, which moves the same way the real one does: a POST of credentials
+// makes it "connected", and the first message to the bot makes it "linked". Neither can really
+// happen here - there is no bot and no Telegram - so the POST is accepted with any values and
+// the link is flipped by clicking through to Telegram, which is the same gesture that would do
+// it for real.
+function channels(): MockChannel[] {
+  const w = window as MockWindow;
+  if (!w.__davidtestChannels) w.__davidtestChannels = [];
+  return w.__davidtestChannels;
+}
+
+function mockChannelConnect(id: string): void {
+  const w = window as MockWindow;
+  const rest = channels().filter((c) => c.channel !== id);
+  w.__davidtestChannels = [
+    ...rest,
+    { channel: id, state: "connected", account: id === "telegram" ? "@sloane_9f2c_bot" : "Acme HQ", linked: false },
+  ];
+}
+
+function mockChannelLink(): void {
+  const w = window as MockWindow;
+  w.__davidtestChannels = channels().map((c) =>
+    c.state === "connected" ? { ...c, linked: true } : c
+  );
 }
 
 export function mockAgentId(): string {
@@ -141,7 +171,21 @@ export function installMockApi(): void {
     if (url.includes("/chat/sessions")) return json({ sessions: [] });
     if (url.includes("/chat/models")) return json({ models: [] });
     if (url.includes("/chat/files")) return json({ files: [] });
-    if (url.includes("/channels")) return json({ channels: [] });
+    // The channel step. A POST is the credential paste; a GET is what its polling reads.
+    if (url.includes("/channels")) {
+      const method = (init?.method || (typeof input === "object" && "method" in input ? (input as Request).method : "GET") || "GET").toUpperCase();
+      if (method === "POST") {
+        const id = url.split("/channels/")[1]?.split("?")[0] ?? "";
+        if (id) mockChannelConnect(id);
+        return json(channels().find((c) => c.channel === id) ?? { channel: id, state: "error" });
+      }
+      if (method === "DELETE") {
+        const id = url.split("/channels/")[1]?.split("?")[0] ?? "";
+        (window as MockWindow).__davidtestChannels = channels().filter((c) => c.channel !== id);
+        return json({ ok: true });
+      }
+      return json({ channels: channels() });
+    }
     if (url.includes("/checklist")) return json({ items: [], done: [], personalized: !!answers });
 
     return real(input as RequestInfo, init);
@@ -153,6 +197,15 @@ export function installMockApi(): void {
   document.addEventListener(
     "click",
     (e) => {
+      // Tapping through to the bot is what binds it in production, so the same click binds the
+      // mock. Swallowed rather than followed: t.me/<a bot that does not exist> is a dead end.
+      const telegram = (e.target as HTMLElement)?.closest?.("a[href^='https://t.me/']");
+      if (telegram && !(telegram as HTMLAnchorElement).href.includes("BotFather")) {
+        e.preventDefault();
+        mockChannelLink();
+        return;
+      }
+
       const anchor = (e.target as HTMLElement)?.closest?.("a[href*='integrations/connect/redirect']");
       if (!anchor) return;
       e.preventDefault();
