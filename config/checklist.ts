@@ -100,6 +100,78 @@ const AREA_ICONS: Record<string, string> = {
   "Contracts & Proposals": "FileSignature",
 };
 
+/**
+ * What handing over each AI GOAL looks like.
+ *
+ * THIS IS THE LIVE SOURCE AND AREA_ITEMS ABOVE IS NOT. `brokenAreas` came off the questionnaire
+ * with the "Operations & Pain Points" page - its fields stay in the payload as empty defaults, so
+ * nothing has written one since. The note on that page said what it cost: "brokenAreas was the
+ * only live input to the onboarding checklist, so the checklist now shows just its channel +
+ * schedule panels." That was true, and it stayed true, which is why most customers have been
+ * opening this tab to nothing.
+ *
+ * `aiGoals` is asked of everybody and is a better question for this list anyway: the checklist is
+ * a list of handovers, and a goal IS a handover, where a broken area was a complaint you had to
+ * infer one from.
+ *
+ * AREA_ITEMS stays for the records written before the change. They are read first.
+ *
+ * Keys are the exact strings AI_GOALS stores (components/onboard/OnboardingForm.tsx).
+ */
+const GOAL_ITEMS: Record<string, { body: string; icon: string }> = {
+  "Inbox & email management": {
+    body: "Point it at the inbox and say what deserves your attention and what does not.",
+    icon: "Mail",
+  },
+  "Lead qualification & follow-up": {
+    body: "Tell it how a lead reaches you and what happens next, so it can chase the ones going cold.",
+    icon: "TrendingUp",
+  },
+  "Customer support / chat": {
+    body: "Give it the questions you answer over and over, and let it draft the replies.",
+    icon: "LifeBuoy",
+  },
+  "Appointment scheduling": {
+    body: "Let it own the back-and-forth of finding a time.",
+    icon: "CalendarDays",
+  },
+  "Proposals & quotes": {
+    body: "Upload one you are happy with. It becomes the shape of every one after it.",
+    icon: "FileSignature",
+  },
+  "Content & social media": {
+    body: "Tell it who you are writing for and hand it a first draft to react to.",
+    icon: "Megaphone",
+  },
+  "Research & competitive intel": {
+    body: "Name the three companies you watch, and what you want to know when they move.",
+    icon: "Search",
+  },
+  "CRM data entry & updates": {
+    body: "Tell it what belongs on a record after a call, and stop opening the CRM yourself.",
+    icon: "Users",
+  },
+  "Invoicing & billing": {
+    body: "Tell it your billing cycle and who is usually late. Chasing invoices is work nobody misses.",
+    icon: "Receipt",
+  },
+  "Internal workflow automation": {
+    body: "Describe one thing that happens the same way every week, and let it take the first pass.",
+    icon: "Settings2",
+  },
+};
+
+/**
+ * The fallback body for a goal this file does not know.
+ *
+ * A ROLE agent's goals are not from AI_GOALS at all: role flows write `aiGoals: roleOwns`, in that
+ * role's own vocabulary, so a legal agent holds "Client or internal intake" and "Document
+ * organisation and filing". Rather than guess at what those mean, the item quotes the goal in its
+ * title and says the one thing that is true of every handover.
+ */
+const GOAL_FALLBACK =
+  "You asked for this one at setup. Tell it how this works today, and let it take the first pass.";
+
 // Enough to be worth finishing, few enough to look finishable. Past about a dozen a checklist
 // stops reading as progress and starts reading as a chore list — and the intake gives us more
 // candidates than that for anyone who ticked a lot of boxes.
@@ -132,6 +204,40 @@ export function buildChecklist(answers: Record<string, unknown> | null): Checkli
       href: "/dashboard/chat",
       cta: "Start that conversation",
       icon: { kind: "icon", name: AREA_ICONS[area] ?? "Sparkles" },
+    });
+  }
+
+  // ── What they asked it to own ────────────────────────────────────────────────────────────
+  // The live half. Self-reported like the rest: whether somebody actually handed over their
+  // inbox is a conversation, not a column.
+  // "Other" is a real option on that question and it is not a handover: "Hand over other" is a
+  // row nobody can act on. What they typed instead lives in aiGoalsOther, so the literal is
+  // dropped here and the free text is picked up below.
+  for (const goal of answerList(answers, "aiGoals").filter((g) => g.trim().toLowerCase() !== "other")) {
+    const known = GOAL_ITEMS[goal];
+    items.push({
+      id: `goal:${goal.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "")}`,
+      title: `Hand over ${goal.toLowerCase()}`,
+      body: known?.body ?? GOAL_FALLBACK,
+      category: "Hand it your work",
+      href: "/dashboard/chat",
+      cta: "Start that conversation",
+      icon: { kind: "icon", name: known?.icon ?? "Sparkles" },
+    });
+  }
+
+  // What they typed when the list did not have it. Their own words, so the row names the work
+  // rather than the word "Other".
+  const goalOther = answerText(answers, "aiGoalsOther");
+  if (goalOther) {
+    items.push({
+      id: "goal:other",
+      title: `Hand over ${goalOther.length > 60 ? "the one you described" : goalOther.toLowerCase()}`,
+      body: `You asked for this at setup: “${goalOther.length > 160 ? `${goalOther.slice(0, 160)}…` : goalOther}”`,
+      category: "Hand it your work",
+      href: "/dashboard/chat",
+      cta: "Start that conversation",
+      icon: { kind: "icon", name: "Sparkles" },
     });
   }
 
