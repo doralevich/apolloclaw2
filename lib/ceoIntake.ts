@@ -52,74 +52,23 @@ const SEAT: IndustryBranch = {
   ],
 };
 
-// ─── Page 2: the week ────────────────────────────────────────────────────────
-const WEEK: IndustryBranch = {
-  stepTitle: "Your Week",
-  stepSubtitle:
-    "How your time actually goes, and what you are trying to move. The more specific here, the less your agent has to guess.",
-  stepLabel: "Your Week",
-  fields: [
-    {
-      key: "priorities",
-      label: "What are you actually trying to move right now?",
-      type: "textarea",
-      placeholder:
-        "e.g. close the Series A, get the enterprise tier shipped, replace our head of sales without the team noticing the gap.",
-      helper: "The two or three things that would make this a good quarter.",
-    },
-    {
-      key: "recurring_meetings",
-      label: "Which recurring meetings do you run or sit in?",
-      type: "multiselect",
-      options: [
-        "Executive or leadership team",
-        "Board meeting",
-        "All-hands",
-        "One-to-ones with reports",
-        "Sales pipeline review",
-        "Product or roadmap review",
-        "Investor updates",
-        "Customer or partner calls",
-        "Other",
-      ],
-      helper:
-        "Tick what is actually in your week. Your agent preps these first, and it learns what good preparation looks like for you from the first few rather than from a description.",
-    },
-    {
-      key: "inbox_reality",
-      label: "How bad is the inbox, and what is clogging it?",
-      type: "textarea",
-      placeholder:
-        "e.g. 200 a day, most of it cc traffic I do not need, the ones that matter are buried under vendor outreach.",
-      helper: "So your agent knows what to surface and what to bury.",
-    },
-    {
-      key: "email_tool",
-      label: "What do you run email and calendar in?",
-      type: "dropdown",
-      options: ["Google Workspace", "Microsoft 365 / Outlook", "Both", "Other"],
-    },
-    {
-      key: "ops_stack",
-      label: "Which tools should it work across?",
-      type: "multiselect",
-      options: [
-        "Slack",
-        "Microsoft Teams",
-        "Notion",
-        "Asana",
-        "Linear",
-        "Jira",
-        "Monday.com",
-        "Salesforce",
-        "HubSpot",
-        "Google Drive",
-        "SharePoint",
-        "Other",
-      ],
-    },
-  ],
-};
+// "Your Week" was page two and it is gone at David's call. Three of its five questions went with
+// it - what you are trying to move, which recurring meetings you sit in, and how bad the inbox is.
+//
+// TWO DID NOT, and they are not on the page below by accident:
+//
+//   email_tool  is one of the two keys config/connect-flow.ts reads in guessVendor. It is what
+//               pre-selects Google or Microsoft on the first screen a new owner meets, with the
+//               reason printed under it. A role flow never sees the generic Tech Stack page, so
+//               for a CEO agent this field is the ONLY email signal we hold - drop it and that
+//               screen asks cold.
+//   ops_stack   is, for the same reason, the only tools question a CEO agent is ever asked.
+//
+// They moved onto the page below rather than being deleted with the rest, and they read better
+// there anyway: "what should it own" and "which tools should it work across" are the same
+// thought. Nothing else on this branch is lost - priorities, recurring_meetings and
+// inbox_reality stay in the blob on every record already written, and lib/onboardingSections.ts
+// drops rows it finds empty.
 
 // ─── Page 3: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
@@ -176,8 +125,38 @@ const AGENT: IndustryBranch = {
       placeholder: "e.g. I stop being the reason things wait.",
       helper: "This is what your agent gets configured around first.",
     },
+    // Both up from the retired "Your Week" page. See the note above it for why these two came
+    // and the other three did not.
+    {
+      key: "email_tool",
+      label: "What do you run email and calendar in?",
+      type: "dropdown",
+      options: ["Google Workspace", "Microsoft 365 / Outlook", "Both", "Other"],
+    },
+    {
+      key: "ops_stack",
+      label: "Which tools should it work across?",
+      type: "multiselect",
+      options: [
+        "Slack",
+        "Microsoft Teams",
+        "Notion",
+        "Asana",
+        "Linear",
+        "Jira",
+        "Monday.com",
+        "Salesforce",
+        "HubSpot",
+        "Google Drive",
+        "SharePoint",
+        "Other",
+      ],
+    },
   ],
 };
 
-/** Three pages, one blob. The onboarding form renders these in order. */
-export const CEO_BRANCH: IndustryBranch[] = [SEAT, WEEK, AGENT];
+/** Two pages now, one blob. The onboarding form renders these in order, and the form moves the
+ *  LAST one to the end of the questionnaire - see rolePageKeys in components/onboard/
+ *  OnboardingForm.tsx. So a CEO answers "Your Seat" up front and "Your Agent" once everything
+ *  else is known. */
+export const CEO_BRANCH: IndustryBranch[] = [SEAT, AGENT];
