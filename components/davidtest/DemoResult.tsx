@@ -157,10 +157,39 @@ export function DemoResult({ preview, typeLabel }: { preview: DemoPreview; typeL
           </div>
         </Panel>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 36 }}>
+        {/* WHERE THE OTHER HALF IS, because this screen used to be a dead end and read as a
+            broken one. Walking the questionnaire here creates NOTHING - no payment, no VPS, no
+            agent - which is the whole point of this area, but it means somebody who finishes and
+            goes looking for the agent they just "built" finds no agent and reasonably concludes
+            the walkthrough failed rather than that it ended.
+            The post-build screens are walkable too, against a fabricated agent, so the honest
+            answer is to say so and link straight to them. */}
+        <div style={{ marginTop: 40, paddingTop: 24, borderTop: `1px solid ${BDR}` }}>
+          <p style={{ fontSize: 13, color: TXD, margin: "0 0 4px", lineHeight: 1.6 }}>
+            <strong style={{ color: TX }}>Nothing was built.</strong> No payment, no box, no agent -
+            this half stops at the moment one would exist. The screens a new owner meets after that
+            are walkable on their own:
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
+            <Link
+              href="/davidtest/connect?vendor=google&conns=none"
+              style={{ padding: "11px 22px", borderRadius: 6, background: brand.color, color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}
+            >
+              Connect flow &rarr;
+            </Link>
+            <Link
+              href="/davidtest/chat?s=hated&conns=none"
+              style={{ padding: "11px 22px", borderRadius: 6, background: "#fff", border: `1px solid ${BDR}`, color: TXD, fontSize: 13, fontWeight: 700, textDecoration: "none" }}
+            >
+              Chat welcome &rarr;
+            </Link>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
           <Link
             href={`/davidtest/purchase/${preview.type.id}`}
-            style={{ padding: "11px 22px", borderRadius: 6, background: brand.color, color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}
+            style={{ padding: "11px 22px", borderRadius: 6, background: "#fff", border: `1px solid ${BDR}`, color: TXD, fontSize: 13, fontWeight: 700, textDecoration: "none" }}
           >
             Walk it again
           </Link>

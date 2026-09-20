@@ -22,7 +22,7 @@ import { connectionSet, scenario } from "@/config/davidtest";
 const WORKSPACE = "davidtest-ws";
 const AGENT = "davidtest-agent";
 
-type MockChannel = { channel: string; state: string; account: string | null; linked: boolean };
+type MockChannel = { channel: string; state: string; account: string | null; linked: boolean; verifyToken?: string };
 
 type MockWindow = Window & {
   __davidtestInstalled?: boolean;
@@ -63,9 +63,20 @@ function channels(): MockChannel[] {
 function mockChannelConnect(id: string): void {
   const w = window as MockWindow;
   const rest = channels().filter((c) => c.channel !== id);
+  const account = id === "telegram" ? "@sloane_9f2c_bot" : id === "whatsapp" ? "+1 555 0142" : "Acme HQ";
   w.__davidtestChannels = [
     ...rest,
-    { channel: id, state: "connected", account: id === "telegram" ? "@sloane_9f2c_bot" : "Acme HQ", linked: false },
+    {
+      channel: id,
+      state: "connected",
+      account,
+      linked: false,
+      // WhatsApp only, and it is the reason this field exists at all: Meta's webhook form wants a
+      // verify token beside the callback URL, and the real route mints one on connect. Without it
+      // here the one screen that has to show it renders nothing and the walkthrough looks fine
+      // while hiding the step that would strand somebody in production.
+      ...(id === "whatsapp" ? { verifyToken: "davidtest-verify-3f9c1a" } : {}),
+    },
   ];
 }
 

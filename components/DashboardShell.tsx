@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Home, LayoutGrid, ListChecks, ListTodo, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Home, LayoutGrid, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -38,14 +38,18 @@ const NAV = [
   // day; the checklist is a first-week errand. The daily surface goes higher than the once-through
   // one.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
-  // Directly under Chat, above the setup rows, because it is the only one of these you come back
-  // to daily once you are set up. It holds what the agent surfaced and nobody has dealt with -
-  // the "waiting on you" block from the morning brief, which until now lived in a Telegram
-  // message and was gone by lunchtime.
-  { href: "/dashboard/tasks", label: "What needs you", icon: ListTodo, exact: false },
+  // "WHAT NEEDS YOU" IS NOT HERE ANY MORE, David's call, and it is off the rail the same way
+  // Matters is (see the note below): only the ROW is gone. /dashboard/tasks still renders, its
+  // API and table are untouched, and the agent still surfaces the same items - so anything
+  // already linking to the page still lands, and putting the row back is this line alone.
+  //
+  // It used to sit directly under Chat, on the reasoning that it was the other thing you come
+  // back to daily: what the agent surfaced and nobody has dealt with, the "waiting on you" block
+  // from the morning brief.
+  //
   // ROLE-SPECIFIC, and the first row that is. It appears only for agent types that have listings
-  // (config/listings.ts), which today is Real Estate. Directly under What needs you because for a
-  // realtor it is the same kind of surface: the thing you glance at daily, not a setting.
+  // (config/listings.ts), which today is Real Estate. It sits here because for a realtor it is a
+  // daily surface rather than a setting.
   //
   // The filter is on agent TYPE rather than on whether any listings exist, on purpose. A row that
   // appears once you have data is a row nobody can find in order to add the first row.
@@ -59,8 +63,13 @@ const NAV = [
   // agent keeps working the book of matters, and anything already linking to the page still lands.
   // Putting the row back is this line plus the `forMatters` flag on the type and the filter, all
   // three of which are still in the file's history. Nothing else was unpicked.
-  { href: "/dashboard/checklist", label: "Checklist", icon: ListChecks, exact: false },
-  // Connections is back on the daily rail, directly under Checklist - David's call. It also stays
+  // CHECKLIST IS OFF THE RAIL TOO, David's call, same treatment: the row goes, the page stays.
+  // /dashboard/checklist still renders and config/checklist.ts still builds the list from the
+  // customer's own answers, so nothing that links there breaks.
+  //
+  // It was always the odd one on a daily rail - a first-week errand sitting among the surfaces
+  // you come back to every day, and one that reads as finished the moment it is finished.
+  // Connections is back on the daily rail - David's call. It also stays
   // reachable from Settings, but the rail is where he wants it day to day, so /dashboard/integrations
   // no longer counts as part of the Settings area (see the inSettings check below) and this tab
   // highlights on the daily rail. Guide stayed in Settings; Channels stays off the rail too (still
