@@ -284,11 +284,8 @@ const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint",
 // IT_COMPLY (the "Any compliance requirements?" options) was removed with that question at David's call.
 // BROKEN_AREAS (the "which areas feel most broken?" options) lived here until the Operations &
 // Pain Points page was removed at David's call. It was that page's only consumer, so it went with it.
-const KIDS_COUNT   = ["None","1","2","3","4","5 or more"];
-// Nine, not eight, so the three-column grid closes as a 3x3 rather than leaving a ragged last
-// row of two. "Calm & measured" is the register the other eight were missing - the one that does
-// not push, which is how a lot of people write to clients they have had for years.
-const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive","Calm & measured"];
+// KIDS_COUNT went with the Life Context page and WRITING_TONE with "Your natural tone", both
+// removed at David's call. Each had exactly one consumer, so neither outlived its question.
 const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
@@ -551,7 +548,7 @@ function SHead({ stepNum, total, title, subtitle, badge, art }: { stepNum: numbe
 // ════════════════════════════════════════════════════════════
 interface GateData { first: string; last: string; email: string; phone: string; linkedin: string; company: string; timezone: string; bestTime: string }
 
-const BEST_TIMES = ["Early morning", "Morning", "Midday", "Afternoon", "Evening", "Anytime"];
+// BEST_TIMES went with the field it filled. Its only consumer was the select above.
 
 /** The browser's own zone, or "" where it cannot be read. Used as the CLIENT snapshot of a
  *  useSyncExternalStore whose server snapshot is "", which is what keeps the two renders in
@@ -569,14 +566,12 @@ function detectTimezone(): string {
 // `initial` re-seeds the five fields when someone steps BACK here from the questionnaire.
 // Without it the screen would remount empty and the trip back to fix one typo would cost
 // them all five.
-// `askBestTime` is off for a paying customer and on for everyone else, and the split is about
-// who the answer is FOR. On /onboard and /white-glove-onboarding the submission is a sales lead:
-// it lands in the CRM and in the intake email, where "Best Time to Reach" sits under the phone
-// number and tells a person when to call. On /onboard/[agent] the person has already paid and
-// nobody is calling them - the agent does not initiate contact, they open the chat - so there it
-// was a question with no reader. Timezone stays on every track, because that one is for the
-// agent: it decides what "today" means (lib/agent-files.ts, "Their day").
-function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true, skipEmailCheck = false }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; askBestTime?: boolean; skipEmailCheck?: boolean }) {
+// The prop that gated "Best Time to Reach You" is gone with the field. It used to be off for a
+// paying customer and on for everyone else, on the reasoning that a lead's answer tells a person
+// when to call while a customer's has no reader. David's call is that it has no reader on either
+// track now. Timezone stays on every track, because that one is for the agent rather than for us:
+// it decides what "today" means (lib/agent-files.ts, "Their day").
+function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = false }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; skipEmailCheck?: boolean }) {
   // The accent is the agent's own colour when the funnel is pinned to one, and
   // ApolloClaw red otherwise.
   const accent = brand?.color ?? R;
@@ -716,14 +711,14 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, askBestTime = true
                   placeholder="Select your timezone…"
                 />
               </FF>
-              {/* Row2 is auto-fit, so with this gone the timezone field takes the full width
-                  rather than leaving a hole beside itself. Note that hiding the field does not
-                  clear the value: `initial` still seeds d.bestTime from a saved questionnaire and
-                  buildData still submits it, so a customer who answered this on the lead form and
-                  later edits their setup keeps the answer instead of silently losing it. */}
-              {askBestTime && (
-                <FF label="Best Time to Reach You" hint="Optional."><TSelect value={d.bestTime} onChange={v => set("bestTime", v)} options={BEST_TIMES} /></FF>
-              )}
+              {/* "Best Time to Reach You" was here and is gone at David's call - on every track
+                  now, not just the paid one. Row2 is auto-fit, so the timezone field takes the
+                  full width rather than leaving a hole beside itself.
+
+                  Removing the field does not clear the value: `initial` still seeds d.bestTime
+                  from a saved questionnaire and buildData still submits it, so a customer who
+                  answered it before this keeps the answer rather than silently losing it on an
+                  edit, and lib/agent-files.ts keeps rendering the bullet for those records. */}
             </Row2>
             <FF label="LinkedIn" hint="Optional. Helps your agent understand your professional background."><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
           </Stack>
@@ -1450,7 +1445,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // came to be read by lib/agent-files.ts and filled by nothing. `hate` is asked again on the
   // Executive Profile page, so the setter is back; the rest of s3 is gone from the payload.
   const [s3, setS3] = useState(() => seed?.s3 ?? emptyS3());
-  const [s4, setS4] = useState(() => seed?.s4 ?? emptyS4());
+  const [s4] = useState(() => seed?.s4 ?? emptyS4());
   const [s5, setS5] = useState(() => seed?.s5 ?? emptyS5());
   const [s6, setS6] = useState(() => seed?.s6 ?? emptyS6());
   const [s7, setS7] = useState(() => seed?.s7 ?? emptyS7());
@@ -1533,15 +1528,36 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // that card, so the first screen should be the one that could not belong to any other agent.
   // The company questions still get asked - they feed USER.md and they matter - they are just no
   // longer the greeting.
+  // THE ROLE'S LAST PAGE COMES LAST NOW, at David's call, and the old order was genuinely bad.
+  //
+  // Every role branch ends with a page labelled "Your Agent" - what it should own, where the
+  // guardrails are, what to do first - and every role sets `coversScope`, which is what drops the
+  // generic "What your agent should take on" page. So for a role agent that final deep-dive page
+  // IS the scope question. It was arriving third overall, behind two pages about the customer:
+  // somebody was being asked to draw their agent's remit before they had told us what they use,
+  // how they work, or how they write, and before they had seen anything at all.
+  //
+  // Split out and moved into the slot scopeai would have occupied, it now asks the same question
+  // at the end, with every other answer already given. The rest of the deep-dive stays at the
+  // front, where it belongs - those pages are about the customer's own world and they are the
+  // reason a role flow feels like it was written for them.
+  // Every branch today is three pages, so this splits 2 + 1. Guarded anyway: a one-page branch
+  // would have its ONLY page moved to the end, which would put the customer's whole deep-dive
+  // after the generic questions rather than in front of them - the opposite of the point.
+  const splitRole = roleStepKeys.length > 1;
+  const roleLeadKeys = splitRole ? roleStepKeys.slice(0, -1) : roleStepKeys;
+  const roleScopeKey = splitRole ? roleStepKeys.slice(-1) : [];
   const rolePageKeys = isRoleFlow
-    ? [...roleStepKeys, "biz", "whatyoudo", "exec", "life", "voice", "sample", ...(roleIntake!.coversScope ? [] : ["goals", "scopeai"]), "scope"]
+    ? [...roleLeadKeys, "biz", "whatyoudo", "exec", "sample",
+       ...(roleIntake!.coversScope ? roleScopeKey : ["goals", "scopeai", ...roleScopeKey]), "scope"]
         .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "life", "voice", "sample", "goals", "scopeai", "scope"];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "sample", "goals", "scopeai", "scope"];
   const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
-  const f4 = (k: string, v: unknown) => setS4(p => ({ ...p, [k]: v }));
+  // No f4. Life Context was the only page that wrote to s4; the state and setS4 stay because the
+  // payload still carries partnerName/children/household (empty now), and buildData reads them.
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
   const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
@@ -1669,8 +1685,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "whatyoudo", label: "What You Do", node: (
     <Stack key="s2b">
       <SHead stepNum={2} total={0} title="What Do You Do?" subtitle="Who you serve, what you deliver, and the edge that wins you business." badge="Business" />
+      {/* "What makes you different?" was here and is gone at David's call. The differentiator
+          only ever reached the profile summary in lib/onboardingSections.ts - no generator reads
+          it - and "describe your business" above already draws the answer out of anyone who has
+          one. `s2.differentiate` stays in state and goes out empty, the same way s8.comply and
+          the horizon fields do, so the payload shape and every existing row are untouched. */}
       <FF label="Describe your business" required hint="Who do you serve, and what do you deliver for them?"><TArea value={s2.desc} onChange={v => f2("desc", v)} placeholder="We help [who] do [what] by [how]..." rows={7} /></FF>
-      <FF label="What makes you different?" hint="Why clients choose you over the alternatives - your real edge."><TArea value={s2.differentiate} onChange={v => f2("differentiate", v)} placeholder="e.g. We're the only firm in the region that..., our turnaround is 3x faster, we own a proprietary process..." rows={3} /></FF>
     </Stack>
     ) },
     // Moved up to sit directly after What You Do, at David's call. Describing the business and
@@ -1745,93 +1765,29 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     // s3.costImpact were left when their questions came off this page - nothing that provisions an
     // agent requires them. Note: brokenAreas was the only live input to the onboarding checklist
     // (config/checklist.ts), so the checklist now shows just its channel + schedule panels.
-    { key: "life", label: "Life Context", node: (
-    <Stack key="s4">
-      <SHead stepNum={6} total={0} title="Life Context (Optional)" subtitle="A little context on your life helps us build something that fits it. Skip if you'd rather not." badge="Business" />
-      <button type="button" onClick={next} style={{ alignSelf: "flex-start", background: "transparent", border: `1px solid ${BDR}`, color: TXM, fontFamily: "inherit", fontWeight: 600, fontSize: 13, padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>Skip this step →</button>
-      {/* "Relationship status" was here and is gone, along with "Where are you in your business
-          journey?" at the bottom. Both were classifications rather than facts: a dropdown that
-          sorts the customer into a bucket, on the most personal page of the form. Neither told
-          the agent anything it could act on, and asking a stranger to declare their marital
-          status to configure listing software is the moment a form stops feeling professional.
-
-          What stayed is the half that has always earned its place - the NAMES. Knowing your
-          wife is Maria and your daughter is eight lets an agent write "Maria's birthday" into a
-          calendar and understand why Thursday at four is a bad time. A status dropdown cannot
-          do any of that, which is the whole distinction being drawn here. */}
-
-      {/* The family, by name.
-          `kids` and `kidsAges` have been in state and in the payload all along with no UI to
-          fill them, so children have never actually been asked - the fields only ever arrived
-          empty.
-
-          Names matter more than counts here. An agent that knows your wife is Maria and your
-          daughter is eight can write "Maria's birthday" into a calendar entry and understand
-          why Thursday at four is not a good time. A number cannot do any of that.
-
-          NAMES AND AGES TOGETHER, in one field, rather than the two separate lists David listed.
-          Two parallel lists cannot be matched up - "Emma, Jack" beside "8, 14" leaves the agent
-          guessing which is which, and gets it wrong half the time. One line each pairs them
-          unambiguously.
-
-          All optional, on a step that already says "Optional" and carries a Skip button. This is
-          the most personal information the questionnaire asks for, and nobody should have to
-          name their children to get past a form. */}
-      <FF label="Partner or spouse's name" hint="So your agent can use it rather than say 'your partner'.">
-        <TInput value={s4.partnerName} onChange={v => f4("partnerName", v)} placeholder="First name is enough" />
-      </FF>
-      <FF label="Children"><TSelect value={s4.kids} onChange={v => f4("kids", v)} options={KIDS_COUNT} /></FF>
-      {s4.kids && s4.kids !== "None" && (
-        <FF label="Their names and ages" hint="One per line. Ages are useful for school runs, holidays and what counts as an interruption.">
-          <TArea value={s4.kidsDetails} onChange={v => f4("kidsDetails", v)} placeholder={"Emma, 8\nJack, 14"} rows={3} />
-        </FF>
-      )}
-      <FF label="Anyone else your agent should know about?" hint="Anyone whose name comes up in your week - a parent you care for, a business partner, an assistant, a dog.">
-        <TArea value={s4.household} onChange={v => f4("household", v)} placeholder="e.g. My mother Anne, who I drive to appointments on Tuesdays. Our office manager Priya." rows={2} />
-      </FF>
-
-      {/* Both three-year questions removed at David's call.
-          "What do you want your business to do for you in 3 years?" offered a list of owner
-          answers - sell it, run without me, pay me more - which assumes the person filling this
-          in owns the place. Under seats they often will not: a colleague answering for their own
-          agent has no view on what the business does for them in three years, and being asked
-          reads as a form written for somebody else.
-          "Your personal 3-year vision" went with it. Three years is further out than anyone can
-          answer usefully on a signup form, and the three/six/twelve month horizons in Goals now
-          ask the same thing at a range people can actually see. */}
-    </Stack>
-    ) },
-    { key: "voice", label: "Your Voice", node: (
-    <Stack key="s6voice">
-      <SHead stepNum={7} total={0} title="Your Voice" subtitle="AI that sounds like you is the goal. Help us capture how you communicate." badge="Business" />
-      {/* Multi-select for real. It said "Select all that apply" and then kept only the last
-          box pressed - v[v.length-1] - so ticking a second silently cleared the first.
-          Nobody has one tone: direct with a supplier and warm with a client is the normal
-          case, and that spread is the useful thing to know. */}
-      <CheckGroup label="Your natural tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone} onChange={v => f6("tone", v)} cols={2} />
-      <CheckGroup label="Describe your ideal voice" hint="Select all that apply" options={["Confident, not arrogant","Clear and direct","Warm and personable","Professional and polished","Casual and conversational","Bold and punchy","Empathetic and supportive","Witty and clever","Never corporate or stiff"]} value={s6.voiceStyle} onChange={v => f6("voiceStyle", v)} cols={2} />
-      {/* "Whose voice do you sound most like?" was here, twelve celebrity names, pick three.
-          It is gone. It read as a personality quiz, and the writing sample on the very next page
-          teaches the agent more about a person's voice than any comparison to Seth Godin.
-
-          THESE TWO REPLACE IT, and they are not new ideas: lib/agent-files.ts has always read
-          `loveWords` and `hateWords` by name into the "How to sound" section of the agent's own
-          instructions. Nothing has ever asked them. Every agent we have shipped was built with
-          those two lines blank, which is why this is a swap rather than a cut - the same number
-          of boxes, aimed at something the agent actually consumes.
-
-          The banned list is the more useful of the two. Telling a writing agent what never to
-          say prevents more bad output than any amount of describing what good looks like. */}
-      {/* One column each, not two. These are lists of phrases, and half a column turns a
-          comfortable list into a cramped one for no gain - the page has the room. */}
-      <FF label="Words and phrases you like" hint="Yours, or just ones you notice yourself using.">
-        <TArea value={s6.loveWords} onChange={v => f6("loveWords", v)} placeholder="e.g. straightforward, let's get into it, here's what I'd do" rows={3} />
-      </FF>
-      <FF label="Words and phrases you never want to see" hint="The stronger half. This is what stops your agent sounding like everyone else.">
-        <TArea value={s6.hateWords} onChange={v => f6("hateWords", v)} placeholder="e.g. never 'just circling back', 'synergy', 'reach out', or an exclamation mark" rows={3} />
-      </FF>
-    </Stack>
-    ) },
+    // "Life Context (Optional)" was a whole page and it is gone at David's call. It asked for a
+    // partner's name, children and who else is in the house, on the reasoning that knowing the
+    // wife is Maria lets an agent write "Maria's birthday" into a calendar.
+    //
+    // It is the most personal page in the form and it sat in front of everyone before they had
+    // seen the thing work. The fields (partnerName, children, childrenDetails, household) stay in
+    // state and go out empty; lib/onboardingSections.ts drops empty rows, so an agent built after
+    // this simply has no Family section, and every agent built before this keeps theirs.
+    // "Your Voice" was a page of its own and it is gone at David's call. Three of its four
+    // questions went with it - the natural-tone checkboxes, the words you like, and the words you
+    // never want to see. `writingTone`, `loveWords` and `hateWords` stay in state and go out
+    // empty; lib/agent-files.ts drops the empty bullets, so the "How they write" section just
+    // gets shorter rather than growing blank lines.
+    //
+    // WHAT THIS COSTS, said plainly rather than discovered later: those two word lists were the
+    // only thing in the form aimed squarely at what the agent consumes, and the banned list in
+    // particular is what stops an agent writing "just circling back". The page after this is the
+    // reason it is survivable - a paragraph the customer actually wrote teaches a model more
+    // about their voice than any checkbox, and that page stays.
+    //
+    // "Describe your ideal voice" moved onto it rather than going with the rest, because it is
+    // the one question here that still earns a box and a page holding one question is a
+    // page-turn charged for nothing.
     // Its own page, at David's call, and it earns one. Every other voice question is a box to
     // tick; this is the only one that asks for real writing, and a 4-row textarea at the bottom
     // of a screen full of checkboxes reads as an afterthought people scroll past. It is also by
@@ -1840,6 +1796,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "sample", label: "Your Writing", node: (
     <Stack key="s6sample">
       <SHead stepNum={8} total={0} title={sampleCopy.title} subtitle={sampleCopy.subtitle} badge="Business" />
+      {/* Up from the retired "Your Voice" page. It reads better here anyway: pick the voice you
+          are aiming at, then show us a paragraph of the one you actually have. */}
+      <CheckGroup label="Describe your ideal voice" hint="Select all that apply" options={["Confident, not arrogant","Clear and direct","Warm and personable","Professional and polished","Casual and conversational","Bold and punchy","Empathetic and supportive","Witty and clever","Never corporate or stiff"]} value={s6.voiceStyle} onChange={v => f6("voiceStyle", v)} cols={2} />
       <FF label={sampleCopy.label} hint={sampleCopy.hint}>
         <TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder={sampleCopy.placeholder} rows={10} />
       </FF>
@@ -1912,10 +1871,17 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
       {/* "Any compliance requirements?" was here and is gone at David's call. s8.comply stays in
           state and in the payload as an empty array; nothing reads it to decide anything. */}
-      <FF label="Anything else we should know?" hint="Extra context, priorities, or details that will help us build."><TArea value={s8.constraints} onChange={v => f8("constraints", v)} placeholder="Anything else that helps us understand your business and what you need." rows={4} /></FF>
-      <FF label="Upload company materials" hint="Optional, and the more the better. Anything that helps us learn your business: company materials, your resume so we know your background, example emails / memos / documents, SOPs, and templates.">
-        <FileUpload files={files} onFiles={setFiles} />
-      </FF>
+      {/* "Anything else we should know?" and "Upload company materials" were both here and are
+          gone at David's call. `s8.constraints` stays in state and goes out empty, so the
+          "Stated constraints" bullet in lib/agent-files.ts simply stops appearing.
+
+          UPLOADING STILL WORKS. The Your Writing page carries the same FileUpload bound to the
+          same `files` state, so there is still exactly one path to the server and one size cap -
+          this was the second door into it, not the only one. `files`, `setFiles` and
+          readFileAsBase64 on submit are all untouched.
+
+          What is left on this page is the honesty checkbox, which is the only thing here that
+          gates the submit. */}
       <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? `rgba(${accentRgb},0.12)` : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? accent : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? `0 0 0 4px rgba(${accentRgb},0.12)` : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
         <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? accent : "rgba(0,0,0,0.28)"}`, background: s8.agree ? accent : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
@@ -2276,7 +2242,6 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         onPass={handleGate}
         initial={enteredGate ?? undefined}
         brand={brand}
-        askBestTime={!isCustomer}
         // The demo must not tell David his own address already has an account, which it would,
         // every time, on the one screen he is trying to show somebody.
         skipEmailCheck={isDemo}
