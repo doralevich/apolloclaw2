@@ -5,7 +5,7 @@ import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLogo, Page } from "@/components/connect/ui";
-import { BotFatherHelp, CopyableValue, FinishLinking, WebhookUrl } from "@/components/channels/pieces";
+import { BotFatherHelp, FinishLinking, ManualDelivery, WebhookUrl } from "@/components/channels/pieces";
 import { channelDef, type ChannelDef } from "@/config/channels";
 import { FLOW_CHANNELS } from "@/config/connect-flow";
 import { apiFetch } from "@/lib/api";
@@ -183,7 +183,7 @@ export function ChannelStep({
 
             WhatsApp gets its own sentence because its cost is not time, it is a phone number:
             Meta will not put a business line on a number that is already on WhatsApp, so the
-            personal one in somebody's pocket is not eligible. Learning that on step two of seven,
+            personal one in somebody's pocket is not eligible. Learning that on step two of five,
             inside Meta's developer console, is the worst possible place to learn it. */}
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Each of these takes about five minutes and happens mostly in that app, not here.
@@ -227,17 +227,12 @@ export function ChannelStep({
 
         <div className="mt-10 space-y-4">
           <FinishLinking def={def} account={row?.account ?? null} />
-          {/* Slack and Meta have no API for "deliver to this URL" - the customer pastes it
-              themselves, and hiding it once the credentials land would strand the setup
-              half-done. */}
+          {/* Slack has no API for "deliver to this URL" - the customer pastes it themselves, and
+              hiding it once the credentials land would strand the setup half-done. WhatsApp used
+              to be in the same position and no longer is: connecting registers its callback with
+              Meta, so reaching this screen on WhatsApp means delivery is already on. If it
+              wasn't, the row would read "error" and this screen would not be the one showing. */}
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
-          {/* WhatsApp's other half. Meta's webhook form asks for the Callback URL AND a verify
-              token, and echoes the token back to us on save to prove the endpoint is ours.
-              Without this on screen the WhatsApp setup simply cannot be completed from this
-              flow - it was missing the whole time the chooser did not offer WhatsApp, which is
-              exactly the kind of hole that opens when a screen is built for two of three cases.
-              The Channels page has always shown it (components/ChannelsView.tsx). */}
-          {row?.verifyToken && <CopyableValue label="Verify token" value={row.verifyToken} />}
           <p className="flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
             <Loader2 className="size-4 shrink-0 animate-spin" />
             Watching for your first message. This page notices by itself.
@@ -258,12 +253,31 @@ export function ChannelStep({
   }
 
   // ── The setup itself ────────────────────────────────────────────────────────────────────────
-  const canSubmit = def.fields.every((f) => (values[f.key] ?? "").trim().length > 0);
+  // An optional field left blank does not hold the button down - WhatsApp's Phone Number ID is
+  // worked out from the token, and asked for by name only when it cannot be.
+  const canSubmit = def.fields.every(
+    (f) => f.optional || (values[f.key] ?? "").trim().length > 0
+  );
+
+  // A credential that was accepted, on a channel that still is not delivering. Only WhatsApp
+  // reaches this: the automatic half failed and the row carries Meta's own reason for it.
+  const needsManual = row?.state === "error" && !!row.verifyToken;
 
   return (
     <Page eyebrow={eyebrow} title={`Set up ${def.name}`}>
       <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{def.tagline}. Follow these
         in {def.name}, then bring the last bit back here.</p>
+
+      {/* Before the steps, because the steps are not the next action from here: the credential
+          already worked, and what is left is two values to paste. */}
+      {needsManual && (
+        <div className="mt-8 space-y-4">
+          <p className="rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            {row.message}
+          </p>
+          <ManualDelivery agentId={agentId} channel={def.id} verifyToken={row.verifyToken!} />
+        </div>
+      )}
 
       <ol className="mt-8 space-y-3 border-y py-6">
         {def.steps.map((step, i) => (

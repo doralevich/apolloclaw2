@@ -31,6 +31,10 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   for (const field of def.fields) {
     const value = supplied[field.key];
     if (typeof value !== "string" || !value.trim()) {
+      // An optional field is allowed to arrive blank or not at all — WhatsApp's Phone Number ID
+      // is worked out from the token in the ordinary case, and connectWhatsApp asks for it by
+      // name on the one path where it cannot be.
+      if (field.optional) continue;
       // Named rather than generic: with three fields on the Telegram card, "a value is required"
       // would leave the customer guessing which one.
       throw new ApiError(400, "invalid_request", `${field.label} is required`);
@@ -55,8 +59,9 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     return json(
       await connectWhatsApp(id, {
         accessToken: credentials.accessToken,
-        phoneNumberId: credentials.phoneNumberId,
+        appId: credentials.appId,
         appSecret: credentials.appSecret,
+        phoneNumberId: credentials.phoneNumberId,
       })
     );
   }

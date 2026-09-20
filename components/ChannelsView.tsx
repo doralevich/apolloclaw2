@@ -8,7 +8,7 @@ import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { CHANNELS, isChannelId, type ChannelDef } from "@/config/channels";
 // Shared with the guided connect flow, which sets a channel up too. See components/channels/pieces.tsx.
-import { BotFatherHelp, CopyableValue, FinishLinking, WebhookUrl } from "@/components/channels/pieces";
+import { BotFatherHelp, FinishLinking, ManualDelivery, WebhookUrl } from "@/components/channels/pieces";
 import type { Channel, ChannelId, ChannelsResult } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -331,13 +331,13 @@ function ChannelCard({
               "now go find your bot". */}
           {!channel?.linked && <FinishLinking def={def} account={channel?.account ?? null} />}
           {def.connectedNote && <p className="text-sm text-muted-foreground">{def.connectedNote}</p>}
-          {/* Still shown once connected - for Slack and WhatsApp this is the step AFTER
-              connecting, and hiding it the moment the credentials land would strand the setup
-              half-done. */}
+          {/* Still shown once connected - for Slack this is the step AFTER connecting, and
+              hiding it the moment the credentials land would strand the setup half-done.
+              WhatsApp is no longer in that position: connecting registers its callback URL, and
+              a WhatsApp row that reads "connected" has had delivery switched on for it. When
+              that did not work the row says "error" instead, and the branch below shows the two
+              values to paste. */}
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
-          {channel?.verifyToken && (
-            <CopyableValue label="Verify token" value={channel.verifyToken} />
-          )}
           <Button variant="outline" size="sm" onClick={() => setConfirmOpen(true)} disabled={busy}>
             Disconnect
           </Button>
@@ -348,6 +348,13 @@ function ChannelCard({
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
               {channel.message}
             </p>
+          )}
+
+          {/* Above the instructions, not below them. This state is reached with a credential
+              already accepted, so re-reading five steps is not the next action - pasting these
+              two is. */}
+          {state === "error" && channel?.verifyToken && (
+            <ManualDelivery agentId={agentId} channel={def.id} verifyToken={channel.verifyToken} />
           )}
 
           <ol className="space-y-1 text-sm text-muted-foreground">
