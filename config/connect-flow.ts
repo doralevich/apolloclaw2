@@ -200,14 +200,26 @@ export const CONNECT_FLOW_SLUGS: string[] = Array.from(
 // dashboard, which works the moment the agent is built. So this is the one genuinely additive
 // step in the flow, and additive things go last, where skipping them costs nothing.
 //
-// WHY THESE TWO. David's call, and the numbers agree: every channel connected by anyone so far is
-// a Telegram one. WhatsApp is deliberately not offered here even though the Channels page carries
-// it - it is Meta's Cloud API, which wants a business app, a verification, and a phone number that
-// is not already on WhatsApp. That is not a first-run step, and putting the most recognizable logo
-// in front of the longest setup is how somebody's first ten minutes get spent on the wrong thing.
+// ALL THREE, David's call, and it reverses what this said a day ago.
+//
+// The argument for leaving WhatsApp out was that it is the longest setup by a distance: Meta's
+// Cloud API wants a business app, a system user, a permanent token, an app secret, and a phone
+// number that is NOT already on WhatsApp - which for most people means a second number they have
+// to go and get. Telegram wants a token from a chat with a robot. Putting the most recognizable
+// logo in front of the longest setup is a real way to spend somebody's first ten minutes badly,
+// and every channel connected by anyone so far is a Telegram one.
+//
+// That argument is about ordering, not about hiding. WhatsApp is the channel people actually use
+// to talk to businesses, and a chooser that does not list it reads as a product that cannot do it
+// rather than one that asks more of you - which is worse, because the second is true and fixable
+// and the first is neither. So it is offered, listed last, and the screen says out loud that it
+// needs a separate number before anybody has spent five minutes finding that out.
+//
+// Telegram keeps the "Easiest" badge (channels.ts, `recommended`), which is the honest way to
+// steer somebody without taking the choice off them.
 
-/** The channels the guided flow offers, in the order it offers them. */
-export const FLOW_CHANNELS: ChannelId[] = ["telegram", "slack"];
+/** The channels the guided flow offers, in the order it offers them. Longest setup last. */
+export const FLOW_CHANNELS: ChannelId[] = ["telegram", "slack", "whatsapp"];
 
 /** The mail app per vendor, lowercased. Used to recognize a vendor from what is already connected. */
 export const MAIL_SLUG: Record<VendorId, string> = {

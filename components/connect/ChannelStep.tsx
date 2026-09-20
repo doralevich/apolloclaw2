@@ -5,7 +5,7 @@ import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLogo, Page } from "@/components/connect/ui";
-import { BotFatherHelp, FinishLinking, WebhookUrl } from "@/components/channels/pieces";
+import { BotFatherHelp, CopyableValue, FinishLinking, WebhookUrl } from "@/components/channels/pieces";
 import { channelDef, type ChannelDef } from "@/config/channels";
 import { FLOW_CHANNELS } from "@/config/connect-flow";
 import { apiFetch } from "@/lib/api";
@@ -179,9 +179,15 @@ export function ChannelStep({
 
         {/* SAYS HOW LONG IT TAKES, where the app steps did not need to. Those were a click; this
             is a trip into another app, and finding that out halfway through is worse than being
-            told. */}
+            told.
+
+            WhatsApp gets its own sentence because its cost is not time, it is a phone number:
+            Meta will not put a business line on a number that is already on WhatsApp, so the
+            personal one in somebody's pocket is not eligible. Learning that on step two of seven,
+            inside Meta's developer console, is the worst possible place to learn it. */}
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Either one takes about five minutes and happens mostly in that app, not here.
+          Each of these takes about five minutes and happens mostly in that app, not here.
+          WhatsApp also needs a phone number that is not already on WhatsApp.
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-3 text-sm">
@@ -221,9 +227,17 @@ export function ChannelStep({
 
         <div className="mt-10 space-y-4">
           <FinishLinking def={def} account={row?.account ?? null} />
-          {/* Slack has no API for "deliver to this URL" - the customer pastes it themselves, and
-              hiding it once the credentials land would strand the setup half-done. */}
+          {/* Slack and Meta have no API for "deliver to this URL" - the customer pastes it
+              themselves, and hiding it once the credentials land would strand the setup
+              half-done. */}
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
+          {/* WhatsApp's other half. Meta's webhook form asks for the Callback URL AND a verify
+              token, and echoes the token back to us on save to prove the endpoint is ours.
+              Without this on screen the WhatsApp setup simply cannot be completed from this
+              flow - it was missing the whole time the chooser did not offer WhatsApp, which is
+              exactly the kind of hole that opens when a screen is built for two of three cases.
+              The Channels page has always shown it (components/ChannelsView.tsx). */}
+          {row?.verifyToken && <CopyableValue label="Verify token" value={row.verifyToken} />}
           <p className="flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
             <Loader2 className="size-4 shrink-0 animate-spin" />
             Watching for your first message. This page notices by itself.
