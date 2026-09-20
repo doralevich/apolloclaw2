@@ -38,6 +38,14 @@ export type ChannelField = {
   key: string;
   label: string;
   placeholder: string;
+  /**
+   * Blank is allowed, and the connect path works out the value instead.
+   *
+   * Only WhatsApp's Phone Number ID, and only because discovery resolves it in the ordinary case
+   * — one app, one number — and genuinely cannot when an app has several. An optional field is a
+   * worse thing to show than no field, so the bar for adding another one is high.
+   */
+  optional?: boolean;
 };
 
 export type ChannelDef = {
@@ -54,9 +62,13 @@ export type ChannelDef = {
   /**
    * Show this agent's inbound webhook URL on the card, with a copy button.
    *
-   * Only for channels where the customer has to paste it somewhere themselves. Telegram doesn't
-   * need it — we register the URL for them through setWebhook — but Slack and Meta have no
-   * equivalent API, so without this their setup simply cannot be completed.
+   * SLACK ONLY, now. Telegram never needed it — setWebhook registers the URL for them — and
+   * WhatsApp no longer does either, because /{app-id}/subscriptions does the same job at Meta.
+   * Slack is the one left with genuinely no API for it: the customer pastes the Request URL into
+   * Event Subscriptions and Slack verifies it on the spot.
+   *
+   * WhatsApp still shows the URL when the automatic path fails, but that is a fallback keyed off
+   * the row's state rather than a property of the channel, so it does not belong here.
    */
   showWebhookUrl?: boolean;
 
@@ -137,21 +149,39 @@ export const CHANNELS: ChannelDef[] = [
     // Meta's Cloud API, not device linking. Linking someone's personal WhatsApp needs a process
     // holding a socket open per customer, and leans on libraries Meta bans accounts for using.
     // The trade is stated in the tagline rather than buried: this is a separate number.
+    //
+    // SEVEN STEPS DOWN TO FIVE, and the three that went were the worst three. The old list ended
+    // "copy the Phone number ID", then "paste all three", then "back in Meta, edit the webhook:
+    // paste the Callback URL and Verify token, then subscribe to the messages field" — a return
+    // trip into a developer console AFTER the button that reads like the end. Meta has APIs for
+    // all of that (see lib/channels/connect.ts), so the connect does it instead.
+    //
+    // Step 4 asks for two values off one page. The App ID sits directly above the App secret in
+    // App Settings → Basic, so it costs one extra copy from a page they were already opening,
+    // and it is what lets us call the app-level subscription endpoint at all.
+    //
+    // TWO PERMISSIONS NOW, not one. whatsapp_business_messaging sends; whatsapp_business_management
+    // is what /{waba-id}/subscribed_apps needs. A token with only the first connects fine and then
+    // never receives anything, so the missing permission has to be asked for up front rather than
+    // diagnosed later.
     steps: [
       "At developers.facebook.com, create an app of type Business and add the WhatsApp product to it.",
       "In WhatsApp → API Setup, add the phone number you want the agent to answer on. It has to be a number that isn't already on WhatsApp.",
-      "Copy the Phone number ID from that page.",
-      "Create a permanent access token: Business Settings → Users → System users → add a system user with access to the app, then Generate token with the whatsapp_business_messaging permission.",
-      "In App Settings → Basic, copy the App secret.",
-      "Paste all three below and press Connect.",
-      "Back in Meta, under WhatsApp → Configuration, edit the webhook: paste the Callback URL and Verify token shown here after you connect, then subscribe to the messages field.",
+      "Create a permanent access token: Business Settings → Users → System users → add a system user with access to the app, then Generate token. Tick BOTH whatsapp_business_messaging and whatsapp_business_management.",
+      "In App Settings → Basic, copy the App ID and the App secret. They are on the same page, the ID just above the secret.",
+      "Paste the three below and press Connect. That is the end of it - we switch delivery on for you, so there is nothing to paste back into Meta.",
     ],
     fields: [
       { key: "accessToken", label: "Access token", placeholder: "Permanent access token" },
-      { key: "phoneNumberId", label: "Phone number ID", placeholder: "Phone number ID (a long number)" },
+      { key: "appId", label: "App ID", placeholder: "App ID from App Settings → Basic" },
       { key: "appSecret", label: "App secret", placeholder: "App secret from App Settings → Basic" },
+      {
+        key: "phoneNumberId",
+        label: "Phone number ID",
+        placeholder: "Phone number ID - only if this app has more than one number",
+        optional: true,
+      },
     ],
-    showWebhookUrl: true,
     connectedNote:
       "Message that number on WhatsApp and your agent answers there. The first number to message it becomes its owner - anyone else gets nothing back.",
   },

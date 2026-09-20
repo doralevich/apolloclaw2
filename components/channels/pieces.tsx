@@ -67,6 +67,40 @@ export function WebhookUrl({ agentId, channel }: { agentId: string; channel: Cha
   return <CopyableValue label={channel === "whatsapp" ? "Callback URL" : "Request URL"} value={url} />;
 }
 
+/** The old WhatsApp setup, kept for when the new one cannot run.
+ *
+ * Connecting WhatsApp now registers the callback URL and switches delivery on through Meta's own
+ * APIs, so in the ordinary case none of this is on screen. It comes back when that fails - most
+ * often a token minted without whatsapp_business_management, which sends fine and receives
+ * nothing - and then these are the two values that finish the job by hand.
+ *
+ * Deliberately NOT presented as an error. Nothing is broken and no work has been lost; there is
+ * one step left and here is what it needs. The sentence above it comes from the row, so it says
+ * what Meta actually refused rather than a guess written here. */
+export function ManualDelivery({
+  agentId,
+  channel,
+  verifyToken,
+}: {
+  agentId: string;
+  channel: ChannelId;
+  verifyToken: string;
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        In Meta, open WhatsApp → Configuration and edit the webhook. Paste these two in, then
+        subscribe to the <span className="font-mono">messages</span> field.
+      </p>
+      {/* Both, together, in this order - it is the order Meta's own form asks for them, and
+          these two being on separate parts of the card is what made the old setup easy to do
+          half of. */}
+      <WebhookUrl agentId={agentId} channel={channel} />
+      <CopyableValue label="Verify token" value={verifyToken} />
+    </div>
+  );
+}
+
 // Telegram usernames must be globally unique and end in "bot", so "step 1: create a bot" is in
 // practice a guessing game against every name already taken. Somebody non-technical hits three
 // rejections from BotFather and concludes the product is broken.
