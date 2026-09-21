@@ -195,7 +195,7 @@ export function AgentCard({
               (creditDollars > 0
                 ? `Heads up: ${name} still has $${creditDollars.toFixed(2)} in purchased credit, which is lost once it's finally deleted. `
                 : "") +
-              `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. If this workspace still has another agent afterwards, the $189/month hosting seat is credited back automatically.`
+              `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. If this workspace still has another agent afterwards, the $249/month hosting seat is credited back automatically.`
             }
             confirmText={`Delete ${name}`}
             destructive

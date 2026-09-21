@@ -31,7 +31,7 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 // Layout history (David's direct feedback, several rounds): tried a slim utility bar above the
 // main nav, merged it into one row, then split back into two tiers, this is that two-tier
 // layout, dark navy utility bar on top (email, Log in), main nav in white
-// underneath (category dropdowns, Schedule a Consultation). The AI Agents mega-menu was dropped
+// underneath (category dropdowns, Book a Discovery Call). The AI Agents mega-menu was dropped
 // from the top nav entirely per David's call that it's not needed here, moved into the Footer
 // instead (components/layout/Footer.tsx). Pricing dropped from the nav entirely too.
 
@@ -58,7 +58,7 @@ const COMPANY = [
   { label: "Security", to: "/security" },
 ];
 
-const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
+const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
 interface NavGroup {
   kind: "group";
@@ -280,6 +280,15 @@ export default function Navbar() {
       to: "/case-studies",
       active: (p) => p.startsWith("/case-studies"),
     },
+    // Pricing is back in the nav. The header note above records it being "dropped from the nav
+    // entirely" when there was no page to point at; there is one now (app/pricing/page.tsx), and
+    // a published price nobody can find is the same as no published price.
+    {
+      kind: "link",
+      label: "Pricing",
+      to: "/pricing",
+      active: (p) => p.startsWith("/pricing"),
+    },
     {
       kind: "link",
       label: "Blog",
@@ -302,7 +311,7 @@ export default function Navbar() {
             Uses the same .container as the main nav below so email/Log in line up exactly
             with the logo and right edge underneath, instead of the ad-hoc px-5/px-8 this used
             to carry on its own. Get Started was removed from both this bar and the mobile
-            drawer (David's call), leaving Schedule a Consultation as the single nav CTA. */}
+            drawer (David's call), leaving Book a Discovery Call as the single nav CTA. */}
         {/* py-[10px]: was 5px, David asked for 5px more top and bottom on this bar. */}
         <div className="hidden py-[10px] md:flex" style={{ background: NAVY_DEEP }}>
           <div className="container mx-auto flex w-full items-center justify-between">
@@ -319,7 +328,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Main nav: white, category dropdowns centered, Schedule a Consultation flush right. */}
+        {/* Main nav: white, category dropdowns centered, Book a Discovery Call flush right. */}
         <nav style={{ background: NAV_WHITE, borderBottom: `1px solid ${NAV_HAIRLINE}` }}>
           <div className="container mx-auto flex h-[88px] items-center gap-4">
             <Link href="/" className="flex shrink-0 items-center">
@@ -343,7 +352,7 @@ export default function Navbar() {
               className="hidden shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] text-[13px] font-bold tracking-[0.02em] transition-opacity hover:opacity-90 md:inline-flex"
               style={{ background: RED, color: "#ffffff", padding: "10px 18px" }}
             >
-              Schedule a Consultation
+              Book a Discovery Call
             </a>
 
             <button
@@ -430,7 +439,7 @@ export default function Navbar() {
                 className="inline-flex items-center justify-center rounded-[8px] border text-[13px] font-bold tracking-[0.04em]"
                 style={{ borderColor: HAIRLINE, color: PAPER, padding: "14px 20px" }}
               >
-                Schedule a Consultation
+                Book a Discovery Call
               </a>
             </div>
           </div>

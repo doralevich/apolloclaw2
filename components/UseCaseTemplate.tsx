@@ -96,7 +96,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
             </p>
             <div style={{ marginTop: 36 }}>
               <a
-                href="https://cal.com/therealdaveo/apollo-claw"
+                href="https://cal.com/therealdaveo/dbdo-consultation"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
@@ -111,7 +111,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
                   boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
                 }}
               >
-                Schedule Today
+                Book a Discovery Call
               </a>
             </div>
           </div>

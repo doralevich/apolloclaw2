@@ -157,6 +157,7 @@ const ROLE_INTAKES: Record<
 const wordmarkName = (roleName: string) => roleName.replace(/\s+Agent$/, "");
 import {
   DEFAULT_LICENSE_TIER,
+  MONTHLY_API_ALLOWANCE_LABEL,
   resolveLicenseTier,
 } from "@/lib/pricing/catalog";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
@@ -1118,7 +1119,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                 rel="noopener noreferrer"
                 style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: a, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
               >
-                Schedule a Call
+                Book a Discovery Call
               </a>
             </div>
           </div>
@@ -1126,9 +1127,8 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           {/* Said once, under both, because it is identical on both. Repeating it inside each
               card would read as a difference between them. */}
           <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "18px 0 0" }}>
-            The $189/mo covers managed hosting - we run it, patch it and keep it online - and
-            includes $25/mo of token usage. Same on either tier. Cancel the hosting whenever you
-            like; the license is yours to keep.
+            {MONTHLY_API_ALLOWANCE_LABEL} Same on either tier, and you can cancel whenever you
+            like with no minimum commitment.
           </p>
           <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "10px 0 0" }}>
             Billed securely through Stripe. Your account is created the moment payment clears,
@@ -1211,7 +1211,7 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "8px 0", fontSize: 14, borderBottom: total ? `1px solid ${BDR}` : "none" }}>
             <span style={{ color: TXD }}>Managed Hosting</span>
-            <span style={{ fontWeight: 700 }}>$189 / month</span>
+            <span style={{ fontWeight: 700 }}>$249 / month</span>
           </div>
           {total && (
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "14px 0 4px", fontSize: 15 }}>

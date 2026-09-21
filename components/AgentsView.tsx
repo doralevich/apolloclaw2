@@ -103,7 +103,7 @@ export function AgentsView() {
         {/* Two different acts, so two different controls.
             CreateAgentModal is the REBUILD: it renders only at zero agents and spends nothing
             beyond what they already pay. AddAgentButton is a PURCHASE - a second agent, its own
-            VPS, its own credit, +$189/mo - so it only shows once there is something to add to,
+            VPS, its own credit, +$249/mo - so it only shows once there is something to add to,
             and it states the charge before it makes it. */}
         {/* Rebuild is open to any member at zero agents; ADDING is an admin act - it charges
             the workspace's card, and the API refuses members anyway. Showing a member the

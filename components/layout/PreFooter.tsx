@@ -1,7 +1,7 @@
 import { BodyLarge, BracketLabel, H2, NAVY, PAPER_MUTED, RED, Section, TAN } from "@/components/home/ui";
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
 
-const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
+const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
 // The two standing bands that sit above the footer on every marketing page, per David's call
 // that they should be consistent sitewide rather than each page ending differently. Rendered
@@ -46,7 +46,7 @@ export function PreFooter() {
                     boxShadow: "0 8px 24px rgba(215,43,43,0.35)",
                   }}
                 >
-                  Schedule a Consultation
+                  Book a Discovery Call
                 </a>
               </div>
             </div>

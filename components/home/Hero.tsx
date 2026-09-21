@@ -2,7 +2,7 @@ import HeroAssistantInput from "@/components/HeroAssistantInput";
 import { HeroAssistantDemo } from "@/components/home/HeroAssistantDemo";
 import { NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, TextureBackground } from "@/components/home/ui";
 
-const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
+const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
 // Side-by-side layout matching the structure of the current live hero (copy widened on the
 // left, the Apollo[Claw] Assistant card on the right), per David's direct request, still the
@@ -38,11 +38,11 @@ export function Hero() {
               manage AI across the entire organization, from strategy to execution.
             </p>
             {/* Single CTA for now, per David's call: "Get Started" pointed at /agents, which
-                isn't where he wants hero traffic going yet. Schedule a Consultation was the
+                isn't where he wants hero traffic going yet. Book a Discovery Call was the
                 secondary button and is promoted to primary now that it stands alone. */}
             <div className="mt-8 flex flex-wrap gap-4">
               <PrimaryButton href={CONSULT_URL} external>
-                Schedule a Consultation
+                Book a Discovery Call
               </PrimaryButton>
             </div>
           </div>

@@ -251,8 +251,8 @@ export default function ContactClient() {
                 <p className="font-body text-sm text-muted-foreground mb-4">
                   Schedule a free 30-minute consultation and we&apos;ll walk through your needs together.
                 </p>
-                <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer">
-                  <Button variant="cta" size="default" className="w-full">Schedule Today</Button>
+                <a href="https://cal.com/therealdaveo/dbdo-consultation" target="_blank" rel="noopener noreferrer">
+                  <Button variant="cta" size="default" className="w-full">Book a Discovery Call</Button>
                 </a>
               </div>
             </div>

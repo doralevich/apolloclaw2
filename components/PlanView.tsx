@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 // fallback says who to ask rather than showing an error.
 
 // From the catalog's cents so a reprice cannot leave this page lying.
-const SEAT_PRICE = 189; // == HOSTING_PLAN.amountCents / 100; hardcoded because the catalog is server-only
+const SEAT_PRICE = 249; // == HOSTING_PLAN.amountCents / 100; kept in step by hand, see catalog
 
 export function PlanView() {
   const { current } = useWorkspace();

@@ -118,16 +118,16 @@ const nextConfig: NextConfig = {
         destination: "/contact",
         permanent: true,
       },
-      // /agents (the self-serve storefront) was retired — David's call that it is no longer
-      // relevant, alongside removing the Get Started buttons that pointed at it. These two
-      // are indexed pricing-intent URLs, so they move to /contact rather than being dropped:
-      // someone searching for our pricing still wants to reach a human, and a 301 into a 404
-      // is worse than either.
-      {
-        source: "/pricing",
-        destination: "/contact",
-        permanent: true,
-      },
+      // /agents (the self-serve storefront) was retired, David's call that it is no longer
+      // relevant, alongside removing the Get Started buttons that pointed at it. Its
+      // pricing-intent URLs moved to /contact rather than being dropped: someone searching for
+      // our pricing still wants to reach a human, and a 301 into a 404 is worse than either.
+      //
+      // /pricing IS LIVE AGAIN and its redirect is gone. It serves app/pricing/page.tsx, the
+      // page carrying the two tiers and the support plans. This redirect is why the page was
+      // invisible when first added: the route existed, the build rendered it, and every request
+      // still 308'd to /contact, which is the kind of thing you only catch by fetching the URL
+      // rather than trusting the build output. Re-add it here only if the page is retired again.
       {
         source: "/cost-estimator",
         destination: "/contact",

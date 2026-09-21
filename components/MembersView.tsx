@@ -225,7 +225,7 @@ export function MembersView() {
                 <span className="min-w-0">
                   <span className="block text-sm font-medium">Give them their own agent</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
-                    <strong className="text-foreground">$449 one-time + $189/month</strong> hosting,
+                    <strong className="text-foreground">$449 one-time + $249/month</strong> hosting,
                     pro-rated from today, both on the same invoice. Their agent is built now and
                     waiting when they sign in. They answer their own questionnaire, so it is built
                     around their work, not yours.
@@ -250,7 +250,7 @@ export function MembersView() {
               {chargeArmed && (
                 <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs leading-relaxed">
                   <strong className="text-foreground">Pressing again charges your card.</strong>{" "}
-                  $449 once plus $189/month added to your hosting subscription, pro-rated from
+                  $449 once plus $249/month added to your hosting subscription, pro-rated from
                   today, and their agent starts building immediately. Cancel costs nothing.
                 </div>
               )}
@@ -286,8 +286,8 @@ export function MembersView() {
                       : "Creating..."
                     : withAgent
                       ? chargeArmed
-                        ? "Confirm - charge $449 + $189/mo"
-                        : "Add seat - $449 + $189/mo"
+                        ? "Confirm - charge $449 + $249/mo"
+                        : "Add seat - $449 + $249/mo"
                       : "Create invite link"}
                 </Button>
               </DialogFooter>

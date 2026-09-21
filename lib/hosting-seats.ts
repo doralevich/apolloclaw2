@@ -6,11 +6,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 // Hosting is a QUANTITY, not a pile of subscriptions.
 //
-// A company that adds an agent for someone in the office needs a second $189/mo. The obvious
+// A company that adds an agent for someone in the office needs a second $249/mo. The obvious
 // implementation - a second subscription - is the wrong one for three reasons:
 //
 //   THE CUSTOMER'S BILL. One line that reads "ApolloClaw Agent Hosting x3" is a bill somebody
-//   can check. Three separate $189 charges landing on separate renewal dates is a support
+//   can check. Three separate monthly charges landing on separate renewal dates is a support
 //   email every month.
 //
 //   PRORATION. Stripe prorates a quantity change to the day, for free. Hand-rolling "you added

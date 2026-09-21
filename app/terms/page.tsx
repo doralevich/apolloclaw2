@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 // WRITTEN AGAINST WHAT THIS PRODUCT ACTUALLY DOES, not a template. Every number and every
 // timescale below is read out of the code, so it can be checked rather than trusted:
 //
-//   $449 license / $189 a month / $25 of included usage  lib/pricing/catalog.ts
+//   $449 or $3,500 setup / $249 a month / $150 of API usage   lib/pricing/catalog.ts
 //   Credit packs and the 7% service fee inside them      lib/pricing/catalog.ts (CREDIT_MARKUP)
 //   10-day grace window after cancellation               lib/entitlement.ts (GRACE_PERIOD_DAYS)
 //   30-day retention before an agent is purged           lib/agent-lifecycle.ts (RETENTION_DAYS)
@@ -61,7 +61,7 @@ const SECTIONS: LegalSection[] = [
       },
       {
         kind: "prose",
-        text: "Current prices are shown at checkout and are what binds. At the time of writing, self-serve is a $449 licence plus $189 a month for hosting, which includes $25 of token usage each month. A higher tier with setup done together on calls is arranged by conversation rather than sold through checkout.",
+        text: "Current prices are shown at checkout and are what binds. At the time of writing there are two tiers, both at $249 a month with no minimum commitment: Set It and Forget It at $449 setup, which is the questionnaire build with no custom work, and Custom Build at $3,500 setup, which adds a custom-scoped build and 30 days of onboarding. The $249 covers hosting, monitoring, updates and up to $150 in API usage each month; sustained usage above that is reviewed with you and billed at cost. Support plans are a separate monthly add-on, arranged by conversation rather than sold through checkout.",
       },
       {
         kind: "prose",
@@ -94,7 +94,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "Your monthly hosting includes an allowance of token usage. If your agent works harder than that, you can buy additional credit in the dashboard rather than being cut off mid-month.",
+        text: "Your monthly subscription includes up to $150 in API usage. If your agent works harder than that, sustained usage above the allowance is reviewed with you and billed at cost, and you can also buy additional credit in the dashboard rather than being cut off mid-month.",
       },
       {
         kind: "bullets",
