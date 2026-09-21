@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CalendarDays, FileText, Loader2, Mail, PenLine, Receipt, Search, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
 import { CHIP_ROW_SIZE, chipIsUsable, type Opener } from "@/config/chat-opening";
 import { apiFetch } from "@/lib/api";
@@ -175,19 +174,20 @@ export function ChatView({
     connected ? chipPool.filter((c) => chipIsUsable(c, connected)) : chipPool
   ).slice(0, CHIP_ROW_SIZE);
 
-  const [greeting, setGreeting] = useState<Greeting | null>(null);
-  useEffect(() => {
-    if (!showWelcome) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-hydration pick: the greeting is random, so the server must not choose one, and re-rolling when a new empty chat appears is exactly this effect's job
-    setGreeting(
-      pickGreeting({
-        userName: userFirstName,
-        agentName: greetName,
-        hour: new Date().getHours(),
-      })
-    );
-  }, [showWelcome, activeSessionId, userFirstName, greetName]);
-
+  // THE GREETING IS FIXED, David's call, and it is the one Home used to carry.
+  //
+  // It was a random pick from config/greetings.ts, re-rolled per empty chat - "Hi David.",
+  // "Welcome back, David.", "Good morning, David.", with an agent introduction about one chat in
+  // five. That file argues an assistant introducing itself at every meeting sounds like it has
+  // never met you, which is a fair argument and not the one that decides this: David wants the
+  // words Home said, and Home is the screen this replaced.
+  //
+  // So it is the same sentence, with the same agent name in it. pickGreeting is no longer used
+  // here; config/greetings.ts stays because displayFirstName and displayFullName are the
+  // dashboard layout's, and putting the rotation back is this block.
+  //
+  // No random pick means nothing to choose after hydration, so the effect that did it is gone
+  // too - the text is the same on the server and in the browser.
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
       {att.dragOver && <DropOverlay />}
@@ -247,45 +247,50 @@ export function ChatView({
               // is directly underneath and wants the weight.
               className="mt-0.5 size-16 shrink-0 text-2xl sm:size-20 sm:text-3xl"
             />
-            {/* Height reserved so the composer doesn't jump when the greeting lands. */}
             <div className="flex min-h-[76px] min-w-0 flex-1 flex-col gap-2">
-              {greeting && (
-                <>
-                  <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">
-                    {/* Was split, with the address in the accent - that was the loudest part of
-                        the violet pass and it went with it. Weight carries the line instead. */}
-                    {greeting.headline}
-                  </h1>
-                  {/*
-                    THE AGENT SPEAKS FIRST when it has something of theirs to say.
+              <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">
+                {/* Home's exact line: the address plain, the weight carrying it. Renders "Hey."
+                    with no name rather than an empty gap - first_name is user metadata and
+                    plenty of accounts have none. */}
+                Hey{userFirstName ? ` ${userFirstName}` : ""}.
+              </h1>
+              {/* Home's sentence, moved here whole.
 
-                    `greeting.subline` is a generic invitation, deliberately written to be true of
-                    any workspace. When the questionnaire gave us something better, this quotes
-                    the owner back to themselves instead - their own words about the work they
-                    most want gone - and clicking it opens that conversation.
+                  One word changed, and only because the sentence moved: "let's start a
+                  conversation" was a LINK to this page. Clicking it here would reload the screen
+                  you are already looking at, so it is emphasis now rather than a link. */}
+              <p className="text-lg text-foreground/75">
+                Nice to meet you. I&apos;m {greetName ?? "your agent"}, and I already know your
+                business from the questionnaire we went through, so{" "}
+                <span className="font-medium text-foreground">let&apos;s start a conversation</span>{" "}
+                and get right to work.
+              </p>
+              {/*
+                THE AGENT SPEAKS FIRST when it has something of theirs to say.
 
-                    A button, not a paragraph: the whole point is that it is one tap from being
-                    read to being started. It fills the composer rather than sending, the same as
-                    the chips below, because the first message is worth a glance before it goes.
-                  */}
-                  {opener ? (
-                    <button
-                      type="button"
-                      onClick={() => setPicked((p) => ({ text: opener.prompt, n: (p?.n ?? 0) + 1 }))}
-                      // No standing underline: across two wrapped lines it reads as a broken
-                      // hyperlink rather than as the agent talking. The arrow carries the
-                      // affordance at rest and the underline arrives on hover.
-                      className="group max-w-xl text-lg text-foreground/75 underline-offset-4 transition-colors hover:text-foreground hover:underline"
-                    >
-                      {opener.text}
-                      <span aria-hidden="true" className="ml-1.5 inline-block transition-transform group-hover:translate-x-0.5">
-                        &rarr;
-                      </span>
-                    </button>
-                  ) : (
-                    <p className="text-lg text-foreground/75">{greeting.subline}</p>
-                  )}
-                </>
+                This used to REPLACE the line above it. It sits under it now, because the sentence
+                above is fixed and the two say different things: one introduces the agent, this
+                one quotes the owner back to themselves - their own words, from that same
+                questionnaire, about the work they most want gone.
+
+                A button, not a paragraph: the whole point is that it is one tap from being read
+                to being started. It fills the composer rather than sending, the same as the chips
+                below, because the first message is worth a glance before it goes.
+              */}
+              {opener && (
+                <button
+                  type="button"
+                  onClick={() => setPicked((p) => ({ text: opener.prompt, n: (p?.n ?? 0) + 1 }))}
+                  // No standing underline: across two wrapped lines it reads as a broken
+                  // hyperlink rather than as the agent talking. The arrow carries the
+                  // affordance at rest and the underline arrives on hover.
+                  className="group max-w-xl text-left text-lg text-foreground/75 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                >
+                  {opener.text}
+                  <span aria-hidden="true" className="ml-1.5 inline-block transition-transform group-hover:translate-x-0.5">
+                    &rarr;
+                  </span>
+                </button>
               )}
             </div>
             {/* The rail's stand-in below lg. One line rather than a squeezed copy of it. */}
