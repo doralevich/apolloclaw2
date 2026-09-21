@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AGENTS, externalLinkProps } from "@/config/navigation";
-import { agentBrand } from "@/lib/agentBrand";
+import { agentBrand, onDarkCard } from "@/lib/agentBrand";
 import { HAIRLINE, PAPER, PAPER_MUTED } from "@/components/home/ui";
 
 // The fleet, one card per agent, for /ai-agents.
@@ -76,8 +76,12 @@ export function FleetGrid() {
                 {item.description}
               </span>
               <span
-                className="font-mono mt-5 text-[11px] font-bold uppercase tracking-[0.12em] transition-opacity group-hover:opacity-100"
-                style={{ color: brand.color, opacity: 0.8 }}
+                // onDarkCard, not brand.color: as a wordmark colour on white every one of
+                // these reads; as 11px text on this navy, not one of the ten clears AA. Full
+                // opacity for the same reason - dimming the only coloured text on the card to
+                // 0.8 was taking contrast back off after paying for it.
+                className="font-mono mt-5 text-[11px] font-bold uppercase tracking-[0.12em]"
+                style={{ color: onDarkCard(brand.color) }}
               >
                 {item.external ? "Visit the site →" : "Explore →"}
               </span>
