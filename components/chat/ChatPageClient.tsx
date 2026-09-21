@@ -122,7 +122,12 @@ export function ChatPageClient() {
             </span>
           </div>
         )}
-        <ChatView agentId={active.agent37_id} agentName={active.name} prefill={prefill} />
+        <ChatView
+          agentId={active.agent37_id}
+          agentName={active.name}
+          agentAvatarUrl={active.avatar_url}
+          prefill={prefill}
+        />
       </div>
     </div>
   );
