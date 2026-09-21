@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { NavItem } from "@/config/navigation";
+import { externalLinkProps, type NavItem } from "@/config/navigation";
 import { PAPER, PAPER_MUTED, RED } from "@/components/home/ui";
 
 // The card both homepage axes render. IndustryCards owned this markup and AgentCards needed the
@@ -20,10 +20,11 @@ export function NavCard({
   /** Grid placement from the caller, e.g. centering a trailing card. */
   className?: string;
 }) {
-  const { label, description, to, Icon } = item;
+  const { label, description, to, Icon, external } = item;
   return (
     <Link
       href={to}
+      {...(external ? externalLinkProps : {})}
       className={`group flex flex-col rounded-xl p-6 transition-colors ${className}`}
       style={{
         background: "rgba(245,246,248,0.04)",

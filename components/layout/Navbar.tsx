@@ -10,9 +10,14 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 // Site IA, current top-level order per David's direct call: Company · Industries · Agents ·
 // Case Studies · Blog · Contact. Industries (which business you run) and Agents (which one you want
 // you're hiring) are two separate triggers, briefly merged into one two-column "Solutions"
-// mega-menu and then split back out as too dense. The two lists are now strictly non-overlapping:
-// Legal, Medical and Insurance stay out of the Agents list because each resolves
-// to the same page as its Industries counterpart. Company is a small dropdown (About, Security).
+// mega-menu and then split back out as too dense. Company is a small dropdown (About, Security).
+//
+// LEGAL, MEDICAL AND INSURANCE ARE IN AGENTS NOW, David's call, and this note used to say the
+// opposite: that they stayed out because each resolved to the same page as its Industries
+// counterpart. That was true and was the wrong conclusion - those pages are titled "Law Agent",
+// "Medical AI Agent" and "AI Insurance Agent", so they were product pages filed under the wrong
+// axis. They moved rather than being duplicated; the pages and their URLs are untouched. Real
+// Estate remains in both lists, which is a separate and older decision (config/navigation.ts).
 //
 // Blog is back as a top-level link. It had been dropped along with the rest of Resources, which
 // left /blog reachable only from a footer column where it was labelled "Insights" — so the one
@@ -46,7 +51,7 @@ const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "david@apolloclaw.ai";
-import { AGENTS, INDUSTRIES } from "@/config/navigation";
+import { AGENTS, INDUSTRIES, externalLinkProps } from "@/config/navigation";
 
 const COMPANY = [
   { label: "About", to: "/about" },
@@ -62,7 +67,9 @@ interface NavGroup {
   render: () => React.ReactNode;
   // What the mobile drawer lists when this group is expanded. Carried on the group itself so
   // the drawer never has to branch on the label string to find the right array.
-  mobileItems: { label: string; to: string; Icon?: LucideIcon }[];
+  // `external` rides along so the drawer opens an offsite row in a new tab exactly as the
+  // desktop flyout does. A new tab in one and not the other is the drift this type invites.
+  mobileItems: { label: string; to: string; Icon?: LucideIcon; external?: boolean }[];
 }
 
 // Plain top-level links (Case Studies, Contact), no dropdown, just an active-state underline
@@ -159,7 +166,7 @@ function simpleLink(item: { label: string; to: string }, pathname: string) {
 // Both category flyouts render the same way: a two-column grid of icon tiles. Shared so
 // Industries and Agents cannot drift apart visually.
 function tilePanel(
-  items: { label: string; description: string; to: string; Icon: LucideIcon }[],
+  items: { label: string; description: string; to: string; Icon: LucideIcon; external?: boolean }[],
   pathname: string,
   minWidth: number,
 ) {
@@ -173,6 +180,7 @@ function tilePanel(
             <Link
               key={item.to}
               href={item.to}
+              {...(item.external ? externalLinkProps : {})}
               className="-m-1.5 flex items-start gap-3 rounded-lg p-1.5 transition-colors"
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -235,7 +243,11 @@ export default function Navbar() {
     {
       kind: "group",
       label: "Agents",
-      active: (p) => p.startsWith("/ai-agents"),
+      // Matches the rows, not one URL prefix. Four agents live under /industries/* - law,
+      // insurance, medical and real estate, whose pages were always there - so a prefix test on
+      // /ai-agents alone left the tab unlit on four of its own destinations. External rows are
+      // skipped: nothing on this site is ever "on" thecollegeagent.ai.
+      active: (p) => AGENTS.some((a) => !a.external && p === a.to),
       mobileItems: AGENTS,
       render: () => tilePanel(AGENTS, pathname, 560),
     },
@@ -357,6 +369,7 @@ export default function Navbar() {
                         <Link
                           key={item.to}
                           href={item.to}
+                          {...(item.external ? externalLinkProps : {})}
                           className="flex items-center gap-2.5 py-2 text-base"
                           style={{ color: PAPER_MUTED }}
                         >
