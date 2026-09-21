@@ -19,6 +19,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/privacy",          priority: 0.3 },
     { path: "/cookies",          priority: 0.3 },
     { path: "/terms",            priority: 0.3 },
+    // The fleet page: the index every /ai-agents/* entry below hangs off.
+    { path: "/ai-agents",              priority: 0.9 },
     { path: "/ai-agents/ceo",          priority: 0.9 },
     { path: "/ai-agents/cfo",          priority: 0.9 },
     { path: "/ai-agents/legal",        priority: 0.9 },

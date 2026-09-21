@@ -27,7 +27,14 @@ const navLinks = [
 // and they had. The Marketing Agent was listed in both after its page was deleted, and the Law,
 // Insurance and Medical agents were filed under Industries in one list and nowhere in the other.
 // A sentence asking future editors to keep two arrays in step is not a mechanism; this is.
-const agentLinks = AGENTS.map((a) => ({ label: a.label, to: a.to, external: a.external }));
+//
+// The fleet page leads the column. It is the one link here that is not an agent, and a
+// directory of ten is worth reaching from the place somebody lands when the column turns out
+// not to name the thing they wanted.
+const agentLinks = [
+  { label: "All Agents", to: "/ai-agents", external: undefined as true | undefined },
+  ...AGENTS.map((a) => ({ label: a.label, to: a.to, external: a.external })),
+];
 const industryLinks = INDUSTRIES.map((i) => ({ label: i.label, to: i.to }));
 
 const consultingLinks = [
