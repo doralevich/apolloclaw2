@@ -34,7 +34,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/industries/nonprofit",    priority: 0.9 },
     { path: "/ai-agents/sales",        priority: 0.9 },
     { path: "/ai-agents/receptionist", priority: 0.9 },
-    { path: "/ai-agents/marketing",    priority: 0.9 },
     { path: "/ai-agents/hr",           priority: 0.9 },
     { path: "/industries/private-equity",        priority: 0.9 },
     { path: "/industries/professional-services", priority: 0.9 },

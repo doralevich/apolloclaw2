@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Briefcase, Building2, Calculator, GraduationCap, HeartHandshake, Home, Landmark, Megaphone,
+  Briefcase, Building2, Calculator, GraduationCap, HeartHandshake, Home, Landmark,
   Phone, Scale, ShieldCheck, ShoppingCart, Stethoscope, TrendingUp, User, UserSearch, Users,
   Wallet,
 } from "lucide-react";
@@ -17,18 +17,38 @@ export type NavItem = {
   /** Keys agentBrand() in lib/agentBrand.ts, so a card or tile can take the agent's own colour
    *  instead of ApolloClaw red. Only set on AGENTS; an industry is not one agent. */
   agentTypeId?: string;
+  /** `to` leaves ApolloClaw, so the link opens in a new tab.
+   *
+   *  One agent is sold on its own property rather than here (The College Agent), and a nav row
+   *  that navigates away from the site you are browsing is a row that loses you the site. Set
+   *  this and every renderer adds target and rel from `externalLinkProps` below. */
+  external?: boolean;
 };
+
+/** What an external nav row adds to its anchor. One object because AGENTS renders in three
+ *  places - the navbar flyout, the mobile sheet and the home grid - and a new tab that only
+ *  opens in two of them is worse than one that opens in none. */
+export const externalLinkProps = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 
 // Industries: which business you run. Same icon-tile treatment as Agents (David's call)
 // so the two flyouts read as one system. Academics points at the real, already-live education
 // landing page rather than a /industries/* route.
 export const INDUSTRIES: NavItem[] = [
-  { label: "Law Firms", Icon: Scale, to: "/industries/law-firms", description: "Client intake, deadline tracking, and billing follow-up, so attorneys stay on billable work." },
-  { label: "Medical Practices", Icon: Stethoscope, to: "/industries/medical-practices", description: "Scheduling, reminders, and patient follow-up, HIPAA-aware from the ground up." },
+  // LAW FIRMS, MEDICAL PRACTICES AND INSURANCE MOVED TO AGENTS, David's call, and the pages did
+  // not move with them: /industries/law-firms, /industries/medical-practices and
+  // /industries/insurance are unchanged and still where those three rows point from. Only which
+  // menu carries them changed.
+  //
+  // It is the right menu for them. Each of those pages is titled as the agent - "Law Agent",
+  // "Medical AI Agent", "AI Insurance Agent" - so they were the only Industries rows that were
+  // really product pages, and the header note in Navbar.tsx had them staying out of Agents for a
+  // reason that no longer holds.
+  //
+  // Real Estate went too. It used to sit in both lists deliberately, which the note on AGENTS
+  // still explains; David's call that all the agents belong under Agents settles it the other
+  // way. /industries/real-estate is unchanged and is still where the Agents row points.
   { label: "PE-Backed Portfolio Companies", Icon: Briefcase, to: "/industries/private-equity", description: "Standardized reporting and back-office automation across every portfolio company." },
-  { label: "Real Estate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
-  { label: "Insurance", Icon: ShieldCheck, to: "/industries/insurance", description: "Quote follow-up, renewals, and claims chasing that runs without a producer on it." },
   { label: "Accounting Firms", Icon: Calculator, to: "/industries/accounting-firms", description: "Client requests, document collection, and close support through every busy season." },
   { label: "E-commerce", Icon: ShoppingCart, to: "/industries/ecommerce", description: "Order questions, returns, and post-purchase follow-up handled at volume." },
   { label: "Nonprofit", Icon: HeartHandshake, to: "/industries/nonprofit", description: "Donor stewardship, grant deadlines, and volunteer coordination on a lean team." },
@@ -58,8 +78,32 @@ export const AGENTS: NavItem[] = [
   { label: "The CEO Agent", agentTypeId: "ceo", Icon: Building2, to: "/ai-agents/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting." },
   { label: "The CFO Agent", agentTypeId: "cfo", Icon: Wallet, to: "/ai-agents/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close." },
   { label: "The Sales Agent", agentTypeId: "sales", Icon: TrendingUp, to: "/ai-agents/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving." },
-  { label: "The Marketing Agent", agentTypeId: "marketing", Icon: Megaphone, to: "/ai-agents/marketing", description: "Draft content, run the campaign calendar, and nurture leads, keep reporting current." },
+  // THE MARKETING AGENT IS NOT HERE, David's call. /ai-agents/marketing is deleted, so this row
+  // and the footer's would have led to a 404 - the one thing worse than no link.
+  //
+  // ONLY THE PAGE WENT. The marketing agent TYPE is untouched in config/agent-types.ts: still
+  // available, still `internal` so only a platform admin sees its card, still with its persona
+  // (config/personas.ts), its intake (lib/marketingIntake.ts and MARKETING_BRANCH in
+  // OnboardingForm), its /build/marketing funnel and its /agent-invite/marketing route. Nothing
+  // about selling or provisioning one changed; what went is the public page arguing for it.
   { label: "The Recruiting Agent", agentTypeId: "recruiting", Icon: UserSearch, to: "/ai-agents/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding." },
+  // THESE THREE POINT AT THEIR INDUSTRIES PAGE, and that is not a shortcut - it is where each
+  // agent's page already lives. /industries/law-firms is titled "Law Agent", /industries/insurance
+  // is "AI Insurance Agent", /industries/medical-practices is "Medical AI Agent"; all three are
+  // ~280-line AgentHero pages, the same shape as any /ai-agents/* one. Building an /ai-agents/
+  // twin for each would have been a second page competing with the first for the same query.
+  //
+  // Same precedent as The Real Estate Agent below, which has pointed at its Industries page for
+  // exactly this reason since there was no /ai-agents/real-estate.
+  { label: "The Law Agent", agentTypeId: "legal", Icon: Scale, to: "/industries/law-firms", description: "Draft from your templates, redline what comes in, and never let a renewal date slip." },
+  { label: "The Insurance Agent", agentTypeId: "insurance", Icon: ShieldCheck, to: "/industries/insurance", description: "Track renewals, chase quotes and claims, and compare policies side by side, stopping where a licensed professional takes over." },
+  { label: "The Medical Agent", agentTypeId: "medical", Icon: Stethoscope, to: "/industries/medical-practices", description: "Keep the schedule full, chase referrals and authorizations, and answer what a front desk answers all day." },
   { label: "The Real Estate Agent", agentTypeId: "realestate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
   { label: "The Personal Agent", agentTypeId: "personal", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
+  // LAST, AND THE ONLY ONE THAT LEAVES. The College Agent is sold, built and provisioned on its
+  // own property (agent-types.ts: externalUrl, and nothing in this app ever creates one), so the
+  // row goes to the site that actually sells it rather than to a page here that would have to
+  // hand people off anyway. New tab, because a dropdown row should not cost you the site you
+  // were browsing.
+  { label: "The College Agent", agentTypeId: "college", Icon: GraduationCap, to: "https://thecollegeagent.ai", external: true, description: "Essays, deadlines, applications and scholarships, kept straight through the whole of senior year." },
 ];

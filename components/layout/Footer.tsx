@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
+import { AGENTS, INDUSTRIES, externalLinkProps } from "@/config/navigation";
 
 const NAVY = "#0B1729";
 const RED = "#D72B2B";
@@ -19,31 +20,15 @@ const navLinks = [
 ];
 
 // Moved here from the top nav (Navbar.tsx), David's call that a 10-item mega-menu isn't
-// needed up top for a site this size. This is the product family, named the way each agent is
-// sold, and it mirrors AGENTS in config/navigation.ts - the two must not drift apart. Real Estate
-// appears in both columns on purpose: it is an agent you can buy and a vertical you can be.
-const agentLinks = [
-  { label: "The CEO Agent", to: "/ai-agents/ceo" },
-  { label: "The CFO Agent", to: "/ai-agents/cfo" },
-  { label: "The Sales Agent", to: "/ai-agents/sales" },
-  { label: "The Marketing Agent", to: "/ai-agents/marketing" },
-  { label: "The Recruiting Agent", to: "/ai-agents/recruiting" },
-  { label: "The Real Estate Agent", to: "/industries/real-estate" },
-  { label: "The Personal Agent", to: "/ai-agents/personal-assistant" },
-];
-
-const industryLinks = [
-  { label: "Law Firms", to: "/industries/law-firms" },
-  { label: "Medical Practices", to: "/industries/medical-practices" },
-  { label: "Real Estate", to: "/industries/real-estate" },
-  { label: "Insurance", to: "/industries/insurance" },
-  { label: "Accounting Firms", to: "/industries/accounting-firms" },
-  { label: "Financial Services", to: "/industries/financial-services" },
-  { label: "Professional Services", to: "/industries/professional-services" },
-  { label: "Reception & Front Desk", to: "/ai-agents/receptionist" },
-  { label: "Human Resources", to: "/ai-agents/hr" },
-  { label: "Private Equity", to: "/industries/private-equity" },
-];
+// needed up top for a site this size.
+//
+// DERIVED FROM config/navigation.ts, not retyped. Both of these were hand-written second copies
+// of AGENTS and INDUSTRIES, with a comment right here saying the two "must not drift apart" -
+// and they had. The Marketing Agent was listed in both after its page was deleted, and the Law,
+// Insurance and Medical agents were filed under Industries in one list and nowhere in the other.
+// A sentence asking future editors to keep two arrays in step is not a mechanism; this is.
+const agentLinks = AGENTS.map((a) => ({ label: a.label, to: a.to, external: a.external }));
+const industryLinks = INDUSTRIES.map((i) => ({ label: i.label, to: i.to }));
 
 const consultingLinks = [
   { label: "AI for Business", to: "/ai-agent-for-business" },
@@ -119,6 +104,7 @@ export default function Footer() {
                   <Link
                     key={link.to}
                     href={link.to}
+                    {...(link.external ? externalLinkProps : {})}
                     className="font-body text-[14px] transition-colors hover:text-white"
                     style={{ color: WHITE_MUTED }}
                   >
