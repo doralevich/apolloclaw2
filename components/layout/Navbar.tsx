@@ -63,6 +63,14 @@ const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
 interface NavGroup {
   kind: "group";
   label: string;
+  /** The group's own page, making the trigger itself a destination rather than a dead button.
+   *
+   *  Only Agents has one (David: "the main Agent link should have our Fleet of Agents"). A
+   *  trigger without this stays a <button>, which is correct for Company and Industries: there
+   *  is no page behind either, and a link that goes nowhere is worse than a button that opens
+   *  a menu. Set it and the desktop trigger becomes a Link and the drawer gains an overview
+   *  row, so the page is reachable on both. */
+  to?: string;
   active: (pathname: string) => boolean;
   render: () => React.ReactNode;
   // What the mobile drawer lists when this group is expanded. Carried on the group itself so
@@ -91,21 +99,33 @@ function DesktopDropdown({ group, pathname }: { group: NavGroup; pathname: strin
   // Clicking anything inside dismisses it, and it re-arms once the cursor leaves the trigger.
   const [dismissed, setDismissed] = useState(false);
 
+  // The trigger's contents are identical either way; only the element changes. A group with a
+  // page of its own is a Link you can click through to, one without stays a button that only
+  // opens the menu. Hover still drives the flyout in both cases - it is the parent .group that
+  // owns that, not this element.
+  const triggerClass =
+    "relative flex items-center gap-1 whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors";
+  const triggerInner = (
+    <>
+      {group.label}
+      <ChevronDown size={11} className={`transition-transform ${dismissed ? "" : "group-hover:rotate-180"}`} />
+      {active && (
+        <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
+      )}
+    </>
+  );
+
   return (
     <div className="group relative" onMouseLeave={() => setDismissed(false)}>
-      <button
-        className="relative flex items-center gap-1 whitespace-nowrap pb-1 text-[14px] font-bold tracking-[0.01em] transition-colors"
-        style={{ color: NAV_INK }}
-      >
-        {group.label}
-        <ChevronDown
-          size={11}
-          className={`transition-transform ${dismissed ? "" : "group-hover:rotate-180"}`}
-        />
-        {active && (
-          <span className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: RED }} />
-        )}
-      </button>
+      {group.to ? (
+        <Link href={group.to} className={triggerClass} style={{ color: NAV_INK }}>
+          {triggerInner}
+        </Link>
+      ) : (
+        <button className={triggerClass} style={{ color: NAV_INK }}>
+          {triggerInner}
+        </button>
+      )}
       <div
         onClick={() => setDismissed(true)}
         className={`invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 ${
@@ -243,11 +263,14 @@ export default function Navbar() {
     {
       kind: "group",
       label: "Agents",
+      // The only group with a page behind it: the fleet (app/ai-agents/page.tsx).
+      to: "/ai-agents",
       // Matches the rows, not one URL prefix. Four agents live under /industries/* - law,
       // insurance, medical and real estate, whose pages were always there - so a prefix test on
       // /ai-agents alone left the tab unlit on four of its own destinations. External rows are
-      // skipped: nothing on this site is ever "on" thecollegeagent.ai.
-      active: (p) => AGENTS.some((a) => !a.external && p === a.to),
+      // skipped: nothing on this site is ever "on" thecollegeagent.ai. The fleet page itself
+      // lights it too, which the row test alone would miss.
+      active: (p) => p === "/ai-agents" || AGENTS.some((a) => !a.external && p === a.to),
       mobileItems: AGENTS,
       render: () => tilePanel(AGENTS, pathname, 560),
     },
@@ -363,6 +386,18 @@ export default function Navbar() {
                 </button>
                 {openSection === entry.label && (
                   <div className="flex flex-col gap-1 pb-4 pl-2">
+                    {/* The group's own page. On desktop the trigger itself is the link; the
+                        drawer's trigger has to stay a toggle, so without this row the fleet
+                        page would be desktop-only. */}
+                    {entry.to && (
+                      <Link
+                        href={entry.to}
+                        className="font-heading py-2 text-base font-bold"
+                        style={{ color: PAPER }}
+                      >
+                        All {entry.label}
+                      </Link>
+                    )}
                     {entry.mobileItems.map((item) => {
                       const Icon = item.Icon;
                       return (
