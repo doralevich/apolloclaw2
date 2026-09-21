@@ -111,19 +111,29 @@ const BRANDS: Record<string, AgentBrand> = {
 // ─── Using a brand colour as text on a dark card ────────────────────────────
 //
 // These colours are sampled off wordmarks that sit on white. Several are very dark - CFO's
-// navy, Personal's purple, Law's maroon, and now College's forest green - and on the dark
-// navy cards the homepage and /ai-agents render, every single one of them fails WCAG AA as
-// small text. Measured against the card ground (#101F38 under a 3% paper wash):
+// navy, Personal's purple, Law's maroon, and College's forest green - and on the dark navy
+// cards the homepage and /ai-agents render, every one of them fails WCAG AA as small text.
+// Measured in the browser on the homepage's two grids, as shipped:
 //
-//   ceo 3.38  cfo 1.20  legal 1.69  sales 2.57  recruiting 3.11
-//   medical 3.78  insurance 2.39  personal 1.54  realestate 3.33  college 2.05
+//   label, needs 4.5:1 - 19 of 19 failed
+//     industries (ApolloClaw red) 2.65   ceo 2.47  cfo 1.21  sales 2.13  recruiting 2.31
+//     legal 1.47  insurance 2.00  medical 2.88  realestate 2.57  personal 1.40  college 1.76
 //
-// Ten out of ten, before the 0.8 opacity the label also carries. CFO's "EXPLORE" is very
-// nearly invisible. The fix belongs here rather than in a brighter `color` above, because
-// `color` is the brand and is also used where it is correct as-is: the /build funnel hero
-// and the button on it, both on light grounds.
+//   icon, needs 3:1 as a graphical object - 8 of 19 failed
+//     cfo 1.14  legal 1.62  personal 1.46  college 1.86  insurance 2.11
+//     sales 2.25  recruiting 2.85  realestate 2.88
+//
+// CFO at 1.14 is invisible, not dim. The fix belongs here rather than in a brighter `color`
+// above, because `color` is the brand and is also used where it is correct as-is: the chip
+// tints on those same cards (12% and 25% over navy), and the /build funnel hero and its
+// button, both on light grounds.
 
-const CARD_GROUND: [number, number, number] = [23, 37, 62];
+// THE LIGHTEST GROUND THIS HELPER SERVES, not any one page's. Two grids call it over slightly
+// different navy: the fleet page's cards are a 3% paper wash over NAVY_ELEVATED (#17253E) and
+// the homepage's are 4% (#192840). Contrast against a light ground is the harder case, so
+// sizing to the lighter of the two clears both - tuned to the darker one, three homepage
+// labels landed at 4.46-4.49 and only looked fine because they were measured elsewhere.
+const CARD_GROUND: [number, number, number] = [25, 40, 64];
 
 function channel(c: number): number {
   const s = c / 255;
