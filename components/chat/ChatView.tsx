@@ -8,6 +8,7 @@ import { pickGreeting, type Greeting } from "@/config/greetings";
 import { CHAT_CHIPS } from "@/config/shortcuts";
 import { CHIP_ROW_SIZE, chipIsUsable, type Opener } from "@/config/chat-opening";
 import { apiFetch } from "@/lib/api";
+import { AgentFace } from "@/components/AgentFace";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import type { ChatChip } from "@/config/shortcuts";
 import type { IntegrationConnection, IntegrationConnectionsResult } from "@/lib/types";
@@ -45,6 +46,7 @@ function isOutOfCreditsError(message: string): boolean {
 export function ChatView({
   agentId,
   agentName,
+  agentAvatarUrl,
   prefill,
 }: {
   // Passed in rather than read from context: the provider now lives at the dashboard level,
@@ -53,6 +55,8 @@ export function ChatView({
   agentId: string;
   // The active agent's display name — greets the user on the empty state.
   agentName?: string | null;
+  // Its picture, for the same empty state. AgentFace falls back to an initial without it.
+  agentAvatarUrl?: string | null;
   // A question carried in from Shortcuts or Start Here (?q=), dropped into the composer.
   prefill?: string;
 }) {
@@ -223,9 +227,28 @@ export function ChatView({
         ) : messages.length > 0 ? (
           <ChatMessages messages={messages} isStreaming={isStreaming} />
         ) : (
-          <div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
+          // THE AGENT HAS A FACE HERE NOW, and the greeting sits beside it rather than over it.
+          // This is what Home used to look like, and it is the half of that page worth keeping:
+          // the four tiles under it were links to surfaces that are all in the rail anyway, but
+          // the agent saying hello with its own picture beside the words is the difference
+          // between a text box and somebody waiting for you. Same reasoning, and the same layout,
+          // as StartHereView - its face sat in the left gutter because the greeting is a message
+          // and a message has a sender.
+          //
+          // Left-aligned rather than centred for that reason too. Centred type under a centred
+          // avatar reads as a splash screen; a face in the gutter with the words beside it reads
+          // as the first message of the conversation you are about to have. It lines up with the
+          // composer below, which is the same max-w-2xl.
+          <div className="flex w-full max-w-2xl items-start gap-4 text-left sm:gap-5">
+            <AgentFace
+              src={agentAvatarUrl}
+              name={greetName ?? "Your agent"}
+              // Smaller than Home's 96/112px: there the greeting was the page, here the composer
+              // is directly underneath and wants the weight.
+              className="mt-0.5 size-16 shrink-0 text-2xl sm:size-20 sm:text-3xl"
+            />
             {/* Height reserved so the composer doesn't jump when the greeting lands. */}
-            <div className="flex min-h-[76px] flex-col items-center gap-2">
+            <div className="flex min-h-[76px] min-w-0 flex-1 flex-col gap-2">
               {greeting && (
                 <>
                   <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[32px]">

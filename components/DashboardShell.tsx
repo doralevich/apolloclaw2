@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, Compass, CreditCard, Home, LayoutGrid, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Blocks, BookOpen, Clock, ChartNoAxesColumn, CircleUser, CreditCard, Home, LayoutGrid, LogOut, Menu, MessageSquare, MoreHorizontal, Settings, ShieldCheck, SlidersHorizontal, Users, X } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -33,10 +33,23 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 // ones competed for the same attention; a rail you scan every day should only carry the
 // former.
 const NAV = [
-  { href: "/dashboard/start-here", label: "Home", icon: Compass, exact: false },
-  // Chat sits directly under Home. Talking to the agent is the thing people come back for every
-  // day; the checklist is a first-week errand. The daily surface goes higher than the once-through
-  // one.
+  // HOME IS NOT HERE ANY MORE, David's call, and it is the fourth row to go the same way as
+  // Matters, What Needs You and the Checklist: only the ROW is gone. /dashboard/start-here
+  // still renders, StartHereView is untouched, and putting the row back is this line alone.
+  //
+  // It was a launcher - a greeting and four tiles, each one a link to a surface that is also in
+  // this rail. So the product opened on a menu of other screens, with the thing people come
+  // back for every day one click behind it. /dashboard now lands on Chat instead, whose empty
+  // state does the launcher's job better: it greets you by name, offers your own opening line
+  // from the questionnaire, and puts four things to say under the box you would say them in.
+  //
+  // WHAT WENT WITH IT, worth knowing rather than discovering. Start Here was the last surface
+  // rendering SetupChecklist - the short, intake-built version of the checklist - because the
+  // Checklist row came off this rail earlier. /dashboard/checklist still renders and still
+  // builds the full list, but nothing in the product links to it now. If that list matters, the
+  // row goes back on here; it is one line either way.
+  //
+  // Chat is the first row now. It is what the product is.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
   // "WHAT NEEDS YOU" IS NOT HERE ANY MORE, David's call, and it is off the rail the same way
   // Matters is (see the note below): only the ROW is gone. /dashboard/tasks still renders, its
@@ -179,9 +192,10 @@ function SidebarContent({
   userEmail: string;
   onNavigate?: () => void;
 }) {
-  // "Start Here" is where every session lands, agents or not: with one it greets the
-  // active agent, without one it prompts them to create the first. Hiding it used to
-  // leave a freshly-signed-in customer on a page missing from their own sidebar.
+  // Chat is where every session lands now, agents or not: with one it greets the active agent,
+  // and ChatPageClient prompts them to create the first when there is none. The rule this note
+  // was written for still holds - whatever the landing is must be visible in the rail, because
+  // hiding it leaves a freshly-signed-in customer on a page missing from their own sidebar.
   // Guide is not under /settings/ but lives in the Settings area, so the Settings rail (not the
   // daily rail) shows on it. Connections came back to the daily rail, so /dashboard/integrations is
   // deliberately NOT counted here - it keeps the daily rail and highlights its tab there.
@@ -233,8 +247,10 @@ function SidebarContent({
   if (inSettings) {
     return (
       <>
+        {/* Back to where the app now opens, which is Chat. It pointed at Start Here, which was
+            correct while that was the landing and is a detour now. */}
         <Link
-          href="/dashboard/start-here"
+          href="/dashboard/chat"
           onClick={onNavigate}
           className="flex items-center gap-2 px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -419,7 +435,7 @@ function SupportViewBanner() {
           type="button"
           onClick={() => {
             returnToOwnWorkspace();
-            router.push("/dashboard/start-here");
+            router.push("/dashboard/chat");
           }}
           className="shrink-0 rounded-md border border-amber-300 bg-white/70 px-2.5 py-1 text-xs font-medium text-amber-900 transition-colors hover:bg-white dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900"
         >
