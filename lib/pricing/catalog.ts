@@ -31,33 +31,43 @@ export const CURRENCY = "usd";
 // the customization. One licensing fee, one hosting subscription, and what gets built is
 // decided by the onboarding answers rather than by which SKU someone clicked.
 
-/** Shared recurring hosting price — every license, on either tier, subscribes to this. */
+/** Shared recurring price — every license, on either tier, subscribes to this. */
 export const HOSTING_PLAN = {
   catalogKey: "apollo_hosting",
-  name: "ApolloClaw Agent Hosting",
-  amountCents: 18900,
+  name: "ApolloClaw Agent Subscription",
+  // $249, all in. Was $189 plus $25 of included token usage plus credit packs on top, which
+  // is three numbers to explain before anybody knows what they are paying. One number now,
+  // with an allowance inside it (MONTHLY_API_ALLOWANCE_LABEL below) rather than beside it.
+  //
+  // Repricing is safe here because nobody is on the old price: David's call, Sept 21 2026,
+  // "I have no one paying now so move everything to the 249/month". The seed mints the new
+  // price and moves the lookup_key to it; had there been live subscriptions they would have
+  // stayed on the archived $189 until migrated in Stripe, which is a different job.
+  amountCents: 24900,
   interval: "month",
 } as const;
 
-// ─── The two license tiers ────────────────────────────────────────────────────
+// ─── The two tiers ────────────────────────────────────────────────────────────
 //
 // David's call. One product, two ways to buy the setup of it.
 //
-// THE TIERS DIFFER ON DAVID'S TIME, NOT ON THE SOFTWARE. Both provision the same agent on the
-// same infrastructure with the same integrations and the same model access. Advanced buys the
-// onboarding done with you; Basic is the same thing self-served through the dashboard
-// checklist. That distinction is the whole design: a Basic that were a deliberately weaker
-// product would make Advanced read as a tax rather than as a service.
+// THE TIERS DIFFER ON SCOPE AND DAVID'S TIME, NOT ON THE INFRASTRUCTURE. Both provision the
+// same agent on the same private server with the same standard integrations. Custom Build buys
+// a scoped build and 30 days of onboarding done with you; Set It and Forget It is the
+// questionnaire build, self-served through the dashboard checklist, with no custom work.
 //
-// HOSTING IS THE SAME $189 ON BOTH, deliberately. Hosting is the line with real recurring cost
-// behind it — the VPS, the included tokens, keeping it patched — and discounting that would
-// discount the wrong thing. The license is what discounts, because the license is time.
+// THE MONTHLY IS THE SAME $249 ON BOTH, deliberately. It is the line with real recurring cost
+// behind it: the server, the API allowance, keeping it patched. Discounting that would discount
+// the wrong thing. The setup fee is what moves, because the setup fee is scope and time.
 //
-// A NOTE ON THE HEADLINE. $449 against $2,500 looks like an 82% discount and is not: with
-// hosting on both, year one is $2,717 against $4,768, so Basic is 57% of Advanced. That is
-// good for margin and bad for trust if the monthly is buried, which is why every surface that
-// prints a tier price prints `priceLabel` — both numbers, always — rather than the license
-// alone.
+// THE IDS STAY `basic` AND `advanced`. They are stamped on the live Stripe products through
+// `catalogKey`, they are what `resolveLicenseTier` reads off a checkout request, and they are
+// persisted against sold licenses. The customer-facing names moved; the keys must not, or the
+// seed mints a second product and orphans the history. Read `label` for what a tier is called.
+//
+// A NOTE ON THE HEADLINE. Every surface that prints a tier price prints `priceLabel`, which
+// carries both numbers. Setup alone reads as the whole cost and is not, and burying the
+// monthly is the kind of thing a customer only notices on their second invoice.
 
 export type LicenseTierId = "basic" | "advanced";
 
@@ -85,45 +95,52 @@ export const LICENSE_TIERS: readonly LicenseTier[] = [
   {
     id: "basic",
     catalogKey: "apollo_license_basic",
-    name: "ApolloClaw Agent License - Basic",
+    name: "ApolloClaw Agent - Set It and Forget It",
     amountCents: 44900,
-    label: "Basic",
-    tagline: "You set it up, in your own time.",
-    priceLabel: "$449 once + $189/mo",
+    label: "Set It and Forget It",
+    tagline: "Answer the questionnaire and let it run.",
+    priceLabel: "$449 setup + $249/mo",
     includes: [
-      "The same agent, built from your questionnaire answers",
-      "Managed hosting, including $25/mo of token usage",
-      "Connect your own apps and chat channels from the dashboard",
-      "A setup checklist that walks you through it",
-      "Email support",
+      "An agent built from your questionnaire answers",
+      "Standard integrations",
+      "Private server hosting, monitoring and updates",
+      "Up to $150 in API usage each month",
+      "Cancel anytime, no minimum commitment",
     ],
   },
   {
     id: "advanced",
     catalogKey: "apollo_license",
-    name: "ApolloClaw Agent License",
-    amountCents: 250000,
-    label: "Advanced",
-    tagline: "We set it up with you, on a call.",
-    priceLabel: "$2,500 once + $189/mo",
+    name: "ApolloClaw Agent - Custom Build",
+    amountCents: 350000,
+    label: "Custom Build",
+    tagline: "Scoped to your business, built with you.",
+    priceLabel: "$3,500 setup + $249/mo",
     recommended: true,
     includes: [
-      "Everything in Basic",
-      "Setup calls - we connect your apps and channels with you",
-      "Your agent configured around how your business actually runs",
-      "We stay on it until it is doing real work, not just answering",
-      "Direct access to David after launch",
+      "Everything in Set It and Forget It",
+      "A custom-scoped build",
+      "30 days of hands-on onboarding and co-training",
     ],
   },
 ];
 
+/** No custom work on Tier 1. Stated on the tier, because it is the line between the two. */
+export const BASIC_TIER_LIMIT = "No custom work on this tier.";
+
 // `apollo_license` deliberately keeps its original key on the Advanced tier. That key is
 // stamped on the live Stripe product and on every license already sold through it; renaming it
 // would mint a second product and orphan the history.
-// Self-serve checkout now sells BASIC only. The Advanced/$2,500 tier became a "call for setup"
-// White-Label / Custom path — booked as a consultation from the paywall, not charged through a
-// bare checkout. The tier definition stays above (its Stripe product and sales history are real
-// and still referenced by the catalog seed), it is simply no longer offered as a self-serve buy.
+//
+// BOTH TIERS ARE SELF-SERVE AGAIN, David's call: "we want users to be able to purchase online,
+// the set it and forget it, the custom build gives an option to purchase or schedule." Custom
+// Build had been a call-for-setup path with no checkout, back when it was the $2,500 tier. It
+// now carries both a buy button and the discovery call, so somebody who knows what they want
+// can pay and somebody who wants it scoped can still book.
+//
+// /api/onboard/checkout needed nothing for this: it already resolved either tier from the
+// catalog and its metadata comment already said `flow` stays "onboard_license" for both,
+// because they provision identically. Only the paywall UI was withholding the second one.
 export const DEFAULT_LICENSE_TIER: LicenseTierId = "basic";
 
 export function licenseTierFor(id: string | undefined | null): LicenseTier | undefined {
@@ -133,25 +150,108 @@ export function licenseTierFor(id: string | undefined | null): LicenseTier | und
 /**
  * The tier a bare checkout means.
  *
- * Resolves to Basic for anything unrecognised or missing. That is now the SAFE direction: the
- * paywall only ever posts "basic", and the $2,500 tier is a call-for-setup path rather than a
- * self-serve purchase, so an odd request body can no longer land someone in a $2,500 charge.
+ * Resolves to Set It and Forget It for anything unrecognised or missing, and that remains the
+ * safe direction now that both tiers are buyable: the fallback is the CHEAPER setup fee, so a
+ * malformed or tampered request body can never land somebody in the $3,500 charge by accident.
+ * It has to name "advanced" to be charged as Custom Build.
  */
 export function resolveLicenseTier(id: string | undefined | null): LicenseTier {
   return licenseTierFor(id) ?? licenseTierFor(DEFAULT_LICENSE_TIER)!;
 }
 
 /** Human display of the bundle where no tier has been chosen yet. */
-export const BUNDLE_PRICE_LABEL = "From $449 license + $189/mo hosting";
+export const BUNDLE_PRICE_LABEL = "From $449 setup + $249/mo";
 
-/** What the $189 covers. Stated plainly because it is the first thing people ask. */
-export const HOSTING_INCLUDED_TOKENS_LABEL = "includes $25/mo of token usage";
+/**
+ * What the $249 covers, in David's exact words. Do not paraphrase this on a surface: he wrote
+ * it to be the same sentence everywhere, and the whole point of the change it describes is that
+ * a customer stops meeting a different account of their bill on every page.
+ *
+ * Replaces HOSTING_INCLUDED_TOKENS_LABEL ("includes $25/mo of token usage"), which is gone
+ * along with the $189 it went with.
+ */
+export const MONTHLY_API_ALLOWANCE_LABEL =
+  "Your $249/month includes hosting, monitoring, updates, and up to $150 in API usage each month. Sustained usage above that is reviewed with you and billed at cost.";
+
+// ─── Support plans ────────────────────────────────────────────────────────────
+//
+// An add-on to either tier, sold separately and starting after the 30-day onboarding period.
+// NOT IN STRIPE: there is no catalogKey here and the seed does not see these, because they are
+// sold by conversation off a discovery call rather than through self-serve checkout. If one
+// ever becomes a button, it needs a catalogKey and an entry in the seed, not just a price here.
+
+export interface SupportPlan {
+  id: string;
+  name: string;
+  amountCents: number;
+  /** Hours of David's time included each month. */
+  hours: number;
+  includes: string[];
+  /** The one we steer people to. Exactly one plan should carry it. */
+  recommended?: boolean;
+}
+
+export const SUPPORT_PLANS: readonly SupportPlan[] = [
+  {
+    id: "monitor",
+    name: "Monitor",
+    amountCents: 49500,
+    hours: 3,
+    includes: [
+      "Token optimization and drift correction",
+      "Async Q&A via Telegram",
+      "System health monitoring",
+    ],
+  },
+  {
+    id: "build",
+    name: "Build",
+    amountCents: 79500,
+    hours: 5,
+    recommended: true,
+    includes: [
+      "Everything in Monitor",
+      "Priority Telegram response",
+      "Hands-on workflow optimization",
+      "Agent updates and retraining",
+      "Monthly performance review",
+      "30-minute strategy session",
+    ],
+  },
+  {
+    id: "command",
+    name: "Command",
+    amountCents: 119500,
+    hours: 8,
+    includes: [
+      "Everything in Build",
+      "Active implementation support",
+      "Phase 2+ module build and integration",
+      "60-minute strategy session",
+    ],
+  },
+];
+
+/** The terms that apply to every support plan. One array so no surface prints two of three. */
+export const SUPPORT_PLAN_TERMS = [
+  "Two-month minimum.",
+  "Unused hours do not roll over.",
+  "Plans begin after the 30-day onboarding period.",
+];
 
 // ─── API credit packs ─────────────────────────────────────────────────────────
 //
-// Hosting includes $25/mo of usage; a customer who works their agent harder than that buys
-// credit here rather than being cut off. One-time purchases, delivered to the instance's
-// runtime balance and recorded in wallet_transactions.
+// The subscription includes $150 of API usage a month; a customer who works their agent harder
+// than that buys credit here rather than being cut off. One-time purchases, delivered to the
+// instance's runtime balance and recorded in wallet_transactions.
+//
+// THESE SIT AWKWARDLY WITH THE PRICING ABOVE AND ARE LEFT IN DELIBERATELY. David's wording for
+// the allowance says sustained overage is "reviewed with you and billed at cost", and these
+// packs are self-serve and carry CREDIT_MARKUP, 7% over cost. Two different answers to the same
+// question. Removing a working purchase path is a product decision rather than a copy one, so
+// the packs stay and the contradiction is named here and raised with him. If the handled
+// conversation is the only route, delete this section and the dashboard surface that sells it;
+// if the packs stay, the markup is what needs revisiting.
 //
 // The price is the round number: $25, $50, $100, $250. That is what the customer picks,
 // what the button says, and what Stripe charges.
@@ -182,7 +282,7 @@ export const CREDIT_PACKS: CreditPack[] = [
     name: "ApolloClaw API Credits - $25",
     amountCents: 2500,
     creditMicros: 23_360_000,
-    blurb: "Doubles the usage hosting already covers.",
+    blurb: "A light month over the allowance.",
   },
   {
     catalogKey: "apollo_credits_50",

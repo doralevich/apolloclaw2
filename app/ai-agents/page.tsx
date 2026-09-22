@@ -87,7 +87,7 @@ const SHARED = [
   },
   {
     title: "It works where you already are.",
-    body: "A dashboard on the web, and the same agent reachable from WhatsApp, Telegram, or Slack. No new place to remember to check.",
+    body: "A dashboard on the web, and the same agent reachable from WhatsApp, Telegram, or Slack. Nowhere extra to remember to check.",
   },
   {
     title: "It ships with your approval.",
@@ -123,7 +123,7 @@ export default function FleetPage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <PrimaryButton href={SCHEDULE_CONSULT_URL} external>
-                Schedule a Consultation
+                Book a Discovery Call
               </PrimaryButton>
               <SecondaryButton href="/how-it-works">How It Works</SecondaryButton>
             </div>

@@ -295,8 +295,8 @@ export default function AiAssistantForCeoPost() {
                 Book a 30-minute consultation. We&apos;ll show you exactly how the CEO Agent would be
                 configured for your organization: your systems, your workflows, your priorities.
               </p>
-              <a href="https://cal.com/therealdaveo/apollo-claw" target="_blank" rel="noopener noreferrer">
-                <Button variant="cta" size="lg">Schedule Today</Button>
+              <a href="https://cal.com/therealdaveo/dbdo-consultation" target="_blank" rel="noopener noreferrer">
+                <Button variant="cta" size="lg">Book a Discovery Call</Button>
               </a>
             </div>
           </article>
@@ -344,13 +344,13 @@ export default function AiAssistantForCeoPost() {
                 30 minutes. No obligation.
               </p>
               <a
-                href="https://cal.com/therealdaveo/apollo-claw"
+                href="https://cal.com/therealdaveo/dbdo-consultation"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"
               >
                 <Button variant="cta" size="sm" className="w-full">
-                  Schedule Today
+                  Book a Discovery Call
                 </Button>
               </a>
             </div>

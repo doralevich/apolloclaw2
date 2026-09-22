@@ -45,13 +45,14 @@ const consultingLinks = [
 ];
 
 const resourceLinks = [
+  { label: "Pricing", to: "/pricing" },
   { label: "AI 101", to: "/ai-101" },
   { label: "FAQ", to: "/faq" },
   { label: "Security", to: "/security" },
   { label: "Contact", to: "/contact" },
   {
     label: "Get Started",
-    to: "https://cal.com/therealdaveo/apollo-claw",
+    to: "https://cal.com/therealdaveo/dbdo-consultation",
     external: true,
   },
 ];
@@ -236,7 +237,7 @@ export default function Footer() {
               </a>
               <div className="mt-5">
                 <a
-                  href="https://cal.com/therealdaveo/apollo-claw"
+                  href="https://cal.com/therealdaveo/dbdo-consultation"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110"
@@ -251,7 +252,7 @@ export default function Footer() {
                     boxShadow: "0 6px 18px rgba(215,43,43,0.3)",
                   }}
                 >
-                  Schedule Today
+                  Book a Discovery Call
                 </a>
               </div>
             </div>

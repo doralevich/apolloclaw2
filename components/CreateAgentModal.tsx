@@ -120,7 +120,7 @@ export function CreateAgentModal({
   // EXCEPT WHEN THE WORKSPACE HAS NONE, which is the dead end David found: delete your agent to
   // start over and there is no way back. The license type was the only thing this modal could
   // have offered, `internal` hid it, and the customer was left on a dashboard they are still
-  // paying $189/mo for with nothing in it and no button. Their only route was to email us.
+  // paying $249/mo for with nothing in it and no button. Their only route was to email us.
   //
   // This is a REBUILD, not a purchase. It appears only at zero agents, so it cannot be used to
   // add a second one - that is what seats are for, priced and behind Members. They have already

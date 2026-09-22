@@ -6,7 +6,7 @@ import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 // Somebody reading /industries/law-firms and somebody reading thelawagent.ai are being sold the
 // same product, and until now they saw two different things: the standalone site opened with the
 // agent's own colour, its mascot and a Build My Agent button, while this one opened centred in
-// ApolloClaw navy with a single Schedule a Consultation link. The missing button is the part that
+// ApolloClaw navy with a single Book a Discovery Call link. The missing button is the part that
 // actually cost something - these pages had no self-serve path at all, only a call.
 //
 // Structure mirrors app/components/Hero.tsx in each agent site repo: badge, headline, a
@@ -163,7 +163,7 @@ export default function AgentHero({
                 border: "1px solid rgba(255,255,255,0.28)",
               }}
             >
-              Schedule a Consultation
+              Book a Discovery Call
             </a>
           </div>
         </div>

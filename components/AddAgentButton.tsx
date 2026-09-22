@@ -235,7 +235,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
             tier (lib/pricing/catalog.ts) - hardcoded here because the catalog is server-only,
             same as PlanView's SEAT_PRICE. */}
         <div className="rounded-lg border border-dashed bg-secondary/40 p-3 text-sm">
-          <p className="font-medium text-foreground">$449 one-time + $189/month hosting</p>
+          <p className="font-medium text-foreground">$449 one-time + $249/month hosting</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Each added agent carries a one-time $449 agent license and its own hosting seat,
             pro-rated from today - both on the same invoice.
@@ -246,7 +246,7 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
           <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
             <strong>Pressing again charges your card.</strong>{" "}
             <span className="text-muted-foreground">
-              $449 once plus $189/month pro-rated from today. The agent builds immediately
+              $449 once plus $249/month pro-rated from today. The agent builds immediately
               {forSelf ? "" : " and the invitation is sent"}. Cancel costs nothing.
             </span>
           </div>
@@ -269,10 +269,10 @@ export function AddAgentButton({ trigger }: { trigger?: React.ReactNode } = {}) 
                 ? "Building..."
                 : "Sending..."
               : chargeArmed
-                ? "Confirm - charge $449 + $189/mo"
+                ? "Confirm - charge $449 + $249/mo"
                 : forSelf
-                  ? "Add agent - $449 + $189/mo"
-                  : "Send invitation - $449 + $189/mo"}
+                  ? "Add agent - $449 + $249/mo"
+                  : "Send invitation - $449 + $249/mo"}
           </Button>
         </DialogFooter>
       </DialogContent>

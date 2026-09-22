@@ -5,7 +5,7 @@
 //
 // MACHINE SIZE IS NOT HERE. Every instance is built at INSTANCE_RESOURCES (config/agents.ts)
 // regardless of type or runtime — the types used to carry a `resources` block each, which is
-// how the two live entries ended up asking for different disks for the same $189/mo hosting.
+// how the two live entries ended up asking for different disks for the same monthly subscription.
 
 export interface AgentType {
   id: string;
@@ -26,7 +26,7 @@ export interface AgentType {
   // Lucide icon name (resolved by the UI); omit for a generic fallback.
   icon?: string;
   // Stripe catalog key (lib/pricing/catalog.ts). Present -> the type is PAID: creating it
-  // goes through Checkout ($4,500 build + $189/mo hosting) and is provisioned by the
+  // goes through Checkout (build fee + $249/mo subscription) and is provisioned by the
   // Stripe webhook. Absent -> the original entitlement-gated direct create (College Agent).
   planKey?: string;
   // Sold on ANOTHER site: every CTA links here instead of ApolloClaw checkout/create.

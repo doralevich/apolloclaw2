@@ -12,7 +12,7 @@ import {
   SecondaryButton,
 } from "@/components/home/ui";
 
-const CONSULT_URL = "https://cal.com/therealdaveo/apollo-claw";
+const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
 // Reframed around where the agent runs rather than who builds it, per David's call, and the
 // per-agent price came off both cards: every path now routes to a consultation instead.
@@ -48,7 +48,7 @@ export function TwoFoldModel() {
           </p>
           <div className="mt-6">
             <PrimaryButton href={CONSULT_URL} external>
-              Schedule a Consultation
+              Book a Discovery Call
             </PrimaryButton>
           </div>
         </div>
@@ -76,7 +76,7 @@ export function TwoFoldModel() {
           </p>
           <div className="mt-6">
             <SecondaryButton href={CONSULT_URL} external>
-              Schedule a Consultation
+              Book a Discovery Call
             </SecondaryButton>
           </div>
         </div>
