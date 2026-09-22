@@ -14,7 +14,7 @@
  *   - aborts if a lookup_key belongs to a product we didn't create (protects The College
  *     Agent's catalog, which shares this Stripe account)
  *
- * KEEP THE TABLE BELOW IN SYNC WITH lib/pricing/catalog.ts (source of truth).
+ * Prices are READ FROM lib/pricing/catalog.ts at run time, never copied here.
  */
 
 import { readFileSync } from "fs";
@@ -23,25 +23,70 @@ import { fileURLToPath } from "url";
 import Stripe from "stripe";
 
 const CURRENCY = "usd";
-// We sell one thing: the license, plus the hosting subscription that carries it. The eight
-// per-agent plans at $4,500 are retired (see lib/pricing/catalog.ts). They are not listed
-// here, so this seed no longer manages them — their Stripe products still exist untouched
-// and can be archived by hand in the dashboard.
-const CATALOG = [
-  { catalogKey: "apollo_license", name: "ApolloClaw Agent License", amountCents: 250000 },
-  { catalogKey: "apollo_hosting", name: "ApolloClaw Agent Hosting", amountCents: 18900, interval: "month" },
-];
 
-// API credit packs. These are the prices the customer pays. What actually reaches the runtime
-// is the price minus our 7% (see creditMicros in lib/pricing/catalog.ts) — keep the two files
-// in step, since Stripe charging one number while the app grants another is the kind of
-// mismatch nobody notices until month end.
-const CREDIT_PACKS = [
-  { catalogKey: "apollo_credits_25", name: "ApolloClaw API Credits - $25", amountCents: 2500 },
-  { catalogKey: "apollo_credits_50", name: "ApolloClaw API Credits - $50", amountCents: 5000 },
-  { catalogKey: "apollo_credits_100", name: "ApolloClaw API Credits - $100", amountCents: 10000 },
-  { catalogKey: "apollo_credits_250", name: "ApolloClaw API Credits - $250", amountCents: 25000 },
-];
+// ── The catalog, PARSED OUT OF lib/pricing/catalog.ts ─────────────────────────
+//
+// This used to be a hand-written second copy of the price table, under a comment asking
+// whoever edited one to remember the other. It drifted, exactly as those comments always
+// let things drift, and it drifted in the direction that costs money: after the move to
+// $249 it still held apollo_license at $2,500 and apollo_hosting at $189, and it had never
+// carried apollo_license_basic at all. Running it would have written the old prices back
+// over the new ones and left the $449 tier unmanaged.
+//
+// So it reads the real catalog instead. This is a regex over TypeScript source rather than
+// an import, because the file is TS and this script is plain node with no loader available
+// in this repo. That is not as good as importing it, and it is a great deal better than a
+// copy: the parse either finds the entries or it aborts, where a copy just quietly disagrees.
+// Every catalogKey in that file is followed by its name and then its amountCents, which is
+// what this keys on. The sanity checks below are what turn a shape change into a loud stop.
+function loadCatalog() {
+  const file = resolve(__dirname, "..", "lib", "pricing", "catalog.ts");
+  let src;
+  try {
+    src = readFileSync(file, "utf8");
+  } catch {
+    console.error(`Cannot read ${file} - this script derives its prices from it.`);
+    process.exit(1);
+  }
+
+  const entries = [];
+  const keyRe = /catalogKey:\s*"([^"]+)"/g;
+  let m;
+  while ((m = keyRe.exec(src))) {
+    const rest = src.slice(m.index);
+    const name = /name:\s*"([^"]+)"/.exec(rest);
+    const amount = /amountCents:\s*(\d+)/.exec(rest);
+    if (!name || !amount) continue;
+    const interval = /interval:\s*"(month)"/.exec(rest.slice(0, amount.index + 200));
+    entries.push({
+      catalogKey: m[1],
+      name: name[1],
+      amountCents: Number(amount[1]),
+      ...(interval ? { interval: interval[1] } : {}),
+    });
+  }
+
+  // A shape change in catalog.ts must stop this script, not quietly narrow it. Six is the
+  // floor as of this writing: two tiers, the subscription, and four credit packs is seven.
+  if (entries.length < 6) {
+    console.error(
+      `Parsed only ${entries.length} entries from lib/pricing/catalog.ts - its shape has probably changed. ` +
+        `Refusing to sync a partial catalog.`
+    );
+    process.exit(1);
+  }
+  const bad = entries.filter((e) => !Number.isInteger(e.amountCents) || e.amountCents <= 0);
+  if (bad.length) {
+    console.error(`Bad amounts parsed: ${bad.map((b) => `${b.catalogKey}=${b.amountCents}`).join(", ")}`);
+    process.exit(1);
+  }
+  const subs = entries.filter((e) => e.interval);
+  if (subs.length !== 1) {
+    console.error(`Expected exactly one recurring price, parsed ${subs.length}. Refusing to sync.`);
+    process.exit(1);
+  }
+  return entries;
+}
 
 // ── Load .env.local (same pattern as apollo-setup-followup.mjs) ────────────────
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -66,7 +111,7 @@ if (!key) {
   process.exit(1);
 }
 const dryRun = process.argv.includes("--dry-run");
-const entries = [...CATALOG, ...CREDIT_PACKS];
+const entries = loadCatalog();
 const mode = key.startsWith("sk_live") ? "LIVE" : "test";
 console.log(`Syncing ApolloClaw catalog (${entries.length} entries) in ${mode} mode${dryRun ? " [dry-run]" : ""}…`);
 
