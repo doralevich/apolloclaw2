@@ -332,12 +332,25 @@ export default function CreateAnAgentPage() {
                     </li>
                   ))}
                 </ul>
+                {/* PURCHASE OR SCHEDULE, David's call. This card booked a call and nothing else
+                    while it was the call-for-setup tier. Somebody who already knows they want
+                    the custom build should not have to get on a call to hand over money, and
+                    somebody who wants it scoped first should not have to pay to ask, so it
+                    carries both. Set It and Forget It has only the buy: there is no custom work
+                    on it to scope. */}
+                <Link
+                  href="/onboard"
+                  className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                  style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
+                >
+                  Start now
+                </Link>
                 <a
                   href={SCHEDULE_CONSULT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-                  style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
+                  className="mt-3 flex w-full items-center justify-center font-bold uppercase transition-all hover:bg-foreground/5"
+                  style={{ background: "transparent", color: "#1A1A1A", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", border: "1px solid rgba(26,26,26,0.25)" }}
                 >
                   {SCHEDULE_CONSULT_CTA}
                 </a>

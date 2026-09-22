@@ -156,11 +156,11 @@ const ROLE_INTAKES: Record<
 // Derived rather than a tenth field per entry, since every roleName ends the same way.
 const wordmarkName = (roleName: string) => roleName.replace(/\s+Agent$/, "");
 import {
-  DEFAULT_LICENSE_TIER,
+  LICENSE_TIERS,
   MONTHLY_API_ALLOWANCE_LABEL,
-  resolveLicenseTier,
+  type LicenseTierId,
 } from "@/lib/pricing/catalog";
-import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import { SCHEDULE_CONSULT_CTA, SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { apiFetch } from "@/lib/api";
 
 // The single business-onboarding questionnaire, shared by three entry points:
@@ -1012,15 +1012,16 @@ function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) 
 
 function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => void; agentTypeId?: string }) {
   const { a, rgb } = useAccent();
-  const [loading, setLoading] = useState(false);
+  // WHICH tier is checking out, not just whether something is. Both cards buy now, and a bare
+  // boolean put "Taking you to checkout…" on both buttons at once, which reads as though the
+  // wrong one was pressed.
+  const [buying, setBuying] = useState<LicenseTierId | null>(null);
   const [err, setErr] = useState("");
-  // Standard Setup is the only self-serve tier now (Custom Setup books a call instead of
-  // checking out), so there is nothing to pick — the buy is always the Basic license.
-  const tier = resolveLicenseTier(DEFAULT_LICENSE_TIER);
+  const loading = buying !== null;
 
-  const go = async () => {
+  const go = async (tierId: LicenseTierId) => {
     setErr("");
-    setLoading(true);
+    setBuying(tierId);
     try {
       const res = await fetch("/api/onboard/checkout", {
         method: "POST",
@@ -1030,7 +1031,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           last: gate.last,
           email: gate.email,
           phone: gate.phone,
-          tier: DEFAULT_LICENSE_TIER,
+          tier: tierId,
           // A branded role funnel (e.g. /build/real-estate) sends its type + its own path so the
           // purchase builds that agent and Stripe returns to the right questionnaire. Plain
           // /onboard sends neither and provisions the generic license agent, unchanged.
@@ -1042,10 +1043,14 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
       if (!res.ok || !body?.url) {
         throw new Error(body?.error?.message || "We could not start checkout. Please try again.");
       }
-      window.location.href = body.url as string;
+      // assign() rather than `location.href = ...`: same navigation, but the compiler's
+      // immutability rule reads the property write as mutating a value from outside the
+      // component and errors on it, which it started doing once this function was called from
+      // inside the tier map rather than from one hardcoded button.
+      window.location.assign(body.url as string);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "We could not start checkout. Please try again.");
-      setLoading(false);
+      setBuying(null);
     }
   };
 
@@ -1065,63 +1070,70 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${a},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
-          {/* Two ways in, symmetric cards each with its OWN same-size button: Standard Setup is
-              the self-serve buy; Custom Setup books a call instead of a checkout. Wraps to one
-              column under ~600px, where two side by side would each be too narrow to read the
-              includes list in. */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
-            {/* Standard Setup — self-serve buy; the button runs checkout. */}
-            <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: `rgba(${rgb},0.04)`, border: `1px solid ${a}`, borderRadius: 10, padding: "20px 18px" }}>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>Standard Setup</p>
-              <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>You set it up, in your own time.</p>
-              <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{tier.priceLabel}</p>
-              <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
-                {tier.includes.map((line) => (
-                  <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
-                    <span aria-hidden style={{ color: a, fontWeight: 800, flexShrink: 0 }}>✓</span>
-                    {line}
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={go}
-                disabled={loading}
-                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
-              >
-                {loading ? "Taking you to checkout…" : "Get Started"}
-              </button>
-            </div>
+          {/* BOTH CARDS BUY NOW, David's call. They are rendered from LICENSE_TIERS rather than
+              one derived and one hand-written: the Custom card used to carry its own copy of the
+              includes list and the words "Contact us for setup", which is how it came to be
+              describing the old $2,500 call-for-setup tier after the pricing changed.
 
-            {/* Custom Setup — the former $2,500 tier, now a call-for-setup path. No checkout:
-                its CTA goes straight to the consultation calendar. */}
-            <div style={{ flex: "1 1 260px", display: "flex", flexDirection: "column", textAlign: "left", background: "transparent", border: `1px solid ${BDR}`, borderRadius: 10, padding: "20px 18px" }}>
-              <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>Custom Setup</p>
-              <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>We set it up with you, on a Zoom around your business.</p>
-              <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>Contact us for setup</p>
-              <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
-                {[
-                  "Everything in Standard Setup",
-                  "Setup calls - we connect your apps and channels with you",
-                  "Your agent configured around how your business actually runs",
-                  "We stay on it until it is doing real work, not just answering",
-                  "Direct access to David after launch",
-                ].map((line) => (
-                  <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
-                    <span aria-hidden style={{ color: a, fontWeight: 800, flexShrink: 0 }}>✓</span>
-                    {line}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={SCHEDULE_CONSULT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: a, color: "#fff", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
-              >
-                Book a Discovery Call
-              </a>
-            </div>
+              Custom Build keeps the discovery call as a SECOND button under the buy, because
+              "purchase or schedule" is the point of it: somebody who knows what they want should
+              not have to book a call to hand over money, and somebody who wants it scoped first
+              should not have to pay to ask.
+
+              Wraps to one column under ~600px, where two side by side would each be too narrow
+              to read the includes list in. */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
+            {LICENSE_TIERS.map((t) => {
+              const recommended = Boolean(t.recommended);
+              return (
+                <div
+                  key={t.id}
+                  style={{
+                    flex: "1 1 260px",
+                    display: "flex",
+                    flexDirection: "column",
+                    textAlign: "left",
+                    background: recommended ? `rgba(${rgb},0.04)` : "transparent",
+                    border: `1px solid ${recommended ? a : BDR}`,
+                    borderRadius: 10,
+                    padding: "20px 18px",
+                  }}
+                >
+                  <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>{t.label}</p>
+                  <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>{t.tagline}</p>
+                  <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{t.priceLabel}</p>
+                  <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
+                    {t.includes.map((line) => (
+                      <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
+                        <span aria-hidden style={{ color: a, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => go(t.id)}
+                    disabled={loading}
+                    style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
+                  >
+                    {buying === t.id ? "Taking you to checkout\u2026" : "Get Started"}
+                  </button>
+                  {/* Only on Custom Build: purchase OR schedule. Set It and Forget It is the
+                      questionnaire build with no custom work, so there is nothing to scope on a
+                      call and a second button there would only be a way out of buying. */}
+                  {recommended && (
+                    <a
+                      href={SCHEDULE_CONSULT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ marginTop: 8, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: "transparent", color: TXM, fontWeight: 700, fontSize: 13, padding: "11px 16px", borderRadius: 6, border: `1px solid ${BDR}`, textDecoration: "none" }}
+                    >
+                      {SCHEDULE_CONSULT_CTA}
+                    </a>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Said once, under both, because it is identical on both. Repeating it inside each

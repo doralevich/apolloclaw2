@@ -131,10 +131,16 @@ export const BASIC_TIER_LIMIT = "No custom work on this tier.";
 // `apollo_license` deliberately keeps its original key on the Advanced tier. That key is
 // stamped on the live Stripe product and on every license already sold through it; renaming it
 // would mint a second product and orphan the history.
-// Self-serve checkout now sells BASIC only. The Advanced/$2,500 tier became a "call for setup"
-// White-Label / Custom path — booked as a consultation from the paywall, not charged through a
-// bare checkout. The tier definition stays above (its Stripe product and sales history are real
-// and still referenced by the catalog seed), it is simply no longer offered as a self-serve buy.
+//
+// BOTH TIERS ARE SELF-SERVE AGAIN, David's call: "we want users to be able to purchase online,
+// the set it and forget it, the custom build gives an option to purchase or schedule." Custom
+// Build had been a call-for-setup path with no checkout, back when it was the $2,500 tier. It
+// now carries both a buy button and the discovery call, so somebody who knows what they want
+// can pay and somebody who wants it scoped can still book.
+//
+// /api/onboard/checkout needed nothing for this: it already resolved either tier from the
+// catalog and its metadata comment already said `flow` stays "onboard_license" for both,
+// because they provision identically. Only the paywall UI was withholding the second one.
 export const DEFAULT_LICENSE_TIER: LicenseTierId = "basic";
 
 export function licenseTierFor(id: string | undefined | null): LicenseTier | undefined {
@@ -144,9 +150,10 @@ export function licenseTierFor(id: string | undefined | null): LicenseTier | und
 /**
  * The tier a bare checkout means.
  *
- * Resolves to Basic for anything unrecognised or missing. That is now the SAFE direction: the
- * paywall only ever posts "basic", and the $2,500 tier is a call-for-setup path rather than a
- * self-serve purchase, so an odd request body can no longer land someone in a $2,500 charge.
+ * Resolves to Set It and Forget It for anything unrecognised or missing, and that remains the
+ * safe direction now that both tiers are buyable: the fallback is the CHEAPER setup fee, so a
+ * malformed or tampered request body can never land somebody in the $3,500 charge by accident.
+ * It has to name "advanced" to be charged as Custom Build.
  */
 export function resolveLicenseTier(id: string | undefined | null): LicenseTier {
   return licenseTierFor(id) ?? licenseTierFor(DEFAULT_LICENSE_TIER)!;

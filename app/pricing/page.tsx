@@ -87,22 +87,34 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
+const BTN =
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[8px] text-[13px] font-bold tracking-[0.02em] transition-opacity hover:opacity-85";
+const solidStyle = { background: RED, color: "#FFFFFF", padding: "13px 26px" };
+const outlineStyle = { border: `1px solid ${RULE}`, color: INK, padding: "13px 26px" };
+
 function BookButton({ variant = "solid" }: { variant?: "solid" | "outline" }) {
-  const solid = variant === "solid";
   return (
     <a
       href={SCHEDULE_CONSULT_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center whitespace-nowrap rounded-[8px] text-[13px] font-bold tracking-[0.02em] transition-opacity hover:opacity-85"
-      style={
-        solid
-          ? { background: RED, color: "#FFFFFF", padding: "13px 26px" }
-          : { border: `1px solid ${RULE}`, color: INK, padding: "13px 26px" }
-      }
+      className={BTN}
+      style={variant === "solid" ? solidStyle : outlineStyle}
     >
       {SCHEDULE_CONSULT_CTA}
     </a>
+  );
+}
+
+// Both tiers are buyable online, David's call. The button goes to /onboard rather than straight
+// to Stripe because checkout needs a name and an email before it can mint a session, and that is
+// the gate /onboard already collects; the paywall right behind it shows both tiers with these
+// same prices, read from the same catalog.
+function BuyButton({ variant = "solid" }: { variant?: "solid" | "outline" }) {
+  return (
+    <Link href="/onboard" className={BTN} style={variant === "solid" ? solidStyle : outlineStyle}>
+      Get Started
+    </Link>
   );
 }
 
@@ -197,8 +209,13 @@ export default function PricingPage() {
                   </p>
                 )}
 
-                <div className="mt-7">
-                  <BookButton variant={tier.recommended ? "solid" : "outline"} />
+                {/* Set It and Forget It buys and stops there: it is the questionnaire build
+                    with no custom work, so there is nothing to scope on a call, and a second
+                    button would only be a way out of buying. Custom Build offers both, which is
+                    David's "option to purchase or schedule". */}
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <BuyButton />
+                  {tier.recommended && <BookButton variant="outline" />}
                 </div>
               </div>
             ))}
