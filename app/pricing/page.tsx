@@ -191,31 +191,50 @@ export default function PricingPage() {
                   </span>
                 </div>
 
-                <ul className="mt-7 flex flex-1 flex-col gap-3">
-                  {tier.includes.map((line) => (
-                    <li key={line} className="font-body flex gap-2.5 text-[15px] leading-[1.55]">
-                      <Check />
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* flex-1 sits on this WRAPPER, not on the list, so the slack in a shorter
+                    card collects under the note rather than between the list and the note.
+                    With it on the <ul>, Set It and Forget It's note was pushed down into the
+                    space the other card left empty and dragged its button along with it. */}
+                <div className="mt-7 flex flex-1 flex-col">
+                  <ul className="flex flex-col gap-3">
+                    {tier.includes.map((line) => (
+                      <li key={line} className="font-body flex gap-2.5 text-[15px] leading-[1.55]">
+                        <Check />
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                {tier.id === "basic" && (
-                  <p
-                    className="font-body mt-6 rounded-lg px-4 py-3 text-[13.5px] leading-[1.5]"
-                    style={{ background: "rgba(26,26,26,0.04)", color: INK_MUTED }}
-                  >
-                    {BASIC_TIER_LIMIT}
-                  </p>
-                )}
+                  {tier.id === "basic" && (
+                    <p
+                      className="font-body mt-6 rounded-lg px-4 py-3 text-[13.5px] leading-[1.5]"
+                      style={{ background: "rgba(26,26,26,0.04)", color: INK_MUTED }}
+                    >
+                      {BASIC_TIER_LIMIT}
+                    </p>
+                  )}
+                </div>
 
-                {/* Set It and Forget It buys and stops there: it is the questionnaire build
-                    with no custom work, so there is nothing to scope on a call, and a second
-                    button would only be a way out of buying. Custom Build offers both, which is
-                    David's "option to purchase or schedule". */}
-                <div className="mt-7 flex flex-wrap gap-3">
+                {/* Stacked, and the same two slots on both cards, so the Get Started buttons
+                    land on one line across the grid (David's call) and Book a Discovery Call
+                    hangs below rather than beside.
+
+                    Set It and Forget It gets an INVISIBLE second slot rather than nothing. It
+                    is the questionnaire build with no custom work, so there is nothing to scope
+                    on a call and a real second button there would only be a way out of buying -
+                    but without something occupying that space, bottom-aligned blocks of
+                    different heights put the two Get Starteds on different lines. Rendering the
+                    same button hidden keeps them level with no hardcoded pixel height to drift.
+                    visibility:hidden also takes it out of the tab order. */}
+                <div className="mt-7 flex flex-col gap-3">
                   <BuyButton />
-                  {tier.recommended && <BookButton variant="outline" />}
+                  {tier.recommended ? (
+                    <BookButton variant="outline" />
+                  ) : (
+                    <div aria-hidden className="pointer-events-none invisible">
+                      <BookButton variant="outline" />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

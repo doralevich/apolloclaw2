@@ -302,10 +302,26 @@ export default function CreateAnAgentPage() {
                 >
                   Start now
                 </Link>
+                {/* An invisible twin of the other card's second button, so the two Start now
+                    buttons sit on one line. Same reasoning as /pricing: this tier has nothing
+                    to scope on a call, but the space still has to be reserved or the taller
+                    card's first button rides up.
+
+                    It carries the LABEL TOO, not just the padding. A bare padded box came out
+                    20px short, because the real button's height is its padding plus a line of
+                    13px text; measuring the two cards is what caught that. Same markup hidden
+                    is the version with nothing left to get wrong. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none invisible mt-3 flex w-full items-center justify-center font-bold uppercase"
+                  style={{ fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, border: "1px solid transparent" }}
+                >
+                  {SCHEDULE_CONSULT_CTA}
+                </span>
               </div>
             </ScrollReveal>
 
-            {/* White-Glove — recommended, contact us */}
+            {/* White-Glove — recommended, purchase or schedule */}
             <ScrollReveal delay={100}>
               <div className="bauhaus-card p-9 h-full flex flex-col relative" style={{ borderColor: "#D72B2B", borderWidth: 2 }}>
                 <span
