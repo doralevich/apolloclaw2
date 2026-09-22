@@ -24,7 +24,7 @@ const setupFee = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
 // through what an ApolloClaw agent is, how getting one works, what it can do, and the details
 // worth knowing, then converts on a HYBRID CTA: book a call (primary) or start setup yourself
 // (secondary). Pricing is two boxes, both carrying their number, with /pricing as the fuller
-// page behind them (it also carries the support plans, which are not sold here).
+// page behind them.
 //
 // Full nav/footer chrome is added automatically by RootShell (this route is not standalone).
 // Styling mirrors app/what-we-do/page.tsx: PageHero, ScrollReveal, bauhaus-card, the semantic
@@ -382,7 +382,7 @@ export default function CreateAnAgentPage() {
           </p>
           <p className="font-body text-sm text-muted-foreground mt-3 text-center">
             <Link href="/pricing" className="font-bold text-foreground underline underline-offset-4">
-              Full pricing, including support plans
+              See full pricing
             </Link>
           </p>
         </div>

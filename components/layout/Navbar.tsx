@@ -33,7 +33,9 @@ import ApolloClawLogo from "@/components/ApolloClawLogo";
 // layout, dark navy utility bar on top (email, Log in), main nav in white
 // underneath (category dropdowns, Book a Discovery Call). The AI Agents mega-menu was dropped
 // from the top nav entirely per David's call that it's not needed here, moved into the Footer
-// instead (components/layout/Footer.tsx). Pricing dropped from the nav entirely too.
+// instead (components/layout/Footer.tsx). Pricing dropped from the nav entirely too - briefly
+// came back once app/pricing/page.tsx existed, then David asked for it out of the nav again.
+// The page itself is untouched and still live; only this link is gone.
 
 const NAVY = "#0B1729";
 const NAVY_DEEP = "#070F1C";
@@ -279,15 +281,6 @@ export default function Navbar() {
       label: "Case Studies",
       to: "/case-studies",
       active: (p) => p.startsWith("/case-studies"),
-    },
-    // Pricing is back in the nav. The header note above records it being "dropped from the nav
-    // entirely" when there was no page to point at; there is one now (app/pricing/page.tsx), and
-    // a published price nobody can find is the same as no published price.
-    {
-      kind: "link",
-      label: "Pricing",
-      to: "/pricing",
-      active: (p) => p.startsWith("/pricing"),
     },
     {
       kind: "link",

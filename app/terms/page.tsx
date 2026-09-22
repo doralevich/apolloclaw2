@@ -61,7 +61,7 @@ const SECTIONS: LegalSection[] = [
       },
       {
         kind: "prose",
-        text: "Current prices are shown at checkout and are what binds. At the time of writing there are two tiers, both at $249 a month with no minimum commitment: Set It and Forget It at $449 setup, which is the questionnaire build with no custom work, and Custom Build at $3,500 setup, which adds a custom-scoped build and 30 days of onboarding. The $249 covers hosting, monitoring, updates and up to $150 in API usage each month; sustained usage above that is reviewed with you and billed at cost. Support plans are a separate monthly add-on, arranged by conversation rather than sold through checkout.",
+        text: "Current prices are shown at checkout and are what binds. At the time of writing there are two tiers, both at $249 a month with no minimum commitment: Set It and Forget It at $449 setup, which is the questionnaire build with no custom work through self-serve checkout, and Custom Build at $3,500 setup, which adds a custom-scoped build and 30 days of onboarding, arranged through our white-glove intake rather than a bare checkout. The $249 covers hosting, monitoring, updates and up to $150 in API usage each month; sustained usage above that is reviewed with you and billed at cost.",
       },
       {
         kind: "prose",
