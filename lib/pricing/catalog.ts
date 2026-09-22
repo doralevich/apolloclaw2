@@ -132,15 +132,16 @@ export const BASIC_TIER_LIMIT = "No custom work on this tier.";
 // stamped on the live Stripe product and on every license already sold through it; renaming it
 // would mint a second product and orphan the history.
 //
-// BOTH TIERS ARE SELF-SERVE AGAIN, David's call: "we want users to be able to purchase online,
-// the set it and forget it, the custom build gives an option to purchase or schedule." Custom
-// Build had been a call-for-setup path with no checkout, back when it was the $2,500 tier. It
-// now carries both a buy button and the discovery call, so somebody who knows what they want
-// can pay and somebody who wants it scoped can still book.
-//
-// /api/onboard/checkout needed nothing for this: it already resolved either tier from the
-// catalog and its metadata comment already said `flow` stays "onboard_license" for both,
-// because they provision identically. Only the paywall UI was withholding the second one.
+// ONLY SET IT AND FORGET IT IS SELF-SERVE FROM THE UI NOW. It briefly ran both tiers through
+// checkout ("we want users to be able to purchase online... the custom build gives an option to
+// purchase or schedule"), then Custom Build moved to the white-glove intake instead
+// (app/white-glove-onboarding, WhiteGloveButton in app/pricing/page.tsx): "Custom build goes to
+// white glove service page so we get the files instead of building." Nothing here in
+// /api/onboard/checkout changed for that - it still resolves either tier from the catalog and
+// would still charge $3,500 for "advanced" if asked - only the UI stopped asking. Left working
+// rather than removed, the same way AGENT_PLANS below stays as an empty list rather than a
+// deleted one: if a manual invoice or a future button ever needs to charge the Custom Build
+// price through Stripe, the path is already here.
 export const DEFAULT_LICENSE_TIER: LicenseTierId = "basic";
 
 export function licenseTierFor(id: string | undefined | null): LicenseTier | undefined {
@@ -150,10 +151,11 @@ export function licenseTierFor(id: string | undefined | null): LicenseTier | und
 /**
  * The tier a bare checkout means.
  *
- * Resolves to Set It and Forget It for anything unrecognised or missing, and that remains the
- * safe direction now that both tiers are buyable: the fallback is the CHEAPER setup fee, so a
- * malformed or tampered request body can never land somebody in the $3,500 charge by accident.
- * It has to name "advanced" to be charged as Custom Build.
+ * Resolves to Set It and Forget It for anything unrecognised or missing. Nothing in the UI
+ * sends "advanced" anymore (see the note above DEFAULT_LICENSE_TIER), so in practice this
+ * always resolves to Set It and Forget It today - but the fallback stays the cheaper tier on
+ * principle: a malformed or tampered request body should never land somebody in the $3,500
+ * charge by accident.
  */
 export function resolveLicenseTier(id: string | undefined | null): LicenseTier {
   return licenseTierFor(id) ?? licenseTierFor(DEFAULT_LICENSE_TIER)!;
@@ -173,71 +175,16 @@ export const BUNDLE_PRICE_LABEL = "From $449 setup + $249/mo";
 export const MONTHLY_API_ALLOWANCE_LABEL =
   "Your $249/month includes hosting, monitoring, updates, and up to $150 in API usage each month. Sustained usage above that is reviewed with you and billed at cost.";
 
-// ─── Support plans ────────────────────────────────────────────────────────────
+// ─── Support plans: REMOVED, David's call, Sept 22 2026 ("let's remove the ongoing tiers") ───
 //
-// An add-on to either tier, sold separately and starting after the 30-day onboarding period.
-// NOT IN STRIPE: there is no catalogKey here and the seed does not see these, because they are
-// sold by conversation off a discovery call rather than through self-serve checkout. If one
-// ever becomes a button, it needs a catalogKey and an entry in the seed, not just a price here.
-
-export interface SupportPlan {
-  id: string;
-  name: string;
-  amountCents: number;
-  /** Hours of David's time included each month. */
-  hours: number;
-  includes: string[];
-  /** The one we steer people to. Exactly one plan should carry it. */
-  recommended?: boolean;
-}
-
-export const SUPPORT_PLANS: readonly SupportPlan[] = [
-  {
-    id: "monitor",
-    name: "Monitor",
-    amountCents: 49500,
-    hours: 3,
-    includes: [
-      "Token optimization and drift correction",
-      "Async Q&A via Telegram",
-      "System health monitoring",
-    ],
-  },
-  {
-    id: "build",
-    name: "Build",
-    amountCents: 79500,
-    hours: 5,
-    recommended: true,
-    includes: [
-      "Everything in Monitor",
-      "Priority Telegram response",
-      "Hands-on workflow optimization",
-      "Agent updates and retraining",
-      "Monthly performance review",
-      "30-minute strategy session",
-    ],
-  },
-  {
-    id: "command",
-    name: "Command",
-    amountCents: 119500,
-    hours: 8,
-    includes: [
-      "Everything in Build",
-      "Active implementation support",
-      "Phase 2+ module build and integration",
-      "60-minute strategy session",
-    ],
-  },
-];
-
-/** The terms that apply to every support plan. One array so no surface prints two of three. */
-export const SUPPORT_PLAN_TERMS = [
-  "Two-month minimum.",
-  "Unused hours do not roll over.",
-  "Plans begin after the 30-day onboarding period.",
-];
+// Monitor / Build / Command lived here as Set-It's own three escalating add-ons, and on
+// /pricing under the heading "Add ongoing time to either tier" - which is almost certainly
+// what "the ongoing tiers" meant. They were never in Stripe (sold by conversation off a
+// discovery call, never through self-serve checkout), so removing them is a copy change with
+// no billing to unwind: nobody could have been charged through this catalog for one.
+//
+// If they come back, SupportPlan/SUPPORT_PLANS/SUPPORT_PLAN_TERMS are in the history of this
+// file at the commit that removed them - restoring the type is restoring the section.
 
 // ─── API credit packs ─────────────────────────────────────────────────────────
 //
@@ -245,24 +192,18 @@ export const SUPPORT_PLAN_TERMS = [
 // than that buys credit here rather than being cut off. One-time purchases, delivered to the
 // instance's runtime balance and recorded in wallet_transactions.
 //
-// THESE SIT AWKWARDLY WITH THE PRICING ABOVE AND ARE LEFT IN DELIBERATELY. David's wording for
-// the allowance says sustained overage is "reviewed with you and billed at cost", and these
-// packs are self-serve and carry CREDIT_MARKUP, 7% over cost. Two different answers to the same
-// question. Removing a working purchase path is a product decision rather than a copy one, so
-// the packs stay and the contradiction is named here and raised with him. If the handled
-// conversation is the only route, delete this section and the dashboard surface that sells it;
-// if the packs stay, the markup is what needs revisiting.
+// NO MARKUP, David's call, Sept 22 2026. These used to carry CREDIT_MARKUP, 7% over cost, which
+// sat badly against the allowance's own wording ("reviewed with you and billed at cost") — two
+// different answers to the same question about what an extra dollar of usage costs. One answer
+// now: what the customer pays is what reaches the runtime.
+//
+// `creditMicros` is DERIVED, not hand-typed. The old value was `amountCents / 1.07` computed by
+// hand and pasted in, which is exactly the kind of number that survives a repricing by accident
+// - it is why removing the markup is a code change here rather than only a dashboard-copy one.
+// A pack that only sets `amountCents` cannot drift from what it grants.
 //
 // The price is the round number: $25, $50, $100, $250. That is what the customer picks,
-// what the button says, and what Stripe charges.
-//
-// `creditMicros` is what actually reaches the runtime — the price with our 7% taken out
-// (price / 1.07, rounded DOWN to the cent so no pack slips under the margin). Two fields
-// rather than one derived from the other, because the price is a fact Stripe holds its own
-// copy of: a formula that drifts from the seeded price would have us charging one number and
-// granting another, which nobody notices until month end.
-export const CREDIT_MARKUP = 0.07;
-
+// what the button says, and what Stripe charges, and now also what lands in their balance.
 export interface CreditPack {
   /** Stripe product metadata.catalog_key + price lookup_key. */
   catalogKey: string;
@@ -270,45 +211,55 @@ export interface CreditPack {
   name: string;
   /** What the customer pays, in cents. The round headline number. */
   amountCents: number;
-  /** Runtime credit delivered, in micros. Equals amountCents / (1 + CREDIT_MARKUP). */
+  /** Runtime credit delivered, in micros. Derived by creditMicrosFor() below, no markup. */
   creditMicros: number;
   /** Rough guidance shown on the card. Rewrite once real usage data says otherwise. */
   blurb: string;
 }
 
-export const CREDIT_PACKS: CreditPack[] = [
+const RAW_CREDIT_PACKS: readonly Omit<CreditPack, "creditMicros">[] = [
   {
     catalogKey: "apollo_credits_25",
     name: "ApolloClaw API Credits - $25",
     amountCents: 2500,
-    creditMicros: 23_360_000,
     blurb: "A light month over the allowance.",
   },
   {
     catalogKey: "apollo_credits_50",
     name: "ApolloClaw API Credits - $50",
     amountCents: 5000,
-    creditMicros: 46_720_000,
     blurb: "A heavier month than usual.",
   },
   {
     catalogKey: "apollo_credits_100",
     name: "ApolloClaw API Credits - $100",
     amountCents: 10000,
-    creditMicros: 93_450_000,
     blurb: "Daily use across a whole team.",
   },
   {
     catalogKey: "apollo_credits_250",
     name: "ApolloClaw API Credits - $250",
     amountCents: 25000,
-    creditMicros: 233_640_000,
     blurb: "Long research runs and document work.",
   },
   // $500 removed at David's call. The Stripe product and price still exist - the seed creates
   // and updates, it never deletes - so nothing bought at that price is disturbed and putting
   // it back is one entry here. Archive it in the Stripe dashboard to hide it there too.
 ];
+
+/**
+ * Runtime credit granted, in micros, for a pack that costs `amountCents`. 1 cent = 10,000
+ * micros, no markup taken out. Kept as a function rather than a literal on each pack so the
+ * conversion happens in exactly one place.
+ */
+function creditMicrosFor(amountCents: number): number {
+  return amountCents * 10_000;
+}
+
+export const CREDIT_PACKS: readonly CreditPack[] = RAW_CREDIT_PACKS.map((pack) => ({
+  ...pack,
+  creditMicros: creditMicrosFor(pack.amountCents),
+}));
 
 export function creditPackForCatalogKey(catalogKey: string): CreditPack | undefined {
   return CREDIT_PACKS.find((p) => p.catalogKey === catalogKey);

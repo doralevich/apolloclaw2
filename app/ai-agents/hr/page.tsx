@@ -22,7 +22,7 @@ const uc = {
   title: "AI for",
   subtitle: "Human Resources",
   description:
-    "The HR Agent takes the repetitive half of people ops off your plate. It answers the policy questions, moves PTO requests along, runs new hires through onboarding, and keeps the records current, so your HR team spends its time on people instead of paperwork.",
+    "The HR Agent takes the repetitive half of people ops off your plate. It answers the policy questions, moves PTO requests along, runs incoming hires through onboarding, and keeps the records current, so your HR team spends its time on people instead of paperwork.",
   challenges: [
     "The same policy questions answered over and over in Slack and email",
     "PTO requests sitting unapproved because nobody chased them",
@@ -42,7 +42,7 @@ const uc = {
     },
     {
       title: "Onboarding That Finishes",
-      desc: "New hires walked through every step, with accounts, paperwork, and intro meetings tracked to completion instead of stalling halfway.",
+      desc: "Every hire walked through every step, with accounts, paperwork, and intro meetings tracked to completion instead of stalling halfway.",
     },
     {
       title: "Offboarding Checklists",

@@ -49,7 +49,7 @@ const jsonLd = {
 const features = [
   { title: "Client Intake Automation", desc: "AI pre-screens inquiries, collects intake information, and routes qualified leads to the right attorney, before you touch it." },
   { title: "Deadline & Matter Tracking", desc: "Court dates, filing deadlines, and statute of limitations tracked automatically. Alerts go out before anything becomes urgent." },
-  { title: "Research & Summary", desc: "Background on new matters, relevant case law, and document summaries delivered to your inbox. Research in minutes, not hours." },
+  { title: "Research & Summary", desc: "Background on each matter, relevant case law, and document summaries delivered to your inbox. Research in minutes, not hours." },
   { title: "Document Organization", desc: "Incoming documents categorized, named, and filed automatically. Your team finds what they need without hunting through inboxes." },
   { title: "Client Communication", desc: "Status updates, document requests, and follow-up sequences handled automatically so clients stay informed without your team making calls." },
   { title: "Billing & Time Capture", desc: "Activity logging prompts sent at the end of every day to capture unbilled time before it disappears. Billing gaps close." },
@@ -64,7 +64,7 @@ const process = [
   {
     phase: "Week 1",
     title: "Your Agent Goes to Work",
-    desc: "Intake inquiries get screened and routed automatically. Deadline alerts start running. Document summaries arrive before your first meeting on every new matter.",
+    desc: "Intake inquiries get screened and routed automatically. Deadline alerts start running. Document summaries arrive before your first meeting on every matter.",
   },
   {
     phase: "Month 1+",

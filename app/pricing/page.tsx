@@ -5,16 +5,18 @@ import {
   HOSTING_PLAN,
   LICENSE_TIERS,
   MONTHLY_API_ALLOWANCE_LABEL,
-  SUPPORT_PLANS,
-  SUPPORT_PLAN_TERMS,
 } from "@/lib/pricing/catalog";
 import { SCHEDULE_CONSULT_CTA, SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { OG_IMAGES } from "@/lib/seo";
 
-// THE PRICING PAGE. David's call: the tiers and the support plans are published, and until now
-// they had nowhere to live. Tier pricing appeared on /create-an-agent, which is a checkout
-// funnel rather than a page you can send somebody, and the support plans existed only in his
-// head.
+// THE PRICING PAGE. David's call: the tiers are published, and until now they had nowhere to
+// live. Tier pricing appeared on /create-an-agent, which is a checkout funnel rather than a
+// page you can send somebody.
+//
+// NO SUPPORT PLANS. Monitor/Build/Command lived here once as a "Support Plans" section
+// ("Add ongoing time to either tier"). David: "let's remove the ongoing tiers" - removed along
+// with SUPPORT_PLANS/SUPPORT_PLAN_TERMS in lib/pricing/catalog.ts. They were never sold through
+// checkout, so nothing to unwind. See that file's history if they come back.
 //
 // LIGHT, ON CREAM, AND THAT IS DELIBERATE EVEN THOUGH THE REST OF THE SITE IS DARK NAVY. David
 // specified the palette for this page directly: cream #F2F0EB, near-black #1A1A1A, red #E12E30,
@@ -46,13 +48,12 @@ const RULE = "rgba(26,26,26,0.12)";
 export const metadata: Metadata = {
   title: { absolute: "Pricing | Apollo[Claw]" },
   description:
-    "What an Apollo[Claw] agent costs. $449 setup and $249/month for the questionnaire build, $3,500 setup for a custom-scoped build, and three support plans on top of either.",
+    "What an Apollo[Claw] agent costs. $449 setup and $249/month for the questionnaire build, or $3,500 setup and $249/month for a custom-scoped build.",
   alternates: { canonical: "https://apolloclaw.ai/pricing" },
   openGraph: {
     images: OG_IMAGES,
     title: "Pricing | Apollo[Claw]",
-    description:
-      "$449 setup and $249/month all in, or $3,500 for a custom-scoped build. Support plans from $495/month.",
+    description: "$449 setup and $249/month all in, or $3,500 setup for a custom-scoped build.",
     url: "https://apolloclaw.ai/pricing",
     type: "website",
   },
@@ -106,13 +107,32 @@ function BookButton({ variant = "solid" }: { variant?: "solid" | "outline" }) {
   );
 }
 
-// Both tiers are buyable online, David's call. The button goes to /onboard rather than straight
-// to Stripe because checkout needs a name and an email before it can mint a session, and that is
-// the gate /onboard already collects; the paywall right behind it shows both tiers with these
-// same prices, read from the same catalog.
+// Set It and Forget It is buyable online: the button goes to /onboard rather than straight to
+// Stripe because checkout needs a name and an email before it can mint a session, and that is
+// the gate /onboard already collects.
 function BuyButton({ variant = "solid" }: { variant?: "solid" | "outline" }) {
   return (
     <Link href="/onboard" className={BTN} style={variant === "solid" ? solidStyle : outlineStyle}>
+      Get Started
+    </Link>
+  );
+}
+
+// Custom Build goes to the white-glove intake instead, David's call: "Custom build goes to
+// white glove service page so we get the files instead of building." It is scoped to your
+// business and built WITH you (LICENSE_TIERS' own tagline), which a fully automated
+// checkout-then-auto-build never actually fit - there was no step where anything gets scoped.
+// This is that step: the same questionnaire, no paywall, no automated build at the end. David
+// reviews what comes in and builds it, or hands back a Stripe Payment Link to close on
+// (app/white-glove-onboarding/page.tsx's own ?pay= mechanism), which is a separate, deliberate
+// step rather than something to wire up here.
+function WhiteGloveButton({ variant = "solid" }: { variant?: "solid" | "outline" }) {
+  return (
+    <Link
+      href="/white-glove-onboarding"
+      className={BTN}
+      style={variant === "solid" ? solidStyle : outlineStyle}
+    >
       Get Started
     </Link>
   );
@@ -227,7 +247,7 @@ export default function PricingPage() {
                     same button hidden keeps them level with no hardcoded pixel height to drift.
                     visibility:hidden also takes it out of the tab order. */}
                 <div className="mt-7 flex flex-col gap-3">
-                  <BuyButton />
+                  {tier.recommended ? <WhiteGloveButton /> : <BuyButton />}
                   {tier.recommended ? (
                     <BookButton variant="outline" />
                   ) : (
@@ -250,82 +270,10 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── Support plans ── */}
-      <section className="relative overflow-hidden" style={{ borderTop: `1px solid ${RULE}` }}>
-        <Grid />
-        <div className="container relative z-10 mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-16">
-          <div className="max-w-3xl">
-            <Eyebrow>Support Plans</Eyebrow>
-            <h2 className="font-heading text-[clamp(1.75rem,3vw,2.5rem)] font-bold leading-[1.15] tracking-tight">
-              Add ongoing time to either tier
-            </h2>
-            <p className="font-body mt-4 text-[1.0625rem] leading-[1.65]" style={{ color: INK_MUTED }}>
-              An agent earns its keep when somebody keeps tuning it. These plans buy that
-              attention by the month, on top of whichever tier you started on.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {SUPPORT_PLANS.map((plan) => (
-              <div
-                key={plan.id}
-                className="flex flex-col rounded-2xl p-7"
-                style={{
-                  background: "rgba(255,255,255,0.6)",
-                  border: plan.recommended ? `1px solid rgba(225,46,48,0.4)` : `1px solid ${RULE}`,
-                }}
-              >
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="font-heading text-[1.25rem] font-bold leading-[1.2]">{plan.name}</h3>
-                  {plan.recommended && (
-                    <span
-                      className="font-mono shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em]"
-                      style={{ background: "rgba(225,46,48,0.1)", color: RED_INK }}
-                    >
-                      Most chosen
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-5 flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-heading text-[2rem] font-extrabold leading-none">
-                    {money(plan.amountCents)}
-                  </span>
-                  <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
-                    per month
-                  </span>
-                </div>
-                <p
-                  className="font-mono mt-2 text-[11px] font-bold uppercase tracking-[0.12em]"
-                  style={{ color: RED_INK }}
-                >
-                  {plan.hours} hours a month
-                </p>
-
-                <ul className="mt-6 flex flex-1 flex-col gap-2.5">
-                  {plan.includes.map((line) => (
-                    <li key={line} className="font-body flex gap-2.5 text-[14.5px] leading-[1.55]">
-                      <Check />
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <ul className="font-body flex flex-wrap gap-x-6 gap-y-1 text-[13.5px]" style={{ color: INK_MUTED }}>
-              {SUPPORT_PLAN_TERMS.map((term) => (
-                <li key={term}>{term}</li>
-              ))}
-            </ul>
-            <BookButton variant="outline" />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Custom hardware ── */}
+      {/* ── Custom hardware ──
+          MOVED UP, David's call, right after removing the Support Plans section that used to
+          sit here. It is the last thing under the tiers now rather than sandwiched between two
+          other sections. */}
       <section className="relative overflow-hidden" style={{ borderTop: `1px solid ${RULE}` }}>
         <div className="container relative z-10 mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-16">
           <div

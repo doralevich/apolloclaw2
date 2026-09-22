@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // timescale below is read out of the code, so it can be checked rather than trusted:
 //
 //   $449 or $3,500 setup / $249 a month / $150 of API usage   lib/pricing/catalog.ts
-//   Credit packs and the 7% service fee inside them      lib/pricing/catalog.ts (CREDIT_MARKUP)
+//   Credit packs, no markup                              lib/pricing/catalog.ts (CREDIT_PACKS)
 //   10-day grace window after cancellation               lib/entitlement.ts (GRACE_PERIOD_DAYS)
 //   30-day retention before an agent is purged           lib/agent-lifecycle.ts (RETENTION_DAYS)
 //   Subprocessors                                        app/privacy/page.tsx, kept in step
@@ -100,7 +100,7 @@ const SECTIONS: LegalSection[] = [
         kind: "bullets",
         items: [
           "Credit packs are one-time purchases, delivered to your agent's runtime balance.",
-          "The amount of usage credit a pack delivers is shown before you buy. It is slightly less than the price, because the price includes a service fee on top of the underlying model cost. We would rather state that plainly here than have you work it out from a balance.",
+          "A pack delivers exactly what you pay for. There is no service fee on top: $25 buys $25 of usage.",
           "Credit is consumed as your agent works and does not expire while your account is active.",
           "Unused credit is not refundable for cash, and does not survive the closure of your account.",
         ],
@@ -266,7 +266,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "We may update these terms. The effective date above says when they last changed. For a material change we will give notice by email or in the dashboard before it takes effect, and continuing to use the service after that means accepting the new version. If you do not accept it, you can cancel.",
+        text: "We may update these terms. The effective date above says when they last changed. For a material change we will give notice by email or in the dashboard before it takes effect, and continuing to use the service after that means accepting the updated version. If you do not accept it, you can cancel.",
       },
     ],
   },

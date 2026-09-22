@@ -77,7 +77,7 @@ const data: SeoLandingData = {
         { title: "Discovery & Audit", desc: "We map your workflows and pinpoint where an agent has the clearest impact on your business." },
         { title: "Build & Integrate", desc: "We configure the agent and connect it to the software you already run across your team." },
         { title: "Deploy & Train", desc: "Your people work alongside the agent from day one, with guardrails set to how you operate." },
-        { title: "Support & Expand", desc: "We tune it as it proves out and extend it to new teams and tasks as you grow." },
+        { title: "Support & Expand", desc: "We tune it as it proves out and extend it to other teams and tasks as you grow." },
       ],
     },
     {

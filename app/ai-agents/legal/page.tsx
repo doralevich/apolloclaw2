@@ -48,7 +48,7 @@ const jsonLd = {
 };
 
 const features = [
-  { title: "Contract Drafting", desc: "First versions drafted from your own templates and standard positions, so a new NDA or MSA starts from your language, not a blank page." },
+  { title: "Contract Drafting", desc: "First versions drafted from your own templates and standard positions, so every NDA or MSA starts from your language, not a blank page." },
   { title: "Review & Redlining", desc: "Incoming agreements read against your playbook, with the off-market terms flagged and a redline drafted before it reaches your desk." },
   { title: "Plain-English Summaries", desc: "Any document summarized in language a business owner can follow, including what each party is agreeing to and what they are risking." },
   { title: "Obligation & Renewal Tracking", desc: "Deadlines, auto-renewals, and notice windows tracked across every agreement, so nothing lapses or renews by surprise." },
