@@ -1070,21 +1070,19 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${a},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
-          {/* SET IT AND FORGET IT BUYS HERE; CUSTOM BUILD GOES TO WHITE-GLOVE INTAKE INSTEAD.
-              David: "Custom build goes to white glove service page so we get the files instead
-              of building." Custom Build's whole pitch is scoped to your business, built WITH
-              you - routing it through the same checkout-then-automated-questionnaire pipeline
-              as Set It and Forget It never actually scoped anything. /white-glove-onboarding is
-              that step: same questionnaire, no paywall, no automated build at the end.
+          {/* SET IT AND FORGET IT BUYS HERE; CUSTOM BUILD IS CALL-ONLY HERE. Custom Build's
+              whole pitch is scoped to your business, built WITH you - routing it through the
+              same checkout-then-automated-questionnaire pipeline as Set It and Forget It never
+              actually scoped anything, and this is the paywall in the middle of that pipeline,
+              so it carries no path into it for this tier at all: just Book a Discovery Call.
+              (/pricing and /create-an-agent still also link to /white-glove-onboarding for
+              Custom Build - the same questionnaire, no paywall, no automated build at the end -
+              this page only omits it here.)
 
               Both cards are still rendered from LICENSE_TIERS rather than one derived and one
               hand-written, which is how this card once came to carry its own stale copy of the
               includes list and the words "Contact us for setup" after the pricing changed
               underneath it.
-
-              Custom Build keeps the discovery call as a second link under the intake, so
-              somebody who wants it scoped on a call first does not have to fill out a form to
-              ask.
 
               Wraps to one column under ~600px, where two side by side would each be too narrow
               to read the includes list in. */}
@@ -1116,12 +1114,21 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                       </li>
                     ))}
                   </ul>
+                  {/* CUSTOM BUILD IS CALL-ONLY HERE, David's call, specific to this page: "The
+                      onboard page the Custom Build should not have the 'Get Started', only the
+                      Book a Discovery Call." /pricing and /create-an-agent still carry both (a
+                      link to the white-glove intake, plus the call) - this is deep inside a
+                      flow someone entered meaning to self-serve, and Custom Build was never
+                      really that, so the one card here that is not a self-serve buy shows the
+                      one action that fits. */}
                   {recommended ? (
                     <a
-                      href="/white-glove-onboarding"
+                      href={SCHEDULE_CONSULT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
                     >
-                      Get Started
+                      {SCHEDULE_CONSULT_CTA}
                     </a>
                   ) : (
                     <button
@@ -1132,19 +1139,6 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                     >
                       {buying === t.id ? "Taking you to checkout\u2026" : "Get Started"}
                     </button>
-                  )}
-                  {/* Only on Custom Build: intake OR schedule. Set It and Forget It is the
-                      questionnaire build with no custom work, so there is nothing to scope on a
-                      call and a second button there would only be a way out of buying. */}
-                  {recommended && (
-                    <a
-                      href={SCHEDULE_CONSULT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ marginTop: 8, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: "transparent", color: TXM, fontWeight: 700, fontSize: 13, padding: "11px 16px", borderRadius: 6, border: `1px solid ${BDR}`, textDecoration: "none" }}
-                    >
-                      {SCHEDULE_CONSULT_CTA}
-                    </a>
                   )}
                 </div>
               );
