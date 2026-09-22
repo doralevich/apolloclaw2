@@ -50,7 +50,7 @@ const features = [
   { title: "Quote Follow-Up", desc: "AI follows up with prospects after quotes are sent, answers common questions, and keeps your pipeline moving without chasing every lead manually." },
   { title: "Renewal Automation", desc: "Automated renewal outreach sequences start 90 days out, ensure every client is contacted on time, and escalate non-responders to your team." },
   { title: "Claims Communication", desc: "Automated status update outreach to clients in open claims, reducing inbound calls and keeping clients informed throughout the process." },
-  { title: "New Business Qualification", desc: "Prospects qualified, applications started, and follow-up sequenced automatically so your producers spend time with buyers, not chasers." },
+  { title: "Prospect Qualification", desc: "Prospects qualified, applications started, and follow-up sequenced automatically so your producers spend time with buyers, not chasers." },
   { title: "Certificate Management", desc: "Certificate of insurance requests logged, processed, and delivered without backing up your service team." },
   { title: "Cross-Sell Outreach", desc: "Identifies policy gaps in existing accounts and initiates cross-sell conversations at the right time, automatically." },
 ];
@@ -224,7 +224,7 @@ export default function InsurancePage() {
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Insurance Professionals Say After 30 Days</h2>
-            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Agencies across the country are retaining more clients and writing more new business.</p>
+            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Agencies across the country are retaining more clients and winning more first-time business.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {testimonials.map((t, i) => (

@@ -37,7 +37,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/industries/real-estate#faq",
       mainEntity: [
         { "@type": "Question", name: "What CRM systems does the Real Estate Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Follow Up Boss, kvCORE, BoomTown, HubSpot, Salesforce, and most major real estate CRMs." } },
-        { "@type": "Question", name: "How fast does it follow up with new leads?", acceptedAnswer: { "@type": "Answer", text: "Within two minutes of a lead coming in, regardless of time of day. Speed to lead is one of the highest-leverage improvements most agents see immediately." } },
+        { "@type": "Question", name: "How fast does it follow up with a lead?", acceptedAnswer: { "@type": "Answer", text: "Within two minutes of a lead coming in, regardless of time of day. Speed to lead is one of the highest-leverage improvements most agents see immediately." } },
         { "@type": "Question", name: "Will it sound like me or like a robot?", acceptedAnswer: { "@type": "Answer", text: "We train the agent on your communication style during onboarding. Most clients tell us their prospects can not tell the difference." } },
         { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
         { "@type": "Question", name: "Do I need a technical team to run this?", acceptedAnswer: { "@type": "Answer", text: "No. We handle all technical setup. You interact with your agent through the same tools you already use every day." } },
@@ -47,7 +47,7 @@ const jsonLd = {
 };
 
 const features = [
-  { title: "Lead Follow-Up", desc: "AI follows up with new leads within minutes, qualifies their timeline and needs, and schedules showings, before they call someone else." },
+  { title: "Lead Follow-Up", desc: "AI follows up with leads within minutes, qualifies their timeline and needs, and schedules showings, before they call someone else." },
   { title: "Listing Management", desc: "Listing descriptions written, status changes communicated, and syndication updates handled automatically across every platform." },
   { title: "Showing Coordination", desc: "Schedules confirmed, reminders sent, and feedback collected after every showing without you touching your calendar." },
   { title: "Transaction Coordination", desc: "Deadline tracking, document requests, and status updates keep transactions moving without constant manual oversight." },
@@ -105,8 +105,8 @@ const testimonials = [
     detail: "350-unit portfolio, New York",
   },
   {
-    industry: "New Development",
-    quote: "Pre-selling a new development means managing hundreds of prospects at different stages. The agent keeps every conversation going, sends updates as construction milestones hit, and books appointments for my sales team. The pipeline runs itself.",
+    industry: "Development",
+    quote: "Pre-selling a development means managing hundreds of prospects at different stages. The agent keeps every conversation going, sends updates as construction milestones hit, and books appointments for my sales team. The pipeline runs itself.",
     role: "VP of Sales, Real Estate Developer",
     detail: "Mixed-use development, Queens",
   },
@@ -118,7 +118,7 @@ const faqs = [
     a: "We connect to Follow Up Boss, kvCORE, BoomTown, HubSpot, Salesforce, and most major real estate CRMs. We also work with spreadsheet-based systems. Every engagement is scoped individually.",
   },
   {
-    q: "How fast does it follow up with new leads?",
+    q: "How fast does it follow up with a lead?",
     a: "Within two minutes of a lead coming in, regardless of time of day. Speed to lead is one of the highest-leverage improvements most agents see immediately.",
   },
   {

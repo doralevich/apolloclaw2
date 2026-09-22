@@ -86,8 +86,8 @@ export function BuyCredits({ agentId, workspaceId }: { agentId: string | null; w
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {CREDIT_PACKS.map((pack) => (
           <div key={pack.catalogKey} className="flex flex-col rounded-lg border p-4">
-            {/* Price only. What reaches the runtime is the price net of our margin, and that
-                figure is not the customer's business at the point of choosing a pack. */}
+            {/* Price only - no separate "what you actually get" figure to show, because there
+                is no markup anymore. $25 buys $25 of usage. */}
             <div className="text-lg font-semibold tabular-nums">{money(pack.amountCents)}</div>
             <div className="text-xs text-muted-foreground">top-up</div>
             <p className="mt-2 flex-1 text-xs text-muted-foreground">{pack.blurb}</p>

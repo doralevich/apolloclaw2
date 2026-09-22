@@ -38,7 +38,7 @@ const steps = [
   {
     step: "04",
     title: "Ongoing Support",
-    desc: "Your AI agent improves over time. We monitor it, adjust it as your needs change, and add new capabilities as the technology evolves.",
+    desc: "Your AI agent improves over time. We monitor it, adjust it as your needs change, and add capabilities as the technology evolves.",
   },
 ];
 

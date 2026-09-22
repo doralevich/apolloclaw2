@@ -25,7 +25,7 @@ const uc = {
     "When your product is your people's time, every hour spent on admin is an hour you cannot bill. Apollo[Claw] agents take the coordination, follow-up, and project overhead off your consultants and advisors so more of the week goes to client work.",
   challenges: [
     "Senior people spending billable hours on scheduling and status updates",
-    "New inquiries sitting unanswered while the team is deep in delivery",
+    "Inbound inquiries sitting unanswered while the team is deep in delivery",
     "Project admin, notes, and recaps written up late or not at all",
     "Time entry chased at the end of the month instead of captured as it happens",
     "Proposals and scoping documents starting from a blank page every time",
@@ -34,7 +34,7 @@ const uc = {
   solutions: [
     {
       title: "Inquiry Intake and Qualification",
-      desc: "New inquiries screened, scoped at a high level, and routed to the right practice lead with a consultation already scheduled.",
+      desc: "Inbound inquiries screened, scoped at a high level, and routed to the right practice lead with a consultation already scheduled.",
     },
     {
       title: "Project Coordination",

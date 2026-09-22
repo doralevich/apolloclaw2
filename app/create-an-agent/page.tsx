@@ -98,7 +98,7 @@ const DETAILS = [
   },
   {
     title: "Wired into your real stack",
-    desc: "Connect the apps you already use through one-click, secure OAuth. No new tools to learn, no data migration.",
+    desc: "Connect the apps you already use through one-click, secure OAuth. Nothing extra to learn, no data migration.",
   },
   {
     title: "You stay the decision-maker",
@@ -321,7 +321,7 @@ export default function CreateAnAgentPage() {
               </div>
             </ScrollReveal>
 
-            {/* White-Glove — recommended, purchase or schedule */}
+            {/* White-Glove — recommended: white-glove intake, or schedule a call first */}
             <ScrollReveal delay={100}>
               <div className="bauhaus-card p-9 h-full flex flex-col relative" style={{ borderColor: "#D72B2B", borderWidth: 2 }}>
                 <span
@@ -348,14 +348,15 @@ export default function CreateAnAgentPage() {
                     </li>
                   ))}
                 </ul>
-                {/* PURCHASE OR SCHEDULE, David's call. This card booked a call and nothing else
-                    while it was the call-for-setup tier. Somebody who already knows they want
-                    the custom build should not have to get on a call to hand over money, and
-                    somebody who wants it scoped first should not have to pay to ask, so it
-                    carries both. Set It and Forget It has only the buy: there is no custom work
-                    on it to scope. */}
+                {/* GOES TO THE WHITE-GLOVE INTAKE, David's call: "Custom build goes to white
+                    glove service page so we get the files instead of building." Not /onboard
+                    - that pipeline is checkout, then the same automated questionnaire-driven
+                    build Set It and Forget It uses, and Custom Build's whole pitch (scoped to
+                    your business, built WITH you) never had a step where anyone actually
+                    scopes it. This is that step: same questionnaire, no paywall, no automated
+                    build at the end - David reviews what comes in and builds it himself. */}
                 <Link
-                  href="/onboard"
+                  href="/white-glove-onboarding"
                   className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
                   style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
                 >

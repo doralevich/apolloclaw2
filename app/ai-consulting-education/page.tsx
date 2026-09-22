@@ -35,7 +35,7 @@ const data: SeoLandingData = {
       items: [
         { title: "Inquiry Volume Outpaces Staff", desc: "Admissions, financial aid, and registrar offices field the same questions hundreds of times a semester with no more staff to answer them." },
         { title: "Fragmented Systems", desc: "Student information systems, LMS platforms, and communication tools rarely talk to each other, so staff do the connecting by hand." },
-        { title: "Budgets Under Pressure", desc: "Enrollment and funding pressure means new headcount is rarely the answer, even as demand for support keeps growing." },
+        { title: "Budgets Under Pressure", desc: "Enrollment and funding pressure means added headcount is rarely the answer, even as demand for support keeps growing." },
       ],
     },
     {
@@ -47,7 +47,7 @@ const data: SeoLandingData = {
         { title: "Discovery & Audit", desc: "We map your admissions, student services, and operational workflows to find where AI has the clearest impact." },
         { title: "Build & Integrate", desc: "We connect the agent to your SIS, LMS, and communication tools so it works inside systems you already run." },
         { title: "Deploy & Train", desc: "Staff are trained to work alongside the agent from day one. No technical background required." },
-        { title: "Support & Expand", desc: "We tune the system through each enrollment cycle and expand it to new departments as it proves out." },
+        { title: "Support & Expand", desc: "We tune the system through each enrollment cycle and expand it to other departments as it proves out." },
       ],
     },
     {

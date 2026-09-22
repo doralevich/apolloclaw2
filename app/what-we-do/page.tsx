@@ -25,7 +25,7 @@ const services = [
     slugs:  ["hubspot/FF7A59","salesforce/00A1E0","pipedrive/1A1F36","zoho/E42527","mondaydotcom/F62B54","notion/000000"],
     items: [
       { name: "CRM Updates", desc: "Automatically logs calls, meetings, and emails. Updates deal stages, adds notes, and keeps your pipeline current without manual entry." },
-      { name: "Lead Qualification", desc: "AI engages new leads, asks qualifying questions, scores them, and routes hot leads to you immediately." },
+      { name: "Lead Qualification", desc: "AI engages incoming leads, asks qualifying questions, scores them, and routes hot leads to you immediately." },
       { name: "Outreach Sequences", desc: "Personalized outreach at scale. AI writes and sends follow-up sequences based on prospect behavior and engagement." },
     ],
   },
@@ -45,7 +45,7 @@ const services = [
     slugs:  ["shopify/96BF48","slack/4A154B","zapier/FF4A00","make/6D00CC","stripe/635BFF","openai/412991","twilio/F22F46"],
     items: [
       { name: "API Connections", desc: "Connects your bot to any platform with an API - Shopify, QuickBooks, HubSpot, Salesforce, Slack, and hundreds more." },
-      { name: "Workflow Automation", desc: "Custom multi-step workflows triggered by events. A new lead triggers a CRM entry, a follow-up email, and a Slack alert - all automatically." },
+      { name: "Workflow Automation", desc: "Custom multi-step workflows triggered by events. A lead coming in triggers a CRM entry, a follow-up email, and a Slack alert - all automatically." },
       { name: "Custom Reporting", desc: "Daily, weekly, or on-demand reports delivered to your inbox or Telegram. Metrics, trends, and actionable summaries." },
     ],
   },

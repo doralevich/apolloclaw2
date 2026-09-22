@@ -50,7 +50,7 @@ const uc = {
     },
     {
       title: "Integration Support",
-      desc: "During onboarding of a new acquisition, the agent absorbs the manual reporting and data-cleanup work that otherwise lands on an already-stretched team.",
+      desc: "During onboarding of a portfolio addition, the agent absorbs the manual reporting and data-cleanup work that otherwise lands on an already-stretched team.",
     },
     {
       title: "Approval Before Action",
