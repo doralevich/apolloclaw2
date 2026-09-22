@@ -17,11 +17,11 @@ export type NavItem = {
   /** Keys agentBrand() in lib/agentBrand.ts, so a card or tile can take the agent's own colour
    *  instead of ApolloClaw red. Only set on AGENTS; an industry is not one agent. */
   agentTypeId?: string;
-  /** `to` leaves ApolloClaw, so the link opens in a new tab.
-   *
-   *  One agent is sold on its own property rather than here (The College Agent), and a nav row
-   *  that navigates away from the site you are browsing is a row that loses you the site. Set
-   *  this and every renderer adds target and rel from `externalLinkProps` below. */
+  /** `to` leaves ApolloClaw, so the link opens in a new tab - for a row that points at a
+   *  property sold and run somewhere else, where a nav row that navigates away from the site
+   *  you are browsing would otherwise cost you the site. Set this and every renderer adds
+   *  target and rel from `externalLinkProps` below. Unused today (The College Agent, the one
+   *  entry that needed it, was retired), kept for the next agent sold off-property. */
   external?: boolean;
 };
 
@@ -100,10 +100,11 @@ export const AGENTS: NavItem[] = [
   { label: "The Medical Agent", agentTypeId: "medical", Icon: Stethoscope, to: "/industries/medical-practices", description: "Keep the schedule full, chase referrals and authorizations, and answer what a front desk answers all day." },
   { label: "The Real Estate Agent", agentTypeId: "realestate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you." },
   { label: "The Personal Agent", agentTypeId: "personal", Icon: User, to: "/ai-agents/personal-assistant", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do." },
-  // LAST, AND THE ONLY ONE THAT LEAVES. The College Agent is sold, built and provisioned on its
-  // own property (agent-types.ts: externalUrl, and nothing in this app ever creates one), so the
-  // row goes to the site that actually sells it rather than to a page here that would have to
-  // hand people off anyway. New tab, because a dropdown row should not cost you the site you
-  // were browsing.
-  { label: "The College Agent", agentTypeId: "college", Icon: GraduationCap, to: "https://thecollegeagent.ai", external: true, description: "Essays, deadlines, applications and scholarships, kept straight through the whole of senior year." },
+  // THE COLLEGE AGENT IS RETIRED, David's call - the product is being fully sunset, not just
+  // pulled from new sales, so nothing here should point a visitor at thecollegeagent.ai anymore.
+  // Only this marketing/discovery row is gone: the agent TYPE stays in config/agent-types.ts
+  // (it resolves `agent_type` on any pre-existing rows and is what the admin fleet view reads to
+  // label that Agent37 account's shared boxes), and every place that treats those boxes as
+  // read-only and not-ours-to-touch is untouched. This is the front door closing, not the
+  // teardown of what is shared infrastructure with a live customer base winding down elsewhere.
 ];
