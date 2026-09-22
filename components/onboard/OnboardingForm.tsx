@@ -4,7 +4,8 @@ import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type Portf
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 import AgentWordmark from "@/components/AgentWordmark";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
-import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
+import { getAgentType, LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
+import { AGENTS, type NavItem } from "@/config/navigation";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { fieldVisible, getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
 import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
@@ -1010,6 +1011,58 @@ function Success({ nextStep, payUrl }: { nextStep?: boolean; payUrl?: string }) 
 // has no account at this point and does not need one — /api/onboard/checkout is anonymous
 // and the account is created from the completed checkout by the Stripe webhook.
 
+// WHICH AGENT DO YOU WANT? Derived from AGENTS (config/navigation.ts) rather than a second
+// hand-typed list, minus the one entry that is not ours to build: The College Agent is sold
+// and provisioned on its own site (external: true), so it is not a pick here.
+//
+// Every remaining entry is confirmed real, not cosmetic: each one's agentTypeId already
+// clears the same guard /api/onboard/checkout applies (no externalUrl, no noSetup — see
+// lib/buildFunnel.ts's BUILD_SLUGS, which every one of these ids also appears in), and
+// picking one changes what actually gets provisioned — the questionnaire that follows adds
+// that role's own deep-dive (ROLE_INTAKES) and /api/onboard/complete builds from that type's
+// template, not the generic license agent. This is the exact mechanism a branded funnel like
+// /build/real-estate already uses; the only thing new here is that a visitor arriving at the
+// plain /onboard entry, with no branded URL to imply a type, can now say which one they want.
+const PICKABLE_AGENTS: (NavItem & { agentTypeId: string })[] = AGENTS.filter(
+  (item): item is NavItem & { agentTypeId: string } => !item.external && !!item.agentTypeId
+);
+
+/** "The CFO Agent" -> "CFO", for a label that fits on a pill rather than a card. */
+function shortAgentLabel(label: string): string {
+  return label.replace(/^The\s+/i, "").replace(/\s+Agent$/i, "");
+}
+
+// The pill row itself, shared between the Paywall's inline picker (plain /onboard) and
+// AgentPick's full-screen one (white glove) below - same list, same styling, so the two never
+// drift into picking from different sets or rendering the "on" state differently.
+function AgentTypePills({ chosenType, onChange }: { chosenType: string | undefined; onChange: (id: string | undefined) => void }) {
+  const { rgb } = useAccent();
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+      <button
+        type="button"
+        onClick={() => onChange(undefined)}
+        style={{ padding: "7px 13px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "inherit", background: !chosenType ? `rgba(${rgb},0.1)` : SRF2, border: `1px solid ${!chosenType ? `rgba(${rgb},0.45)` : BDR}`, color: !chosenType ? TX : TXM, transition: "all 0.15s" }}
+      >
+        Not sure yet
+      </button>
+      {PICKABLE_AGENTS.map((agent) => {
+        const on = chosenType === agent.agentTypeId;
+        return (
+          <button
+            key={agent.agentTypeId}
+            type="button"
+            onClick={() => onChange(agent.agentTypeId)}
+            style={{ padding: "7px 13px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, fontFamily: "inherit", background: on ? `rgba(${rgb},0.1)` : SRF2, border: `1px solid ${on ? `rgba(${rgb},0.45)` : BDR}`, color: on ? TX : TXM, transition: "all 0.15s" }}
+          >
+            {shortAgentLabel(agent.label)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => void; agentTypeId?: string }) {
   const { a, rgb } = useAccent();
   // WHICH tier is checking out, not just whether something is. Both cards buy now, and a bare
@@ -1019,10 +1072,23 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
   const [err, setErr] = useState("");
   const loading = buying !== null;
 
+  // The picker below only renders when `agentTypeId` is absent - a branded funnel already
+  // fixes the type from its URL, and letting someone override therealestateagent.ai's own
+  // page into building a CFO Agent instead would be a bug, not a feature. `chosenType` starts
+  // unset (the default reading: "not sure yet"), matching what plain /onboard already did
+  // before this existed.
+  const [chosenType, setChosenType] = useState<string | undefined>(undefined);
+  const effectiveType = agentTypeId ?? chosenType;
+
   const go = async (tierId: LicenseTierId) => {
     setErr("");
     setBuying(tierId);
     try {
+      // Stashed before the redirect, same reason and same mechanism as the gate: this browser
+      // is about to leave for Stripe and come back to a fresh server render that carries no
+      // memory of what got clicked here. Only worth writing when a real choice was made -
+      // "not sure yet" needs nothing restored, since that is already the default.
+      if (chosenType) writeStoredAgentType(chosenType);
       const res = await fetch("/api/onboard/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1034,8 +1100,9 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           tier: tierId,
           // A branded role funnel (e.g. /build/real-estate) sends its type + its own path so the
           // purchase builds that agent and Stripe returns to the right questionnaire. Plain
-          // /onboard sends neither and provisions the generic license agent, unchanged.
-          agentType: agentTypeId,
+          // /onboard sends the picker's choice if one was made, or nothing - which still
+          // provisions the generic license agent, exactly as it always has.
+          agentType: effectiveType,
           returnPath: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });
@@ -1069,6 +1136,26 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${a},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
+
+          {/* WHICH AGENT, optional. Absent on a branded funnel (agentTypeId already fixed by
+              the URL that got them here) - this only exists on the plain entry, where there
+              was previously no way to say which one you wanted short of answering the whole
+              questionnaire and letting it fall through to the generic build. Kept lightweight
+              on purpose: a row of pills, not a form field, and "not sure yet" the default -
+              David asked for the OPTION, and forcing a pick on someone who does not know yet
+              would undo the site's own pitch that the questionnaire is what decides this. */}
+          {!agentTypeId && (
+            <div style={{ marginBottom: 22, paddingBottom: 20, borderBottom: `1px solid ${BDR}` }}>
+              <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 14, color: TXM }}>
+                Which agent is this for? <span style={{ fontWeight: 600, color: TXD }}>(optional)</span>
+              </p>
+              <p style={{ margin: "0 0 12px", fontSize: 12.5, color: TXD, lineHeight: 1.5 }}>
+                Gives the questionnaire a head start. Not sure yet? Skip it - the questions get
+                you there either way.
+              </p>
+              <AgentTypePills chosenType={chosenType} onChange={setChosenType} />
+            </div>
+          )}
 
           {/* SET IT AND FORGET IT BUYS HERE; CUSTOM BUILD IS CALL-ONLY HERE. Custom Build's
               whole pitch is scoped to your business, built WITH you - routing it through the
@@ -1168,6 +1255,40 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
             is a different conversation and we will set it up for you.
           </p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+// AGENT PICK (white glove only, between the gate and the questionnaire)
+// ════════════════════════════════════════════════════════════
+// White glove has no paywall and no Stripe redirect to hang the picker off of - it goes
+// straight from the gate to the questionnaire. Same optional pick as the Paywall's, same
+// PICKABLE_AGENTS list and AgentTypePills, just given its own screen since there is no card
+// already on the page to fold it into. Only reached when this white-glove session has no
+// agentTypeId of its own yet (see the "add it to white-glove too" branch in handleGate) - a
+// branded intake never sees this, same guard as the Paywall's.
+function AgentPick({ onNext, onBack }: { onNext: (agentTypeId: string | undefined) => void; onBack: () => void }) {
+  const { a } = useAccent();
+  const [chosenType, setChosenType] = useState<string | undefined>(undefined);
+  return (
+    <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <div style={{ width: "100%", maxWidth: 560, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", textAlign: "center" }}>
+        <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 8px" }}>Which agent are we building?</h2>
+        <p style={{ fontSize: 14, color: TXM, margin: "0 0 24px", lineHeight: 1.6 }}>
+          Optional - it just gives the questionnaire a head start with the right deep-dive for
+          your role. Not sure yet? Skip it, and we will get there through the questions instead.
+        </p>
+        <div style={{ textAlign: "left" }}>
+          <AgentTypePills chosenType={chosenType} onChange={setChosenType} />
+        </div>
+        <button type="button" onClick={() => onNext(chosenType)} style={{ width: "100%", marginTop: 28, background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "13px", borderRadius: 6, border: "none", cursor: "pointer" }}>
+          Continue →
+        </button>
+        <button type="button" onClick={onBack} style={{ width: "100%", marginTop: 12, background: "transparent", border: "none", color: TXD, fontFamily: "inherit", fontSize: 13, padding: "8px", cursor: "pointer" }}>
+          ← Back
+        </button>
       </div>
     </div>
   );
@@ -2049,6 +2170,44 @@ function clearStoredGate(): void {
   }
 }
 
+// A SEPARATE STASH, not a field bolted onto GateData. GateData is contact info, read and
+// written from several places that have nothing to do with which agent got picked (the
+// customer edit path's hydrateGate, for one), and folding an unrelated concern into it so it
+// can hitch a ride through the same JSON blob would cost more in coupling than it saves in
+// code. Same three-function shape as the gate stash for the same reason: written once, right
+// before the Paywall's buy button leaves the site for Stripe, and read once, back from it.
+const AGENT_CHOICE_STORAGE_KEY = "apolloclaw.onboard.agentType";
+
+function readStoredAgentTypeRaw(): string | null {
+  try {
+    return window.sessionStorage.getItem(AGENT_CHOICE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function readNoStoredAgentType(): string | null {
+  return null;
+}
+
+function writeStoredAgentType(agentTypeId: string): void {
+  try {
+    window.sessionStorage.setItem(AGENT_CHOICE_STORAGE_KEY, agentTypeId);
+  } catch {
+    // Losing this loses which deep-dive the questionnaire opens on, not the sale itself -
+    // /api/onboard/complete still reads the real type off the paid Stripe session regardless,
+    // so the agent that gets built is correct either way. Same posture as writeStoredGate.
+  }
+}
+
+function clearStoredAgentType(): void {
+  try {
+    window.sessionStorage.removeItem(AGENT_CHOICE_STORAGE_KEY);
+  } catch {
+    // Nothing to do — see writeStoredAgentType.
+  }
+}
+
 export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspaceId, agent37Id, justPaid, sessionId, signedInUser, initialAnswers, initialAgentName, payUrl, onDemoComplete }: OnboardingFormProps) {
   const isCustomer = mode === "customer";
   const isDemo = mode === "demo";
@@ -2064,10 +2223,6 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // the gate and the questionnaire, keyed on mode === "lead" — this mode is exempt by design,
   // which is the entire reason it exists.
   const isWhiteGlove = mode === "whiteglove";
-  // The role agent (CFO, Law) this white-glove form is customizing, if any - fills the
-  // "Let's Customize Your ___" gate heading. Same ROLE_INTAKES lookup BizTrack uses.
-  const roleIntake = agentTypeId ? ROLE_INTAKES[agentTypeId] : undefined;
-  const brand = agentBrand(agentTypeId);
   // THE PAYWALL IS BACK ON, as a choice between two tiers rather than the single $2,500 wall
   // it was. It was off for one deploy while David decided pricing.
   //
@@ -2099,10 +2254,35 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   const storedGateRaw = useSyncExternalStore(subscribeNever, readStoredGateRaw, readNoStoredGate);
   const restored = justPaid ? parseStoredGate(storedGateRaw) : null;
 
+  // Same reasoning, for which agent got picked on the Paywall rather than for the contact
+  // fields: only meaningful once back from Stripe (`justPaid`) and only when the plain
+  // /onboard entry had a picker to begin with - a branded funnel's `agentTypeId` prop is
+  // already fixed and this restore never overrides it (see effectiveAgentTypeId below).
+  const storedAgentType = useSyncExternalStore(subscribeNever, readStoredAgentTypeRaw, readNoStoredAgentType);
+  const restoredAgentTypeId = justPaid ? storedAgentType ?? undefined : undefined;
+  // White glove's own pick, from the AgentPick screen below. Plain component state rather
+  // than the sessionStorage stash the paywall needs: this flow never leaves the page for
+  // Stripe and back, it is one continuous client session, so nothing here needs to survive
+  // a redirect.
+  const [whiteGloveAgentType, setWhiteGloveAgentType] = useState<string | undefined>(undefined);
+  // What every phase after the paywall actually reads. The raw `agentTypeId` PROP wins when
+  // set (a branded funnel, fixed for the component's whole lifetime); otherwise this is either
+  // the plain /onboard entry, where the restored pick - if the buyer made one - fills in, or a
+  // white-glove session, where `whiteGloveAgentType` does. The two are mutually exclusive by
+  // mode, so there is no case where both are set. Undefined either way falls through to the
+  // generic license agent, unchanged from before this existed.
+  const effectiveAgentTypeId = agentTypeId ?? restoredAgentTypeId ?? whiteGloveAgentType;
+  const effectiveAgentLabel = agentLabel ?? (effectiveAgentTypeId ? getAgentType(effectiveAgentTypeId)?.label : undefined);
+  // The role agent (CFO, Law) this white-glove form is customizing, if any - fills the
+  // "Let's Customize Your ___" gate heading. Same ROLE_INTAKES lookup BizTrack uses. Reads the
+  // effective type rather than the raw prop for the same reason as above.
+  const roleIntake = effectiveAgentTypeId ? ROLE_INTAKES[effectiveAgentTypeId] : undefined;
+  const brand = agentBrand(effectiveAgentTypeId);
+
   // `null` means "not chosen yet, use whatever the current state of the world implies".
   // Phase is DERIVED rather than seeded, so it can change when the stored value lands
   // without a setState in an effect. Any explicit setPhase from here on takes over.
-  const [chosenPhase, setPhase] = useState<"splash" | "gate" | "paywall" | "confirm" | "personalize" | "form" | "submitting" | "done" | "building" | null>(null);
+  const [chosenPhase, setPhase] = useState<"splash" | "gate" | "agentPick" | "paywall" | "confirm" | "personalize" | "form" | "submitting" | "done" | "building" | null>(null);
   const phase =
     chosenPhase ??
     (isEditing
@@ -2151,6 +2331,14 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     // Already paid but arriving through the gate (they checked out on another device, so
     // the stashed answers were gone). Naming the agent still comes before the questions.
     if (isPaywalled && justPaid) return setPhase("personalize");
+    // White glove, same optional pick the Paywall offers - just on its own screen, since
+    // this mode has no paywall to fold it into. Skipped when a branded intake already fixed
+    // the type (agentTypeId prop set), same guard the Paywall's inline picker uses.
+    if (isWhiteGlove && !agentTypeId) return setPhase("agentPick");
+    setPhase("form");
+  };
+  const handleAgentPick = (id: string | undefined) => {
+    setWhiteGloveAgentType(id);
     setPhase("form");
   };
   const handlePersonalize = (d: PersonalizeData) => { setPersonalize(d); setPhase("form"); };
@@ -2222,6 +2410,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
           });
           if (r.ok) {
             clearStoredGate();
+            clearStoredAgentType();
             setPhase("building");
             return;
           }
@@ -2239,6 +2428,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
       if (!res.ok) throw new Error("Submission failed");
       // The questionnaire is in; the stashed contact details have done their job.
       clearStoredGate();
+      clearStoredAgentType();
       setPhase("done");
     } catch (err) {
       console.error("Submission error:", err);
@@ -2257,7 +2447,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
   // `name` rides along so each screen can show that agent's own wordmark rather than
   // Apollo[Claw]'s. See FunnelWordmark.
   const phaseContent = (() => {
-    if (phase === "splash") return <PaymentSplash agentLabel={agentLabel || "agent"} onStart={() => setPhase(skipGate ? "personalize" : "gate")} />;
+    if (phase === "splash") return <PaymentSplash agentLabel={effectiveAgentLabel || "agent"} onStart={() => setPhase(skipGate ? "personalize" : "gate")} />;
     if (phase === "gate") return (
       <Gatekeeper
         onPass={handleGate}
@@ -2279,6 +2469,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         intro={isWhiteGlove ? "Welcome. This is your onboarding form. Everything you tell us here goes straight into how your agent is built, so the more detail the better. Takes about 15 minutes, and the technical setup follows at the end." : roleIntake?.intro}
       />
     );
+    if (phase === "agentPick") return <AgentPick onNext={handleAgentPick} onBack={() => setPhase("gate")} />;
     if (phase === "paywall") return <Paywall gate={gate} onBack={() => setPhase("gate")} agentTypeId={agentTypeId} />;
     if (phase === "confirm") return (
       <PaymentConfirmation
@@ -2287,7 +2478,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         onContinue={() => setPhase(restored ? "personalize" : "gate")}
       />
     );
-    if (phase === "personalize") return <Personalize agentLabel={agentLabel || "agent"} onNext={handlePersonalize} />;
+    if (phase === "personalize") return <Personalize agentLabel={effectiveAgentLabel || "agent"} onNext={handlePersonalize} />;
     if (phase === "submitting") return (
       <div style={{ minHeight: "100vh", background: BG, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
         <div style={{ width: 48, height: 48, border: `3px solid ${SRF2}`, borderTopColor: R, borderRadius: "50%", animation: "oc-spin 1s linear infinite", marginBottom: 24 }} />
@@ -2298,8 +2489,8 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     );
     if (phase === "building") return (
       <BuildScreen
-        agentTypeId={agentTypeId || LICENSE_AGENT_TYPE_ID}
-        agentLabel={personalize.agentName || agentLabel || "Agent"}
+        agentTypeId={effectiveAgentTypeId || LICENSE_AGENT_TYPE_ID}
+        agentLabel={personalize.agentName || effectiveAgentLabel || "Agent"}
         workspaceId={buildingWorkspaceId}
         // License buyers have no session to poll the dashboard API with; the paid checkout
         // session authorizes their status reads instead.
@@ -2311,7 +2502,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
     // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
     // sending them back there would silently drop it, so they keep no Back on step 0.
-    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : isDemo ? "Build My Agent →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
+    if (phase === "form") return <BizTrack gate={gate} agentTypeId={effectiveAgentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : isDemo ? "Build My Agent →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase(agentTypeId ? "gate" : "agentPick") : undefined} />;
     return null;
   })();
   return (
