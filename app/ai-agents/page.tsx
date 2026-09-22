@@ -40,7 +40,7 @@ import {
 export const metadata: Metadata = {
   title: { absolute: "Our Fleet of AI Agents | Apollo[Claw]" },
   description:
-    "Every agent Apollo[Claw] builds, in one place. The CEO, CFO, Sales, Recruiting, Law, Insurance, Medical, Real Estate, and Personal Agents, each scoped to a job and connected to your tools.",
+    "Every agent Apollo[Claw] builds, in one place. The CEO, CFO, Sales, Recruiting, Law, Insurance, Medical, Real Estate, Personal, and College Agents, each scoped to a job and connected to your tools.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents" },
   openGraph: {
     // The house card, not an agent's. This page is the whole fleet, so sharing it should show
