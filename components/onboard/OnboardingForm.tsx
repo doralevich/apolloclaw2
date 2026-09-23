@@ -85,6 +85,12 @@ const ROLE_INTAKES: Record<
     // because a branch that still asks its own guardrail question should keep using the
     // customer's actual answer.
     standardGuard?: string;
+    // OPT IN to asking "Describe your business" as the last field on this branch's own first
+    // page instead of on the generic "What Do You Do?" page. Names the field on this branch
+    // that holds it, and buildData reads that field for `businessDescription` instead of
+    // `s2.desc` whenever it is set. Pair with `dropPages: ["whatyoudo"]` - naming the field
+    // without dropping the generic page would ask the question twice.
+    businessDescField?: string;
   }
 > = {
   cfo: {
@@ -100,6 +106,12 @@ const ROLE_INTAKES: Record<
     standardGuard:
       "Anything filed with a court, any advice given directly to a client, any opinion on the merits or likely outcome of a matter, and anything requiring a signature always goes through a licensed attorney before it moves. Privileged or confidential client material is never summarized into shared or non-firm systems.",
     hideRevenue: true,
+    // "Describe your business" moved onto the bottom of "Your Legal Practice", right after
+    // practice areas, David's call - so it reads with the answer that gives it context instead
+    // of arriving as its own page beforehand. dropPages removes the generic page asking the
+    // same question; businessDescField points buildData at this branch's own copy instead.
+    dropPages: ["whatyoudo"],
+    businessDescField: "business_desc",
   },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
@@ -1601,7 +1613,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const scopeKeys = roleIntake?.coversScope;
   const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
   const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];

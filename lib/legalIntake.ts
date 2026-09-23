@@ -1,7 +1,7 @@
 // The Law Agent's intake deep-dive.
 //
-// Four pages rather than one: the practice, the documents, the technology, and what the agent
-// should own.
+// Six pages rather than one: the practice, the documents, legal research tools, email &
+// calendar, deadlines & conflicts, and what the agent should own.
 //
 // Same shape as an industry branch (lib/industryConfig.ts) so each page renders through the exact
 // same generic step in the onboarding form (IndustryStep). All four write into ONE blob
@@ -218,6 +218,18 @@ const PRACTICE: IndustryBranch = {
       placeholder: "e.g. entertainment and media contracts, mostly talent agreements and content licensing.",
       showIf: { key: "practice_areas", includes: "Other" },
     },
+    // "Describe your business" moved down here from its own generic page, David's call - it
+    // reads better right after practice areas than as its own page beforehand. See
+    // ROLE_INTAKES.legal's `businessDescField`/`dropPages` in OnboardingForm.tsx, which points
+    // buildData at this field instead of the generic page's and removes that page from the flow.
+    {
+      key: "business_desc",
+      label: "Describe your business",
+      type: "textarea",
+      required: true,
+      placeholder: "We help [who] do [what] by [how]...",
+      helper: "Who do you serve, and what do you deliver for them?",
+    },
   ],
 };
 
@@ -265,7 +277,7 @@ const DOCUMENTS: IndustryBranch = {
   ],
 };
 
-// ─── Page 3: legal technology ────────────────────────────────────────────────
+// ─── Pages 3-5: legal technology ─────────────────────────────────────────────
 // WHAT MAKES A LAW FIRM DIFFERENT FROM ANY OTHER BUSINESS ANSWERING "which tools do you use":
 // legal research, legal-specific AI, email, and how deadlines and conflicts get tracked. A
 // generic tech-stack question (CRM, billing, email, in the same shape every other role intake
@@ -273,13 +285,15 @@ const DOCUMENTS: IndustryBranch = {
 // to a plumber's CRM. These three exist because the answers change what the agent can actually
 // plug into and what it must never confuse itself with.
 //
-// Its own page now, David's call, split out of Documents rather than tacked onto the end of it -
-// this is the page that actually distinguishes a law firm's setup from a generic business's, and
-// it was reading as an afterthought bolted onto a page about paperwork.
-const TECH: IndustryBranch = {
-  stepTitle: "Your Legal Technology",
-  stepSubtitle: "What this needs to work alongside from day one - research, communication, and how deadlines and conflicts already get caught.",
-  stepLabel: "Technology",
+// Three pages now rather than one, David's call - each one is short, but they cover different
+// ground (what the agent researches with, what it connects to, what it has to be careful with),
+// and cramming all three onto one page under a single "Technology" heading read as thinner than
+// three pages each worth their own beat.
+
+const TECH_RESEARCH: IndustryBranch = {
+  stepTitle: "Legal Research & AI Tools",
+  stepSubtitle: "What you already use for research, so your agent complements it instead of duplicating it.",
+  stepLabel: "Research Tools",
   fields: [
     {
       key: "legal_research_tools",
@@ -288,10 +302,14 @@ const TECH: IndustryBranch = {
       options: [
         "Westlaw",
         "LexisNexis / Lexis+ AI",
+        "Bloomberg Law",
+        "vLex",
         "Fastcase",
         "Casetext / CoCounsel",
         "Harvey",
         "Spellbook",
+        "Litera",
+        "Clio Duo",
         "Relativity (e-discovery)",
         "None yet",
         "Other",
@@ -299,12 +317,46 @@ const TECH: IndustryBranch = {
       helper: "So your agent complements what you already pay for rather than duplicating it, and knows what it is allowed to pull citations from.",
     },
     {
+      key: "ai_comfort",
+      label: "Where is your team with AI tools generally?",
+      type: "dropdown",
+      options: [
+        "Early exploration, still getting a feel for it",
+        "Regular use for specific tasks",
+        "Deeply integrated into how we already work",
+        "Cautious, and want to move slowly",
+      ],
+      helper: "Sets how much you want to review at first versus how much the agent can just get on with.",
+    },
+  ],
+};
+
+const TECH_COMMS: IndustryBranch = {
+  stepTitle: "Email & Calendar",
+  stepSubtitle: "What this connects to first - the platform, not a specific address.",
+  stepLabel: "Email & Calendar",
+  fields: [
+    {
       key: "email_platform",
       label: "What email and calendar software does the firm run on?",
-      type: "dropdown",
+      type: "radio",
       options: ["Microsoft 365 / Outlook", "Google Workspace", "Other", "Not sure yet"],
-      helper: "The platform, not an address - this is what your agent's inbox and calendar connections point at during setup.",
+      helper: "This is what your agent's inbox and calendar connections point at during setup.",
     },
+    {
+      key: "scheduling_tool",
+      label: "Does your calendar sync with a client-facing scheduling tool?",
+      type: "dropdown",
+      options: ["Yes, Calendly or similar", "No, scheduling is handled manually", "Not sure"],
+    },
+  ],
+};
+
+const TECH_DOCKETING: IndustryBranch = {
+  stepTitle: "Deadlines & Conflicts",
+  stepSubtitle: "A missed deadline or an unchecked conflict is not a typo, it is a malpractice exposure - worth knowing exactly what stands between you and one before the agent adds a second set of hands to the process.",
+  stepLabel: "Deadlines & Conflicts",
+  fields: [
     {
       key: "docketing",
       label: "How do you track deadlines and conflicts today?",
@@ -315,12 +367,23 @@ const TECH: IndustryBranch = {
         "Calendar and spreadsheets",
         "Nothing formal yet",
       ],
-      helper: "A missed deadline or an unchecked conflict is not a typo, it is a malpractice exposure - worth knowing exactly what stands between you and one before the agent adds a second set of hands to the process.",
+    },
+    {
+      key: "docketing_help",
+      label: "What would you want the agent to help with here?",
+      type: "multiselect",
+      options: [
+        "Flagging upcoming deadlines before they're close",
+        "Running conflict checks against new intake",
+        "Sending renewal or statute-of-limitations reminders",
+        "Nothing yet, still evaluating",
+      ],
+      helper: "Names the actual job, not just the current state of things.",
     },
   ],
 };
 
-// ─── Page 4: what the agent owns ─────────────────────────────────────────────
+// ─── Page 6: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
@@ -363,4 +426,4 @@ const AGENT: IndustryBranch = {
 };
 
 /** Three pages, one blob. The onboarding form renders these in order. */
-export const LEGAL_BRANCH: IndustryBranch[] = [PRACTICE, DOCUMENTS, TECH, AGENT];
+export const LEGAL_BRANCH: IndustryBranch[] = [PRACTICE, DOCUMENTS, TECH_RESEARCH, TECH_COMMS, TECH_DOCKETING, AGENT];
