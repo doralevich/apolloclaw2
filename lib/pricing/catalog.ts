@@ -68,6 +68,13 @@ export const HOSTING_PLAN = {
 // A NOTE ON THE HEADLINE. Every surface that prints a tier price prints `priceLabel`, which
 // carries both numbers. Setup alone reads as the whole cost and is not, and burying the
 // monthly is the kind of thing a customer only notices on their second invoice.
+//
+// CUSTOM BUILD IS THE EXCEPTION, David's call: no number at all, anywhere it renders. It is
+// call-only sitewide now (no buy button reaches `advanced` on the paywall, /pricing or
+// /create-an-agent - each one routes it to a discovery call or the white-glove intake instead),
+// so a dollar figure here would read as a fixed price for something that is actually scoped and
+// quoted on the call. `amountCents` stays accurate for whatever still resolves a sold license
+// against it; it is just no longer printed as an up-front number.
 
 export type LicenseTierId = "basic" | "advanced";
 
@@ -83,7 +90,8 @@ export interface LicenseTier {
   label: string;
   /** One line under the name: who this tier is for. */
   tagline: string;
-  /** Never the license fee alone — see the note above. */
+  /** Never the license fee alone - see the note above. Custom Build is the one exception: no
+   *  number at all, by design, not an oversight. */
   priceLabel: string;
   /** What this tier includes that the customer can check off. */
   includes: string[];
@@ -115,7 +123,7 @@ export const LICENSE_TIERS: readonly LicenseTier[] = [
     amountCents: 350000,
     label: "Custom Build",
     tagline: "Scoped to your business, built with you.",
-    priceLabel: "$3,500 setup + $249/mo",
+    priceLabel: "Custom pricing, book a call",
     recommended: true,
     includes: [
       "Everything in Set It and Forget It",
