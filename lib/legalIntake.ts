@@ -219,12 +219,14 @@ const PRACTICE: IndustryBranch = {
       showIf: { key: "practice_areas", includes: "Other" },
     },
     // "Describe your business" moved down here from its own generic page, David's call - it
-    // reads better right after practice areas than as its own page beforehand. See
+    // reads better right after practice areas than as its own page beforehand. Relabeled
+    // "Describe your practice" for the same reason the name field says "Firm Name" instead of
+    // "Company / business name" - a law firm's own word for itself, not the generic one. See
     // ROLE_INTAKES.legal's `businessDescField`/`dropPages` in OnboardingForm.tsx, which points
     // buildData at this field instead of the generic page's and removes that page from the flow.
     {
       key: "business_desc",
-      label: "Describe your business",
+      label: "Describe your practice",
       type: "textarea",
       required: true,
       placeholder: "We help [who] do [what] by [how]...",

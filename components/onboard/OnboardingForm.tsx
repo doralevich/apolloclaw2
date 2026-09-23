@@ -91,6 +91,10 @@ const ROLE_INTAKES: Record<
     // `s2.desc` whenever it is set. Pair with `dropPages: ["whatyoudo"]` - naming the field
     // without dropping the generic page would ask the question twice.
     businessDescField?: string;
+    // Overrides "Company / business name" and its placeholder on "Your Business", for a role
+    // whose own vocabulary already has a better word for it than "company".
+    nameLabel?: string;
+    namePlaceholder?: string;
   }
 > = {
   cfo: {
@@ -112,6 +116,8 @@ const ROLE_INTAKES: Record<
     // same question; businessDescField points buildData at this branch's own copy instead.
     dropPages: ["whatyoudo"],
     businessDescField: "business_desc",
+    nameLabel: "Firm Name",
+    namePlaceholder: "Smith & Associates",
   },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
@@ -1690,7 +1696,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "biz", label: personalScale ? "You and Where You Work" : "Your Business", node: (
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title={personalScale?.title ?? "Your Business"} subtitle={personalScale?.subtitle ?? "Tell us about the business, or businesses, behind this."} badge="Business" />
-      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={isRoleFlow} companyOptional={!!personalScale} />
+      <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={isRoleFlow} companyOptional={!!personalScale} nameLabel={roleIntake?.nameLabel} namePlaceholder={roleIntake?.namePlaceholder} />
       <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       {/* Team size, monthly revenue and years in business are questions about a company. Asked of
           somebody buying a Personal Agent for themselves they are unanswerable, and answering them

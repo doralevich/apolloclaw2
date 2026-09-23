@@ -114,6 +114,11 @@ interface Props {
   // validate("biz") blocks on it. "Company / business name" is also the wrong question to put in
   // front of somebody who does not have one.
   companyOptional?: boolean;
+  // Override the name field's label and placeholder. "Company / business name" is the right
+  // generic ask, and the wrong one for a role whose own vocabulary already has a better word for
+  // it - a law firm has a firm name, not a "company", and "Acme Corp" reads oddly next to it.
+  nameLabel?: string;
+  namePlaceholder?: string;
 }
 
 // ---- Component ------------------------------------------------------------
@@ -127,6 +132,8 @@ export default function CompanyRepeater({
   onPortfolioChange,
   hideIndustry = false,
   companyOptional = false,
+  nameLabel,
+  namePlaceholder,
 }: Props) {
   const multi = companies.length > 1;
 
@@ -209,11 +216,11 @@ export default function CompanyRepeater({
           </div>
 
           <div style={{ display: "grid", gap: 12 }}>
-            <Field label={companyOptional ? "Company or organization" : "Company / business name"} required={!companyOptional}>
+            <Field label={nameLabel ?? (companyOptional ? "Company or organization" : "Company / business name")} required={!companyOptional}>
               <input
                 type="text"
                 value={company.name}
-                placeholder="Acme Corp"
+                placeholder={namePlaceholder ?? "Acme Corp"}
                 onChange={(e) => updateCompany(i, { name: e.target.value })}
                 style={inputStyle}
               />
