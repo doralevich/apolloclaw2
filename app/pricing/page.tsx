@@ -48,12 +48,12 @@ const RULE = "rgba(26,26,26,0.12)";
 export const metadata: Metadata = {
   title: { absolute: "Pricing | Apollo[Claw]" },
   description:
-    "What an Apollo[Claw] agent costs. $449 setup and $249/month for the questionnaire build, or $3,500 setup and $249/month for a custom-scoped build.",
+    "What an Apollo[Claw] agent costs. $449 setup and $249/month for the questionnaire build, or custom pricing on a call for a custom-scoped build.",
   alternates: { canonical: "https://apolloclaw.ai/pricing" },
   openGraph: {
     images: OG_IMAGES,
     title: "Pricing | Apollo[Claw]",
-    description: "$449 setup and $249/month all in, or $3,500 setup for a custom-scoped build.",
+    description: "$449 setup and $249/month all in, or custom pricing on a call for a custom-scoped build.",
     url: "https://apolloclaw.ai/pricing",
     type: "website",
   },
@@ -196,20 +196,36 @@ export default function PricingPage() {
                   {tier.tagline}
                 </p>
 
-                <div className="mt-7 flex flex-wrap items-baseline gap-x-3">
-                  <span className="font-heading text-[2.5rem] font-extrabold leading-none">
-                    {money(tier.amountCents)}
-                  </span>
-                  <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
-                    setup
-                  </span>
-                </div>
-                <div className="mt-2 flex flex-wrap items-baseline gap-x-3">
-                  <span className="font-heading text-[1.5rem] font-bold leading-none">{money(HOSTING_PLAN.amountCents)}</span>
-                  <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
-                    per month, all in
-                  </span>
-                </div>
+                {/* Custom Build shows no number here, David's call: it is call-only sitewide
+                    now (WhiteGloveButton below, not a Stripe checkout), so a dollar figure
+                    would read as fixed pricing for something that is actually scoped and
+                    quoted on the call. Same reasoning as lib/pricing/catalog.ts's priceLabel
+                    for this tier - this card just has its own layout instead of printing that
+                    string directly. */}
+                {tier.recommended ? (
+                  <div className="mt-7 flex flex-wrap items-baseline gap-x-3">
+                    <span className="font-heading text-[2.5rem] font-extrabold leading-none">
+                      Custom pricing
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-7 flex flex-wrap items-baseline gap-x-3">
+                      <span className="font-heading text-[2.5rem] font-extrabold leading-none">
+                        {money(tier.amountCents)}
+                      </span>
+                      <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
+                        setup
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-baseline gap-x-3">
+                      <span className="font-heading text-[1.5rem] font-bold leading-none">{money(HOSTING_PLAN.amountCents)}</span>
+                      <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
+                        per month, all in
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {/* flex-1 sits on this WRAPPER, not on the list, so the slack in a shorter
                     card collects under the note rather than between the list and the note.

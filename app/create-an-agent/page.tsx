@@ -332,13 +332,16 @@ export default function CreateAnAgentPage() {
                 </span>
                 <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">{TIER_2.label}</span>
                 <p className="font-display text-2xl text-foreground mt-3">{TIER_2.tagline}</p>
-                {/* This tier carries its number again. It read "Contact us for custom setup"
-                    while it was the old $2,500 call-for-setup path; David's pricing publishes
-                    it, so hiding the figure now just costs the reader a call to learn it. */}
+                {/* No number here again, David's call, reversing the change noted below: it
+                    used to read "Contact us for custom setup" on the old $2,500 call-for-setup
+                    path, then got its figure published when the pricing went public. It is
+                    call-only sitewide again now (this page's own button below goes to the
+                    white-glove intake, not a checkout that charges TIER_2.amountCents), so
+                    printing a dollar figure here would read as a fixed price for something
+                    actually scoped and quoted on the call. Same treatment as /pricing and the
+                    /onboard paywall - see lib/pricing/catalog.ts's priceLabel for this tier. */}
                 <div className="mt-6">
-                  <span className="font-display text-4xl font-extrabold text-foreground">{setupFee(TIER_2.amountCents)}</span>
-                  <span className="font-body text-base text-muted-foreground"> setup</span>
-                  <span className="font-body text-base text-muted-foreground"> + {MONTHLY}/mo, all in</span>
+                  <span className="font-display text-4xl font-extrabold text-foreground">Custom pricing</span>
                 </div>
                 <p className="font-body text-xs text-muted-foreground mt-1">Includes 30 days of hands-on onboarding and co-training.</p>
                 <ul className="mt-7 flex flex-col gap-3 flex-1">
