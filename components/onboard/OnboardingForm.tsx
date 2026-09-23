@@ -1523,10 +1523,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // details/agreement. Only the tech stack and the generic industry branch (replaced by the role
   // deep-dive) are dropped - David's call, so a role agent keeps the personal questions that make it
   // feel built for the person. UNLIKE the generic flow (ordered by allPageKeys), a role agent takes
-  // its order straight from this list, so the role deep-dive comes first and the executive profile
-  // sits after it - David's call. Both pageKeys and allPages below derive from this list, so the
-  // step-order assertion stays satisfied. ("First" now means first outright, not just before the
-  // executive profile - see the note on rolePageKeys.)
+  // its order straight from this list. Both pageKeys and allPages below derive from this list, so
+  // the step-order assertion stays satisfied.
   // NOTE the missing "scopeai". A role agent does NOT get the generic "What your agent should
   // take on" page, because its own deep-dive already asked both of that page's questions in the
   // customer's own vocabulary. A realtor was picking their agent's jobs twice: once from
@@ -1537,39 +1535,32 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // Nothing downstream goes empty: buildData feeds the role answers into aiGoals and
   // successMetric, which is what those two questions existed to fill. See buildData below.
   //
-  // THE ROLE DEEP-DIVE IS FIRST, ahead of the company pages, and that is the whole point of it
-  // being a separate list. It used to open on "Your Business" and "What You Do" - company name,
-  // team size, monthly revenue, years in business - and only reach the role's own questions on
-  // page three of ten. So somebody who clicked The Property Management Agent was asked their
-  // revenue band before a single question about a building, and reasonably concluded the thing
-  // knew nothing about property management. The same was true of all ten roles; property
-  // management is just where it got noticed, because it is the newest and got looked at hardest.
+  // "YOUR BUSINESS" AND "WHAT YOU DO" ARE ALWAYS FIRST, David's call, reversing an earlier one:
+  // the role deep-dive briefly opened the flow instead, on the reasoning that a buyer arriving
+  // from one agent's own branded funnel should meet the question that could not belong to any
+  // other agent first. In practice that read as broken rather than tailored - jumping straight
+  // into role-specific specifics before the questionnaire had asked anything about the business
+  // itself didn't flow. Company basics open every flow, role or not, same as the generic one.
   //
-  // A role funnel is pinned to one agent. The buyer arrived from that agent's own site or picked
-  // that card, so the first screen should be the one that could not belong to any other agent.
-  // The company questions still get asked - they feed USER.md and they matter - they are just no
-  // longer the greeting.
-  // THE ROLE'S LAST PAGE COMES LAST NOW, at David's call, and the old order was genuinely bad.
+  // The role's own two lead pages come right after - straight from "what you do" into the
+  // deep-dive built for that role, ahead of the executive/personal pages, which are about the
+  // person rather than the business or the role.
   //
-  // Every role branch ends with a page labelled "Your Agent" - what it should own, where the
-  // guardrails are, what to do first - and every role sets `coversScope`, which is what drops the
-  // generic "What your agent should take on" page. So for a role agent that final deep-dive page
-  // IS the scope question. It was arriving third overall, behind two pages about the customer:
-  // somebody was being asked to draw their agent's remit before they had told us what they use,
-  // how they work, or how they write, and before they had seen anything at all.
-  //
-  // Split out and moved into the slot scopeai would have occupied, it now asks the same question
-  // at the end, with every other answer already given. The rest of the deep-dive stays at the
-  // front, where it belongs - those pages are about the customer's own world and they are the
-  // reason a role flow feels like it was written for them.
+  // THE ROLE'S LAST PAGE STILL COMES LAST, unchanged from before. Every role branch ends with a
+  // page labelled "Your Agent" - what it should own, where the guardrails are, what to do first -
+  // and every role sets `coversScope`, which is what drops the generic "What your agent should
+  // take on" page. For a role agent that final deep-dive page IS the scope question, so it stays
+  // split out into the slot scopeai would have occupied: asked last, with every other answer
+  // already given, rather than asking the customer to draw their agent's remit before they've
+  // told us what they use, how they work, or how they write.
   // Every branch today is three pages, so this splits 2 + 1. Guarded anyway: a one-page branch
-  // would have its ONLY page moved to the end, which would put the customer's whole deep-dive
-  // after the generic questions rather than in front of them - the opposite of the point.
+  // has nothing to split, so its only page stays with the lead pages (right after "What You Do")
+  // rather than being pulled out to stand in for the scope question alone.
   const splitRole = roleStepKeys.length > 1;
   const roleLeadKeys = splitRole ? roleStepKeys.slice(0, -1) : roleStepKeys;
   const roleScopeKey = splitRole ? roleStepKeys.slice(-1) : [];
   const rolePageKeys = isRoleFlow
-    ? [...roleLeadKeys, "biz", "whatyoudo", "exec", "sample",
+    ? ["biz", "whatyoudo", ...roleLeadKeys, "exec", "sample",
        ...(roleIntake!.coversScope ? roleScopeKey : ["goals", "scopeai", ...roleScopeKey]), "scope"]
         .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
@@ -1914,7 +1905,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     ) },
   ];
   // Trim to the role set when it's a role agent, mirroring the pageKeys filter above so the two
-  // stay in lockstep. A role flow now reads role deep-dive -> biz -> whatyoudo -> exec -> ... ->
+  // stay in lockstep. A role flow now reads biz -> whatyoudo -> role deep-dive -> exec -> ... ->
   // scope. Mapping over rolePageKeys rather than filtering allPagesFull is what allows that: the
   // order comes from the key list, not from the order the pages happen to be declared in. Both
   // this and pageKeys above read from rolePageKeys, so the assertion below still holds.
