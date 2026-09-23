@@ -38,12 +38,6 @@ const ROLE_INTAKES: Record<
     stepLabel: string;
     detailsKey: string;
     roleName: string;
-    // Overrides the wording of the shared writing-sample page. "Share a sample of your writing"
-    // is the right ask for most people and a vague one for an agent who writes the same kind of
-    // thing every week - David's call on the real estate flow: ask for a listing they were proud
-    // of, because that is a thing they can find in thirty seconds and it is exactly the writing
-    // the agent will be asked to produce. Left unset, the page keeps its generic copy.
-    sample?: { title: string; subtitle: string; label: string; hint: string; placeholder: string; upload: string; uploadHint: string; footnote: string };
     // Overrides the masthead's second line. The default says "we need to understand your
     // business", which is true for eight of the nine role agents and wrong for the ninth: a
     // Personal Agent is bought by a person, sometimes not on behalf of a business at all, and
@@ -63,6 +57,11 @@ const ROLE_INTAKES: Record<
     // Setting this reframes the page, makes the company optional, and drops team size, monthly
     // revenue and years in business - three questions about a company, asked of a person.
     personalScale?: { title: string; subtitle: string };
+    // OPT IN to dropping just the "Monthly Revenue" question on "Your Business", keeping Team
+    // Size beside it. Narrower than `personalScale`, which drops all three company-scale
+    // questions for a buyer who may have no company at all - this is for a role whose buyer
+    // has a company, David just does not want revenue asked of it.
+    hideRevenue?: boolean;
     // OPT IN to dropping the generic "What your agent should take on" page, by naming the two
     // fields in this branch that already ask its two questions. Only set it once the branch
     // genuinely covers both - the whole point is to stop asking twice, not to stop asking.
@@ -78,6 +77,14 @@ const ROLE_INTAKES: Record<
     // into the Boundaries section of the agent's own instructions. Without it a role agent
     // reaches its instance with no autonomy limit written down anywhere it will read.
     coversScope?: { owns: string; win: string; guard?: string };
+    // A FIXED autonomy line, asked of nobody. For a role where the boundary is a professional
+    // one rather than a personal preference - the Law Agent's UPL guardrail is the same for
+    // every firm, not a question with a customer-specific answer - the standard is written once
+    // here instead of asked on the form and left to whatever the buyer happened to type. Read
+    // only when `coversScope.guard` is unset; the two are alternatives, not a fallback chain,
+    // because a branch that still asks its own guardrail question should keep using the
+    // customer's actual answer.
+    standardGuard?: string;
   }
 > = {
   cfo: {
@@ -86,21 +93,17 @@ const ROLE_INTAKES: Record<
   },
   legal: {
     branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent",
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    // No handoff question on the form any more (David's call: the boundary is standard, not
+    // something to ask a buyer to write) - this line reaches every Law Agent's instructions
+    // regardless of what, if anything, the questionnaire covers otherwise.
+    standardGuard:
+      "Anything filed with a court, any advice given directly to a client, any opinion on the merits or likely outcome of a matter, and anything requiring a signature always goes through a licensed attorney before it moves. Privileged or confidential client material is never summarized into shared or non-firm systems.",
+    hideRevenue: true,
   },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
     coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
-    sample: {
-      title: "Share a listing you were proud of",
-      subtitle: "The single most useful thing on this form. One listing you actually wrote teaches your agent more than any list of adjectives.",
-      label: "Paste the listing",
-      hint: "The full description, exactly as it went out. A property you loved selling is the one to pick.",
-      placeholder: "Paste it here. The whole description beats the headline, and two listings beat one - one that sold fast and one that took work says more than either alone. Your agent is learning how you describe a property, not how you write when you know you are being read.",
-      upload: "Or upload listings instead",
-      uploadHint: "Listing sheets, a flyer, a brochure, the MLS remarks. They go in with your other materials.",
-      footnote: "Two or three is better than one. A luxury listing and a starter home are written differently, and your agent should know both registers.",
-    },
   },
   ceo: {
     branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
@@ -1462,13 +1465,16 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const seed = useMemo(() => (initialAnswers ? hydrateBizState(initialAnswers) : null), [initialAnswers]);
   const [step, setStep] = useState(0);
   const [s2, setS2] = useState(() => seed?.s2 ?? emptyS2());
-  // s3 lost its page (Operations & Pain Points) and with it its setter, which is how `hatedTasks`
-  // came to be read by lib/agent-files.ts and filled by nothing. `hate` is asked again on the
-  // Executive Profile page, so the setter is back; the rest of s3 is gone from the payload.
-  const [s3, setS3] = useState(() => seed?.s3 ?? emptyS3());
+  // s3 lost its page (Operations & Pain Points) and, later, its remaining question ("What work
+  // do you hate doing?", on the Executive Profile page) too - both gone at David's call, so
+  // `hatedTasks` goes back to being read by lib/agent-files.ts and filled by nothing, same as
+  // between the two changes. No setter, same reasoning as s4 just below.
+  const [s3] = useState(() => seed?.s3 ?? emptyS3());
   const [s4] = useState(() => seed?.s4 ?? emptyS4());
   const [s5, setS5] = useState(() => seed?.s5 ?? emptyS5());
-  const [s6, setS6] = useState(() => seed?.s6 ?? emptyS6());
+  // No setter. "Your Writing" (voiceStyle, sample) was the only thing that wrote to s6, and it is
+  // gone sitewide - see the "sample" removal note above the Goals & AI page.
+  const [s6] = useState(() => seed?.s6 ?? emptyS6());
   const [s7, setS7] = useState(() => seed?.s7 ?? emptyS7());
   const [s8, setS8] = useState(() => seed?.s8 ?? emptyS8());
   const [keyPeople, setKeyPeople] = useState<KeyPerson[]>(() => seed?.keyPeople ?? [{ name: "", role: "" }]);
@@ -1560,18 +1566,26 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const roleLeadKeys = splitRole ? roleStepKeys.slice(0, -1) : roleStepKeys;
   const roleScopeKey = splitRole ? roleStepKeys.slice(-1) : [];
   const rolePageKeys = isRoleFlow
-    ? ["biz", "whatyoudo", ...roleLeadKeys, "exec", "sample",
+    ? ["biz", "whatyoudo", ...roleLeadKeys, "exec",
        ...(roleIntake!.coversScope ? roleScopeKey : ["goals", "scopeai", ...roleScopeKey]), "scope"]
         .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "sample", "goals", "scopeai", "scope"];
+  // No "sample" any more, in either list - the writing-sample page is gone sitewide, David's
+  // call. It used to sit here for every flow, role or generic. `s6.sample` and its setter stay
+  // (see f6 below): the payload still carries `writingSample`, empty now, the same way s2.model
+  // and s2.differentiate do for questions removed before this one.
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "goals", "scopeai", "scope"];
   const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
-  const f3 = (k: string, v: unknown) => setS3(p => ({ ...p, [k]: v }));
+  // No f3. "What work do you hate doing?" was the only page that wrote to s3 (see the Executive
+  // Profile page below); the state and setS3 stay because the payload still carries hatedTasks
+  // (empty now), and buildData reads it. Same shape as the missing f4, just below.
   // No f4. Life Context was the only page that wrote to s4; the state and setS4 stay because the
   // payload still carries partnerName/children/household (empty now), and buildData reads them.
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
-  const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
+  // No f6. "Your Writing" was the only page that wrote to s6 (voiceStyle, sample); the state and
+  // setS6 stay because the payload still carries writingSample and the voice fields (empty now),
+  // and buildData reads them. Same shape as the missing f3 and f4, above.
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
   // A role agent answers "what should it do" and "what does winning look like" on its own
@@ -1587,7 +1601,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const scopeKeys = roleIntake?.coversScope;
   const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
   const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : undefined, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1660,17 +1674,6 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     try { uploadedFiles = await Promise.all(files.map(readFileAsBase64)); } catch { uploadedFiles = []; }
     onDone({ ...buildData(), uploadedFiles }, "business");
   };
-  // Generic ask, unless the role agent has a better one (see ROLE_INTAKES.sample).
-  const sampleCopy = roleIntake?.sample ?? {
-    title: "Share a sample of your writing",
-    subtitle: "The single most useful thing on this form. One real paragraph you wrote teaches your agent more than any list of adjectives.",
-    label: "Paste anything you have written",
-    hint: "An email, your LinkedIn About section, a proposal, even a long Slack message.",
-    placeholder: "Paste it here. Longer is better - a few paragraphs beats a few lines, and rough beats polished. Your agent is learning how you actually write, not how you write when you know you are being read.",
-    upload: "Upload writing instead",
-    uploadHint: "Emails, proposals, memos, a blog post, anything you wrote. They go in with your other materials.",
-    footnote: "Either way, pick something you did not labour over. A quick reply to a client says more about your voice than anything you edited five times.",
-  };
   const allPagesFull: { key: string; label: string; node: React.ReactNode }[] = [
     { key: "biz", label: personalScale ? "You and Where You Work" : "Your Business", node: (
     <Stack key="s2a">
@@ -1681,7 +1684,13 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
           somebody buying a Personal Agent for themselves they are unanswerable, and answering them
           about their employer tells the agent nothing it uses. */}
       {!personalScale && (
-      <Row2><FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF><FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF></Row2>
+      <Row2>
+        <FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF>
+        {/* Monthly Revenue dropped for the Law Agent specifically, David's call - see
+            ROLE_INTAKES.legal's `hideRevenue`. `s2.revenue` stays in state and goes out empty
+            for this flow, same as every other question removed this way. */}
+        {!roleIntake?.hideRevenue && <FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF>}
+      </Row2>
       )}
       {/* Business Model sat beside this and is gone at David's call. Service-based vs product
           vs SaaS is the kind of self-classification people stall on when their business is two
@@ -1715,19 +1724,13 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <FF label="What's your biggest goal or priority for the next 12 months?"><TArea value={s5.strategicBet} onChange={v => f5("strategicBet", v)} placeholder="The move that matters most - a new market, a product, a key hire, more revenue, an acquisition..." rows={3} /></FF>
       <CheckGroup label="Where's the real bottleneck to growth right now?" hint="Select all that apply" options={GROWTH_BOTTLENECK} value={s5.growthBottleneck} onChange={v => f5("growthBottleneck", v)} cols={2} split />
       {s5.growthBottleneck.includes("Other") && <FF label="What's the bottleneck?"><TInput value={s5.growthBottleneckOther} onChange={v => f5("growthBottleneckOther", v)} placeholder="In your words" /></FF>}
-      {/* "How do you make big decisions?" was here and is gone. It governed how much the agent
-          decides alone, which was a good reason to ask it - until every role deep-dive started
-          asking `approval_line` outright ("what must never go out without you seeing it first").
-          A named list of things to check beats a personality category every time, so the
-          category went.
-
-          THIS REPLACES IT, and it is not a new idea: lib/agent-files.ts has always read
-          `hatedTasks` into the "What to push on" section of the agent's own instructions, and
-          nothing has ever asked it. Every agent we have shipped had that line blank while the
-          form asked what kind of decision-maker somebody is. */}
-      <FF label="What work do you hate doing?" hint="The jobs you put off, delegate, or resent. Your agent takes these first.">
-        <TArea value={s3.hate} onChange={v => f3("hate", v)} placeholder="e.g. chasing invoices, writing the same follow-up email for the fourth time, anything involving a spreadsheet on a Friday" rows={3} />
-      </FF>
+      {/* "How do you make big decisions?" and "What work do you hate doing?" were both here and
+          both gone now, David's call. The first went when every role deep-dive started asking
+          `approval_line` outright; the second went for being one more open-ended box on a form
+          that was already long. `s3.hate` stays in state and goes out empty in the payload
+          (feeds `hatedTasks`, lib/agent-files.ts's "What to push on" section), the same way
+          s2.differentiate and s8.comply do, so the payload shape and every existing row are
+          untouched. */}
     </Stack>
     ) },
     ...(branch ? [{ key: "industry", label: "Industry", node: (
@@ -1793,48 +1796,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     //
     // WHAT THIS COSTS, said plainly rather than discovered later: those two word lists were the
     // only thing in the form aimed squarely at what the agent consumes, and the banned list in
-    // particular is what stops an agent writing "just circling back". The page after this is the
-    // reason it is survivable - a paragraph the customer actually wrote teaches a model more
-    // about their voice than any checkbox, and that page stays.
+    // particular is what stops an agent writing "just circling back".
     //
-    // "Describe your ideal voice" moved onto it rather than going with the rest, because it is
-    // the one question here that still earns a box and a page holding one question is a
-    // page-turn charged for nothing.
-    // Its own page, at David's call, and it earns one. Every other voice question is a box to
-    // tick; this is the only one that asks for real writing, and a 4-row textarea at the bottom
-    // of a screen full of checkboxes reads as an afterthought people scroll past. It is also by
-    // far the most useful answer here: a paragraph somebody actually wrote teaches the agent more
-    // about their voice than every checkbox above it combined.
-    { key: "sample", label: "Your Writing", node: (
-    <Stack key="s6sample">
-      <SHead stepNum={8} total={0} title={sampleCopy.title} subtitle={sampleCopy.subtitle} badge="Business" />
-      {/* Up from the retired "Your Voice" page. It reads better here anyway: pick the voice you
-          are aiming at, then show us a paragraph of the one you actually have. */}
-      <CheckGroup label="Describe your ideal voice" hint="Select all that apply" options={["Confident, not arrogant","Clear and direct","Warm and personable","Professional and polished","Casual and conversational","Bold and punchy","Empathetic and supportive","Witty and clever","Never corporate or stiff"]} value={s6.voiceStyle} onChange={v => f6("voiceStyle", v)} cols={2} />
-      <FF label={sampleCopy.label} hint={sampleCopy.hint}>
-        <TArea value={s6.sample} onChange={v => f6("sample", v)} placeholder={sampleCopy.placeholder} rows={10} />
-      </FF>
-
-      {/* Or drop files instead of typing, at David's call.
-          Most people have not got a paragraph ready to paste, but everybody has sent an email or
-          written a proposal - and asking them to find one, open it, and copy it out is three
-          steps at which they give up and leave the box empty. Dragging two documents in is one.
-
-          The SAME FileUpload and the same `files` state the materials step uses, deliberately:
-          both end up in the one uploadedFiles array on submit, so there is a single path to the
-          server, a single size cap, and no second half-copy of this to drift. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "2px 0" }}>
-        <span style={{ flex: 1, height: 1, background: BDR }} />
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXD }}>Or drop files in</span>
-        <span style={{ flex: 1, height: 1, background: BDR }} />
-      </div>
-      <FF label={sampleCopy.upload} hint={sampleCopy.uploadHint}>
-        <FileUpload files={files} onFiles={setFiles} />
-      </FF>
-
-      <p style={{ fontSize: 12, color: TXD, lineHeight: 1.6, margin: 0 }}>{sampleCopy.footnote}</p>
-    </Stack>
-    ) },
+    // The page that used to follow this one - "Your Writing", a paragraph to paste plus
+    // "Describe your ideal voice" - is gone too now, sitewide, David's call: one more open-ended
+    // page on an already-long form. `s6.voiceStyle` and `s6.sample` stay in state and go out
+    // empty, same as the fields above. The one thing that page carried that nothing else in the
+    // form replaces is the file upload; it did not go with the rest - see the "scope" page below,
+    // where it lives now instead.
     { key: "goals", label: "Goals & AI", node: (
     <Stack key="s7">
       {/* Reordered at David's call, and the new order tells a story the old one did not: what
@@ -1887,13 +1856,22 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
           gone at David's call. `s8.constraints` stays in state and goes out empty, so the
           "Stated constraints" bullet in lib/agent-files.ts simply stops appearing.
 
-          UPLOADING STILL WORKS. The Your Writing page carries the same FileUpload bound to the
-          same `files` state, so there is still exactly one path to the server and one size cap -
-          this was the second door into it, not the only one. `files`, `setFiles` and
-          readFileAsBase64 on submit are all untouched.
-
-          What is left on this page is the honesty checkbox, which is the only thing here that
-          gates the submit. */}
+          UPLOADING MOVED BACK HERE. It used to live on this page, moved to "Your Writing" so it
+          could sit beside the writing sample, and comes back now that that page is gone sitewide
+          - this is the only door into `files`/`setFiles` again, not a second one. Kept generic
+          rather than reusing the old per-role `sampleCopy` wording (real estate's "upload
+          listings instead") - without the writing-sample question beside it to answer for, one
+          plain prompt covers every agent type. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0 2px" }}>
+        <span style={{ flex: 1, height: 1, background: BDR }} />
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXD }}>Drop files in</span>
+        <span style={{ flex: 1, height: 1, background: BDR }} />
+      </div>
+      <FF label="Have templates or materials to share?" hint="Optional. Contracts, playbooks, past work, anything you'd rather hand over than describe.">
+        <FileUpload files={files} onFiles={setFiles} />
+      </FF>
+      {/* What is left below is the honesty checkbox, which is the only thing here that gates the
+          submit. */}
       <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? `rgba(${accentRgb},0.12)` : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? accent : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? `0 0 0 4px rgba(${accentRgb},0.12)` : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
         <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? accent : "rgba(0,0,0,0.28)"}`, background: s8.agree ? accent : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
