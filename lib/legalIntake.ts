@@ -1,9 +1,10 @@
 // The Law Agent's intake deep-dive.
 //
-// Three pages rather than one: the practice, the documents, and what the agent should own.
+// Four pages rather than one: the practice, the documents, the technology, and what the agent
+// should own.
 //
 // Same shape as an industry branch (lib/industryConfig.ts) so each page renders through the exact
-// same generic step in the onboarding form (IndustryStep). All three write into ONE blob
+// same generic step in the onboarding form (IndustryStep). All four write into ONE blob
 // (`legalDetails`), so USER.md, the intake email and the edit pre-fill are unchanged.
 //
 // THE BOUNDARY QUESTIONS ARE THE POINT HERE. More than any other role agent, this one has to know
@@ -31,29 +32,33 @@ import type { IndustryBranch, IndustryField } from "@/lib/industryConfig";
 // (rather than inlined) because PRACTICE_AREA_FOLLOWUPS below has to reference the exact same
 // strings in its showIf conditions - one list, so the two can never drift apart into a follow-up
 // keyed on an option that no longer exists, or an option with no follow-up at all.
+//
+// Alphabetical, David's call - a list this long read as an arbitrary grab-bag otherwise. "Other"
+// stays last, same convention as every other multiselect on this form: it is the escape hatch,
+// not one more area to scan past looking for it.
 const PRACTICE_AREA_OPTIONS = [
-  "Commercial contracts",
-  "Employment",
-  "Corporate / M&A",
-  "Real estate",
-  "Intellectual property",
-  "Personal injury",
-  "Litigation support",
-  "Immigration",
-  "Privacy & data protection",
-  "Regulatory & compliance",
-  "Trusts & estates",
-  "Family",
-  "Criminal defense",
   "Bankruptcy",
-  "Tax",
-  "Healthcare",
-  "Insurance defense",
-  "Workers' compensation",
-  "Construction",
-  "Securities",
-  "Environmental",
   "Civil rights",
+  "Commercial contracts",
+  "Construction",
+  "Corporate / M&A",
+  "Criminal defense",
+  "Employment",
+  "Environmental",
+  "Family",
+  "Healthcare",
+  "Immigration",
+  "Insurance defense",
+  "Intellectual property",
+  "Litigation support",
+  "Personal injury",
+  "Privacy & data protection",
+  "Real estate",
+  "Regulatory & compliance",
+  "Securities",
+  "Tax",
+  "Trusts & estates",
+  "Workers' compensation",
   "Other",
 ];
 
@@ -69,26 +74,66 @@ function areaFollowups(area: string, fields: Omit<IndustryField, "showIf">[]): I
 // prefixed per area (cc_, emp_, ma_, ...) because every area's fields land in the same flat
 // legalDetails blob as page 2 and page 3's fields, and a collision would silently overwrite an
 // unrelated answer.
+// Same alphabetical order as PRACTICE_AREA_OPTIONS - not load-bearing (each block is gated on
+// its own showIf, so order here never changes what shows), but a customer who ticks several
+// areas sees their follow-ups in the same order they ticked the options in, not a random one.
 const PRACTICE_AREA_FOLLOWUPS: IndustryField[] = [
+  ...areaFollowups("Bankruptcy", [
+    { key: "bk_side", label: "Which side?", type: "dropdown", options: ["Debtor side", "Creditor side", "Both"] },
+    { key: "bk_types", label: "What comes up most?", type: "multiselect", options: ["Chapter 7 (liquidation)", "Chapter 11 (reorganization)", "Chapter 13", "Workouts / restructuring outside bankruptcy", "Other"] },
+  ]),
+  ...areaFollowups("Civil rights", [
+    { key: "cr_types", label: "What comes up most?", type: "multiselect", options: ["Employment discrimination", "Police / government misconduct", "Housing / fair housing", "Disability access (ADA)", "Other"] },
+    { key: "cr_side", label: "Which side?", type: "dropdown", options: ["Plaintiff / complainant side", "Defense (government / institutional)", "Both"] },
+  ]),
   ...areaFollowups("Commercial contracts", [
     { key: "cc_side", label: "Which side do you typically sit on?", type: "dropdown", options: ["Drafting party", "Reviewing / negotiating the other side's paper", "Both, evenly"] },
     { key: "cc_types", label: "What kinds of agreements come up most?", type: "multiselect", options: ["SaaS / vendor agreements", "NDAs", "MSAs and SOWs", "Licensing", "Distribution / reseller", "Supply agreements", "Other"] },
   ]),
-  ...areaFollowups("Employment", [
-    { key: "emp_side", label: "Which side do you represent?", type: "dropdown", options: ["Employer side only", "Employee side only", "Both"] },
-    { key: "emp_types", label: "What comes up most?", type: "multiselect", options: ["Offer letters & separation agreements", "Handbooks & policies", "Non-competes / restrictive covenants", "Wage & hour compliance", "Discrimination / harassment claims", "Union / labor relations", "Other"] },
+  ...areaFollowups("Construction", [
+    { key: "con_side", label: "Which side of the table?", type: "dropdown", options: ["Owner / developer side", "Contractor / subcontractor side", "Both"] },
+    { key: "con_types", label: "What comes up most?", type: "multiselect", options: ["Contract drafting & negotiation", "Payment / lien disputes", "Delay & defect claims", "Bid protests", "Other"] },
   ]),
   ...areaFollowups("Corporate / M&A", [
     { key: "ma_side", label: "Typical deal side?", type: "dropdown", options: ["Buy-side", "Sell-side", "Both", "Formation / governance only"] },
     { key: "ma_types", label: "What comes up most?", type: "multiselect", options: ["Entity formation & governance", "Fundraising / financing rounds", "Mergers & acquisitions", "Joint ventures", "Shareholder / operating agreements", "Other"] },
   ]),
-  ...areaFollowups("Real estate", [
-    { key: "re_side", label: "Which side of the table?", type: "dropdown", options: ["Landlord / seller side", "Tenant / buyer side", "Both"] },
-    { key: "re_types", label: "What comes up most?", type: "multiselect", options: ["Commercial leasing", "Residential leasing", "Purchase & sale agreements", "Financing / liens", "Zoning & land use", "Construction contracts", "Other"] },
+  ...areaFollowups("Criminal defense", [
+    { key: "crim_level", label: "Level?", type: "dropdown", options: ["Misdemeanor", "Felony", "Both", "White-collar / regulatory"] },
+    { key: "crim_stage", label: "What comes up most?", type: "multiselect", options: ["Pre-charge / investigation", "Arraignment & pretrial", "Trial", "Appeals & post-conviction", "Other"] },
+  ]),
+  ...areaFollowups("Employment", [
+    { key: "emp_side", label: "Which side do you represent?", type: "dropdown", options: ["Employer side only", "Employee side only", "Both"] },
+    { key: "emp_types", label: "What comes up most?", type: "multiselect", options: ["Offer letters & separation agreements", "Handbooks & policies", "Non-competes / restrictive covenants", "Wage & hour compliance", "Discrimination / harassment claims", "Union / labor relations", "Other"] },
+  ]),
+  ...areaFollowups("Environmental", [
+    { key: "env_types", label: "What comes up most?", type: "multiselect", options: ["Permitting & compliance", "Remediation / contamination", "Enforcement & citizen suits", "Transactional due diligence", "Other"] },
+    { key: "env_clients", label: "Client type?", type: "dropdown", options: ["Businesses / developers", "Government agencies", "Community / advocacy groups", "Other"] },
+  ]),
+  ...areaFollowups("Family", [
+    { key: "fam_types", label: "What comes up most?", type: "multiselect", options: ["Divorce & separation", "Custody & parenting plans", "Child / spousal support", "Adoption", "Prenuptial / postnuptial agreements", "Other"] },
+    { key: "fam_posture", label: "Posture?", type: "dropdown", options: ["Amicable / collaborative, mostly", "Contested / litigated, mostly", "Mixed"] },
+  ]),
+  ...areaFollowups("Healthcare", [
+    { key: "hc_types", label: "What comes up most?", type: "multiselect", options: ["Regulatory compliance (HIPAA, licensing)", "Provider contracts", "Medical malpractice defense", "Credentialing", "Reimbursement / payer disputes", "Other"] },
+    { key: "hc_clients", label: "Client type?", type: "dropdown", options: ["Hospitals / health systems", "Individual practitioners / practices", "Payers / insurers", "Other"] },
+  ]),
+  ...areaFollowups("Immigration", [
+    { key: "imm_focus", label: "Primary focus?", type: "dropdown", options: ["Employment-based", "Family-based", "Asylum / humanitarian", "Business / investor visas", "Removal defense", "Mixed"] },
+    { key: "imm_types", label: "What comes up most?", type: "multiselect", options: ["Visa petitions & extensions", "Green card applications", "Naturalization", "Compliance / I-9 audits", "Other"] },
+  ]),
+  ...areaFollowups("Insurance defense", [
+    { key: "insd_role", label: "Typical role?", type: "dropdown", options: ["Defending insureds on behalf of carriers", "Coverage / bad-faith disputes", "Both"] },
+    { key: "insd_types", label: "What kinds of claims come up most?", type: "multiselect", options: ["Auto", "Premises liability", "Products liability", "Professional liability", "Other"] },
   ]),
   ...areaFollowups("Intellectual property", [
     { key: "ip_focus", label: "Main focus?", type: "dropdown", options: ["Prosecution / filing", "Licensing & transactions", "Enforcement / litigation", "Mixed"] },
     { key: "ip_types", label: "What kinds of IP?", type: "multiselect", options: ["Patents", "Trademarks", "Copyright", "Trade secrets", "Other"] },
+  ]),
+  ...areaFollowups("Litigation support", [
+    { key: "lit_side", label: "Which side do you typically represent?", type: "dropdown", options: ["Plaintiff", "Defense", "Both"] },
+    { key: "lit_courts", label: "Court level?", type: "multiselect", options: ["State trial courts", "Federal district courts", "Appellate", "Administrative / agency", "Arbitration / ADR", "Other"] },
+    { key: "lit_types", label: "What comes up most?", type: "multiselect", options: ["Written discovery", "Depositions", "Motion practice", "Trial prep", "Settlement negotiation", "Other"] },
   ]),
   // Personal injury gets a third question, David's own example of what this whole change was
   // for: what the agent needs to actually track (liens, deadlines, settlement posture) is not
@@ -98,70 +143,33 @@ const PRACTICE_AREA_FOLLOWUPS: IndustryField[] = [
     { key: "pi_types", label: "What kinds of cases come up most?", type: "multiselect", options: ["Auto accidents", "Slip and fall / premises liability", "Medical malpractice", "Product liability", "Workplace injuries", "Wrongful death", "Other"] },
     { key: "pi_track", label: "What does the agent need to keep on top of?", type: "multiselect", options: ["Medical liens & subrogation", "Statute of limitations deadlines", "Settlement negotiations", "Trial prep", "Other"] },
   ]),
-  ...areaFollowups("Litigation support", [
-    { key: "lit_side", label: "Which side do you typically represent?", type: "dropdown", options: ["Plaintiff", "Defense", "Both"] },
-    { key: "lit_courts", label: "Court level?", type: "multiselect", options: ["State trial courts", "Federal district courts", "Appellate", "Administrative / agency", "Arbitration / ADR", "Other"] },
-    { key: "lit_types", label: "What comes up most?", type: "multiselect", options: ["Written discovery", "Depositions", "Motion practice", "Trial prep", "Settlement negotiation", "Other"] },
-  ]),
-  ...areaFollowups("Immigration", [
-    { key: "imm_focus", label: "Primary focus?", type: "dropdown", options: ["Employment-based", "Family-based", "Asylum / humanitarian", "Business / investor visas", "Removal defense", "Mixed"] },
-    { key: "imm_types", label: "What comes up most?", type: "multiselect", options: ["Visa petitions & extensions", "Green card applications", "Naturalization", "Compliance / I-9 audits", "Other"] },
-  ]),
   ...areaFollowups("Privacy & data protection", [
     { key: "priv_focus", label: "Primary focus?", type: "dropdown", options: ["Compliance & policy drafting", "Incident response / breach", "Vendor & data-sharing agreements", "Regulatory defense", "Mixed"] },
     { key: "priv_regimes", label: "Which regimes matter most?", type: "multiselect", options: ["GDPR", "CCPA / CPRA", "HIPAA", "Other US state laws", "Sector-specific (financial / health)", "Other"] },
+  ]),
+  ...areaFollowups("Real estate", [
+    { key: "re_side", label: "Which side of the table?", type: "dropdown", options: ["Landlord / seller side", "Tenant / buyer side", "Both"] },
+    { key: "re_types", label: "What comes up most?", type: "multiselect", options: ["Commercial leasing", "Residential leasing", "Purchase & sale agreements", "Financing / liens", "Zoning & land use", "Construction contracts", "Other"] },
   ]),
   ...areaFollowups("Regulatory & compliance", [
     { key: "reg_types", label: "What comes up most?", type: "multiselect", options: ["Licensing & filings", "Investigations & audits", "Policy / compliance program design", "Government inquiries / enforcement", "Other"] },
     { key: "reg_posture", label: "Posture?", type: "dropdown", options: ["Proactive compliance / advisory", "Responding to an active inquiry or investigation", "Both"] },
   ]),
-  ...areaFollowups("Trusts & estates", [
-    { key: "tre_types", label: "What comes up most?", type: "multiselect", options: ["Wills & trusts drafting", "Probate & estate administration", "Guardianship / conservatorship", "Tax planning", "Other"] },
-    { key: "tre_clients", label: "Typical client?", type: "dropdown", options: ["High-net-worth individuals", "General / middle-market families", "Business succession planning", "Mixed"] },
-  ]),
-  ...areaFollowups("Family", [
-    { key: "fam_types", label: "What comes up most?", type: "multiselect", options: ["Divorce & separation", "Custody & parenting plans", "Child / spousal support", "Adoption", "Prenuptial / postnuptial agreements", "Other"] },
-    { key: "fam_posture", label: "Posture?", type: "dropdown", options: ["Amicable / collaborative, mostly", "Contested / litigated, mostly", "Mixed"] },
-  ]),
-  ...areaFollowups("Criminal defense", [
-    { key: "crim_level", label: "Level?", type: "dropdown", options: ["Misdemeanor", "Felony", "Both", "White-collar / regulatory"] },
-    { key: "crim_stage", label: "What comes up most?", type: "multiselect", options: ["Pre-charge / investigation", "Arraignment & pretrial", "Trial", "Appeals & post-conviction", "Other"] },
-  ]),
-  ...areaFollowups("Bankruptcy", [
-    { key: "bk_side", label: "Which side?", type: "dropdown", options: ["Debtor side", "Creditor side", "Both"] },
-    { key: "bk_types", label: "What comes up most?", type: "multiselect", options: ["Chapter 7 (liquidation)", "Chapter 11 (reorganization)", "Chapter 13", "Workouts / restructuring outside bankruptcy", "Other"] },
+  ...areaFollowups("Securities", [
+    { key: "sec_types", label: "What comes up most?", type: "multiselect", options: ["Public offerings & disclosure", "Private placements", "Regulatory filings & compliance", "Enforcement / investigations", "Other"] },
+    { key: "sec_clients", label: "Client type?", type: "dropdown", options: ["Public companies", "Private companies / startups", "Investment funds", "Other"] },
   ]),
   ...areaFollowups("Tax", [
     { key: "tax_focus", label: "Primary focus?", type: "dropdown", options: ["Planning & structuring", "Controversy / audit defense", "Transactional (deal-related)", "Compliance & filings"] },
     { key: "tax_clients", label: "Client type?", type: "dropdown", options: ["Individuals", "Businesses", "Both"] },
   ]),
-  ...areaFollowups("Healthcare", [
-    { key: "hc_types", label: "What comes up most?", type: "multiselect", options: ["Regulatory compliance (HIPAA, licensing)", "Provider contracts", "Medical malpractice defense", "Credentialing", "Reimbursement / payer disputes", "Other"] },
-    { key: "hc_clients", label: "Client type?", type: "dropdown", options: ["Hospitals / health systems", "Individual practitioners / practices", "Payers / insurers", "Other"] },
-  ]),
-  ...areaFollowups("Insurance defense", [
-    { key: "insd_role", label: "Typical role?", type: "dropdown", options: ["Defending insureds on behalf of carriers", "Coverage / bad-faith disputes", "Both"] },
-    { key: "insd_types", label: "What kinds of claims come up most?", type: "multiselect", options: ["Auto", "Premises liability", "Products liability", "Professional liability", "Other"] },
+  ...areaFollowups("Trusts & estates", [
+    { key: "tre_types", label: "What comes up most?", type: "multiselect", options: ["Wills & trusts drafting", "Probate & estate administration", "Guardianship / conservatorship", "Tax planning", "Other"] },
+    { key: "tre_clients", label: "Typical client?", type: "dropdown", options: ["High-net-worth individuals", "General / middle-market families", "Business succession planning", "Mixed"] },
   ]),
   ...areaFollowups("Workers' compensation", [
     { key: "wc_side", label: "Which side?", type: "dropdown", options: ["Claimant / employee side", "Employer / carrier defense", "Both"] },
     { key: "wc_types", label: "What comes up most?", type: "multiselect", options: ["Initial claims & benefits disputes", "Return-to-work / settlement negotiations", "Appeals / hearings", "Other"] },
-  ]),
-  ...areaFollowups("Construction", [
-    { key: "con_side", label: "Which side of the table?", type: "dropdown", options: ["Owner / developer side", "Contractor / subcontractor side", "Both"] },
-    { key: "con_types", label: "What comes up most?", type: "multiselect", options: ["Contract drafting & negotiation", "Payment / lien disputes", "Delay & defect claims", "Bid protests", "Other"] },
-  ]),
-  ...areaFollowups("Securities", [
-    { key: "sec_types", label: "What comes up most?", type: "multiselect", options: ["Public offerings & disclosure", "Private placements", "Regulatory filings & compliance", "Enforcement / investigations", "Other"] },
-    { key: "sec_clients", label: "Client type?", type: "dropdown", options: ["Public companies", "Private companies / startups", "Investment funds", "Other"] },
-  ]),
-  ...areaFollowups("Environmental", [
-    { key: "env_types", label: "What comes up most?", type: "multiselect", options: ["Permitting & compliance", "Remediation / contamination", "Enforcement & citizen suits", "Transactional due diligence", "Other"] },
-    { key: "env_clients", label: "Client type?", type: "dropdown", options: ["Businesses / developers", "Government agencies", "Community / advocacy groups", "Other"] },
-  ]),
-  ...areaFollowups("Civil rights", [
-    { key: "cr_types", label: "What comes up most?", type: "multiselect", options: ["Employment discrimination", "Police / government misconduct", "Housing / fair housing", "Disability access (ADA)", "Other"] },
-    { key: "cr_side", label: "Which side?", type: "dropdown", options: ["Plaintiff / complainant side", "Defense (government / institutional)", "Both"] },
   ]),
 ];
 
@@ -169,25 +177,12 @@ const PRACTICE_AREA_FOLLOWUPS: IndustryField[] = [
 const PRACTICE: IndustryBranch = {
   stepTitle: "Your Legal Practice",
   stepSubtitle:
-    "Who the agent works for and what kind of law it is reading. This sets what it may assume before anything else.",
+    "What kind of law the agent is reading. This sets what it may assume before anything else.",
   stepLabel: "Practice",
   fields: [
-    {
-      key: "legal_context",
-      label: "Who will the agent work for?",
-      type: "dropdown",
-      required: true,
-      options: [
-        "A law firm, serving clients",
-        "An in-house legal team",
-        "A solo attorney",
-        "A business with no lawyer on staff",
-        "A compliance or contracts team",
-        "Other",
-      ],
-      helper:
-        "This changes everything downstream. A firm's agent writes for clients; an in-house agent writes for colleagues; a business without counsel needs the agent to be far more cautious.",
-    },
+    // "Who will the agent work for?" (a firm, in-house, solo, a business with no lawyer on
+    // staff) was here and is gone, David's call. `s.legal_context` is no longer asked; nothing
+    // downstream read it by name, so nothing else changes.
     {
       key: "practice_areas",
       label: "What are your primary practice areas?",
@@ -267,12 +262,25 @@ const DOCUMENTS: IndustryBranch = {
         "Other",
       ],
     },
-    // WHAT MAKES A LAW FIRM DIFFERENT FROM ANY OTHER BUSINESS ANSWERING "which tools do you use":
-    // legal research, legal-specific AI, email, and how deadlines and conflicts get tracked. A
-    // generic tech-stack question (CRM, billing, email, in the same shape every other role intake
-    // asks) treats a law firm like any other services business and asks nothing that couldn't
-    // apply to a plumber's CRM. These three exist because the answers change what the agent can
-    // actually plug into and what it must never confuse itself with.
+  ],
+};
+
+// ─── Page 3: legal technology ────────────────────────────────────────────────
+// WHAT MAKES A LAW FIRM DIFFERENT FROM ANY OTHER BUSINESS ANSWERING "which tools do you use":
+// legal research, legal-specific AI, email, and how deadlines and conflicts get tracked. A
+// generic tech-stack question (CRM, billing, email, in the same shape every other role intake
+// asks) treats a law firm like any other services business and asks nothing that couldn't apply
+// to a plumber's CRM. These three exist because the answers change what the agent can actually
+// plug into and what it must never confuse itself with.
+//
+// Its own page now, David's call, split out of Documents rather than tacked onto the end of it -
+// this is the page that actually distinguishes a law firm's setup from a generic business's, and
+// it was reading as an afterthought bolted onto a page about paperwork.
+const TECH: IndustryBranch = {
+  stepTitle: "Your Legal Technology",
+  stepSubtitle: "What this needs to work alongside from day one - research, communication, and how deadlines and conflicts already get caught.",
+  stepLabel: "Technology",
+  fields: [
     {
       key: "legal_research_tools",
       label: "Which legal research or AI tools do you already use?",
@@ -292,9 +300,10 @@ const DOCUMENTS: IndustryBranch = {
     },
     {
       key: "email_platform",
-      label: "What email and calendar does the firm run on?",
+      label: "What email and calendar software does the firm run on?",
       type: "dropdown",
       options: ["Microsoft 365 / Outlook", "Google Workspace", "Other", "Not sure yet"],
+      helper: "The platform, not an address - this is what your agent's inbox and calendar connections point at during setup.",
     },
     {
       key: "docketing",
@@ -311,7 +320,7 @@ const DOCUMENTS: IndustryBranch = {
   ],
 };
 
-// ─── Page 3: what the agent owns ─────────────────────────────────────────────
+// ─── Page 4: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
@@ -354,4 +363,4 @@ const AGENT: IndustryBranch = {
 };
 
 /** Three pages, one blob. The onboarding form renders these in order. */
-export const LEGAL_BRANCH: IndustryBranch[] = [PRACTICE, DOCUMENTS, AGENT];
+export const LEGAL_BRANCH: IndustryBranch[] = [PRACTICE, DOCUMENTS, TECH, AGENT];
