@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AGENTS, externalLinkProps } from "@/config/navigation";
+import { AGENTS, externalLinkProps, type NavItem } from "@/config/navigation";
 import { agentBrand, onDarkCard } from "@/lib/agentBrand";
 import { HAIRLINE, PAPER, PAPER_MUTED } from "@/components/home/ui";
 
@@ -13,16 +13,20 @@ import { HAIRLINE, PAPER, PAPER_MUTED } from "@/components/home/ui";
 // Derived from AGENTS, like the footer and the homepage grid. Adding an agent to
 // config/navigation.ts puts it here with no edit to this file - which is the point, and is
 // the thing that had gone wrong everywhere these lists were retyped by hand.
-export function FleetGrid() {
+//
+// `items` defaults to AGENTS but takes any NavItem list - /agent-invite reuses this same card
+// for its own, smaller roster (the 8 invitable role agents, not the public fleet) rather than a
+// second copy of this markup.
+export function FleetGrid({ items = AGENTS }: { items?: NavItem[] }) {
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {AGENTS.map((item, i) => {
+      {items.map((item, i) => {
         const brand = agentBrand(item.agentTypeId);
         const { Icon } = item;
         // Ten agents in a three-up grid leaves the tenth alone against the left edge, reading
         // as an unfinished row. Centering it is one class. Same trick, same condition as
         // components/home/AgentCards.tsx, so an eleventh agent needs no thought here either.
-        const orphan = i === AGENTS.length - 1 && AGENTS.length % 3 === 1;
+        const orphan = i === items.length - 1 && items.length % 3 === 1;
         return (
           <Link
             key={item.to}
@@ -83,7 +87,7 @@ export function FleetGrid() {
                 className="font-mono mt-5 text-[11px] font-bold uppercase tracking-[0.12em]"
                 style={{ color: onDarkCard(brand.color) }}
               >
-                {item.external ? "Visit the site →" : "Explore →"}
+                {item.cta ?? (item.external ? "Visit the site →" : "Explore →")}
               </span>
             </div>
           </Link>

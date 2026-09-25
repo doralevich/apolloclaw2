@@ -23,6 +23,10 @@ export type NavItem = {
    *  that navigates away from the site you are browsing is a row that loses you the site. Set
    *  this and every renderer adds target and rel from `externalLinkProps` below. */
   external?: boolean;
+  /** Overrides FleetGrid's footer text ("Explore →" / "Visit the site →"). Only
+   *  /agent-invite sets this - "Explore" is the wrong verb for a card that provisions a live
+   *  agent rather than reading a page about one. */
+  cta?: string;
 };
 
 /** What an external nav row adds to its anchor. One object because AGENTS renders in three
