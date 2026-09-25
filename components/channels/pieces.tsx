@@ -128,54 +128,42 @@ export function BotFatherHelp({ agentName, seed }: { agentName?: string | null; 
     return `${base}_${tail}_bot`;
   }, [agentName, seed]);
 
+  // Controls only, in the order the steps above use them. This block used to open with a
+  // paragraph repeating those steps in different words, so the card said everything twice.
+  //
+  // Both links used to be `text-primary` with an underline only on hover - and in the dashboard
+  // --color-primary is near-black, so on screen they were plain bold text nobody knew to click.
+  // BotFather is the main action here, so it is a real button; the download link is secondary
+  // and gets a permanent underline.
   return (
-    <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-      {/* Before any of the below: they need Telegram itself. Everything else in this block
-          assumes it is installed, and "Open BotFather in Telegram" does nothing useful for
-          someone who has never had it - it lands on a web page telling them to get the app.
-          telegram.org/dl is Telegram's own download link and picks the right store for the
-          device it is opened on, so one link covers iPhone, Android and desktop. */}
-      <p className="text-xs text-muted-foreground">
-        Don&apos;t have Telegram yet?{" "}
-        <a
-          href="https://telegram.org/dl"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-primary underline-offset-2 hover:underline"
-        >
-          Get it for your phone or computer
-        </a>
-        .
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Open BotFather, press START, and send it <span className="font-mono">/newbot</span>. It
-        asks for a display name (anything you like), then a username that has to be unique and end
-        in <span className="font-mono">bot</span>. That second one is where people get stuck, so
-        here is one that should be free.
-      </p>
-      <CopyableValue label="Suggested username" value={suggestion} />
-      {/* WHAT THE LINK CAN AND CANNOT DO, because the difference is the whole of this block.
-          
-          `?start=` is not decoration. A bare https://t.me/BotFather resolves the username and
-          then leaves Telegram to decide what to show - which on desktop and on the web client is
-          often a landing page or a chat list to pick from rather than the BotFather chat.
-          A start payload makes it open that chat with a START button, every time. The bot link
-          in telegramStartUrl below has always carried one for exactly this reason; this one did
-          not, and that asymmetry is what put people on a list of chats.
-
-          It still cannot press /newbot for them. Telegram's deep links can open a chat and send
-          /start, and that is the end of the API - there is no URL that makes BotFather begin
-          creating a bot. So the next action is made a paste rather than a thing to remember: the
-          command sits right here, next to the name it is going to ask for. */}
-      <CopyableValue label="Then send it this" value="/newbot" />
-      <a
-        href="https://t.me/BotFather?start=newbot"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block text-xs font-medium text-primary underline-offset-2 hover:underline"
-      >
-        Open BotFather in Telegram
-      </a>
+    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {/* `?start=` is not decoration: a bare t.me/BotFather often opens a landing page or a
+            chat list on desktop and the web client. The payload makes it open the BotFather chat
+            with a START button every time. It still cannot send /newbot for them - Telegram's
+            deep links stop at /start - which is why /newbot sits right below as a copy. */}
+        <Button asChild size="sm">
+          <a href="https://t.me/BotFather?start=newbot" target="_blank" rel="noopener noreferrer">
+            Open BotFather in Telegram
+          </a>
+        </Button>
+        {/* For someone who has never had Telegram, the button above lands on a page telling them
+            to get the app. telegram.org/dl is Telegram's own link and picks the right store for
+            the device, so one link covers iPhone, Android and desktop. */}
+        <span className="text-xs text-muted-foreground">
+          No Telegram yet?{" "}
+          <a
+            href="https://telegram.org/dl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline underline-offset-2"
+          >
+            Get it here
+          </a>
+        </span>
+      </div>
+      <CopyableValue label="Send it this" value="/newbot" />
+      <CopyableValue label="Then this username" value={suggestion} />
     </div>
   );
 }
