@@ -130,6 +130,23 @@ export function BotFatherHelp({ agentName, seed }: { agentName?: string | null; 
 
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+      {/* Before any of the below: they need Telegram itself. Everything else in this block
+          assumes it is installed, and "Open BotFather in Telegram" does nothing useful for
+          someone who has never had it - it lands on a web page telling them to get the app.
+          telegram.org/dl is Telegram's own download link and picks the right store for the
+          device it is opened on, so one link covers iPhone, Android and desktop. */}
+      <p className="text-xs text-muted-foreground">
+        Don&apos;t have Telegram yet?{" "}
+        <a
+          href="https://telegram.org/dl"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline-offset-2 hover:underline"
+        >
+          Get it for your phone or computer
+        </a>
+        .
+      </p>
       <p className="text-xs text-muted-foreground">
         Open BotFather, press START, and send it <span className="font-mono">/newbot</span>. It
         asks for a display name (anything you like), then a username that has to be unique and end
