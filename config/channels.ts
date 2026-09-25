@@ -123,14 +123,17 @@ export const CHANNELS: ChannelDef[] = [
     logo: composioLogoUrl("slack"),
     // No Socket Mode. It needs a process holding a WebSocket open and there is nothing on Vercel
     // to hold one; the Events API does the same job over a webhook, the way Telegram does.
+    //
+    // SEVEN STEPS DOWN TO THREE, same move as Telegram's BotFatherHelp: give the customer a
+    // real tool instead of four settings pages to click through by hand. The app manifest below
+    // (SlackManifestHelp, components/channels/pieces.tsx) sets the bot scopes, the Event
+    // Subscriptions Request URL, and the Messages Tab in one paste - the four things steps 1, 2,
+    // 5, 6 and 7 used to walk through separately. showWebhookUrl stays on below as the same
+    // fallback it has always been, for a workspace whose admin settings block manifest import.
     steps: [
-      "Create an app at api.slack.com/apps - choose From scratch, and pick your workspace.",
-      "Under OAuth & Permissions, add the chat:write and im:history bot scopes, then Install to Workspace. Copy the Bot User OAuth Token - it starts xoxb-.",
-      "Under Basic Information, copy the Signing Secret.",
+      "Below, click \"Create the Slack app,\" choose \"From an app manifest,\" and pick your workspace. Paste the manifest shown here - it sets the bot scopes, the Request URL, and the Messages Tab all at once.",
+      "Click Install to Workspace. Copy the Bot User OAuth Token (starts xoxb-) from OAuth & Permissions and the Signing Secret from Basic Information.",
       "Paste both below and press Connect.",
-      "Back in Slack, under Event Subscriptions, turn events on and paste the Request URL shown here after you connect. Slack will tick it green.",
-      "Still under Event Subscriptions, expand Subscribe to bot events and add message.im. Save, then reinstall the app if Slack asks.",
-      "Under App Home → Show Tabs, turn on the Messages Tab and tick \"Allow users to send Slash commands and messages from the messages tab\". Without this Slack refuses to send your message at all.",
     ],
     fields: [
       { key: "botToken", label: "Bot token", placeholder: "Bot token (xoxb-...)" },

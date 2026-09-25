@@ -168,6 +168,111 @@ export function BotFatherHelp({ agentName, seed }: { agentName?: string | null; 
   );
 }
 
+// Slack has no deep link like BotFather's - creating an app is always a form on
+// api.slack.com. What it DOES have is an app manifest: one JSON blob that sets the bot scopes,
+// the Event Subscriptions Request URL, and the Messages Tab all at once, instead of a customer
+// clicking through four separate settings pages by hand. The receiver already answers Slack's
+// url_verification challenge unsigned (see app/api/channels/slack/[agentId]/route.ts), which is
+// exactly what lets the Request URL verify itself the moment the manifest is imported - before
+// there is any signing secret to check it against.
+//
+// SAFETY NET, NOT A REPLACEMENT: showWebhookUrl stays on for Slack (config/channels.ts), so if a
+// workspace's admin settings block manifest creation, or Slack drops one field on import, the
+// same Request URL is still shown below for a manual paste into Event Subscriptions - the same
+// fallback this channel has always had.
+function slackManifest(agentName: string | null | undefined, requestUrl: string): string {
+  const name = (agentName || "Apollo Claw").slice(0, 35);
+  return JSON.stringify(
+    {
+      display_information: { name },
+      features: {
+        bot_user: { display_name: name, always_online: true },
+        app_home: {
+          home_tab_enabled: false,
+          messages_tab_enabled: true,
+          // false = NOT read-only, i.e. the customer can actually send it a message. Same
+          // switch the old manual steps had you tick by hand under App Home.
+          messages_tab_read_only_enabled: false,
+        },
+      },
+      oauth_config: { scopes: { bot: ["chat:write", "im:history"] } },
+      settings: {
+        event_subscriptions: { request_url: requestUrl, bot_events: ["message.im"] },
+        org_deploy_enabled: false,
+        socket_mode_enabled: false,
+        token_rotation_enabled: false,
+      },
+    },
+    null,
+    2
+  );
+}
+
+export function SlackManifestHelp({ agentId, agentName }: { agentId: string; agentName?: string | null }) {
+  // Same reasoning as WebhookUrl: read through useSyncExternalStore so the manifest carries the
+  // host the customer is actually looking at, empty until hydration rather than a server guess.
+  const origin = useSyncExternalStore(
+    () => () => {},
+    () => window.location.origin,
+    () => ""
+  );
+  const requestUrl = origin ? `${origin}/api/channels/slack/${agentId}` : "";
+  const manifest = useMemo(() => slackManifest(agentName, requestUrl), [agentName, requestUrl]);
+  const [copied, setCopied] = useState(false);
+
+  const copy = () => {
+    navigator.clipboard
+      .writeText(manifest)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => toast.error("Couldn't copy - select the text below and copy it manually."));
+  };
+
+  return (
+    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <Button asChild size="sm">
+          <a href="https://api.slack.com/apps?new_app=1" target="_blank" rel="noopener noreferrer">
+            Create the Slack app
+          </a>
+        </Button>
+        <span className="text-xs text-muted-foreground">
+          Choose &ldquo;From an app manifest&rdquo; and pick your workspace.
+        </span>
+      </div>
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium text-muted-foreground">Then paste this manifest</p>
+        <pre className="max-h-48 overflow-auto rounded-lg border bg-muted/50 px-3 py-2 text-[11px] leading-relaxed">
+          <code>{manifest || "…"}</code>
+        </pre>
+        <Button variant="outline" size="sm" onClick={copy} disabled={!requestUrl}>
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? "Copied" : "Copy manifest"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// The iPhone/Android home-screen steps, shared between the guided connect flow (ChannelStep's
+// "Apollo Claw" tile) and the standing Channels page (ChannelsView) - one copy of the words, two
+// renderers, same reason config/channels.ts's `steps` arrays are not retyped per surface.
+export const APOLLO_CLAW_IPHONE_STEPS = [
+  "Open this dashboard in Safari, not another browser - Chrome on iPhone doesn't offer this.",
+  "Tap the Share icon in the toolbar - the square with an arrow pointing up.",
+  'Scroll down the list and tap "Add to Home Screen".',
+  'Tap "Add" in the top right. The icon lands wherever your other apps are.',
+];
+
+export const APOLLO_CLAW_ANDROID_STEPS = [
+  "Open this dashboard in Chrome.",
+  "Tap the three dots in the top right.",
+  'Tap "Add to Home screen" or "Install app" - the wording varies by Android version.',
+  'Confirm by tapping "Add" or "Install".',
+];
+
 /** The Telegram deep link that binds the bot to its owner, or null when we cannot build one.
  *
  * ?start=setup rather than a bare ?start: the payload is what makes Telegram reliably show the

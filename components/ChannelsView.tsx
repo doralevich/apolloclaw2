@@ -8,7 +8,15 @@ import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { CHANNELS, isChannelId, type ChannelDef } from "@/config/channels";
 // Shared with the guided connect flow, which sets a channel up too. See components/channels/pieces.tsx.
-import { BotFatherHelp, FinishLinking, ManualDelivery, WebhookUrl } from "@/components/channels/pieces";
+import {
+  APOLLO_CLAW_ANDROID_STEPS,
+  APOLLO_CLAW_IPHONE_STEPS,
+  BotFatherHelp,
+  FinishLinking,
+  ManualDelivery,
+  SlackManifestHelp,
+  WebhookUrl,
+} from "@/components/channels/pieces";
 import type { Channel, ChannelId, ChannelsResult } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -209,8 +217,72 @@ export function ChannelsPanel({
             />
           );
         })}
+        <ApolloClawCard />
       </div>
     </div>
+  );
+}
+
+// Not one of CHANNELS - see the note beside ChannelStep's `showInstall` state for why. Same
+// card shape as the three above it so it reads as one more way to reach the agent rather than a
+// different kind of thing bolted onto the list, but there is no credential, no connect/
+// disconnect, and nothing to poll: it is a shortcut to the same dashboard chat, not a new inbox.
+function ApolloClawCard() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="overflow-hidden rounded-xl border bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 p-5 text-left transition-colors hover:bg-muted/40"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/icon-192.png" alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-semibold">Apollo Claw</h2>
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">
+            A shortcut on your phone, opens like an app
+          </p>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+
+      {open && (
+        <div className="space-y-4 border-t px-5 pb-5 pt-4">
+          <p className="text-sm text-muted-foreground">
+            This puts an icon on your phone that opens straight to your dashboard, full-screen, no
+            browser bar around it. Same dashboard, one tap closer.
+          </p>
+          <div>
+            <p className="text-sm font-medium text-foreground">On iPhone, in Safari</p>
+            <ol className="mt-2 space-y-1 text-sm text-muted-foreground">
+              {APOLLO_CLAW_IPHONE_STEPS.map((step, i) => (
+                <li key={step}>
+                  {i + 1}. {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">On Android, in Chrome</p>
+            <ol className="mt-2 space-y-1 text-sm text-muted-foreground">
+              {APOLLO_CLAW_ANDROID_STEPS.map((step, i) => (
+                <li key={step}>
+                  {i + 1}. {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -366,6 +438,7 @@ function ChannelCard({
           </ol>
 
           {def.id === "telegram" && <BotFatherHelp agentName={agentName} seed={agentId} />}
+          {def.id === "slack" && <SlackManifestHelp agentId={agentId} agentName={agentName} />}
 
           {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
 
