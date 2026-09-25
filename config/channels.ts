@@ -91,23 +91,24 @@ export const CHANNELS: ChannelDef[] = [
     recommended: true,
     tagline: "Your own private bot",
     logo: composioLogoUrl("telegram"),
-    // WRITTEN FOR A REALTOR, not a developer, David's call. The old version was two lines -
-    // "open @BotFather and send /newbot", "copy the token and paste it below" - which is
-    // accurate, complete, and useless to somebody who has never met a bot. It assumed the reader
-    // knew what BotFather is, that /newbot is typed as a message, that two different names are
-    // asked for, and what a token looks like when it arrives.
+    // Still WRITTEN FOR A REALTOR, not a developer - but the controls do the explaining now, not
+    // the prose.
     //
-    // Six steps now, each naming what you will SEE rather than what to do in the abstract. The
-    // extra length is the point: this is the one setup in the product that sends somebody into
-    // another app to have a conversation with a robot, and vague instructions there cost far
-    // more than the four lines they save here.
+    // This was six long steps, and before that two terse ones. The two were useless to somebody
+    // who had never met a bot: they assumed you knew what BotFather is, which one is real, what
+    // to type, and that two names get asked for. The six fixed that by spelling it all out - and
+    // then BotFatherHelp said the same things again underneath, so the card read every
+    // instruction twice. David: "too many instructions, make it simpler."
+    //
+    // What makes three short lines enough is what sits beside them. "Which BotFather?" is a
+    // button that opens the real one. "What do I type?" is a /newbot to copy. "It keeps saying
+    // the username is taken" is a suggestion that should be free. "What happens after?" is the
+    // "One step left" box with its own button. So each line only has to say what to DO, and the
+    // thing to do it with is right there.
     steps: [
-      "Open Telegram and search for BotFather. Pick the one with the blue check - there are copies.",
-      "Tap Start, then send it the message /newbot",
-      "It asks for a name first. That is the title you will see at the top of the chat, so anything you like: your agent's name is a good choice.",
-      "Then it asks for a username. This one has to be unique across all of Telegram and end in the word bot, which is why the first few you try are usually taken. There is a suggestion below that should be free.",
-      "It replies with a long token that looks like 123456789:ABCdef... Copy the whole thing, including the numbers before the colon.",
-      "Paste it below and press Connect. One more button appears after that - tap it to say hello to your bot, and you are done.",
+      "Open BotFather and send it /newbot.",
+      "Name your bot anything, then send it the username below.",
+      "Paste the token it sends back.",
     ],
     fields: [
       { key: "botToken", label: "Bot token", placeholder: "Paste your bot token (e.g. 123456:ABC-DEF...)" },
