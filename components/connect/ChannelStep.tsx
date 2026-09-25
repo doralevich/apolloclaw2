@@ -58,6 +58,12 @@ export function ChannelStep({
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A fourth tile on the chooser, but not a channel: no credential, no webhook, nothing this
+  // page's polling can ever see happen. Kept entirely local rather than added to CHANNELS/
+  // ChannelId - those exist because a channel needs a row in agent_channels and a receiver
+  // route, and a home-screen icon needs neither. It is a faster door to the SAME dashboard chat,
+  // not a new inbox, which is also why it skips the "connected"/"linked" states below.
+  const [showInstall, setShowInstall] = useState(false);
 
   const load = useCallback(async (): Promise<Channel[]> => {
     const res = await apiFetch<ChannelsResult>(`/api/agents/${agentId}/channels`);
@@ -129,6 +135,69 @@ export function ChannelStep({
       .finally(() => setBusy(false));
   };
 
+  // ── Apollo Claw: a home-screen icon, not a channel ──────────────────────────────────────────
+  if (showInstall) {
+    return (
+      <Page eyebrow={eyebrow} title="Add Apollo Claw to your home screen">
+        <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+          This puts an icon on your phone that opens straight to me, full-screen, no browser bar
+          around it. Same dashboard, one tap closer.
+        </p>
+
+        <div className="mt-10 space-y-8">
+          <div>
+            <p className="text-sm font-semibold text-foreground">On iPhone, in Safari</p>
+            <ol className="mt-3 space-y-3 border-y py-6">
+              {[
+                "Open this dashboard in Safari, not another browser - Chrome on iPhone doesn't offer this.",
+                "Tap the Share icon in the toolbar - the square with an arrow pointing up.",
+                "Scroll down the list and tap \"Add to Home Screen\".",
+                "Tap \"Add\" in the top right. The icon lands wherever your other apps are.",
+              ].map((step, i) => (
+                <li key={step} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                  <span className="w-5 shrink-0 font-medium tabular-nums text-foreground">{i + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold text-foreground">On Android, in Chrome</p>
+            <ol className="mt-3 space-y-3 border-y py-6">
+              {[
+                "Open this dashboard in Chrome.",
+                "Tap the three dots in the top right.",
+                "Tap \"Add to Home screen\" or \"Install app\" - the wording varies by Android version.",
+                "Confirm by tapping \"Add\" or \"Install\".",
+              ].map((step, i) => (
+                <li key={step} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                  <span className="w-5 shrink-0 font-medium tabular-nums text-foreground">{i + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+
+        <Button onClick={() => onDone("Apollo Claw")} className="mt-2 h-14 w-full rounded-2xl text-base">
+          Done
+          <ArrowRight className="size-4" />
+        </Button>
+
+        <div className="mt-10 flex flex-col items-center gap-3 text-sm">
+          <button
+            type="button"
+            onClick={() => setShowInstall(false)}
+            className="text-muted-foreground/60 hover:text-foreground"
+          >
+            Pick a different one
+          </button>
+        </div>
+      </Page>
+    );
+  }
+
   // ── The chooser ─────────────────────────────────────────────────────────────────────────────
   if (!def) {
     return (
@@ -175,6 +244,24 @@ export function ChannelStep({
               </button>
             );
           })}
+
+          {/* Not one of OFFERED - see `showInstall` above for why. Same tile shape so it reads
+              as one more way in rather than a different kind of thing bolted onto the list. */}
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setShowInstall(true);
+            }}
+            className="flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-colors hover:border-foreground/20 hover:bg-secondary/30"
+          >
+            <AppLogo logo="/icon-192.png" name="Apollo Claw" size="lg" />
+            <span className="min-w-0 flex-1">
+              <span className="text-lg font-semibold">Apollo Claw</span>
+              <span className="mt-0.5 block text-sm text-muted-foreground">A shortcut on your phone, opens like an app</span>
+            </span>
+            <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
         </div>
 
         {/* SAYS HOW LONG IT TAKES, where the app steps did not need to. Those were a click; this
@@ -184,9 +271,13 @@ export function ChannelStep({
             WhatsApp gets its own sentence because its cost is not time, it is a phone number:
             Meta will not put a business line on a number that is already on WhatsApp, so the
             personal one in somebody's pocket is not eligible. Learning that on step two of five,
-            inside Meta's developer console, is the worst possible place to learn it. */}
+            inside Meta's developer console, is the worst possible place to learn it.
+
+            "The first three" now, not "each of these" - Apollo Claw is neither a trip into
+            another app nor five minutes, and saying so here would undersell the one option that
+            is actually quick. */}
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Each of these takes about five minutes and happens mostly in that app, not here.
+          The first three take about five minutes each and happen mostly in that app, not here.
           WhatsApp also needs a phone number that is not already on WhatsApp.
         </p>
 
