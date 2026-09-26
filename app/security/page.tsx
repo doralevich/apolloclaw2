@@ -197,8 +197,8 @@ export default function SecurityPage() {
     <>
       <PageHero
         label="Security & Privacy"
-        title="Your Data"
-        titleAccent="Stays Yours"
+        title="Security"
+        titleAccent="You Can Verify"
         description="Enterprise-grade protection, in plain language. Here is exactly how we protect your business."
       />
 
