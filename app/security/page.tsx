@@ -48,7 +48,6 @@ const BORDER = "rgba(0,0,0,0.08)";
 const GREEN = "#1E8E3E";
 const AMBER = "#B8860B";
 const CALENDLY = "https://cal.com/therealdaveo/dbdo-consultation";
-const AGENT37_TRUST_URL = "https://trust.agent37.com";
 
 function Kicker({ children }: { children: React.ReactNode }) {
   return (
@@ -209,24 +208,14 @@ function CheckChip({ label, done, bg = CREAM }: { label: string; done: boolean |
 
 // A slightly larger square box for compliance frameworks, which each need one short line of
 // context a bare checkbox can't carry (who attests, and where the report lives).
-function ComplianceBox({ label, done, note, href }: { label: string; done: boolean | "partial"; note: string; href?: string }) {
+function ComplianceBox({ label, done, note }: { label: string; done: boolean | "partial"; note: string }) {
   return (
     <div className="flex h-full flex-col gap-2" style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 10, padding: "18px 20px" }}>
       <div className="flex items-center gap-2">
         <StatusIcon done={done} />
         <span style={{ fontSize: 14, fontWeight: 700, color: INK }}>{label}</span>
       </div>
-      <p style={{ fontSize: 12.5, lineHeight: 1.55, color: MUTED, margin: 0 }}>
-        {note}
-        {href && (
-          <>
-            {" "}
-            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: RED, fontWeight: 600 }}>
-              trust.agent37.com &#8599;
-            </a>
-          </>
-        )}
-      </p>
+      <p style={{ fontSize: 12.5, lineHeight: 1.55, color: MUTED, margin: 0 }}>{note}</p>
     </div>
   );
 }
@@ -340,22 +329,14 @@ export default function SecurityPage() {
                 eyebrow="Cloud-Hosted"
                 title="Your Own Dedicated VPS"
                 points={[
-                  "One VPS per agent, provisioned by Agent37 — never shared, multi-tenant compute",
+                  "One VPS per agent — never shared, multi-tenant compute",
                   "Full-volume LUKS2 disk encryption",
                   "Key-based SSH only; password authentication disabled",
                   "Firewall restricts inbound traffic to required ports only",
                   "Public-facing only — webhooks and hosted assets. No client credentials live here",
                   "Canceling stops the VPS first — nothing is destroyed until the retention window closes",
                 ]}
-                footer={
-                  <>
-                    Agent37, the platform behind this layer, is ISO 27001-certified at the runtime
-                    layer, with a SOC 2 Type I report available on request —{" "}
-                    <a href={AGENT37_TRUST_URL} target="_blank" rel="noopener noreferrer" style={{ color: INK, fontWeight: 700 }}>
-                      trust.agent37.com &#8599;
-                    </a>
-                  </>
-                }
+                footer="Our runtime infrastructure is ISO 27001-certified, with a SOC 2 Type I report available on request."
               />
             </ScrollReveal>
             <ScrollReveal delay={80}>
@@ -505,12 +486,11 @@ export default function SecurityPage() {
               <ComplianceBox
                 label="SOC 2"
                 done="partial"
-                note="Agent37, our runtime platform, is undergoing SOC 2 - a Type I report is available on request. Apollo[Claw]'s own attestation is on our roadmap."
-                href={AGENT37_TRUST_URL}
+                note="Our runtime infrastructure is undergoing SOC 2 - a Type I report is available on request. Apollo[Claw]'s own attestation is on our roadmap."
               />
             </ScrollReveal>
             <ScrollReveal delay={50}>
-              <ComplianceBox label="ISO 27001" done={true} note="Agent37 holds ISO 27001 certification at the runtime layer." href={AGENT37_TRUST_URL} />
+              <ComplianceBox label="ISO 27001" done={true} note="Our runtime infrastructure holds ISO 27001 certification." />
             </ScrollReveal>
             <ScrollReveal delay={100}>
               <ComplianceBox label="PCI DSS" done={true} note="SAQ-A scope. Card data is handled entirely by Stripe and never touches our systems." />
