@@ -24,18 +24,26 @@ import { cn } from "@/lib/utils";
 export function Page({
   eyebrow,
   title,
+  titleIcon,
   children,
 }: {
   eyebrow: React.ReactNode;
   title: string;
+  /** Rendered to the left of the headline rather than above it, for the one screen that is
+   *  asking about the agent itself (ChannelStep's chooser) rather than speaking as the agent -
+   *  every other screen leaves this unset and gets the plain headline it always had. */
+  titleIcon?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="mx-auto w-full max-w-xl px-1 py-10 sm:py-16">
       {eyebrow}
-      <h1 className="font-heading mt-4 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl">
-        {title}
-      </h1>
+      <div className={cn("mt-4", titleIcon && "flex items-center gap-4")}>
+        {titleIcon}
+        <h1 className="font-heading text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl">
+          {title}
+        </h1>
+      </div>
       {children}
     </div>
   );

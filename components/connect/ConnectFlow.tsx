@@ -302,6 +302,7 @@ export function ConnectFlow() {
       <ChannelStep
         agentId={agentId}
         agentName={active.name}
+        agentAvatarUrl={active.avatar_url}
         eyebrow={<StepDots total={steps.length + 1} current={index} />}
         onDone={(linkedChannel) => {
           setChannelLive(linkedChannel);

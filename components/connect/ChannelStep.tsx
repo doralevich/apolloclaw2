@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { AgentFace } from "@/components/AgentFace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLogo, Page } from "@/components/connect/ui";
@@ -51,11 +52,15 @@ const OFFERED: ChannelDef[] = FLOW_CHANNELS.map((id) => {
 export function ChannelStep({
   agentId,
   agentName,
+  agentAvatarUrl,
   eyebrow,
   onDone,
 }: {
   agentId: string;
   agentName?: string | null;
+  /** The picture beside "How should we communicate?" - this is the one screen in the flow
+   *  asking about the agent rather than speaking as it, so its own face belongs on it. */
+  agentAvatarUrl?: string | null;
   eyebrow: React.ReactNode;
   /** Move to the closing screen, naming the channel that ended up live so it can be read back
    *  there. Null when they skipped, or connected one but never claimed it. */
@@ -199,13 +204,37 @@ export function ChannelStep({
   // ── The chooser ─────────────────────────────────────────────────────────────────────────────
   if (!def) {
     return (
-      <Page eyebrow={eyebrow} title="Where do you want to reach me?">
+      <Page
+        eyebrow={eyebrow}
+        title="How should we communicate?"
+        titleIcon={<AgentFace src={agentAvatarUrl} name={agentName} className="size-12 text-lg" />}
+      >
         <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
           You can always talk to me right here in the dashboard. This is for the other times: a
           message from your phone on the way somewhere, without opening any of this.
         </p>
 
         <div className="mt-10 space-y-3">
+          {/* Not one of OFFERED - see `showInstall` above for why. Same tile shape so it reads
+              as one more way in rather than a different kind of thing bolted onto the list.
+              First, David's call: it costs a tap rather than a trip into another app, so it is
+              the option most people should actually take. */}
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setShowInstall(true);
+            }}
+            className="flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-colors hover:border-foreground/20 hover:bg-secondary/30"
+          >
+            <AppLogo logo="/icon-192.png" name="Apollo Claw" size="lg" />
+            <span className="min-w-0 flex-1">
+              <span className="text-lg font-semibold">Apollo Claw</span>
+              <span className="mt-0.5 block text-sm text-muted-foreground">A shortcut on your phone, opens like an app</span>
+            </span>
+            <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
           {OFFERED.map((d) => {
             const live = rows?.find((c) => c.channel === d.id)?.state === "connected";
             return (
@@ -222,13 +251,6 @@ export function ChannelStep({
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="text-lg font-semibold">{d.name}</span>
-                    {/* Only on the one that is genuinely easiest to finish. A recommendation on
-                        more than one is not a recommendation. */}
-                    {d.recommended && !live && (
-                      <span className="rounded-full border px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                        Easiest
-                      </span>
-                    )}
                     {live && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                         <Check className="size-3.5" />
@@ -242,24 +264,6 @@ export function ChannelStep({
               </button>
             );
           })}
-
-          {/* Not one of OFFERED - see `showInstall` above for why. Same tile shape so it reads
-              as one more way in rather than a different kind of thing bolted onto the list. */}
-          <button
-            type="button"
-            onClick={() => {
-              setError(null);
-              setShowInstall(true);
-            }}
-            className="flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-colors hover:border-foreground/20 hover:bg-secondary/30"
-          >
-            <AppLogo logo="/icon-192.png" name="Apollo Claw" size="lg" />
-            <span className="min-w-0 flex-1">
-              <span className="text-lg font-semibold">Apollo Claw</span>
-              <span className="mt-0.5 block text-sm text-muted-foreground">A shortcut on your phone, opens like an app</span>
-            </span>
-            <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-          </button>
         </div>
 
         {/* SAYS HOW LONG IT TAKES, where the app steps did not need to. Those were a click; this
@@ -271,12 +275,12 @@ export function ChannelStep({
             personal one in somebody's pocket is not eligible. Learning that on step two of five,
             inside Meta's developer console, is the worst possible place to learn it.
 
-            "The first three" now, not "each of these" - Apollo Claw is neither a trip into
-            another app nor five minutes, and saying so here would undersell the one option that
-            is actually quick. */}
+            Named rather than "the first three" - Apollo Claw sits first in the list now and is
+            neither a trip into another app nor five minutes, so position no longer says which
+            three this sentence means. */}
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          The first three take about five minutes each and happen mostly in that app, not here.
-          WhatsApp also needs a phone number that is not already on WhatsApp.
+          Telegram, Slack and WhatsApp take about five minutes each and happen mostly in that
+          app, not here. WhatsApp also needs a phone number that is not already on WhatsApp.
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-3 text-sm">
