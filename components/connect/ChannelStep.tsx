@@ -5,7 +5,15 @@ import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AppLogo, Page } from "@/components/connect/ui";
-import { BotFatherHelp, FinishLinking, ManualDelivery, WebhookUrl } from "@/components/channels/pieces";
+import {
+  APOLLO_CLAW_ANDROID_STEPS,
+  APOLLO_CLAW_IPHONE_STEPS,
+  BotFatherHelp,
+  FinishLinking,
+  ManualDelivery,
+  SlackManifestHelp,
+  WebhookUrl,
+} from "@/components/channels/pieces";
 import { channelDef, type ChannelDef } from "@/config/channels";
 import { FLOW_CHANNELS } from "@/config/connect-flow";
 import { apiFetch } from "@/lib/api";
@@ -148,12 +156,7 @@ export function ChannelStep({
           <div>
             <p className="text-sm font-semibold text-foreground">On iPhone, in Safari</p>
             <ol className="mt-3 space-y-3 border-y py-6">
-              {[
-                "Open this dashboard in Safari, not another browser - Chrome on iPhone doesn't offer this.",
-                "Tap the Share icon in the toolbar - the square with an arrow pointing up.",
-                "Scroll down the list and tap \"Add to Home Screen\".",
-                "Tap \"Add\" in the top right. The icon lands wherever your other apps are.",
-              ].map((step, i) => (
+              {APOLLO_CLAW_IPHONE_STEPS.map((step, i) => (
                 <li key={step} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
                   <span className="w-5 shrink-0 font-medium tabular-nums text-foreground">{i + 1}.</span>
                   <span>{step}</span>
@@ -165,12 +168,7 @@ export function ChannelStep({
           <div>
             <p className="text-sm font-semibold text-foreground">On Android, in Chrome</p>
             <ol className="mt-3 space-y-3 border-y py-6">
-              {[
-                "Open this dashboard in Chrome.",
-                "Tap the three dots in the top right.",
-                "Tap \"Add to Home screen\" or \"Install app\" - the wording varies by Android version.",
-                "Confirm by tapping \"Add\" or \"Install\".",
-              ].map((step, i) => (
+              {APOLLO_CLAW_ANDROID_STEPS.map((step, i) => (
                 <li key={step} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
                   <span className="w-5 shrink-0 font-medium tabular-nums text-foreground">{i + 1}.</span>
                   <span>{step}</span>
@@ -381,6 +379,7 @@ export function ChannelStep({
 
       <div className="mt-6 space-y-4">
         {def.id === "telegram" && <BotFatherHelp agentName={agentName} seed={agentId} />}
+        {def.id === "slack" && <SlackManifestHelp agentId={agentId} agentName={agentName} />}
         {def.showWebhookUrl && <WebhookUrl agentId={agentId} channel={def.id} />}
 
         <div className="space-y-2">
