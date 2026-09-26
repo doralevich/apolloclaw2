@@ -18,15 +18,15 @@ export const INVITE_COOKIE = "agent_invite";
 // The role agents an invite link may provision: internal, no-payment personas with a setup
 // questionnaire (ROLE_INTAKES in OnboardingForm). Ordered as they appear in the create modal.
 //
-// "apollo" is different in kind from the eight above it: it is not a role persona, it is
+// "apollo" is different in kind from the nine above it: it is not a role persona, it is
 // LICENSE_AGENT_TYPE_ID (config/agent-types.ts) - the actual paid SKU that /agent-build/apollo's
 // Stripe checkout sells. Adding it here does not change what this route can do (claim/route.ts
 // was already generic over any invitable type); it changes who gets to use it for free. David's
 // call, for comping specific people (a friend, an investor demo, a free pilot) rather than a
 // role no one was ever going to pay for by the self-serve path anyway. Deliberately NOT listed
-// on the /agent-invite picker (app/agent-invite/page.tsx hand-authors its own 8 cards rather
-// than deriving them from this array) - a comp link is handed out one at a time, not put on a
-// menu next to the role agents.
+// on the /agent-invite picker (app/agent-invite/page.tsx hand-authors its own cards rather than
+// deriving them from this array) - a comp link is handed out one at a time, not put on a menu
+// next to the role agents.
 export const INVITE_TYPES = [
   "cfo",
   "legal",
@@ -36,6 +36,7 @@ export const INVITE_TYPES = [
   "sales",
   "recruiting",
   "medical",
+  "personal",
   "apollo",
 ] as const;
 

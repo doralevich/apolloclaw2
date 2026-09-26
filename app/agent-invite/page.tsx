@@ -6,6 +6,7 @@ import {
   Scale,
   Stethoscope,
   TrendingUp,
+  User,
   UserSearch,
   Wallet,
 } from "lucide-react";
@@ -13,14 +14,14 @@ import { FleetGrid } from "@/components/agents/FleetGrid";
 import type { NavItem } from "@/config/navigation";
 import { NAVY, NAVY_ELEVATED, PAPER, PAPER_MUTED, RED, Section, TextureBackground } from "@/components/home/ui";
 
-// The picker in front of the 8 role-agent invite links: /agent-invite/cfo, /agent-invite/legal,
+// The picker in front of the role-agent invite links: /agent-invite/cfo, /agent-invite/legal,
 // and so on. David: "the /agent-invite/ page should look like /ai-agents, and based on the
 // selection the user then goes into that agent's walkthrough." So this is FleetGrid's card,
 // reused rather than redrawn (see the `items` prop added there for exactly this) - but with its
 // own small roster, not AGENTS: INVITE_TYPES includes "marketing", which has no public
 // /ai-agents page (the row was deliberately deleted there, config/navigation.ts), and excludes
-// "insurance", "personal", "college" and "propertymanagement", which AGENTS carries but which
-// no invite link exists for (lib/agentInvite.ts).
+// "insurance", "college" and "propertymanagement", which AGENTS carries but which no invite
+// link exists for (lib/agentInvite.ts).
 //
 // noindex, same reasoning as app/agent-invite/[type]/layout.tsx: an invite link is handed to one
 // person and must never surface in search or the sitemap. This picker is the same kind of page,
@@ -54,6 +55,7 @@ const INVITE_CARDS: NavItem[] = [
   { label: "The Law Agent", agentTypeId: "legal", Icon: Scale, to: "/agent-invite/legal", description: "Draft from your templates, redline what comes in, and never let a renewal date slip.", cta: "Start →" },
   { label: "The Medical Agent", agentTypeId: "medical", Icon: Stethoscope, to: "/agent-invite/medical", description: "Keep the schedule full, chase referrals and authorizations, and answer what a front desk answers all day.", cta: "Start →" },
   { label: "The Real Estate Agent", agentTypeId: "realestate", Icon: Home, to: "/agent-invite/realestate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you.", cta: "Start →" },
+  { label: "The Personal Agent", agentTypeId: "personal", Icon: User, to: "/agent-invite/personal", description: "Run your inbox, calendar, research, and follow-ups, so your attention stays on the work only you can do.", cta: "Start →" },
 ];
 
 export default function AgentInvitePicker() {
