@@ -7,8 +7,8 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Company · Agents · Case Studies ·
-// Security · Integrations · Contact. Industries now lives inside the Case Studies dropdown (each
+// Site IA, current top-level order per David's direct call: Company · Agents · Use Cases ·
+// Case Studies · Security · Integrations · Contact. Industries now lives inside the Case Studies dropdown (each
 // industry page carries its own case studies - config/caseStudies.ts). Industries and
 // Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
@@ -57,6 +57,14 @@ const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
 import { AGENTS, CASE_STUDY_INDUSTRIES, externalLinkProps } from "@/config/navigation";
+import { USE_CASES } from "@/config/useCases";
+
+const USE_CASE_NAV = USE_CASES.map((u) => ({
+  label: u.label,
+  description: u.summary,
+  to: `/use-cases/${u.slug}`,
+  Icon: u.Icon,
+}));
 
 const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
@@ -245,6 +253,15 @@ export default function Navbar() {
       active: (p) => p === "/ai-agents" || AGENTS.some((a) => !a.external && p === a.to),
       mobileItems: AGENTS,
       render: () => tilePanel(AGENTS, pathname, 560),
+    },
+    {
+      // One page per job an agent does (config/useCases.ts); the trigger opens the /use-cases hub.
+      kind: "group",
+      label: "Use Cases",
+      to: "/use-cases",
+      active: (p) => p.startsWith("/use-cases"),
+      mobileItems: USE_CASE_NAV,
+      render: () => tilePanel(USE_CASE_NAV, pathname, 640),
     },
     {
       // Industries folded in here, David's call: the trigger opens the overview of every case

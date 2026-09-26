@@ -68,11 +68,11 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
               pointerEvents: "none",
             }}
           />
-          <div className="container mx-auto px-5 md:px-8 py-24 md:py-32 text-center max-w-5xl relative z-10">
+          <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-6xl relative z-10">
             <h1
               className="font-display leading-[1.05] tracking-tight"
               style={{
-                fontSize: "clamp(38px, 5.6vw, 72px)",
+                fontSize: "clamp(32px, 4.4vw, 56px)",
                 fontWeight: 800,
                 color: "#ffffff",
                 margin: 0,
@@ -89,12 +89,12 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
                 lineHeight: 1.7,
                 color: "rgba(255,255,255,0.7)",
                 maxWidth: 940,
-                margin: "24px auto 0",
+                margin: "16px auto 0",
               }}
             >
               {uc.description}
             </p>
-            <div style={{ marginTop: 36 }}>
+            <div style={{ marginTop: 24 }}>
               <a
                 href="https://cal.com/therealdaveo/dbdo-consultation"
                 target="_blank"
