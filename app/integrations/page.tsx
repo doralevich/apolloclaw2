@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ALL_TOOLKITS, IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
+import { IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
 import { OG_IMAGES } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import {
@@ -19,16 +19,15 @@ import {
 // (components/IntegrationsView.tsx) inside the dashboard - same curated catalog
 // (lib/integration-catalog.ts), no Connect button and no connected/not-connected state, because
 // there is no agent here to connect anything to yet. That is what the CTAs below are for.
-const TOTAL = ALL_TOOLKITS.length;
 
 export const metadata: Metadata = {
   title: { absolute: "Integrations | Apollo[Claw]" },
-  description: `Apps your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Salesforce, Stripe, and more. Anything on Composio, our integration partner, can be connected.`,
+  description: "Apps your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Salesforce, Stripe, and more.",
   alternates: { canonical: "https://apolloclaw.ai/integrations" },
   openGraph: {
     images: OG_IMAGES,
     title: "Integrations | Apollo[Claw]",
-    description: "Apps your agent can connect to and act in, across mail, files, calendars, CRM, and more - and anything on Composio, our integration partner, can be connected.",
+    description: "Apps your agent can connect to and act in, across mail, files, calendars, CRM, and more.",
     url: "https://apolloclaw.ai/integrations",
     type: "website",
   },
@@ -56,8 +55,8 @@ export default function IntegrationsPage() {
             className="font-body mx-auto mt-6 text-[1.125rem] leading-[1.65]"
             style={{ color: PAPER_MUTED, maxWidth: 620 }}
           >
-            {TOTAL} shown below - mail, calendars, files, CRM, payments, and more. Anything on
-            Composio, our integration partner, can be connected once your agent is built.
+            Mail, calendars, files, CRM, payments, and more - connect the tools you already use
+            once your agent is built.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <PrimaryButton href={SCHEDULE_CONSULT_URL} external>
