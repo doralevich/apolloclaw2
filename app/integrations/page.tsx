@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
-import { INTEGRATION_CATEGORIES } from "@/lib/integration-catalog";
+import { ALL_TOOLKITS, IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
 import { OG_IMAGES } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import {
@@ -20,16 +19,16 @@ import {
 // (components/IntegrationsView.tsx) inside the dashboard - same curated catalog
 // (lib/integration-catalog.ts), no Connect button and no connected/not-connected state, because
 // there is no agent here to connect anything to yet. That is what the CTAs below are for.
-const TOTAL = INTEGRATION_CATEGORIES.reduce((n, c) => n + c.toolkits.length, 0);
+const TOTAL = ALL_TOOLKITS.length;
 
 export const metadata: Metadata = {
   title: { absolute: "Integrations | Apollo[Claw]" },
-  description: `Every app your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Slack, Salesforce, and ${TOTAL}+ more.`,
+  description: `Apps your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Salesforce, Stripe, and more. Anything on Composio, our integration partner, can be connected.`,
   alternates: { canonical: "https://apolloclaw.ai/integrations" },
   openGraph: {
     images: OG_IMAGES,
     title: "Integrations | Apollo[Claw]",
-    description: `Every app your agent can connect to and act in - ${TOTAL}+ tools across mail, files, calendars, CRM, and more.`,
+    description: "Apps your agent can connect to and act in, across mail, files, calendars, CRM, and more - and anything on Composio, our integration partner, can be connected.",
     url: "https://apolloclaw.ai/integrations",
     type: "website",
   },
@@ -57,8 +56,8 @@ export default function IntegrationsPage() {
             className="font-body mx-auto mt-6 text-[1.125rem] leading-[1.65]"
             style={{ color: PAPER_MUTED, maxWidth: 620 }}
           >
-            {TOTAL}+ apps your agent can read, write to, and act in - mail, calendars, files,
-            CRM, and more. Search below, or connect them for real once your agent is built.
+            {TOTAL} shown below - mail, calendars, files, CRM, payments, and more. Anything on
+            Composio, our integration partner, can be connected once your agent is built.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <PrimaryButton href={SCHEDULE_CONSULT_URL} external>

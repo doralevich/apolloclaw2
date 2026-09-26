@@ -160,6 +160,13 @@ const nextConfig: NextConfig = {
         destination: "/ai-agents/personal-assistant",
         permanent: true,
       },
+      // /about's content moved to /company (David's call: "Company" in the main nav with no
+      // dropdown, rather than a group menu holding About + Security). Carries the ranking over.
+      {
+        source: "/about",
+        destination: "/company",
+        permanent: true,
+      },
     ];
   },
   async rewrites() {
