@@ -4,7 +4,7 @@ import { signOut } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { branding } from "@/config/branding";
 
-const SUPPORT_EMAIL = "david@apolloclaw.ai";
+const SUPPORT_EMAIL = "hello@apolloclaw.ai";
 
 // Shown to a signed-in user with no active entitlement. They have a valid session but no
 // workspace is created for them.

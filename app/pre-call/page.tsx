@@ -137,7 +137,7 @@ export default function PreCall() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       setSubmitted(true);
     } catch {
-      setError("Something went wrong. Please try again or email david@apolloclaw.ai");
+      setError("Something went wrong. Please try again or email hello@apolloclaw.ai");
     } finally {
       setSubmitting(false);
     }
@@ -150,7 +150,7 @@ export default function PreCall() {
         </div>
         <h2 style={{ fontSize: 32, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.025em" }}>We&apos;ve got it.</h2>
         <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 16px" }}>David will review your answers before the call so you can get right into it.</p>
-        <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 36px" }}>If anything comes up before then, reach him at <a href="mailto:david@apolloclaw.ai" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>david@apolloclaw.ai</a>.</p>
+        <p style={{ fontSize: 15, color: TXM, lineHeight: 1.7, maxWidth: 460, margin: "0 auto 36px" }}>If anything comes up before then, reach him at <a href="mailto:hello@apolloclaw.ai" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>hello@apolloclaw.ai</a>.</p>
         <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "15px 40px", borderRadius: 8, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
       </div>
     );
@@ -263,7 +263,7 @@ export default function PreCall() {
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: TXD }}>© {new Date().getFullYear()} Apollo[Claw]</span>
-        <span style={{ fontSize: 12, color: TXD }}>david@apolloclaw.ai</span>
+        <span style={{ fontSize: 12, color: TXD }}>hello@apolloclaw.ai</span>
       </div>
     </div>
   );

@@ -976,7 +976,7 @@ function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLas
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: TXD }}>© {new Date().getFullYear()} Apollo[Claw]</span>
-        <span style={{ fontSize: 12, color: TXD }}>david@apolloclaw.ai</span>
+        <span style={{ fontSize: 12, color: TXD }}>hello@apolloclaw.ai</span>
       </div>
     </div>
     </BrandCtx.Provider>
@@ -1388,7 +1388,7 @@ function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) =>
   const add = (list: FileList | null) => {
     if (!list) return;
     const next = [...files, ...Array.from(list)];
-    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 2.5MB. Remove a file, or email larger ones to david@apolloclaw.ai."); return; }
+    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 2.5MB. Remove a file, or email larger ones to hello@apolloclaw.ai."); return; }
     setMsg(""); onFiles(next);
   };
   return (

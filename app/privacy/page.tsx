@@ -19,7 +19,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "Apollo[Claw] AI Consulting (“Apollo[Claw]”, “we”, “us”) builds and operates AI agents for businesses. Our address is 69 Roslyn Road, Roslyn Heights, NY 11577. For any privacy question, or to exercise a right described below, email david@apolloclaw.ai.",
+        text: "Apollo[Claw] AI Consulting (“Apollo[Claw]”, “we”, “us”) builds and operates AI agents for businesses. Our address is 69 Roslyn Road, Roslyn Heights, NY 11577. For any privacy question, or to exercise a right described below, email hello@apolloclaw.ai.",
       },
       {
         kind: "prose",
@@ -131,7 +131,7 @@ const SECTIONS: LegalSection[] = [
       },
       {
         kind: "prose",
-        text: "To exercise any of them, email david@apolloclaw.ai. We will respond within the timeframe the applicable law requires, and we may need to verify your identity first. Deletion is available on request today; a self-service export is not yet built. You can withdraw analytics consent at any time by clearing this site's cookies and data in your browser, which brings the cookie banner back.",
+        text: "To exercise any of them, email hello@apolloclaw.ai. We will respond within the timeframe the applicable law requires, and we may need to verify your identity first. Deletion is available on request today; a self-service export is not yet built. You can withdraw analytics consent at any time by clearing this site's cookies and data in your browser, which brings the cookie banner back.",
       },
     ],
   },
@@ -140,7 +140,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "We describe our security practices, including what is fully in place and what is still in progress, on our Security page. If you believe you have found a vulnerability, email david@apolloclaw.ai.",
+        text: "We describe our security practices, including what is fully in place and what is still in progress, on our Security page. If you believe you have found a vulnerability, email hello@apolloclaw.ai.",
       },
     ],
   },

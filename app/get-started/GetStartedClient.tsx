@@ -34,11 +34,11 @@ export default function GetStartedClient() {
               (917) 363-5487
             </a>
             <a
-              href="mailto:david@apolloclaw.ai"
+              href="mailto:hello@apolloclaw.ai"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors justify-center"
             >
               <Mail className="w-4 h-4" />
-              david@apolloclaw.ai
+              hello@apolloclaw.ai
             </a>
           </div>
         </div>

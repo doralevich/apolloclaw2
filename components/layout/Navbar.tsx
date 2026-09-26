@@ -52,7 +52,7 @@ const NAV_WHITE = "#FFFFFF";
 const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
-const CONTACT_EMAIL = "david@apolloclaw.ai";
+const CONTACT_EMAIL = "hello@apolloclaw.ai";
 import { AGENTS, INDUSTRIES, externalLinkProps } from "@/config/navigation";
 
 const COMPANY = [

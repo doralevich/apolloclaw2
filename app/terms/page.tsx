@@ -32,7 +32,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "Apollo[Claw] AI Consulting (“Apollo[Claw]”, “we”, “us”) builds and hosts AI agents for businesses. Our address is 69 Roslyn Road, Roslyn Heights, NY 11577, and you can reach us at david@apolloclaw.ai.",
+        text: "Apollo[Claw] AI Consulting (“Apollo[Claw]”, “we”, “us”) builds and hosts AI agents for businesses. Our address is 69 Roslyn Road, Roslyn Heights, NY 11577, and you can reach us at hello@apolloclaw.ai.",
       },
       {
         kind: "prose",
@@ -279,7 +279,7 @@ const SECTIONS: LegalSection[] = [
       },
       {
         kind: "prose",
-        text: "Before filing anything, please email david@apolloclaw.ai. Almost everything is faster to fix that way.",
+        text: "Before filing anything, please email hello@apolloclaw.ai. Almost everything is faster to fix that way.",
       },
     ],
   },
@@ -298,7 +298,7 @@ const SECTIONS: LegalSection[] = [
       },
       {
         kind: "prose",
-        text: "Questions about any of this: david@apolloclaw.ai.",
+        text: "Questions about any of this: hello@apolloclaw.ai.",
       },
     ],
   },

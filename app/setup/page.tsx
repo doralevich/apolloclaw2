@@ -182,7 +182,7 @@ INSTALLATION SCOPE
 
 Please advise if any of the above requires a formal app approval request or if there are additional steps needed for your environment. David Oralevich at Apollo[Claw] can speak directly with your team if helpful.
 
-david@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
+hello@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
 
 Thank you,
 ${name}`;
@@ -245,7 +245,7 @@ INSTALLATION SCOPE
 
 Apollo[Claw] can provide additional technical documentation, an app manifest, or join a call with your IT team if needed.
 
-david@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
+hello@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
 
 Thank you,
 ${name}`;
@@ -277,7 +277,7 @@ ${name}`;
       window.scrollTo({ top: 0, behavior: "smooth" });
       setStep(2);
     } catch {
-      setError("Something went wrong. Please try again or email david@apolloclaw.ai");
+      setError("Something went wrong. Please try again or email hello@apolloclaw.ai");
     } finally {
       setLoading(false);
     }
@@ -309,7 +309,7 @@ ${name}`;
       window.scrollTo({ top: 0, behavior: "smooth" });
       setStep("done");
     } catch {
-      setError("Something went wrong. Please try again or email david@apolloclaw.ai");
+      setError("Something went wrong. Please try again or email hello@apolloclaw.ai");
     } finally {
       setLoading(false);
     }
@@ -569,7 +569,7 @@ ${name}`;
             </Card>
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#fffdf9", border: `1px solid ${BDR}`, borderLeft: `3px solid ${R}`, borderRadius: "0 6px 6px 0", padding: "12px 14px" }}>
               <span style={{ color: R, fontSize: 12, marginTop: 1, flexShrink: 0 }}>■</span>
-              <p style={{ fontSize: 11, color: TXD, lineHeight: 1.6, margin: 0 }}>Your credentials are transmitted securely over HTTPS and used solely to configure your deployment. They are never shared, sold, or stored beyond setup. Questions? <strong style={{ color: TX }}>david@apolloclaw.ai</strong></p>
+              <p style={{ fontSize: 11, color: TXD, lineHeight: 1.6, margin: 0 }}>Your credentials are transmitted securely over HTTPS and used solely to configure your deployment. They are never shared, sold, or stored beyond setup. Questions? <strong style={{ color: TX }}>hello@apolloclaw.ai</strong></p>
             </div>
             {error && <div style={{ padding: "10px 14px", borderRadius: 6, background: "rgba(232,52,42,0.08)", border: `1px solid rgba(232,52,42,0.3)`, fontSize: 13, color: "#b91c1c" }}>{error}</div>}
             <button onClick={submitStep2} disabled={loading} style={{ width: "100%", background: loading ? SRF2 : R, color: loading ? TXD : "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "14px", borderRadius: 6, border: "none", cursor: loading ? "not-allowed" : "pointer", transition: "background 0.15s" }}>
@@ -585,7 +585,7 @@ ${name}`;
             </div>
             <h2 style={{ fontSize: 28, fontWeight: 900, color: TX, margin: "0 0 12px", letterSpacing: "-0.02em" }}>Setup complete.</h2>
             <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 8px" }}>David will configure your Mac Mini and reach out to schedule your first Zoom session within 2 business days.</p>
-            <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 36px" }}>Questions in the meantime: <a href="mailto:david@apolloclaw.ai" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>david@apolloclaw.ai</a></p>
+            <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, maxWidth: 400, margin: "0 auto 36px" }}>Questions in the meantime: <a href="mailto:hello@apolloclaw.ai" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>hello@apolloclaw.ai</a></p>
             <a href="https://apolloclaw.ai" style={{ display: "inline-block", background: R, color: "#fff", fontWeight: 800, fontSize: 15, padding: "14px 36px", borderRadius: 6, textDecoration: "none" }}>Return to Apollo[Claw] →</a>
           </div>
         )}
@@ -593,7 +593,7 @@ ${name}`;
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: TXD }}>© {new Date().getFullYear()} Apollo[Claw]</span>
-        <span style={{ fontSize: 12, color: TXD }}>david@apolloclaw.ai</span>
+        <span style={{ fontSize: 12, color: TXD }}>hello@apolloclaw.ai</span>
       </div>
     </div>
   );
