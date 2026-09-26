@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
 import { composioLogoUrl } from "@/lib/integration-catalog";
-import { getPublicIntegrationCatalog } from "@/lib/public-integration-catalog";
 import { OG_IMAGES } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import {
@@ -22,10 +21,6 @@ import {
 // (lib/integration-catalog.ts), no Connect button and no connected/not-connected state, because
 // there is no agent here to connect anything to yet. That is what the CTAs below are for.
 
-// The full catalog is dozens of paged API calls, so it is fetched on the server and cached for an
-// hour rather than on every visit.
-export const revalidate = 3600;
-
 const HERO_LOGOS =["gmail", "googlecalendar", "outlook", "salesforce", "hubspot", "notion", "zoom"];
 
 export const metadata: Metadata = {
@@ -41,14 +36,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function IntegrationsPage() {
-  const catalog = await getPublicIntegrationCatalog();
+export default function IntegrationsPage() {
   return (
     <>
       <section style={{ background: NAVY }} className="relative overflow-hidden">
         <TextureBackground />
-        <div className="container relative z-20 mx-auto max-w-7xl px-5 py-16 text-center md:px-8 md:py-20">
-          <div aria-hidden className="mb-7 flex flex-wrap items-center justify-center gap-2.5">
+        <div className="container relative z-20 mx-auto max-w-7xl px-5 py-10 text-center md:px-8 md:py-14">
+          <div aria-hidden className="mb-5 flex flex-wrap items-center justify-center gap-2.5">
             {HERO_LOGOS.map((slug) => (
               <span
                 key={slug}
@@ -89,7 +83,7 @@ export default async function IntegrationsPage() {
       </section>
 
       <section style={{ background: TAN }} className="px-5 py-16 md:px-8 md:py-20">
-        <IntegrationsDirectory catalog={catalog} />
+        <IntegrationsDirectory />
       </section>
 
       {/* NO CLOSING CTA HERE, same reasoning as /ai-agents: components/layout/PreFooter.tsx
