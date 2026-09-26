@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
+import { composioLogoUrl } from "@/lib/integration-catalog";
 import { OG_IMAGES } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import {
@@ -20,6 +21,8 @@ import {
 // (lib/integration-catalog.ts), no Connect button and no connected/not-connected state, because
 // there is no agent here to connect anything to yet. That is what the CTAs below are for.
 
+const HERO_LOGOS = ["gmail", "googlecalendar", "outlook", "salesforce", "hubspot", "notion", "zoom"];
+
 export const metadata: Metadata = {
   title: { absolute: "Integrations | Apollo[Claw]" },
   description: "Apps your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Salesforce, Stripe, and more.",
@@ -39,6 +42,18 @@ export default function IntegrationsPage() {
       <section style={{ background: NAVY }} className="relative overflow-hidden">
         <TextureBackground />
         <div className="container relative z-20 mx-auto max-w-7xl px-5 py-16 text-center md:px-8 md:py-20">
+          <div aria-hidden className="mb-7 flex flex-wrap items-center justify-center gap-2.5">
+            {HERO_LOGOS.map((slug) => (
+              <span
+                key={slug}
+                className="flex size-11 items-center justify-center rounded-xl"
+                style={{ background: "#fff", boxShadow: "0 4px 14px rgba(0,0,0,0.25)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={composioLogoUrl(slug)} alt="" className="size-6 object-contain" />
+              </span>
+            ))}
+          </div>
           <span
             className="font-mono mb-5 inline-block text-[12px] font-bold uppercase tracking-[0.16em]"
             style={{ color: RED }}
