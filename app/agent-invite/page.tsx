@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { FleetGrid } from "@/components/agents/FleetGrid";
 import type { NavItem } from "@/config/navigation";
-import { INVITE_TYPES } from "@/lib/agentInvite";
 import { NAVY, NAVY_ELEVATED, PAPER, PAPER_MUTED, RED, Section, TextureBackground } from "@/components/home/ui";
 
 // The picker in front of the 8 role-agent invite links: /agent-invite/cfo, /agent-invite/legal,
@@ -36,30 +35,26 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Hand-authored, NOT derived from lib/agentInvite.ts's INVITE_TYPES - see the note there. That
+// array now also carries "apollo", a comp link for specific people rather than a role agent
+// meant to be on a menu, and a picker that mapped over INVITE_TYPES directly would put it on
+// this one right next to CFO and Law. Adding a role agent here is still one line; it is just no
+// longer automatic.
+//
 // Labels, descriptions and icons match config/navigation.ts's AGENTS where that agent has a
 // public page, so the same role reads the same way everywhere. Marketing has no AGENTS row (its
 // public page was deleted, David's call - see the note there), so its copy is written fresh here,
 // in the same voice, from config/agent-types.ts's fuller description.
-const INVITE_CARDS: NavItem[] = INVITE_TYPES.map((id): NavItem => {
-  switch (id) {
-    case "ceo":
-      return { label: "The CEO Agent", agentTypeId: "ceo", Icon: Briefcase, to: "/agent-invite/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting.", cta: "Start →" };
-    case "cfo":
-      return { label: "The CFO Agent", agentTypeId: "cfo", Icon: Wallet, to: "/agent-invite/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close.", cta: "Start →" };
-    case "sales":
-      return { label: "The Sales Agent", agentTypeId: "sales", Icon: TrendingUp, to: "/agent-invite/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving.", cta: "Start →" };
-    case "marketing":
-      return { label: "The Marketing Agent", agentTypeId: "marketing", Icon: Megaphone, to: "/agent-invite/marketing", description: "On-brand copy for email, social, and ads, a content calendar that keeps moving, and recaps with what to try next.", cta: "Start →" };
-    case "recruiting":
-      return { label: "The Recruiting Agent", agentTypeId: "recruiting", Icon: UserSearch, to: "/agent-invite/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding.", cta: "Start →" };
-    case "legal":
-      return { label: "The Law Agent", agentTypeId: "legal", Icon: Scale, to: "/agent-invite/legal", description: "Draft from your templates, redline what comes in, and never let a renewal date slip.", cta: "Start →" };
-    case "medical":
-      return { label: "The Medical Agent", agentTypeId: "medical", Icon: Stethoscope, to: "/agent-invite/medical", description: "Keep the schedule full, chase referrals and authorizations, and answer what a front desk answers all day.", cta: "Start →" };
-    case "realestate":
-      return { label: "The Real Estate Agent", agentTypeId: "realestate", Icon: Home, to: "/agent-invite/realestate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you.", cta: "Start →" };
-  }
-});
+const INVITE_CARDS: NavItem[] = [
+  { label: "The CEO Agent", agentTypeId: "ceo", Icon: Briefcase, to: "/agent-invite/ceo", description: "Pull reports, track KPIs, and prep board decks, brief you before every meeting.", cta: "Start →" },
+  { label: "The CFO Agent", agentTypeId: "cfo", Icon: Wallet, to: "/agent-invite/cfo", description: "Categorize expenses, reconcile payouts, and chase invoices, prep reports for close.", cta: "Start →" },
+  { label: "The Sales Agent", agentTypeId: "sales", Icon: TrendingUp, to: "/agent-invite/sales", description: "Qualify leads, draft follow-ups, and book meetings, keep the pipeline moving.", cta: "Start →" },
+  { label: "The Marketing Agent", agentTypeId: "marketing", Icon: Megaphone, to: "/agent-invite/marketing", description: "On-brand copy for email, social, and ads, a content calendar that keeps moving, and recaps with what to try next.", cta: "Start →" },
+  { label: "The Recruiting Agent", agentTypeId: "recruiting", Icon: UserSearch, to: "/agent-invite/recruiting", description: "Screen candidates, schedule interviews, and send offers, run onboarding.", cta: "Start →" },
+  { label: "The Law Agent", agentTypeId: "legal", Icon: Scale, to: "/agent-invite/legal", description: "Draft from your templates, redline what comes in, and never let a renewal date slip.", cta: "Start →" },
+  { label: "The Medical Agent", agentTypeId: "medical", Icon: Stethoscope, to: "/agent-invite/medical", description: "Keep the schedule full, chase referrals and authorizations, and answer what a front desk answers all day.", cta: "Start →" },
+  { label: "The Real Estate Agent", agentTypeId: "realestate", Icon: Home, to: "/agent-invite/realestate", description: "Lead follow-up in minutes, showings scheduled, and listings drafted for you.", cta: "Start →" },
+];
 
 export default function AgentInvitePicker() {
   return (
