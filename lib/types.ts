@@ -281,6 +281,13 @@ export interface IntegrationToolkit {
   authSchemes: string[];
 }
 
+// One app on the public /integrations directory - just enough to draw a card.
+export interface CatalogApp {
+  slug: string;
+  name: string;
+  description: string;
+}
+
 // `nextCursor`/`totalItems` are paging metadata; the tab only renders the first page of `items`.
 export interface IntegrationToolkitsResult {
   items: IntegrationToolkit[];

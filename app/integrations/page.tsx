@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
 import { composioLogoUrl } from "@/lib/integration-catalog";
+import { getPublicIntegrationCatalog } from "@/lib/public-integration-catalog";
 import { OG_IMAGES } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import {
@@ -21,7 +22,11 @@ import {
 // (lib/integration-catalog.ts), no Connect button and no connected/not-connected state, because
 // there is no agent here to connect anything to yet. That is what the CTAs below are for.
 
-const HERO_LOGOS = ["gmail", "googlecalendar", "outlook", "salesforce", "hubspot", "notion", "zoom"];
+// The full catalog is dozens of paged API calls, so it is fetched on the server and cached for an
+// hour rather than on every visit.
+export const revalidate = 3600;
+
+const HERO_LOGOS =["gmail", "googlecalendar", "outlook", "salesforce", "hubspot", "notion", "zoom"];
 
 export const metadata: Metadata = {
   title: { absolute: "Integrations | Apollo[Claw]" },
@@ -36,7 +41,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function IntegrationsPage() {
+export default async function IntegrationsPage() {
+  const catalog = await getPublicIntegrationCatalog();
   return (
     <>
       <section style={{ background: NAVY }} className="relative overflow-hidden">
@@ -83,7 +89,7 @@ export default function IntegrationsPage() {
       </section>
 
       <section style={{ background: TAN }} className="px-5 py-16 md:px-8 md:py-20">
-        <IntegrationsDirectory />
+        <IntegrationsDirectory catalog={catalog} />
       </section>
 
       {/* NO CLOSING CTA HERE, same reasoning as /ai-agents: components/layout/PreFooter.tsx
