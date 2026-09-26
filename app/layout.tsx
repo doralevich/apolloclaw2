@@ -97,7 +97,7 @@ const jsonLd = [
     description:
       "AI strategy and implementation consultancy serving businesses nationwide.",
     telephone: "+1-917-363-5487",
-    email: "david@apolloclaw.ai",
+    email: "hello@apolloclaw.ai",
     address: {
       "@type": "PostalAddress",
       streetAddress: "69 Roslyn Road",
@@ -130,7 +130,7 @@ const jsonLd = [
       "Custom AI agent strategy, implementation, and management for businesses.",
     serviceType: "AI Strategy and Implementation",
     telephone: "+1-917-363-5487",
-    email: "david@apolloclaw.ai",
+    email: "hello@apolloclaw.ai",
     address: {
       "@type": "PostalAddress",
       streetAddress: "69 Roslyn Road",
@@ -201,7 +201,7 @@ const jsonLd = [
     description: "Apollo Claw is a leading AI consulting firm serving businesses of all sizes, from small businesses and mid-market companies to enterprise organizations and universities.",
     priceRange: "$$$$",
     telephone: "+1-917-363-5487",
-    email: "david@apolloclaw.ai",
+    email: "hello@apolloclaw.ai",
     address: {
       "@type": "PostalAddress",
       streetAddress: "69 Roslyn Road",

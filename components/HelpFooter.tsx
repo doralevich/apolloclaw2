@@ -16,7 +16,7 @@ import { CalendarCheck, ExternalLink, Mail } from "lucide-react";
 // carries it.
 
 const CALENDLY = "https://cal.com/therealdaveo/dbdo-consultation";
-const SUPPORT_EMAIL = "david@apolloclaw.ai";
+const SUPPORT_EMAIL = "hello@apolloclaw.ai";
 
 export function HelpFooter({ className = "" }: { className?: string }) {
   return (

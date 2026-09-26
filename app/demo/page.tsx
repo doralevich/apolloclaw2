@@ -50,10 +50,10 @@ export default function DemoPage() {
         Donna is AI, not a person, and she will say so if you ask. She answers about our work and
         nothing else. If you would rather talk to David, he is at{" "}
         <a
-          href="mailto:david@apolloclaw.ai"
+          href="mailto:hello@apolloclaw.ai"
           className="font-medium text-[#E8342A] underline underline-offset-2"
         >
-          david@apolloclaw.ai
+          hello@apolloclaw.ai
         </a>
         .
       </p>

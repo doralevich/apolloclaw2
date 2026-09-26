@@ -48,10 +48,10 @@ export default function AccessibilityPage() {
             <p className="font-body text-base text-muted-foreground leading-relaxed mt-2">
               We welcome feedback on the accessibility of this site. Please contact us at{" "}
               <a
-                href="mailto:david@apolloclaw.ai"
+                href="mailto:hello@apolloclaw.ai"
                 className="text-primary underline hover:no-underline"
               >
-                david@apolloclaw.ai
+                hello@apolloclaw.ai
               </a>{" "}
               if you experience any barriers.
             </p>

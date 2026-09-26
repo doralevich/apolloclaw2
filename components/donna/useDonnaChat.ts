@@ -66,7 +66,7 @@ async function post(messages: DonnaMessage[], token: string): Promise<Reply> {
     return {
       ok: false,
       capture: false,
-      text: data.error || "Something went wrong. Try reaching us at david@apolloclaw.ai",
+      text: data.error || "Something went wrong. Try reaching us at hello@apolloclaw.ai",
     };
   }
 
@@ -130,7 +130,7 @@ export function useDonnaChat(token: string) {
       } catch {
         setMessages([
           ...history,
-          { role: "assistant", content: "Connection error. Please try again or email david@apolloclaw.ai" },
+          { role: "assistant", content: "Connection error. Please try again or email hello@apolloclaw.ai" },
         ]);
       } finally {
         setLoading(false);

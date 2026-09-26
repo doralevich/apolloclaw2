@@ -89,7 +89,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "Our Privacy Policy explains what we do with personal information more broadly. For anything not answered there, email david@apolloclaw.ai.",
+        text: "Our Privacy Policy explains what we do with personal information more broadly. For anything not answered there, email hello@apolloclaw.ai.",
       },
     ],
   },

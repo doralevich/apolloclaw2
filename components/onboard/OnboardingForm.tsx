@@ -159,13 +159,17 @@ const ROLE_INTAKES: Record<
     coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
   },
   personal: {
-    branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "Your Day", detailsKey: "personalDetails", roleName: "Personal Agent",
+    branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "Your People", detailsKey: "personalDetails", roleName: "Personal Agent",
     coversScope: { owns: "owns_work", win: "first_priority", guard: "never_unattended" },
-    intro: "Before we build your assistant, we need to understand your day and what it may see. Takes about 15 minutes. The more detail, the better the result.",
-    // The deep-dive opens with "What do you do all day?", required, in the person's own words.
-    // The generic page asks "Describe your business" and requires it, which is the same question
-    // asked worse and unanswerable for somebody who does not have one.
-    dropPages: ["whatyoudo"],
+    intro: "Before we build your assistant, we need to get to know you and what it may see. Takes about 15 minutes. The more detail, the better the result.",
+    // "whatyoudo": the deep-dive opens with its own version of that question, in the person's
+    // own words. The generic page asks "Describe your business" and requires it, which is the
+    // same question asked worse and unanswerable for somebody who does not have one.
+    //
+    // "exec": Executive Profile asks "biggest growth bottleneck" and the like - a business
+    // question with no personal equivalent. Left in, it was the single biggest reason this
+    // flow read as Apollo's business questionnaire wearing a personal costume. David's call.
+    dropPages: ["whatyoudo", "exec"],
     personalScale: {
       title: "You and Where You Work",
       subtitle: "Enough context to write as you. If you are not attached to a company, leave it blank.",
@@ -972,7 +976,7 @@ function Shell({ steps, step, children, onBack, canBack, onNext, onSubmit, isLas
       </div>
       <div style={{ borderTop: `1px solid ${BDR}`, padding: "16px 32px", display: "flex", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, color: TXD }}>© {new Date().getFullYear()} Apollo[Claw]</span>
-        <span style={{ fontSize: 12, color: TXD }}>david@apolloclaw.ai</span>
+        <span style={{ fontSize: 12, color: TXD }}>hello@apolloclaw.ai</span>
       </div>
     </div>
     </BrandCtx.Provider>
@@ -1384,7 +1388,7 @@ function FileUpload({ files, onFiles }: { files: File[]; onFiles: (f: File[]) =>
   const add = (list: FileList | null) => {
     if (!list) return;
     const next = [...files, ...Array.from(list)];
-    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 2.5MB. Remove a file, or email larger ones to david@apolloclaw.ai."); return; }
+    if (next.reduce((s, f) => s + f.size, 0) > MAX) { setMsg("Total uploads must be under 2.5MB. Remove a file, or email larger ones to hello@apolloclaw.ai."); return; }
     setMsg(""); onFiles(next);
   };
   return (
@@ -1697,7 +1701,10 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     <Stack key="s2a">
       <SHead stepNum={1} total={0} title={personalScale?.title ?? "Your Business"} subtitle={personalScale?.subtitle ?? "Tell us about the business, or businesses, behind this."} badge="Business" />
       <CompanyRepeater companies={companies} onCompaniesChange={setCompanies} primaryIndex={primaryIndex} onPrimaryChange={setPrimaryIndex} portfolio={portfolio} onPortfolioChange={setPortfolio} hideIndustry={isRoleFlow} companyOptional={!!personalScale} nameLabel={roleIntake?.nameLabel} namePlaceholder={roleIntake?.namePlaceholder} />
+      {/* A website is a business's, and a Personal Agent buyer may not have one to name. */}
+      {!personalScale && (
       <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
+      )}
       {/* Team size, monthly revenue and years in business are questions about a company. Asked of
           somebody buying a Personal Agent for themselves they are unanswerable, and answering them
           about their employer tells the agent nothing it uses. */}
@@ -1718,7 +1725,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       {!personalScale && (
       <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
       )}
+      {/* Redundant with the Personal Agent's own "Who are the people whose messages always
+          matter?" (lib/personalIntake.ts's People page), asked in a voice that actually fits
+          somebody who may have no business at all. */}
+      {!personalScale && (
       <KeyPeople people={keyPeople} onChange={setKeyPeople} />
+      )}
     </Stack>
     ) },
     { key: "whatyoudo", label: "What You Do", node: (
