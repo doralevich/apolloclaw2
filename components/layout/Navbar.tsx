@@ -7,9 +7,9 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Company · Security · Industries ·
-// Agents · Case Studies · Integrations · Contact. Industries (which business you run) and Agents
-// (which one you're hiring) are two separate triggers, briefly merged into one two-column
+// Site IA, current top-level order per David's direct call: Company · Agents · Industries ·
+// Case Studies · Security · Integrations · Contact. Industries (which business you run) and
+// Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
 // dropdown (About, Security); About's content moved to /company (next.config.ts redirects the
 // old URL) and Company and Security are now their own plain top-level links, no dropdown.
@@ -232,19 +232,6 @@ export default function Navbar() {
       active: (p) => p.startsWith("/company"),
     },
     {
-      kind: "link",
-      label: "Security",
-      to: "/security",
-      active: (p) => p.startsWith("/security"),
-    },
-    {
-      kind: "group",
-      label: "Industries",
-      active: (p) => p.startsWith("/industries") || p === "/ai-consulting-education",
-      mobileItems: INDUSTRIES,
-      render: () => tilePanel(INDUSTRIES, pathname, 640),
-    },
-    {
       kind: "group",
       label: "Agents",
       // The only group with a page behind it: the fleet (app/ai-agents/page.tsx).
@@ -259,10 +246,23 @@ export default function Navbar() {
       render: () => tilePanel(AGENTS, pathname, 560),
     },
     {
+      kind: "group",
+      label: "Industries",
+      active: (p) => p.startsWith("/industries") || p === "/ai-consulting-education",
+      mobileItems: INDUSTRIES,
+      render: () => tilePanel(INDUSTRIES, pathname, 640),
+    },
+    {
       kind: "link",
       label: "Case Studies",
       to: "/case-studies",
       active: (p) => p.startsWith("/case-studies"),
+    },
+    {
+      kind: "link",
+      label: "Security",
+      to: "/security",
+      active: (p) => p.startsWith("/security"),
     },
     {
       kind: "link",
