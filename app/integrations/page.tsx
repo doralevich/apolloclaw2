@@ -1,0 +1,80 @@
+import type { Metadata } from "next";
+import { IntegrationsDirectory } from "@/components/integrations/IntegrationsDirectory";
+import { INTEGRATION_CATEGORIES } from "@/lib/integration-catalog";
+import { OG_IMAGES } from "@/lib/seo";
+import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import {
+  NAVY,
+  PAPER,
+  PAPER_MUTED,
+  PrimaryButton,
+  RED,
+  SecondaryButton,
+  TAN,
+  TextureBackground,
+} from "@/components/home/ui";
+
+// The public integrations directory, David's call: "similar to our connections, showing all
+// of the connections we have," styled like a standard app-store directory page (his reference:
+// lindy.ai/integrations). This is the read-only, no-login twin of the real Connections tab
+// (components/IntegrationsView.tsx) inside the dashboard - same curated catalog
+// (lib/integration-catalog.ts), no Connect button and no connected/not-connected state, because
+// there is no agent here to connect anything to yet. That is what the CTAs below are for.
+const TOTAL = INTEGRATION_CATEGORIES.reduce((n, c) => n + c.toolkits.length, 0);
+
+export const metadata: Metadata = {
+  title: { absolute: "Integrations | Apollo[Claw]" },
+  description: `Every app your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Slack, Salesforce, and ${TOTAL}+ more.`,
+  alternates: { canonical: "https://apolloclaw.ai/integrations" },
+  openGraph: {
+    images: OG_IMAGES,
+    title: "Integrations | Apollo[Claw]",
+    description: `Every app your agent can connect to and act in - ${TOTAL}+ tools across mail, files, calendars, CRM, and more.`,
+    url: "https://apolloclaw.ai/integrations",
+    type: "website",
+  },
+};
+
+export default function IntegrationsPage() {
+  return (
+    <>
+      <section style={{ background: NAVY }} className="relative overflow-hidden">
+        <TextureBackground />
+        <div className="container relative z-20 mx-auto max-w-7xl px-5 py-16 text-center md:px-8 md:py-20">
+          <span
+            className="font-mono mb-5 inline-block text-[12px] font-bold uppercase tracking-[0.16em]"
+            style={{ color: RED }}
+          >
+            Integrations
+          </span>
+          <h1
+            className="font-heading mx-auto text-[clamp(1.875rem,3.4vw,3rem)] font-extrabold leading-[1.12] tracking-tight"
+            style={{ color: PAPER, textWrap: "balance", maxWidth: 780 }}
+          >
+            Connect Every Tool You Already Use
+          </h1>
+          <p
+            className="font-body mx-auto mt-6 text-[1.125rem] leading-[1.65]"
+            style={{ color: PAPER_MUTED, maxWidth: 620 }}
+          >
+            {TOTAL}+ apps your agent can read, write to, and act in - mail, calendars, files,
+            CRM, and more. Search below, or connect them for real once your agent is built.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <PrimaryButton href={SCHEDULE_CONSULT_URL} external>
+              Book a Discovery Call
+            </PrimaryButton>
+            <SecondaryButton href="/how-it-works">How It Works</SecondaryButton>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: TAN }} className="px-5 py-16 md:px-8 md:py-20">
+        <IntegrationsDirectory />
+      </section>
+
+      {/* NO CLOSING CTA HERE, same reasoning as /ai-agents: components/layout/PreFooter.tsx
+          already appends one sitewide. */}
+    </>
+  );
+}

@@ -46,6 +46,7 @@ const consultingLinks = [
 
 const resourceLinks = [
   { label: "AI 101", to: "/ai-101" },
+  { label: "Integrations", to: "/integrations" },
   { label: "FAQ", to: "/faq" },
   { label: "Security", to: "/security" },
   { label: "Contact", to: "/contact" },
