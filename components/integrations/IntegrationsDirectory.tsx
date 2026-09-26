@@ -1,124 +1,151 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
-import { composioLogoUrl, INTEGRATION_CATEGORIES, type IntegrationCategory } from "@/lib/integration-catalog";
-import type { IntegrationToolkit } from "@/lib/types";
+import { composioLogoUrl, INTEGRATION_CATEGORIES } from "@/lib/integration-catalog";
+import type { CatalogApp } from "@/lib/types";
 import { RED, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
 
 // The public directory, laid out the way David's reference (lindy.ai/integrations) is: a category
-// sidebar on the left, one flat grid of cards on the right, each card a small logo chip beside the
-// app's name and a one-line description. Read-only - no Connect button and no connected state,
+// sidebar on the left, one paginated grid of cards on the right, each card a small logo chip beside
+// the app's name and a one-line description. Read-only - no Connect button and no connected state,
 // since there is no agent on this page to connect anything to.
 //
-// EXTRA_BY_CATEGORY below are real toolkit slugs (their logos already render live elsewhere in the
-// app - components/GlobeSection.tsx, components/home/LogoStrip.tsx) that are not in
-// lib/integration-catalog.ts's curated list. That file is the source of truth for the real in-app
-// Connections tab and deliberately excludes chat apps (see its own note). This page's list is
-// allowed to diverge: it is a "look how much we cover" directory, not a browse-and-connect
-// surface. Titles that match an existing category merge into it; the rest become new categories.
-function extra(slug: string, name: string, description: string): IntegrationToolkit {
-  return {
-    slug,
-    name,
-    description,
-    logo: composioLogoUrl(slug),
-    enabled: true,
-    isNoAuth: false,
-    authSchemes: ["OAUTH2"],
-  };
+// Two sources. The curated shelves (lib/integration-catalog.ts, the same list the dashboard's
+// Connections tab leads with, plus EXTRA_BY_CATEGORY below) give the sidebar its categories. The
+// full platform catalog, fetched server-side by lib/public-integration-catalog.ts, supplies every
+// other app; it has no categories of its own, so those apps sit under "More apps". If the full
+// catalog can't be read, the page still works on the curated list alone.
+
+type Category = { title: string; apps: CatalogApp[] };
+
+function app(slug: string, name: string, description: string): CatalogApp {
+  return { slug, name, description };
 }
 
-const EXTRA_BY_CATEGORY: IntegrationCategory[] = [
+// Real toolkit slugs (their logos already render elsewhere on the site - components/GlobeSection.tsx,
+// components/home/LogoStrip.tsx) that the curated catalog doesn't carry. Titles matching a curated
+// category merge into it; the rest become categories of their own.
+const EXTRA_BY_CATEGORY: Category[] = [
   {
     title: "Sales & marketing",
-    toolkits: [
-      extra("mailchimp", "Mailchimp", "Mailchimp sends email campaigns and manages audiences."),
-      extra("klaviyo", "Klaviyo", "Klaviyo powers email and SMS marketing for ecommerce."),
+    apps: [
+      app("mailchimp", "Mailchimp", "Mailchimp sends email campaigns and manages audiences."),
+      app("klaviyo", "Klaviyo", "Klaviyo powers email and SMS marketing for ecommerce."),
     ],
   },
-  {
-    title: "Design & code",
-    toolkits: [extra("bitbucket", "Bitbucket", "Bitbucket hosts Git repositories and pull requests.")],
-  },
+  { title: "Design & code", apps: [app("bitbucket", "Bitbucket", "Bitbucket hosts Git repositories and pull requests.")] },
   {
     title: "Payments & commerce",
-    toolkits: [
-      extra("stripe", "Stripe", "Stripe processes payments and manages subscriptions."),
-      extra("shopify", "Shopify", "Shopify runs online stores and order management."),
-      extra("xero", "Xero", "Xero handles accounting, invoicing, and bookkeeping."),
-      extra("brex", "Brex", "Brex manages corporate cards and business spend."),
+    apps: [
+      app("stripe", "Stripe", "Stripe processes payments and manages subscriptions."),
+      app("shopify", "Shopify", "Shopify runs online stores and order management."),
+      app("xero", "Xero", "Xero handles accounting, invoicing, and bookkeeping."),
+      app("brex", "Brex", "Brex manages corporate cards and business spend."),
     ],
   },
   {
     title: "Support",
-    toolkits: [
-      extra("zendesk", "Zendesk", "Zendesk manages customer support tickets and help desks."),
-      extra("intercom", "Intercom", "Intercom is a customer messaging and support platform."),
+    apps: [
+      app("zendesk", "Zendesk", "Zendesk manages customer support tickets and help desks."),
+      app("intercom", "Intercom", "Intercom is a customer messaging and support platform."),
     ],
   },
   {
     title: "Monitoring & analytics",
-    toolkits: [
-      extra("sentry", "Sentry", "Sentry monitors errors and application performance."),
-      extra("posthog", "PostHog", "PostHog tracks product analytics and feature flags."),
-      extra("datadog", "Datadog", "Datadog monitors infrastructure, logs, and performance."),
+    apps: [
+      app("sentry", "Sentry", "Sentry monitors errors and application performance."),
+      app("posthog", "PostHog", "PostHog tracks product analytics and feature flags."),
+      app("datadog", "Datadog", "Datadog monitors infrastructure, logs, and performance."),
     ],
   },
 ];
 
-const ALL_CATEGORIES: IntegrationCategory[] = (() => {
-  const merged = INTEGRATION_CATEGORIES.map((cat) => ({ ...cat, toolkits: [...cat.toolkits] }));
-  for (const extraCat of EXTRA_BY_CATEGORY) {
-    const existing = merged.find((c) => c.title === extraCat.title);
-    if (existing) existing.toolkits.push(...extraCat.toolkits);
-    else merged.push(extraCat);
+const CURATED: Category[] = (() => {
+  const merged: Category[] = INTEGRATION_CATEGORIES.map((c) => ({
+    title: c.title,
+    apps: c.toolkits.map((t) => app(t.slug, t.name, t.description ?? "")),
+  }));
+  for (const extra of EXTRA_BY_CATEGORY) {
+    const existing = merged.find((c) => c.title === extra.title);
+    if (existing) existing.apps.push(...extra.apps);
+    else merged.push({ title: extra.title, apps: [...extra.apps] });
   }
   return merged;
 })();
 
-export const ALL_TOOLKITS: IntegrationToolkit[] = ALL_CATEGORIES.flatMap((c) => c.toolkits);
-
 const ALL = "All";
+const MORE = "More apps";
+const PER_PAGE = 60;
 
-function matchesQuery(t: IntegrationToolkit, q: string): boolean {
-  const needle = q.toLowerCase().replace(/[\s_]+/g, "");
-  return (
-    t.name.toLowerCase().replace(/[\s_]+/g, "").includes(needle) ||
-    t.slug.toLowerCase().replace(/[\s_]+/g, "").includes(needle) ||
-    (t.description ?? "").toLowerCase().replace(/[\s_]+/g, "").includes(needle)
-  );
+function normalize(s: string) {
+  return s.toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+function matchesQuery(a: CatalogApp, needle: string): boolean {
+  return normalize(a.name).includes(needle) || normalize(a.slug).includes(needle) || normalize(a.description).includes(needle);
+}
+
+// Page numbers with ellipses: always the first and last page, plus a window around the current.
+function pageList(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = new Set([1, total, current - 1, current, current + 1]);
+  if (current <= 4) [2, 3, 4, 5].forEach((p) => pages.add(p));
+  if (current >= total - 3) [total - 4, total - 3, total - 2, total - 1].forEach((p) => pages.add(p));
+  const sorted = [...pages].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  const out: (number | "…")[] = [];
+  sorted.forEach((p, i) => {
+    if (i > 0 && p - sorted[i - 1] > 1) out.push("…");
+    out.push(p);
+  });
+  return out;
 }
 
 const CARD_BORDER = "rgba(11,23,41,0.12)";
 const INK = TAN_INK;
 const INK_MUTED = TAN_INK_MUTED;
 
-export function IntegrationsDirectory() {
+export function IntegrationsDirectory({ catalog }: { catalog: CatalogApp[] | null }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(ALL);
-  const q = query.trim();
+  const [page, setPage] = useState(1);
+  const topRef = useRef<HTMLDivElement>(null);
 
-  // A search spans every category, so the sidebar selection steps aside while one is typed.
+  const { categories, everything } = useMemo(() => {
+    const curatedSlugs = new Set(CURATED.flatMap((c) => c.apps.map((a) => a.slug)));
+    const more = (catalog ?? []).filter((a) => !curatedSlugs.has(a.slug));
+    const cats = more.length ? [...CURATED, { title: MORE, apps: more }] : CURATED;
+    return { categories: cats, everything: cats.flatMap((c) => c.apps) };
+  }, [catalog]);
+
+  const q = normalize(query.trim());
   const visible = useMemo(() => {
-    if (q) return ALL_TOOLKITS.filter((t) => matchesQuery(t, q));
-    if (category === ALL) return ALL_TOOLKITS;
-    return ALL_CATEGORIES.find((c) => c.title === category)?.toolkits ?? [];
-  }, [q, category]);
+    if (q) return everything.filter((a) => matchesQuery(a, q));
+    if (category === ALL) return everything;
+    return categories.find((c) => c.title === category)?.apps ?? [];
+  }, [q, category, categories, everything]);
 
-  const categories = [ALL, ...ALL_CATEGORIES.map((c) => c.title)];
+  const pageCount = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+  const current = Math.min(page, pageCount);
+  const start = (current - 1) * PER_PAGE;
+  const shown = visible.slice(start, start + PER_PAGE);
+
+  function goTo(p: number) {
+    setPage(p);
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
       <div className="relative mx-auto max-w-xl">
-        <Search
-          className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2"
-          style={{ color: INK_MUTED }}
-        />
+        <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2" style={{ color: INK_MUTED }} />
         <input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           type="text"
           aria-label="Search integrations"
           placeholder="Search apps (e.g. gmail, salesforce, notion)"
@@ -127,7 +154,7 @@ export function IntegrationsDirectory() {
         />
       </div>
 
-      <div className="mt-12 flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
+      <div ref={topRef} className="mt-12 flex scroll-mt-28 flex-col gap-6 md:flex-row md:items-start md:gap-8">
         <nav
           aria-label="Integration categories"
           className="rounded-2xl p-4 md:sticky md:top-24 md:w-56 md:shrink-0"
@@ -137,7 +164,7 @@ export function IntegrationsDirectory() {
             Category
           </p>
           <ul className="flex flex-wrap gap-1.5 md:flex-col md:gap-0.5">
-            {categories.map((c) => {
+            {[ALL, ...categories.map((c) => c.title)].map((c) => {
               const active = !q && c === category;
               return (
                 <li key={c}>
@@ -146,14 +173,11 @@ export function IntegrationsDirectory() {
                     onClick={() => {
                       setCategory(c);
                       setQuery("");
+                      setPage(1);
                     }}
                     aria-pressed={active}
                     className="font-body w-full rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors hover:bg-black/[0.04]"
-                    style={
-                      active
-                        ? { background: "rgba(215,43,43,0.08)", color: RED, fontWeight: 600 }
-                        : { color: INK }
-                    }
+                    style={active ? { background: "rgba(215,43,43,0.08)", color: RED, fontWeight: 600 } : { color: INK }}
                   >
                     {c}
                   </button>
@@ -164,9 +188,10 @@ export function IntegrationsDirectory() {
         </nav>
 
         <div className="min-w-0 flex-1">
-          {q && (
-            <p className="font-body mb-4 text-[13px]" style={{ color: INK_MUTED }}>
-              Results for &ldquo;{q}&rdquo;
+          {visible.length > 0 && (
+            <p className="font-body mb-3 text-right text-[12.5px]" style={{ color: INK_MUTED }}>
+              {q ? <>Results for &ldquo;{query.trim()}&rdquo; &middot; </> : null}
+              Showing {start + 1}&ndash;{start + shown.length} of {visible.length.toLocaleString()}
             </p>
           )}
           {visible.length === 0 ? (
@@ -181,10 +206,32 @@ export function IntegrationsDirectory() {
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {visible.map((t) => (
-                <IntegrationCard key={t.slug} toolkit={t} />
+              {shown.map((a) => (
+                <IntegrationCard key={a.slug} app={a} />
               ))}
             </div>
+          )}
+
+          {pageCount > 1 && (
+            <nav aria-label="Pages" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+              <PageButton label="Previous page" disabled={current === 1} onClick={() => goTo(current - 1)}>
+                <ChevronLeft className="size-4" />
+              </PageButton>
+              {pageList(current, pageCount).map((p, i) =>
+                p === "…" ? (
+                  <span key={`gap-${i}`} className="px-1.5 text-[13px]" style={{ color: INK_MUTED }}>
+                    …
+                  </span>
+                ) : (
+                  <PageButton key={p} label={`Page ${p}`} active={p === current} onClick={() => goTo(p)}>
+                    {p}
+                  </PageButton>
+                )
+              )}
+              <PageButton label="Next page" disabled={current === pageCount} onClick={() => goTo(current + 1)}>
+                <ChevronRight className="size-4" />
+              </PageButton>
+            </nav>
           )}
         </div>
       </div>
@@ -192,7 +239,39 @@ export function IntegrationsDirectory() {
   );
 }
 
-function IntegrationCard({ toolkit: t }: { toolkit: IntegrationToolkit }) {
+function PageButton({
+  children,
+  label,
+  active = false,
+  disabled = false,
+  onClick,
+}: {
+  children: React.ReactNode;
+  label: string;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-current={active ? "page" : undefined}
+      disabled={disabled}
+      onClick={onClick}
+      className="font-body flex h-9 min-w-9 items-center justify-center rounded-lg px-2.5 text-[13px] font-semibold transition-colors disabled:opacity-40 enabled:hover:bg-black/[0.04]"
+      style={
+        active
+          ? { background: RED, color: "#fff", border: `1px solid ${RED}` }
+          : { background: "#fff", color: INK, border: `1px solid ${CARD_BORDER}` }
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function IntegrationCard({ app: a }: { app: CatalogApp }) {
   return (
     <div
       className="flex items-start gap-3 rounded-xl p-4 transition-shadow hover:shadow-[0_4px_16px_rgba(11,23,41,0.08)]"
@@ -203,20 +282,14 @@ function IntegrationCard({ toolkit: t }: { toolkit: IntegrationToolkit }) {
         style={{ border: `1px solid ${CARD_BORDER}`, background: "#fff" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={t.logo ?? composioLogoUrl(t.slug)}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="size-6 object-contain"
-        />
+        <img src={composioLogoUrl(a.slug)} alt="" loading="lazy" decoding="async" className="size-6 object-contain" />
       </span>
       <div className="min-w-0">
-        <p className="font-body text-[14px] font-semibold leading-tight" style={{ color: INK }}>
-          {t.name}
+        <p className="font-body truncate text-[14px] font-semibold leading-tight" style={{ color: INK }}>
+          {a.name}
         </p>
         <p className="font-body mt-1 line-clamp-2 text-[12.5px] leading-snug" style={{ color: INK_MUTED }}>
-          {t.description}
+          {a.description || `Connect ${a.name} to your agent.`}
         </p>
       </div>
     </div>
