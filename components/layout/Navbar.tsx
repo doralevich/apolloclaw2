@@ -7,10 +7,12 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Company · Industries · Agents ·
-// Case Studies · Blog · Contact. Industries (which business you run) and Agents (which one you want
-// you're hiring) are two separate triggers, briefly merged into one two-column "Solutions"
-// mega-menu and then split back out as too dense. Company is a small dropdown (About, Security).
+// Site IA, current top-level order per David's direct call: Company · Security · Industries ·
+// Agents · Case Studies · Integrations · Contact. Industries (which business you run) and Agents
+// (which one you're hiring) are two separate triggers, briefly merged into one two-column
+// "Solutions" mega-menu and then split back out as too dense. Company used to be a small
+// dropdown (About, Security); About's content moved to /company (next.config.ts redirects the
+// old URL) and Company and Security are now their own plain top-level links, no dropdown.
 //
 // LEGAL, MEDICAL AND INSURANCE ARE IN AGENTS NOW, David's call, and this note used to say the
 // opposite: that they stayed out because each resolved to the same page as its Industries
@@ -54,11 +56,6 @@ const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
 import { AGENTS, INDUSTRIES, externalLinkProps } from "@/config/navigation";
-
-const COMPANY = [
-  { label: "About", to: "/about" },
-  { label: "Security", to: "/security" },
-];
 
 const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
@@ -165,22 +162,6 @@ function panelStyle(minWidth: number): React.CSSProperties {
   };
 }
 
-function simpleLink(item: { label: string; to: string }, pathname: string) {
-  const active = pathname === item.to;
-  return (
-    <Link
-      key={item.to}
-      href={item.to}
-      className="block whitespace-nowrap rounded-lg px-3.5 py-2 text-[12.5px] font-semibold transition-colors"
-      style={{ color: active ? RED : PAPER }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.06)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-    >
-      {item.label}
-    </Link>
-  );
-}
-
 // Industries and Agents are two separate flyouts again (David: "let's do by Industry and
 // By Departments, that's too much, should be separated"). They were briefly merged into one
 // 820px-wide two-column mega-menu, which read as too dense. Industries stays a plain text list
@@ -245,15 +226,16 @@ export default function Navbar() {
   // the end of the row, which is where people look for it.
   const navEntries: NavEntry[] = [
     {
-      kind: "group",
+      kind: "link",
       label: "Company",
-      active: (p) => ["/about", "/security"].some((p2) => p.startsWith(p2)),
-      mobileItems: COMPANY,
-      render: () => (
-        <div className="overflow-hidden rounded-xl" style={panelStyle(180)}>
-          <div className="flex flex-col gap-0.5 p-2">{COMPANY.map((item) => simpleLink(item, pathname))}</div>
-        </div>
-      ),
+      to: "/company",
+      active: (p) => p.startsWith("/company"),
+    },
+    {
+      kind: "link",
+      label: "Security",
+      to: "/security",
+      active: (p) => p.startsWith("/security"),
     },
     {
       kind: "group",
@@ -284,10 +266,9 @@ export default function Navbar() {
     },
     {
       kind: "link",
-      label: "Blog",
-      to: "/blog",
-      // startsWith, not equality, so the underline stays lit while you are reading a post.
-      active: (p) => p.startsWith("/blog"),
+      label: "Integrations",
+      to: "/integrations",
+      active: (p) => p.startsWith("/integrations"),
     },
     {
       kind: "link",

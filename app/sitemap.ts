@@ -41,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/industries/private-equity",        priority: 0.9 },
     { path: "/industries/professional-services", priority: 0.9 },
     { path: "/get-started",  priority: 0.9 },
-    { path: "/about",        priority: 0.8 },
+    { path: "/company",      priority: 0.8 },
     { path: "/faq",          priority: 0.8 },
     { path: "/blog",         priority: 0.8 },
     { path: "/case-studies", priority: 0.8 },

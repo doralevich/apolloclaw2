@@ -10,7 +10,7 @@ const WHITE_MUTED = "rgba(255,255,255,0.72)";
 const WHITE_SUBTLE = "rgba(255,255,255,0.45)";
 
 const navLinks = [
-  { label: "About", to: "/about" },
+  { label: "Company", to: "/company" },
   { label: "What We Do", to: "/what-we-do" },
   { label: "How It Works", to: "/how-it-works" },
   // "Blog", not "Insights". The page was always here under the old label and read as missing,

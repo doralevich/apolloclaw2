@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   description:
     "Apollo[Claw] is an AI consultancy based in Roslyn Heights, NY, serving businesses across NYC, Long Island, and nationwide. Custom AI agents built by an operator, not a vendor.",
   alternates: {
-    canonical: "https://apolloclaw.ai/about",
+    canonical: "https://apolloclaw.ai/company",
   },
   openGraph: {
     images: OG_IMAGES,
     title: "About Apollo[Claw] | AI Consulting Firm in NYC & Long Island",
     description:
       "Apollo[Claw] is an AI consultancy in Roslyn Heights, NY, serving businesses across NYC, Long Island, and nationwide. Custom AI agents connected to your tools, running 24/7.",
-    url: "https://apolloclaw.ai/about",
+    url: "https://apolloclaw.ai/company",
   },
 };
 
@@ -33,7 +33,7 @@ const processSteps = [
   },
 ];
 
-export default function AboutPage() {
+export default function CompanyPage() {
   return (
     <>
       {/* HERO - dark navy */}
