@@ -66,7 +66,7 @@ export default function CompanyPage() {
             pointerEvents: "none",
           }}
         />
-        <div className="container mx-auto px-5 md:px-8 py-24 md:py-32 max-w-5xl relative z-10 text-center">
+        <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 max-w-6xl relative z-10 text-center">
           <span
             className="inline-block font-mono uppercase mb-7"
             style={{
@@ -80,7 +80,7 @@ export default function CompanyPage() {
           <h1
             className="font-display leading-[1.05] tracking-tight"
             style={{
-              fontSize: "clamp(38px, 5.6vw, 72px)",
+              fontSize: "clamp(32px, 4.4vw, 56px)",
               fontWeight: 800,
               color: "#ffffff",
               margin: 0,

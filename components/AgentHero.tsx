@@ -71,13 +71,13 @@ export default function AgentHero({
       />
 
       <div
-        className={`container relative z-10 mx-auto grid items-center gap-10 px-5 py-16 md:px-8 md:py-24 ${
-          hasMascot ? "max-w-6xl md:grid-cols-[1.15fr_0.85fr]" : "max-w-4xl text-center"
+        className={`container relative z-10 mx-auto grid items-center gap-8 px-5 py-10 md:px-8 md:py-14 ${
+          hasMascot ? "max-w-7xl md:grid-cols-[1.3fr_0.7fr]" : "max-w-6xl text-center"
         }`}
       >
         <div className={hasMascot ? "" : "mx-auto"}>
           <div
-            className="font-mono mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em]"
+            className="font-mono mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em]"
             style={{
               color: brand.color,
               border: `1px solid rgba(${brand.colorRgb},0.42)`,
@@ -91,7 +91,7 @@ export default function AgentHero({
           <h1
             className="font-display tracking-tight"
             style={{
-              fontSize: "clamp(36px, 4.6vw, 60px)",
+              fontSize: "clamp(32px, 4vw, 52px)",
               lineHeight: 1.05,
               fontWeight: 800,
               color: "#ffffff",
@@ -108,7 +108,7 @@ export default function AgentHero({
               lineHeight: 1.35,
               fontWeight: 700,
               color: brand.color,
-              margin: "20px 0 0",
+              margin: "14px 0 0",
             }}
           >
             {punch}
@@ -120,8 +120,8 @@ export default function AgentHero({
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              margin: "18px 0 0",
-              maxWidth: 620,
+              margin: "12px 0 0",
+              maxWidth: 760,
               marginInline: hasMascot ? undefined : "auto",
             }}
           >
@@ -129,7 +129,7 @@ export default function AgentHero({
           </p>
 
           <div
-            className={`mt-9 flex flex-wrap gap-3 ${hasMascot ? "" : "justify-center"}`}
+            className={`mt-6 flex flex-wrap gap-3 ${hasMascot ? "" : "justify-center"}`}
           >
             {buildSlug && (
               <a
@@ -175,7 +175,7 @@ export default function AgentHero({
               src={brand.mascot}
               alt=""
               aria-hidden="true"
-              style={{ width: "100%", maxWidth: 330, height: "auto", display: "block" }}
+              style={{ width: "auto", maxWidth: "100%", maxHeight: 320, height: "auto", display: "block" }}
             />
           </div>
         )}

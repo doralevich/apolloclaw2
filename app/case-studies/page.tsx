@@ -114,7 +114,7 @@ export default function CaseStudiesPage() {
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
         <div aria-hidden style={{ position: "absolute", top: "-20%", left: "50%", transform: "translateX(-50%)", width: "70%", height: "120%", background: "radial-gradient(ellipse at center, rgba(215,43,43,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-4xl relative z-10">
+        <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-6xl relative z-10">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Client Results</p>
           <h1 className="font-display leading-[1.05] tracking-tight text-white mb-6" style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 800 }}>
             Real Businesses.<br />Real Results.
