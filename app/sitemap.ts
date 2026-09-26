@@ -55,6 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/security",       priority: 0.6 },
     { path: "/ai-agents/personal-assistant", priority: 0.8 },
     { path: "/accessibility", priority: 0.3 },
+    { path: "/integrations", priority: 0.8 },
     // Both of these are public, indexable pages that were simply never added here.
     { path: "/create-an-agent", priority: 0.8 },
     { path: "/blog/ai-assistant-for-ceo", priority: 0.6 },
