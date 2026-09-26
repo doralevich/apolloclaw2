@@ -1,4 +1,19 @@
 import type { Metadata } from "next";
+import {
+  Ban,
+  Building2,
+  CheckCircle2,
+  Circle,
+  CircleDot,
+  Cloud,
+  GraduationCap,
+  KeyRound,
+  Lock,
+  Plug,
+  Server,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 import { OG_IMAGES } from "@/lib/seo";
@@ -18,8 +33,10 @@ export const metadata: Metadata = {
   },
 };
 
-// Design: sitewide navy <PageHero>, then cream / near-black / red body sections
-// for everything below it, matching the rest of the marketing site.
+// Design: sitewide navy <PageHero>, then cream / white body sections below it, matching the
+// rest of the marketing site. Content grouped into square-ish grid boxes rather than long
+// stacked full-width cards, so IT/procurement readers can scan it rather than read it -
+// David's call after looking at the previous, all-horizontal-bars layout.
 
 const CREAM = "#F2F0EB";
 const WHITE = "#FFFFFF";
@@ -28,7 +45,10 @@ const RED = "#D72B2B";
 const MUTED = "#555555";
 const LABEL = "#888888";
 const BORDER = "rgba(0,0,0,0.08)";
+const GREEN = "#1E8E3E";
+const AMBER = "#B8860B";
 const CALENDLY = "https://cal.com/therealdaveo/dbdo-consultation";
+const AGENT37_TRUST_URL = "https://trust.agent37.com";
 
 function Kicker({ children }: { children: React.ReactNode }) {
   return (
@@ -38,6 +58,25 @@ function Kicker({ children }: { children: React.ReactNode }) {
     >
       {children}
     </span>
+  );
+}
+
+function SectionIntro({ kicker, title, children }: { kicker: string; title: string; children?: React.ReactNode }) {
+  return (
+    <ScrollReveal>
+      <Kicker>{kicker}</Kicker>
+      <h2
+        className="font-display leading-[1.1] tracking-tight"
+        style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
+      >
+        {title}
+      </h2>
+      {children && (
+        <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
+          {children}
+        </p>
+      )}
+    </ScrollReveal>
   );
 }
 
@@ -65,6 +104,129 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
         {title}
       </h2>
       <div style={{ fontSize: 14.5, lineHeight: 1.75, color: MUTED }}>{children}</div>
+    </div>
+  );
+}
+
+// A square-ish tile: icon, short title, short body. Used for the core-principles grid, which
+// used to be five long full-width Cards stacked on top of each other.
+function IconBox({ icon: Icon, title, children }: { icon: LucideIcon; title: string; children: React.ReactNode }) {
+  return (
+    <div
+      className="flex h-full flex-col"
+      style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `3px solid ${RED}`, borderRadius: 10, padding: "24px 22px" }}
+    >
+      <span className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: "rgba(215,43,43,0.08)" }}>
+        <Icon size={18} style={{ color: RED }} />
+      </span>
+      <h3
+        style={{
+          fontFamily: "var(--font-display), Inter, sans-serif",
+          fontSize: 16,
+          fontWeight: 800,
+          color: INK,
+          margin: "0 0 8px",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        {title}
+      </h3>
+      <p style={{ fontSize: 13.5, lineHeight: 1.65, color: MUTED, margin: 0 }}>{children}</p>
+    </div>
+  );
+}
+
+// The two deployment models, side by side as equal-width boxes rather than the two full-width
+// Cards this used to be - "Cloud Hosted / Self Hosted" next to each other, David's call.
+function DeployBox({
+  icon: Icon,
+  eyebrow,
+  title,
+  points,
+  footer,
+}: {
+  icon: LucideIcon;
+  eyebrow: string;
+  title: string;
+  points: string[];
+  footer: React.ReactNode;
+}) {
+  return (
+    <div
+      className="flex h-full flex-col"
+      style={{ background: WHITE, border: `1px solid ${BORDER}`, borderTop: `4px solid ${RED}`, borderRadius: 14, padding: "28px 26px" }}
+    >
+      <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full" style={{ background: "rgba(215,43,43,0.1)" }}>
+        <Icon size={20} style={{ color: RED }} />
+      </span>
+      <p className="font-mono uppercase" style={{ fontSize: 11, letterSpacing: "0.12em", color: RED, fontWeight: 700, margin: "0 0 6px" }}>
+        {eyebrow}
+      </p>
+      <h3
+        style={{
+          fontFamily: "var(--font-display), Inter, sans-serif",
+          fontSize: 19,
+          fontWeight: 800,
+          color: INK,
+          margin: "0 0 16px",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        {title}
+      </h3>
+      <ul className="flex-1 space-y-2.5">
+        {points.map((point) => (
+          <li key={point} className="flex items-start gap-2.5">
+            <CheckCircle2 size={16} style={{ color: RED, flexShrink: 0, marginTop: 2 }} />
+            <span style={{ fontSize: 13.5, lineHeight: 1.6, color: MUTED }}>{point}</span>
+          </li>
+        ))}
+      </ul>
+      <p style={{ fontSize: 12.5, lineHeight: 1.6, color: LABEL, marginTop: 18, paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
+        {footer}
+      </p>
+    </div>
+  );
+}
+
+function StatusIcon({ done }: { done: boolean | "partial" }) {
+  if (done === true) return <CheckCircle2 size={16} style={{ color: GREEN, flexShrink: 0 }} />;
+  if (done === "partial") return <CircleDot size={16} style={{ color: AMBER, flexShrink: 0 }} />;
+  return <Circle size={16} style={{ color: LABEL, flexShrink: 0 }} />;
+}
+
+// A checkbox-style chip: status icon + label, no explanatory paragraph. The vendor-readiness
+// section used to spell out a note under every item; this is the same information as an
+// actual checklist reads, which is what IT reviewers scan for first.
+function CheckChip({ label, done, bg = CREAM }: { label: string; done: boolean | "partial"; bg?: string }) {
+  return (
+    <div className="flex items-center gap-2.5" style={{ background: bg, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "12px 14px" }}>
+      <StatusIcon done={done} />
+      <span style={{ fontSize: 13, color: INK, fontWeight: 500, lineHeight: 1.4 }}>{label}</span>
+    </div>
+  );
+}
+
+// A slightly larger square box for compliance frameworks, which each need one short line of
+// context a bare checkbox can't carry (who attests, and where the report lives).
+function ComplianceBox({ label, done, note, href }: { label: string; done: boolean | "partial"; note: string; href?: string }) {
+  return (
+    <div className="flex h-full flex-col gap-2" style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 10, padding: "18px 20px" }}>
+      <div className="flex items-center gap-2">
+        <StatusIcon done={done} />
+        <span style={{ fontSize: 14, fontWeight: 700, color: INK }}>{label}</span>
+      </div>
+      <p style={{ fontSize: 12.5, lineHeight: 1.55, color: MUTED, margin: 0 }}>
+        {note}
+        {href && (
+          <>
+            {" "}
+            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: RED, fontWeight: 600 }}>
+              trust.agent37.com &#8599;
+            </a>
+          </>
+        )}
+      </p>
     </div>
   );
 }
@@ -108,23 +270,6 @@ function Button({
   );
 }
 
-function ReadinessMark({ item }: { item: { label: string; done: boolean | "partial"; note: string } }) {
-  const color = item.done === true ? "#1E8E3E" : item.done === "partial" ? "#B8860B" : LABEL;
-  const mark = item.done === true ? "✓" : item.done === "partial" ? "◑" : "○";
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-      <span style={{ color, fontWeight: 800, fontSize: 15, lineHeight: 1.6, flexShrink: 0, width: 16 }}>
-        {mark}
-      </span>
-      <span>
-        <strong style={{ color: INK, fontSize: 14.5 }}>{item.label}</strong>
-        <br />
-        <span style={{ fontSize: 13, color: MUTED }}>{item.note}</span>
-      </span>
-    </div>
-  );
-}
-
 const INFRA = [
   { name: "Vercel", role: "Application hosting and delivery" },
   { name: "Supabase", role: "Database, authentication, and storage" },
@@ -149,47 +294,23 @@ const POLICIES = [
 
 // Vendor-readiness checklist, the same shape IT and procurement teams see in our vendor
 // security packet, just surfaced directly on the page instead of gated behind a request.
-const READINESS: { label: string; done: boolean | "partial"; note: string }[] = [
-  { label: "Written security policies", done: true, note: "12 formal policies covering InfoSec, access control, incident response, data classification, risk management, and more" },
-  { label: "Incident response plan", done: true, note: "Documented, with a breach-notification commitment" },
-  { label: "Data classification policy", done: true, note: "Formal data classification framework in place" },
-  { label: "Data export & deletion", done: "partial", note: "Deletion on request today, self-service export in progress" },
-  { label: "Encryption in transit and at rest", done: true, note: "TLS 1.3, AES-256, keys held outside the data they protect" },
-  { label: "Per-user data isolation", done: true, note: "Row-level security, verified on every table" },
-  { label: "Application hardening", done: "partial", note: "Rate limiting on the assistant endpoint; security headers and CSP in progress" },
-  { label: "Payment security", done: true, note: "Stripe, PCI DSS SAQ-A scope, card data never touches our systems" },
-  { label: "MFA on every admin account", done: true, note: "Plus an enforced second factor before privileged actions" },
-  { label: "Dependency & secret scanning", done: true, note: "Automated, on every code change" },
-  { label: "Audit logging", done: "partial", note: "Platform-level logging in place, application audit trail in progress" },
-  { label: "Cookie consent banner", done: false, note: "In progress, ask for current status" },
-  { label: "Published privacy policy", done: false, note: "In progress, available on request in the meantime" },
-  { label: "HECVAT responses (education)", done: true, note: "Pre-filled and ready to submit" },
-  { label: "FERPA data-processing agreement", done: true, note: "Available for education clients" },
-  { label: "SOC 2", done: "partial", note: "In progress, audit report available on request" },
-  { label: "Third-party penetration test", done: false, note: "On our roadmap, ask for current status" },
-];
-
-const COMPLIANCE = [
-  {
-    label: "Privacy (GDPR)",
-    body: "We use Google Analytics for aggregate traffic measurement and never sell or share your data. A cookie consent banner and a published privacy policy are in progress. Data deletion is available on request today.",
-  },
-  {
-    label: "Payments (PCI DSS)",
-    body: "All card data is handled by Stripe under PCI DSS and never reaches our systems.",
-  },
-  {
-    label: "SOC 2",
-    body: "Apollo[Claw] is SOC 2 Type I compliant, with an audit report available on request. SOC 2 Type II is on track for completion by the end of September 2026.",
-  },
-  {
-    label: "Education clients (FERPA / HECVAT)",
-    body: "For universities and student-facing programs, Apollo[Claw] is FERPA-aware and will execute a data-processing agreement, with completed HECVAT responses available.",
-  },
-  {
-    label: "Documentation on request",
-    body: "Written security policies, a data-processing agreement, and a vendor security packet are available to IT and procurement teams.",
-  },
+const READINESS: { label: string; done: boolean | "partial" }[] = [
+  { label: "Written security policies (12, InfoSec to vendor management)", done: true },
+  { label: "Incident response plan + breach-notification commitment", done: true },
+  { label: "Data deletion (written runbook) + export on request", done: true },
+  { label: "Encryption in transit and at rest, on both deployment layers", done: true },
+  { label: "Per-user data isolation (Postgres RLS) — verified live", done: true },
+  { label: "Security headers, CSP, and per-IP rate limiting", done: true },
+  { label: "Payment security — Stripe, PCI DSS SAQ-A scope", done: true },
+  { label: "MFA on every admin and infrastructure account", done: true },
+  { label: "Enforced in-app admin second factor (TOTP / AAL2 step-up)", done: true },
+  { label: "Secrets management + automated dependency & secret scanning", done: true },
+  { label: "Audit logging of sensitive admin actions", done: true },
+  { label: "Published privacy policy + consent-gated analytics", done: true },
+  { label: "HECVAT questionnaire — pre-filled, ready to submit", done: true },
+  { label: "FERPA data-processing agreement, for education clients", done: true },
+  { label: "Apollo[Claw]'s own SOC 2 attestation", done: "partial" },
+  { label: "Third-party penetration test", done: false },
 ];
 
 export default function SecurityPage() {
@@ -197,163 +318,123 @@ export default function SecurityPage() {
     <>
       <PageHero
         label="Security & Privacy"
-        title="Your Data"
-        titleAccent="Stays Yours"
+        title="Security"
+        titleAccent="You Can Verify"
         description="Enterprise-grade protection, in plain language. Here is exactly how we protect your business."
       />
 
-      {/* DEPLOYMENT MODELS - the two ways an agent actually runs, cream bg. First section after
-          the hero, on purpose: this is the concrete, specific answer, and it belongs before the
-          general principles below restate the same posture in policy language. */}
+      {/* DEPLOYMENT MODELS - the two ways an agent actually runs, cream bg, side by side.
+          First section after the hero, on purpose: this is the concrete, specific answer, and
+          it belongs before the general principles below restate the same posture in policy
+          language. */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <ScrollReveal>
-            <Kicker>[ Deployment ]</Kicker>
-            <h2
-              className="font-display leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
-            >
-              How Your Agent Actually Runs
-            </h2>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
-              Every Apollo[Claw] agent lands on one of two infrastructures. Which one is a decision
-              you make at setup, not a black box you have to take our word for.
-            </p>
-          </ScrollReveal>
-          <div className="space-y-6">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+          <SectionIntro kicker="[ Deployment ]" title="How Your Agent Actually Runs">
+            Every Apollo[Claw] agent lands on one of two infrastructures. Which one is a decision
+            you make at setup, not a black box you have to take our word for.
+          </SectionIntro>
+          <div className="grid gap-6 md:grid-cols-2">
             <ScrollReveal delay={0}>
-              <Card title="Cloud-Hosted: Your Own Dedicated VPS">
-                Every self-serve agent gets its own virtual private server, provisioned for you
-                alone, never a shared container sitting next to another customer&apos;s agent. Your
-                files, memory, and connected credentials live on that one instance and nowhere
-                else.
-                <br />
-                <br />
-                Canceling does not mean instant deletion. We stop your VPS immediately, hold it
-                through a retention window in case you change your mind, then destroy the instance
-                for good once that window closes. You reach your agent over encrypted connections,
-                from the web, WhatsApp, Telegram, or Slack.
-              </Card>
+              <DeployBox
+                icon={Cloud}
+                eyebrow="Cloud-Hosted"
+                title="Your Own Dedicated VPS"
+                points={[
+                  "One VPS per agent, provisioned by Agent37 — never shared, multi-tenant compute",
+                  "Full-volume LUKS2 disk encryption",
+                  "Key-based SSH only; password authentication disabled",
+                  "Firewall restricts inbound traffic to required ports only",
+                  "Public-facing only — webhooks and hosted assets. No client credentials live here",
+                  "Canceling stops the VPS first — nothing is destroyed until the retention window closes",
+                ]}
+                footer={
+                  <>
+                    Agent37, the platform behind this layer, is ISO 27001-certified at the runtime
+                    layer, with a SOC 2 Type I report available on request —{" "}
+                    <a href={AGENT37_TRUST_URL} target="_blank" rel="noopener noreferrer" style={{ color: INK, fontWeight: 700 }}>
+                      trust.agent37.com &#8599;
+                    </a>
+                  </>
+                }
+              />
             </ScrollReveal>
             <ScrollReveal delay={80}>
-              <Card title="Self-Hosted: A Dedicated Mac Mini in Your Building">
-                For work that has to stay on your own network, we build and deploy on a Mac Mini or
-                private server assigned to you and no one else. No software goes on any other
-                machine, and no other client&apos;s data ever touches that box.
-                <br />
-                <br />
-                It needs no inbound access and no VPN: the machine only makes outbound HTTPS
-                connections on port 443, to a fixed, named list of endpoints (the AI model, your
-                messaging channel, and whatever the integration requires) that we hand your IT
-                team before it is ever plugged in. OAuth tokens and credentials are never stored
-                on an external server, and nothing leaves that approved list.
-              </Card>
+              <DeployBox
+                icon={Server}
+                eyebrow="Self-Hosted"
+                title="A Dedicated Mac Mini in Your Building"
+                points={[
+                  "One Mac mini, client-owned, assigned to you and no one else",
+                  "Full-disk encryption — FileVault, AES-128-XTS",
+                  "Key-based SSH only; password authentication disabled",
+                  "Firewall in stealth mode — invisible to network probes",
+                  "Credentials isolated on-device; never transmitted to the cloud",
+                  "No inbound access or VPN — outbound HTTPS only, to a named allowlist",
+                ]}
+                footer="We hold physical access only during setup. After that, the device is entirely yours."
+              />
             </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* CORE PRINCIPLES - 5 cards, white bg */}
+      {/* CORE PRINCIPLES - icon-box grid, white bg */}
       <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <div className="space-y-6">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <ScrollReveal delay={0}>
-              <Card title="Your Data, Your Infrastructure">
-                Apollo[Claw] agents are built on your infrastructure wherever possible. Your data does not
-                pass through servers we own or control unless it is a requirement of a specific integration
-                you have approved.
-              </Card>
+              <IconBox icon={Lock} title="Your Data, Your Infrastructure">
+                Client runtime data lives on your VPS or your Mac mini, never a shared,
+                multi-tenant cloud. See the deployment models above.
+              </IconBox>
             </ScrollReveal>
             <ScrollReveal delay={50}>
-              <Card title="No Data Resale. Ever.">
-                We do not sell, share, or monetize your data. Full stop. Your business information, client
-                data, and operational details belong to you.
-              </Card>
+              <IconBox icon={Ban} title="No Data Resale. Ever.">
+                We do not sell, share, or monetize your data. Full stop. Your business
+                information belongs to you.
+              </IconBox>
             </ScrollReveal>
             <ScrollReveal delay={100}>
-              <Card title="Encrypted in Transit and at Rest">
-                All data in transit is encrypted using TLS 1.3 with HSTS. Data at rest is encrypted using
-                AES-256 where applicable. Credentials and API keys are stored in encrypted vaults using
-                AES-256-GCM, with the key held separately from the data it protects, never in plaintext.
-              </Card>
+              <IconBox icon={KeyRound} title="Encrypted Everywhere">
+                TLS with HSTS in transit. AES-256-GCM, LUKS2, and FileVault at rest, each with
+                its key held apart from the data it protects.
+              </IconBox>
             </ScrollReveal>
             <ScrollReveal delay={150}>
-              <Card title="Access Controls">
-                Apollo[Claw] operates on a least-privilege model. Your agent only has access to the specific
-                tools and data it needs to perform its defined tasks, and access is reviewed when scope
-                changes. Row-level security isolates every account&apos;s data from every other account&apos;s at the
-                database layer. Every administrative and infrastructure account requires multi-factor
-                authentication, with an enforced authenticator-app second factor before any privileged
-                admin action.
-              </Card>
+              <IconBox icon={ShieldCheck} title="Least-Privilege Access">
+                Row-level security isolates every account&apos;s data. MFA plus an enforced
+                second-factor step-up gates every admin action.
+              </IconBox>
             </ScrollReveal>
             <ScrollReveal delay={200}>
-              <Card title="Third-Party Integrations">
-                When your AI agent connects to third-party tools (Gmail, CRMs, calendars), those connections
-                are made using official API protocols with the minimum required permissions. We document
-                every integration and require your explicit approval.
-              </Card>
+              <IconBox icon={Plug} title="Reviewed Integrations">
+                Official APIs, minimum required scopes, documented and approved by you before
+                anything connects.
+              </IconBox>
             </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* GOVERNANCE - cream */}
+      {/* SECURITY POLICIES - cream */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <ScrollReveal>
-            <Card title="Governance & Operational Security">
-              <p style={{ margin: "0 0 16px" }}>
-                The confidentiality, integrity, and availability of your data are not afterthoughts. They
-                are the foundation of every decision we make about architecture, access, and operations.
-                Apollo[Claw] operates under a formal set of written policies covering information security,
-                access control, incident response, data classification, risk management, vendor management,
-                and more.
-              </p>
-              <p style={{ margin: "0 0 16px" }}>
-                Every public-facing endpoint is rate-limited, and every response carries standard security
-                headers and a content-security policy. We maintain an incident-response plan with a
-                breach-notification commitment, log sensitive administrative actions, and continuously scan
-                our code for vulnerabilities and exposed secrets. Where we host or manage components,
-                backups run with point-in-time recovery and are encrypted at rest.
-              </p>
-              <p style={{ margin: 0 }}>
-                Written policies, our vendor security packet, and a data-processing agreement are available
-                to IT and procurement teams on request.
-              </p>
-            </Card>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* SECURITY POLICIES - white */}
-      <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <ScrollReveal>
-            <Kicker>[ Written Policies ]</Kicker>
-            <h2
-              className="font-display leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
-            >
-              Formal Security Policies
-            </h2>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
-              Apollo[Claw] maintains a documented security policy framework. All policies are versioned,
-              reviewed, and available to enterprise clients and procurement teams on request.
-            </p>
-          </ScrollReveal>
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+          <SectionIntro kicker="[ Written Policies ]" title="Formal Security Policies">
+            A documented security policy framework, versioned and reviewed, available to
+            enterprise clients and procurement teams on request.
+          </SectionIntro>
           <div
             style={{
               display: "grid",
               gap: 10,
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
             }}
           >
             {POLICIES.map((policy, i) => (
               <ScrollReveal key={policy} delay={i * 40}>
                 <div
                   style={{
-                    background: CREAM,
+                    background: WHITE,
                     border: `1px solid ${BORDER}`,
                     borderLeft: `3px solid ${RED}`,
                     borderRadius: 6,
@@ -363,7 +444,7 @@ export default function SecurityPage() {
                     gap: 10,
                   }}
                 >
-                  <span style={{ color: RED, fontWeight: 800, fontSize: 13, flexShrink: 0 }}>&#10003;</span>
+                  <CheckCircle2 size={15} style={{ color: RED, flexShrink: 0 }} />
                   <span style={{ fontSize: 13.5, color: INK, fontWeight: 500 }}>{policy}</span>
                 </div>
               </ScrollReveal>
@@ -374,41 +455,24 @@ export default function SecurityPage() {
 
       {/* BUILT ON TRUSTED INFRASTRUCTURE - white, logo row */}
       <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <ScrollReveal>
-            <Kicker>[ Infrastructure ]</Kicker>
-            <h2
-              className="font-display leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
-            >
-              Built on Trusted Infrastructure
-            </h2>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
-              This is the infrastructure behind the Apollo[Claw] dashboard, billing, and account
-              data, not where your agent itself runs — see &ldquo;How Your Agent Actually Runs&rdquo;
-              above for that. Where we do host or manage a component, we build on providers the
-              enterprise already trusts, each with its own mature security program and independent
-              attestations.
-            </p>
-          </ScrollReveal>
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+          <SectionIntro kicker="[ Infrastructure ]" title="Built on Trusted Infrastructure">
+            This is the infrastructure behind the Apollo[Claw] dashboard, billing, and account
+            data, not where your agent itself runs — see &ldquo;How Your Agent Actually
+            Runs&rdquo; above for that. Where we do host or manage a component, we build on
+            providers the enterprise already trusts, each with its own mature security program
+            and independent attestations.
+          </SectionIntro>
           <div
             style={{
               display: "grid",
               gap: 14,
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
             }}
           >
             {INFRA.map((item, i) => (
               <ScrollReveal key={item.name} delay={i * 70}>
-                <div
-                  style={{
-                    background: CREAM,
-                    border: `1px solid ${BORDER}`,
-                    borderRadius: 8,
-                    padding: "18px 20px",
-                    height: "100%",
-                  }}
-                >
+                <div style={{ background: CREAM, border: `1px solid ${BORDER}`, borderRadius: 8, padding: "18px 20px", height: "100%" }}>
                   <p
                     style={{
                       fontFamily: "'IBM Plex Mono', monospace",
@@ -429,55 +493,59 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* COMPLIANCE & PRIVACY - cream */}
+      {/* COMPLIANCE & PRIVACY - cream, square boxes */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <ScrollReveal>
-            <Card title="Compliance & Privacy">
-              <div style={{ display: "grid", gap: 16, marginTop: 4 }}>
-                {COMPLIANCE.map((item) => (
-                  <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <span style={{ color: RED, fontWeight: 800, fontSize: 16, lineHeight: 1.6, flexShrink: 0 }}>
-                      &#8594;
-                    </span>
-                    <span>
-                      <strong style={{ color: INK }}>{item.label}:</strong> {item.body}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </ScrollReveal>
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+          <SectionIntro kicker="[ Compliance ]" title="Compliance Posture">
+            Where we hold a certification directly and where we lean on a sub-processor&apos;s,
+            named plainly rather than blurred together.
+          </SectionIntro>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ScrollReveal delay={0}>
+              <ComplianceBox
+                label="SOC 2"
+                done="partial"
+                note="Agent37, our runtime platform, is undergoing SOC 2 - a Type I report is available on request. Apollo[Claw]'s own attestation is on our roadmap."
+                href={AGENT37_TRUST_URL}
+              />
+            </ScrollReveal>
+            <ScrollReveal delay={50}>
+              <ComplianceBox label="ISO 27001" done={true} note="Agent37 holds ISO 27001 certification at the runtime layer." href={AGENT37_TRUST_URL} />
+            </ScrollReveal>
+            <ScrollReveal delay={100}>
+              <ComplianceBox label="PCI DSS" done={true} note="SAQ-A scope. Card data is handled entirely by Stripe and never touches our systems." />
+            </ScrollReveal>
+            <ScrollReveal delay={150}>
+              <ComplianceBox label="GDPR / CCPA" done={true} note="Published privacy policy, consent-gated analytics, and deletion on request." />
+            </ScrollReveal>
+            <ScrollReveal delay={200}>
+              <ComplianceBox label="FERPA" done={true} note="We act as a school official under the institution's direct control and will execute a data-processing agreement." />
+            </ScrollReveal>
+            <ScrollReveal delay={250}>
+              <ComplianceBox label="HECVAT" done={true} note="Pre-filled questionnaire responses, ready to submit to your institution." />
+            </ScrollReveal>
+          </div>
         </div>
       </section>
 
-      {/* FOR IT & PROCUREMENT - white, checklist + contact */}
+      {/* FOR IT & PROCUREMENT - white, checkbox grid + contact */}
       <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
-          <ScrollReveal>
-            <Kicker>[ Vendor Readiness ]</Kicker>
-            <h2
-              className="font-display leading-[1.1] tracking-tight"
-              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
-            >
-              What Institutional Buyers Check For
-            </h2>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
-              The same checklist your IT and procurement team will run through. Where something is still
-              in progress, we say so, plainly.
-            </p>
-          </ScrollReveal>
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+          <SectionIntro kicker="[ Vendor Readiness ]" title="What Institutional Buyers Check For">
+            The same checklist your IT and procurement team will run through. Where something is
+            still in progress, we say so, plainly.
+          </SectionIntro>
           <div
             style={{
               display: "grid",
-              gap: 18,
+              gap: 12,
               gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
               marginBottom: 48,
             }}
           >
             {READINESS.map((item, i) => (
-              <ScrollReveal key={item.label} delay={i * 30}>
-                <ReadinessMark item={item} />
+              <ScrollReveal key={item.label} delay={i * 25}>
+                <CheckChip label={item.label} done={item.done} />
               </ScrollReveal>
             ))}
           </div>
@@ -485,10 +553,18 @@ export default function SecurityPage() {
           <ScrollReveal>
             <Card title="For IT & Procurement">
               <p style={{ margin: "0 0 20px" }}>
-                Reviewing us as a vendor? We will share our vendor security packet, written policies, and a
-                data-processing agreement for your counsel to review. Same region, same time zone, real
-                answers.
+                Reviewing us as a vendor? We will share our vendor security packet, written
+                policies, and a data-processing agreement for your counsel to review. Same
+                region, same time zone, real answers.
               </p>
+              <div className="mb-5 flex flex-wrap gap-3">
+                <span className="inline-flex items-center gap-1.5" style={{ fontSize: 12.5, color: MUTED }}>
+                  <Building2 size={14} style={{ color: RED }} /> Enterprise-ready
+                </span>
+                <span className="inline-flex items-center gap-1.5" style={{ fontSize: 12.5, color: MUTED }}>
+                  <GraduationCap size={14} style={{ color: RED }} /> FERPA / HECVAT-ready
+                </span>
+              </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                 <Button href="mailto:security@apolloclaw.ai" label="Email security@apolloclaw.ai" variant="outline" />
                 <Button href={CALENDLY} label="Book a Security Call" variant="primary" />
