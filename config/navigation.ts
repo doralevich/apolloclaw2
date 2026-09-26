@@ -66,6 +66,20 @@ export const INDUSTRIES: NavItem[] = [
   { label: "Human Resources", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
 ];
 
+// The top nav's "Case Studies" dropdown: every industry the site covers, David's call to fold
+// the Industries menu into Case Studies. INDUSTRIES plus the five industry pages that live under
+// Agents (law, personal injury, medical, insurance, real estate) - those are where most of the
+// case studies are filed (config/caseStudies.ts), so leaving them out would hide the studies.
+// INDUSTRIES itself is unchanged: the homepage cards and the footer still read it.
+export const CASE_STUDY_INDUSTRIES: NavItem[] = [
+  { label: "Insurance", Icon: ShieldCheck, to: "/industries/insurance", description: "Renewals, benefits enrollment, and month-end close for agencies and carriers." },
+  { label: "Medical Practices", Icon: Stethoscope, to: "/industries/medical-practices", description: "Fewer no-shows, better reviews, and revenue reporting every morning." },
+  { label: "Real Estate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes and one standard across every agent." },
+  { label: "Law Firms", Icon: Scale, to: "/industries/law-firms", description: "Inbox, prep, and follow-up handled so partners bill more hours." },
+  { label: "Personal Injury Law", Icon: Scale, to: "/industries/personal-injury-law", description: "Every intake screened and scheduled within minutes." },
+  ...INDUSTRIES,
+];
+
 // Agents: the product family, named the way each one is actually sold. "The CFO Agent" is what
 // the site, the funnel and the invoice all call it, so the nav calling it "CFO" made the menu
 // read as a list of job titles rather than a list of things you can buy.

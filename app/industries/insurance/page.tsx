@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
+import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo[Claw]" },
@@ -274,6 +275,7 @@ export default function InsurancePage() {
         </div>
       </section>
 
+      <CaseStudiesSection industryPath="/industries/insurance" />
     </>
   );
 }
