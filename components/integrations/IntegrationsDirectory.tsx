@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { composioLogoUrl, INTEGRATION_CATEGORIES } from "@/lib/integration-catalog";
 import type { CatalogApp } from "@/lib/types";
@@ -78,6 +78,7 @@ const CURATED: Category[] = (() => {
 const ALL = "All";
 const MORE = "More apps";
 const PER_PAGE = 60;
+const MAX_CATALOG_ATTEMPTS = 8;
 
 function normalize(s: string) {
   return s.toLowerCase().replace(/[\s_-]+/g, "");
@@ -110,14 +111,31 @@ export function IntegrationsDirectory() {
   // The curated list renders at once; the full catalog (CDN-cached, see
   // app/api/integrations/catalog/route.ts) fills in behind it.
   const [catalog, setCatalog] = useState<CatalogApp[] | null>(null);
+  const [loadingMore, setLoadingMore] = useState(true);
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/integrations/catalog")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((body: { apps?: CatalogApp[] } | null) => {
-        if (!cancelled && body?.apps?.length) setCatalog(body.apps);
-      })
-      .catch(() => {});
+    // The server may hand back a partial catalog while it's still paging through the upstream
+    // one (complete: false). Keep what arrives and ask again: each request picks up where the
+    // last left off, so a handful of retries fills in the whole list.
+    async function load(attempt: number) {
+      try {
+        const r = await fetch("/api/integrations/catalog");
+        const body = (r.ok ? await r.json() : null) as { apps?: CatalogApp[]; complete?: boolean } | null;
+        if (cancelled) return;
+        if (body?.apps?.length) setCatalog((prev) => (prev && prev.length > body.apps!.length ? prev : body.apps!));
+        if (!body?.complete && attempt < MAX_CATALOG_ATTEMPTS) {
+          setTimeout(() => !cancelled && load(attempt + 1), 3000);
+          return;
+        }
+      } catch {
+        if (!cancelled && attempt < MAX_CATALOG_ATTEMPTS) {
+          setTimeout(() => !cancelled && load(attempt + 1), 3000);
+          return;
+        }
+      }
+      if (!cancelled) setLoadingMore(false);
+    }
+    load(1);
     return () => {
       cancelled = true;
     };
@@ -205,9 +223,17 @@ export function IntegrationsDirectory() {
 
         <div className="min-w-0 flex-1">
           {visible.length > 0 && (
-            <p className="font-body mb-3 text-right text-[12.5px]" style={{ color: INK_MUTED }}>
-              {q ? <>Results for &ldquo;{query.trim()}&rdquo; &middot; </> : null}
-              Showing {start + 1}&ndash;{start + shown.length} of {visible.length.toLocaleString()}
+            <p className="font-body mb-3 flex items-center justify-end gap-2 text-right text-[12.5px]" style={{ color: INK_MUTED }}>
+              {loadingMore && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                  Loading the full catalog&hellip; &middot;
+                </span>
+              )}
+              <span>
+                {q ? <>Results for &ldquo;{query.trim()}&rdquo; &middot; </> : null}
+                Showing {start + 1}&ndash;{start + shown.length} of {visible.length.toLocaleString()}
+              </span>
             </p>
           )}
           {visible.length === 0 ? (
