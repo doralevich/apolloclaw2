@@ -8,7 +8,7 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // Site IA, current top-level order per David's direct call: Company · Agents · Use Cases ·
-// Case Studies · Security · Integrations · Contact. Industries now lives inside the Case Studies dropdown (each
+// Security · Integrations · Contact. Use Cases holds both the jobs and the industries (each
 // industry page carries its own case studies - config/caseStudies.ts). Industries and
 // Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
@@ -56,7 +56,7 @@ const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
-import { AGENTS, CASE_STUDY_INDUSTRIES, externalLinkProps } from "@/config/navigation";
+import { AGENTS, NAV_INDUSTRIES, externalLinkProps } from "@/config/navigation";
 import { USE_CASES } from "@/config/useCases";
 
 const USE_CASE_NAV = USE_CASES.map((u) => ({
@@ -219,6 +219,52 @@ function tilePanel(
   );
 }
 
+// A two-column list for menus too long for icon tiles (Use Cases: 13 jobs + 14 industries). Rows
+// are icon + label only; tile descriptions at this length would make the panel taller than the
+// screen.
+function columnsPanel(
+  columns: { heading: string; items: { label: string; to: string; Icon: LucideIcon; external?: boolean }[] }[],
+  pathname: string,
+) {
+  return (
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(620)}>
+      <div className="grid grid-cols-2 gap-x-8">
+        {columns.map((col) => (
+          <div key={col.heading}>
+            <p
+              className="font-mono mb-2 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em]"
+              style={{ color: PAPER_MUTED }}
+            >
+              {col.heading}
+            </p>
+            <ul className="space-y-0.5">
+              {col.items.map((item) => {
+                const Icon = item.Icon;
+                const active = pathname === item.to;
+                return (
+                  <li key={item.to}>
+                    <Link
+                      href={item.to}
+                      {...(item.external ? externalLinkProps : {})}
+                      className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-[13px] font-semibold transition-colors"
+                      style={{ color: active ? RED : PAPER }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <Icon size={15} style={{ color: active ? RED : PAPER_MUTED, flexShrink: 0 }} />
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -255,24 +301,24 @@ export default function Navbar() {
       render: () => tilePanel(AGENTS, pathname, 560),
     },
     {
-      // One page per job an agent does (config/useCases.ts); the trigger opens the /use-cases hub.
+      // One menu for "what it does", David's call: Use Cases and Case Studies were two menus for
+      // the same question. Two columns - the jobs (config/useCases.ts) and the industries, whose
+      // pages carry their case studies. The trigger opens the /use-cases hub; /case-studies now
+      // redirects there.
       kind: "group",
       label: "Use Cases",
       to: "/use-cases",
-      active: (p) => p.startsWith("/use-cases"),
-      mobileItems: USE_CASE_NAV,
-      render: () => tilePanel(USE_CASE_NAV, pathname, 640),
-    },
-    {
-      // Industries folded in here, David's call: the trigger opens the overview of every case
-      // study, and the dropdown lists each industry, whose page carries its own studies.
-      kind: "group",
-      label: "Case Studies",
-      to: "/case-studies",
       active: (p) =>
-        p.startsWith("/case-studies") || CASE_STUDY_INDUSTRIES.some((i) => !i.external && p === i.to),
-      mobileItems: CASE_STUDY_INDUSTRIES,
-      render: () => tilePanel(CASE_STUDY_INDUSTRIES, pathname, 680),
+        p.startsWith("/use-cases") || NAV_INDUSTRIES.some((i) => !i.external && p === i.to),
+      mobileItems: [...USE_CASE_NAV, ...NAV_INDUSTRIES],
+      render: () =>
+        columnsPanel(
+          [
+            { heading: "By task", items: USE_CASE_NAV },
+            { heading: "By industry", items: NAV_INDUSTRIES },
+          ],
+          pathname,
+        ),
     },
     {
       kind: "link",

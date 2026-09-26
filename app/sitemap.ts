@@ -45,7 +45,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/company",      priority: 0.8 },
     { path: "/faq",          priority: 0.8 },
     { path: "/blog",         priority: 0.8 },
-    { path: "/case-studies", priority: 0.8 },
     { path: "/use-cases", priority: 0.8 },
     ...USE_CASES.map((u) => ({ path: `/use-cases/${u.slug}`, priority: 0.7 })),
     { path: "/ai-consulting-education",       priority: 0.8 },

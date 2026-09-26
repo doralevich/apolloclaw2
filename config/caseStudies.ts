@@ -1,5 +1,5 @@
 // Every case study on the site, each filed under the industry page it belongs to. The single
-// source for both /case-studies (the overview, grouped by industry) and the "Case Studies" section
+// source for both the Results section of /use-cases (grouped by industry) and the "Case Studies" section
 // at the bottom of each industry page - David's call to fold Case Studies and Industries into one
 // menu, with the studies living on their industry.
 //

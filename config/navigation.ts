@@ -66,12 +66,12 @@ export const INDUSTRIES: NavItem[] = [
   { label: "Human Resources", Icon: Users, to: "/ai-agents/hr", description: "Handle PTO requests, onboarding, and policy questions, keep records straight." },
 ];
 
-// The top nav's "Case Studies" dropdown: every industry the site covers, David's call to fold
-// the Industries menu into Case Studies. INDUSTRIES plus the five industry pages that live under
-// Agents (law, personal injury, medical, insurance, real estate) - those are where most of the
-// case studies are filed (config/caseStudies.ts), so leaving them out would hide the studies.
-// INDUSTRIES itself is unchanged: the homepage cards and the footer still read it.
-export const CASE_STUDY_INDUSTRIES: NavItem[] = [
+// The "By industry" column of the top nav's Use Cases menu: every industry the site covers.
+// INDUSTRIES plus the five industry pages that live under Agents (law, personal injury, medical,
+// insurance, real estate) - those carry most of the case studies (config/caseStudies.ts), so
+// leaving them out would hide the studies. INDUSTRIES itself is unchanged: the homepage cards and
+// the footer still read it.
+export const NAV_INDUSTRIES: NavItem[] = [
   { label: "Insurance", Icon: ShieldCheck, to: "/industries/insurance", description: "Renewals, benefits enrollment, and month-end close for agencies and carriers." },
   { label: "Medical Practices", Icon: Stethoscope, to: "/industries/medical-practices", description: "Fewer no-shows, better reviews, and revenue reporting every morning." },
   { label: "Real Estate", Icon: Home, to: "/industries/real-estate", description: "Lead follow-up in minutes and one standard across every agent." },

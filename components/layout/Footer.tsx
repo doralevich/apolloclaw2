@@ -18,7 +18,6 @@ const navLinks = [
   // "Blog", not "Insights". The page was always here under the old label and read as missing,
   // because nobody scanning a footer for a blog looks for the word Insights.
   { label: "Blog", to: "/blog" },
-  { label: "Case Studies", to: "/case-studies" },
 ];
 
 // Moved here from the top nav (Navbar.tsx), David's call that a 10-item mega-menu isn't
