@@ -202,6 +202,57 @@ export default function SecurityPage() {
         description="Enterprise-grade protection, in plain language. Here is exactly how we protect your business."
       />
 
+      {/* DEPLOYMENT MODELS - the two ways an agent actually runs, cream bg. First section after
+          the hero, on purpose: this is the concrete, specific answer, and it belongs before the
+          general principles below restate the same posture in policy language. */}
+      <section style={{ background: CREAM }}>
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
+          <ScrollReveal>
+            <Kicker>[ Deployment ]</Kicker>
+            <h2
+              className="font-display leading-[1.1] tracking-tight"
+              style={{ fontSize: "clamp(24px, 3.2vw, 34px)", fontWeight: 800, color: INK, margin: "0 0 10px" }}
+            >
+              How Your Agent Actually Runs
+            </h2>
+            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
+              Every Apollo[Claw] agent lands on one of two infrastructures. Which one is a decision
+              you make at setup, not a black box you have to take our word for.
+            </p>
+          </ScrollReveal>
+          <div className="space-y-6">
+            <ScrollReveal delay={0}>
+              <Card title="Cloud-Hosted: Your Own Dedicated VPS">
+                Every self-serve agent gets its own virtual private server, provisioned for you
+                alone, never a shared container sitting next to another customer&apos;s agent. Your
+                files, memory, and connected credentials live on that one instance and nowhere
+                else.
+                <br />
+                <br />
+                Canceling does not mean instant deletion. We stop your VPS immediately, hold it
+                through a retention window in case you change your mind, then destroy the instance
+                for good once that window closes. You reach your agent over encrypted connections,
+                from the web, WhatsApp, Telegram, or Slack.
+              </Card>
+            </ScrollReveal>
+            <ScrollReveal delay={80}>
+              <Card title="Self-Hosted: A Dedicated Mac Mini in Your Building">
+                For work that has to stay on your own network, we build and deploy on a Mac Mini or
+                private server assigned to you and no one else. No software goes on any other
+                machine, and no other client&apos;s data ever touches that box.
+                <br />
+                <br />
+                It needs no inbound access and no VPN: the machine only makes outbound HTTPS
+                connections on port 443, to a fixed, named list of endpoints (the AI model, your
+                messaging channel, and whatever the integration requires) that we hand your IT
+                team before it is ever plugged in. OAuth tokens and credentials are never stored
+                on an external server, and nothing leaves that approved list.
+              </Card>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
       {/* CORE PRINCIPLES - 5 cards, white bg */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-3xl">
@@ -333,8 +384,11 @@ export default function SecurityPage() {
               Built on Trusted Infrastructure
             </h2>
             <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
-              Where a deployment includes components we host or manage, we build on providers the enterprise
-              already trusts, each with its own mature security program and independent attestations.
+              This is the infrastructure behind the Apollo[Claw] dashboard, billing, and account
+              data, not where your agent itself runs — see &ldquo;How Your Agent Actually Runs&rdquo;
+              above for that. Where we do host or manage a component, we build on providers the
+              enterprise already trusts, each with its own mature security program and independent
+              attestations.
             </p>
           </ScrollReveal>
           <div
