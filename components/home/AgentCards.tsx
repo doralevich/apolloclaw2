@@ -53,6 +53,7 @@ export function AgentCards() {
                   item={item}
                   accent={brand.color}
                   accentRgb={brand.colorRgb}
+                  mascot={brand.mascot}
                   className={orphan ? "lg:col-start-2" : undefined}
                 />
               );
