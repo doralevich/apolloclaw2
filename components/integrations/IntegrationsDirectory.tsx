@@ -171,7 +171,7 @@ export function IntegrationsDirectory() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
               {filtered.map((t) => (
                 <IntegrationTile key={t.slug} toolkit={t} />
               ))}
@@ -193,7 +193,7 @@ export function IntegrationsDirectory() {
                     ({cat.toolkits.length})
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
                   {cat.toolkits.map((t) => (
                     <IntegrationTile key={t.slug} toolkit={t} />
                   ))}
@@ -207,11 +207,13 @@ export function IntegrationsDirectory() {
   );
 }
 
+// The logo IS the tile - David's call after the Lindy reference: a big, recognizable app icon
+// first, the name as a small caption underneath, not the other way around.
 function IntegrationTile({ toolkit: t }: { toolkit: IntegrationToolkit }) {
   return (
     <div
       title={t.description ?? t.name}
-      className="flex flex-col items-center gap-2 rounded-xl p-3 text-center transition-colors hover:border-black/20"
+      className="flex flex-col items-center gap-2.5 rounded-2xl p-4 text-center transition-shadow hover:shadow-[0_4px_16px_rgba(11,23,41,0.08)]"
       style={{ border: `1px solid ${CARD_BORDER}`, background: CARD_BG }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -220,9 +222,9 @@ function IntegrationTile({ toolkit: t }: { toolkit: IntegrationToolkit }) {
         alt=""
         loading="lazy"
         decoding="async"
-        className="size-7 rounded-md object-contain"
+        className="size-11 rounded-xl object-contain"
       />
-      <p className="font-body line-clamp-1 text-[12px] font-semibold leading-tight" style={{ color: INK }}>
+      <p className="font-body line-clamp-1 text-[12.5px] font-semibold leading-tight" style={{ color: INK }}>
         {t.name}
       </p>
     </div>
