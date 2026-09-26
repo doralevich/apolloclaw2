@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
+import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 
 export const metadata: Metadata = {
   title: { absolute: "AI for Professional Services Firms | Apollo[Claw]" },
@@ -66,5 +67,10 @@ const uc = {
 };
 
 export default function ProfessionalServicesPage() {
-  return <UseCaseTemplate uc={uc} />;
+  return (
+    <>
+      <UseCaseTemplate uc={uc} />
+      <CaseStudiesSection industryPath="/industries/professional-services" />
+    </>
+  );
 }

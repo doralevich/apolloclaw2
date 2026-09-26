@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { CaseStudyCard } from "@/components/CaseStudyCard";
+import { CASE_STUDIES, CASE_STUDY_DISCLAIMER, CASE_STUDY_INDUSTRY_LABELS } from "@/config/caseStudies";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/case-studies" },
@@ -6,102 +9,6 @@ export const metadata: Metadata = {
   description: "Real businesses. Real results. See how Apollo[Claw] AI agents are transforming operations across industries.",
 };
 
-const cases = [
-  // CEO
-  {
-    industry: "Insurance",
-    result: "Renewal retention up. Zero micromanaging.",
-    quote: "We were losing renewals not because of price but because nobody followed up in time. The CEO Agent now flags every policy 90 days out, drafts the outreach, and makes sure my producers actually send it. Retention is up and I stopped micromanaging the process.",
-    role: "CEO, Independent Insurance Agency",
-    detail: "Regional firm, 12 producers, Southeast",
-    href: "/ai-agents/ceo",
-  },
-  {
-    industry: "Executive",
-    result: "Cleared the bottleneck. Things move now.",
-    quote: "I have a great team but I was still the bottleneck on everything. Decisions sat with me, follow-ups sat with me, research sat with me. The CEO Agent cleared the queue. Things move now without me touching them, and I only get involved when I actually need to.",
-    role: "Founder & CEO",
-    detail: "B2B services company, 45 employees",
-    href: "/ai-agents/ceo",
-  },
-  // CFO
-  {
-    industry: "Finance",
-    result: "Close cycle cut from 11 days to 6.",
-    quote: "Our month-end close used to take eleven days. We're at six now. The CFO Agent pulls the data, flags the variances, and drafts the narrative. My team reviews instead of produces. That's the difference.",
-    role: "CFO, Regional Insurance Group",
-    detail: "Multi-line carrier, $180M in premiums",
-    href: "/ai-agents/cfo",
-  },
-  {
-    industry: "Healthcare",
-    result: "Revenue cycle reporting, every morning.",
-    quote: "Revenue cycle reporting was always a week behind. The CFO Agent runs it nightly. I walk in every morning knowing exactly where we are on collections, denials, and AR aging. No surprises.",
-    role: "CFO, Multi-Site Medical Group",
-    detail: "8 locations, Northeast",
-    href: "/ai-agents/cfo",
-  },
-  // Medical
-  {
-    industry: "Primary Care",
-    result: "No-shows dropped from 18% to under 6%.",
-    quote: "We were losing 18% of our appointments to no-shows. The Medical Agent sends a reminder 72 hours out, 24 hours out, and the morning of. No-shows dropped to under 6%. That's revenue we were leaving on the table every single day.",
-    role: "Practice Manager",
-    detail: "Multi-provider primary care practice, Long Island",
-    href: "/industries/medical-practices",
-  },
-  {
-    industry: "Urgent Care",
-    result: "Online reviews from 3.6 to 4.4 stars in 60 days.",
-    quote: "We see 120 patients a day and our follow-up was nonexistent. The agent sends a post-visit summary and satisfaction check to every patient within 2 hours of discharge. Our online reviews went from 3.6 to 4.4 stars in 60 days.",
-    role: "Medical Director",
-    detail: "Urgent care network, 4 locations",
-    href: "/industries/medical-practices",
-  },
-  // Insurance
-  {
-    industry: "Health & Benefits",
-    result: "Twice the volume. No additional staff.",
-    quote: "Open enrollment is a 90-day sprint and we have 200 employer groups. The agent manages the entire communication calendar: reminders, enrollment confirmations, deadline alerts. My team handled twice the volume without adding staff.",
-    role: "Benefits Agency Principal",
-    detail: "Group health and benefits, 200 employer groups",
-    href: "/industries/insurance",
-  },
-  // Real Estate
-  {
-    industry: "Residential",
-    result: "Lead conversion from 12% to over 20%.",
-    quote: "I was losing leads because I couldn't follow up fast enough. The Real Estate Agent follows up within two minutes of an inquiry, qualifies the buyer, and schedules the showing. I went from converting 12% of leads to over 20% in the first month.",
-    role: "Licensed Real Estate Agent",
-    detail: "Boutique residential brokerage, Northeast",
-    href: "/industries/real-estate",
-  },
-  {
-    industry: "Brokerage",
-    result: "30 agents. One consistent follow-up standard.",
-    quote: "Managing 30 agents meant 30 different ways of handling leads. Now everyone's follow-up is consistent, fast, and professional. The agent runs it all. My job became managing outcomes instead of managing process.",
-    role: "Principal Broker & Owner",
-    detail: "Independent brokerage, 30 agents",
-    href: "/industries/real-estate",
-  },
-  // Legal
-  {
-    industry: "Personal Injury",
-    result: "Retained cases up 40%.",
-    quote: "We get 200 intake inquiries a month. Before, half of them fell through because we couldn't follow up fast enough. The agent screens every inquiry within minutes, collects the basic facts, and schedules a consultation with the right attorney. Our retained cases went up 40%.",
-    role: "Founding Partner",
-    detail: "Personal injury practice, Long Island",
-    href: "/industries/law-firms",
-  },
-  {
-    industry: "Litigation",
-    result: "10 billable hours recovered per week.",
-    quote: "Partners bill by the hour. Every minute I spent on admin was money we weren't capturing. The Law Agent handles my inbox triage, meeting prep, and follow-ups. I got back about ten hours a week. That's ten hours of billable work I was leaving on the table.",
-    role: "Managing Partner",
-    detail: "Litigation firm, 18 attorneys, Mid-Atlantic",
-    href: "/industries/law-firms",
-  },
-];
 
 const NAVY = "#0B1729";
 const CREAM2 = "#FAFAF7";
@@ -114,45 +21,47 @@ export default function CaseStudiesPage() {
       <section style={{ background: NAVY, color: "#ffffff" }} className="relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
         <div aria-hidden style={{ position: "absolute", top: "-20%", left: "50%", transform: "translateX(-50%)", width: "70%", height: "120%", background: "radial-gradient(ellipse at center, rgba(215,43,43,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div className="container mx-auto px-5 md:px-8 py-14 md:py-20 text-center max-w-4xl relative z-10">
+        <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-6xl relative z-10">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Client Results</p>
           <h1 className="font-display leading-[1.05] tracking-tight text-white mb-6" style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 800 }}>
             Real Businesses.<br />Real Results.
           </h1>
           <p className="font-body" style={{ fontSize: "clamp(15px, 1.15vw, 18px)", lineHeight: 1.7, color: "rgba(255,255,255,0.7)", maxWidth: 640, margin: "0 auto" }}>
-            These are outcomes from actual Apollo[Claw] deployments across six industries. Names and identifying details have been changed or withheld at client request.
+            These are outcomes from actual Apollo[Claw] deployments across industries. Names and identifying details have been changed or withheld at client request.
           </p>
         </div>
       </section>
 
-      {/* Case Studies Grid */}
-      <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cases.map((c, i) => (
-              <div
-                key={i}
-                className="rounded-xl p-8 flex flex-col"
-                style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.08)", boxShadow: "0 2px 12px rgba(11,23,41,0.04)" }}
-              >
-                <div className="mb-4">
-                  <span className="font-mono text-xs uppercase tracking-widest" style={{ color: "rgba(11,23,41,0.4)" }}>{c.industry}</span>
+      {/* Grouped by industry: the same studies each industry page shows at its foot
+          (config/caseStudies.ts), collected here with a link through to each industry. */}
+      <section style={{ background: CREAM2 }} className="py-16 md:py-20">
+        <div className="container mx-auto max-w-6xl space-y-14 px-5 md:px-8">
+          {Object.entries(CASE_STUDY_INDUSTRY_LABELS).map(([path, label]) => {
+            const studies = CASE_STUDIES.filter((c) => c.industry === path);
+            if (!studies.length) return null;
+            return (
+              <div key={path} id={path.split("/").pop()} className="scroll-mt-28">
+                <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+                  <h2 className="font-display text-2xl font-extrabold tracking-tight" style={{ color: NAVY }}>
+                    {label}
+                  </h2>
+                  <Link href={path} className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: RED }}>
+                    {label} solutions &rarr;
+                  </Link>
                 </div>
-                <p className="font-display text-base font-bold mb-4" style={{ color: NAVY }}>{c.result}</p>
-                <p className="font-body text-sm leading-relaxed flex-1 mb-6" style={{ color: "rgba(11,23,41,0.65)" }}>&ldquo;{c.quote}&rdquo;</p>
-                <div className="mt-auto pt-4" style={{ borderTop: "1px solid rgba(11,23,41,0.07)" }}>
-                  <p className="font-mono text-xs font-bold" style={{ color: NAVY }}>{c.role}</p>
-                  <p className="font-mono text-xs mt-0.5" style={{ color: "rgba(11,23,41,0.4)" }}>{c.detail}</p>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {studies.map((c) => (
+                    <CaseStudyCard key={c.role + c.detail} study={c} />
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-          <p className="text-center font-mono text-xs mt-10" style={{ color: "rgba(11,23,41,0.3)" }}>
-            Outcomes from real client engagements. Names and identifying details changed or withheld at client request.
+            );
+          })}
+          <p className="text-center font-mono text-xs" style={{ color: "rgba(11,23,41,0.3)" }}>
+            {CASE_STUDY_DISCLAIMER}
           </p>
         </div>
       </section>
-
     </>
   );
 }

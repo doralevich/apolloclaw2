@@ -7,8 +7,9 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Company · Agents · Industries ·
-// Case Studies · Security · Integrations · Contact. Industries (which business you run) and
+// Site IA, current top-level order per David's direct call: Company · Agents · Case Studies ·
+// Security · Integrations · Contact. Industries now lives inside the Case Studies dropdown (each
+// industry page carries its own case studies - config/caseStudies.ts). Industries and
 // Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
 // dropdown (About, Security); About's content moved to /company (next.config.ts redirects the
@@ -55,7 +56,7 @@ const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
-import { AGENTS, INDUSTRIES, externalLinkProps } from "@/config/navigation";
+import { AGENTS, CASE_STUDY_INDUSTRIES, externalLinkProps } from "@/config/navigation";
 
 const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
@@ -246,17 +247,15 @@ export default function Navbar() {
       render: () => tilePanel(AGENTS, pathname, 560),
     },
     {
+      // Industries folded in here, David's call: the trigger opens the overview of every case
+      // study, and the dropdown lists each industry, whose page carries its own studies.
       kind: "group",
-      label: "Industries",
-      active: (p) => p.startsWith("/industries") || p === "/ai-consulting-education",
-      mobileItems: INDUSTRIES,
-      render: () => tilePanel(INDUSTRIES, pathname, 640),
-    },
-    {
-      kind: "link",
       label: "Case Studies",
       to: "/case-studies",
-      active: (p) => p.startsWith("/case-studies"),
+      active: (p) =>
+        p.startsWith("/case-studies") || CASE_STUDY_INDUSTRIES.some((i) => !i.external && p === i.to),
+      mobileItems: CASE_STUDY_INDUSTRIES,
+      render: () => tilePanel(CASE_STUDY_INDUSTRIES, pathname, 680),
     },
     {
       kind: "link",

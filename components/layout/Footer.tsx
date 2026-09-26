@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
+import { NewsletterForm } from "@/components/layout/NewsletterForm";
 import { AGENTS, INDUSTRIES, externalLinkProps } from "@/config/navigation";
 
 const NAVY = "#0B1729";
@@ -78,6 +79,23 @@ export default function Footer() {
         </div>
 
         <div className="container relative z-10 mx-auto px-5 md:px-8 py-16">
+          {/* The Weekly Claw, as one row rather than the full-width band it used to have above
+              the footer - David's call that the band took too much space on every page. */}
+          <div
+            className="mb-12 flex flex-col gap-4 pb-10 md:flex-row md:items-center md:justify-between md:gap-10"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <div>
+              <p className="font-heading text-[17px] font-bold" style={{ color: "#FFFFFF" }}>
+                The Weekly Claw
+              </p>
+              <p className="font-body mt-1 text-[13.5px]" style={{ color: WHITE_MUTED }}>
+                What happened in AI last week and what to watch this week. Every Monday. No spam.
+              </p>
+            </div>
+            <NewsletterForm />
+          </div>
+
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-6 lg:gap-8">
             <div>
               <h4

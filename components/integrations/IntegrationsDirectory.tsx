@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 import { composioLogoUrl, INTEGRATION_CATEGORIES } from "@/lib/integration-catalog";
@@ -14,7 +14,7 @@ import { RED, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
 //
 // Two sources. The curated shelves (lib/integration-catalog.ts, the same list the dashboard's
 // Connections tab leads with, plus EXTRA_BY_CATEGORY below) give the sidebar its categories. The
-// full platform catalog, fetched server-side by lib/public-integration-catalog.ts, supplies every
+// full platform catalog, loaded from /api/integrations/catalog after first paint, supplies every
 // other app; it has no categories of its own, so those apps sit under "More apps". If the full
 // catalog can't be read, the page still works on the curated list alone.
 
@@ -106,7 +106,23 @@ const CARD_BORDER = "rgba(11,23,41,0.12)";
 const INK = TAN_INK;
 const INK_MUTED = TAN_INK_MUTED;
 
-export function IntegrationsDirectory({ catalog }: { catalog: CatalogApp[] | null }) {
+export function IntegrationsDirectory() {
+  // The curated list renders at once; the full catalog (CDN-cached, see
+  // app/api/integrations/catalog/route.ts) fills in behind it.
+  const [catalog, setCatalog] = useState<CatalogApp[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/integrations/catalog")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { apps?: CatalogApp[] } | null) => {
+        if (!cancelled && body?.apps?.length) setCatalog(body.apps);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(ALL);
   const [page, setPage] = useState(1);

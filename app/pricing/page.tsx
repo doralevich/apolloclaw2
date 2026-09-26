@@ -151,8 +151,8 @@ export default function PricingPage() {
     <div style={{ background: CREAM, color: INK }}>
       <section className="relative overflow-hidden">
         <Grid />
-        <div className="container relative z-10 mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
-          <div className="max-w-3xl">
+        <div className="container relative z-10 mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
+          <div className="max-w-4xl">
             <Eyebrow>Pricing</Eyebrow>
             <h1
               className="font-heading text-[clamp(1.875rem,3.4vw,3rem)] font-extrabold leading-[1.12] tracking-tight"

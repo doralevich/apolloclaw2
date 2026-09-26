@@ -102,8 +102,8 @@ export default function FleetPage() {
 
       <section style={{ background: NAVY }} className="relative overflow-hidden">
         <TextureBackground />
-        <div className="container relative z-20 mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
-          <div className="max-w-3xl">
+        <div className="container relative z-20 mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
+          <div className="max-w-4xl">
             <span
               className="font-mono mb-5 inline-block text-[12px] font-bold uppercase tracking-[0.16em]"
               style={{ color: RED }}
