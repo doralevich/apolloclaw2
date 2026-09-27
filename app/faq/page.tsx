@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
-import ScrollReveal from "@/components/ScrollReveal";
+import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { OG_IMAGES } from "@/lib/seo";
+import {
+  CEO_AGENT_FAQS,
+  CFO_AGENT_FAQS,
+  GENERAL_FAQS,
+  HOME_FAQS,
+  INSURANCE_FAQS,
+  LAW_AGENT_FAQS,
+  LAW_FIRMS_FAQS,
+  MEDICAL_FAQS,
+  PERSONAL_INJURY_FAQS,
+  REAL_ESTATE_FAQS,
+  type Faq,
+} from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "FAQ | AI Consulting Questions Answered | Apollo[Claw]" },
   description:
-    "Straight answers about Apollo Claw AI consulting: what agents do, how they connect to your tools, setup timelines, and data security. No jargon, no pitch.",
+    "Every question we answer across the site, in one place: what agents do, how they connect to your tools, setup timelines, security, and each specialist agent.",
   alternates: {
     canonical: "https://apolloclaw.ai/faq",
   },
@@ -14,55 +27,43 @@ export const metadata: Metadata = {
     images: OG_IMAGES,
     title: "FAQ | AI Consulting Questions Answered",
     description:
-      "Get straight answers about Apollo Claw AI consulting: what AI agents do, how they connect to your tools, setup timelines, data security, and how we're different from ChatGPT.",
+      "Every question we answer across the site, in one place: what agents do, how they connect to your tools, setup timelines, security, and each specialist agent.",
     url: "https://apolloclaw.ai/faq",
   },
 };
 
-const faqs = [
-  {
-    q: "What exactly is an AI agent?",
-    a: "An AI agent is a software system that can take actions on your behalf - reading emails, scheduling meetings, updating your CRM, researching topics, and more. Unlike a chatbot, an agent actually does things; it doesn't just answer questions.",
-  },
-  {
-    q: "Do I need any technical expertise to use this?",
-    a: "No. We handle all the technical setup. You interact with your AI agent through Telegram or WhatsApp, the same way you'd text a team member.",
-  },
-  {
-    q: "What tools does it connect to?",
-    a: "Gmail, Google Calendar, common CRMs (HubSpot, Salesforce, Pipedrive), Slack, Notion, Google Drive, and dozens of other tools via API integrations. We tailor the integrations to what you actually use.",
-  },
-  {
-    q: "How long does setup take?",
-    a: "Most clients are live within 2-4 weeks. Simple setups can be live in a few days.",
-  },
-  {
-    q: "Is my data secure?",
-    a: "Yes. We build on your infrastructure wherever possible. Your data does not go through third-party servers we don't control. See our Security page for details.",
-  },
-  {
-    q: "How much does it cost?",
-    a: "Pricing depends on your setup and the tier you need. We don't publish rates publicly because every engagement is scoped differently. Schedule a consultation and we'll give you a precise number.",
-  },
-  {
-    q: "What if I want to cancel?",
-    a: "No long-term contracts required. Month-to-month arrangements are available after your initial setup period.",
-  },
-  {
-    q: "How is Apollo[Claw] different from just using ChatGPT?",
-    a: "ChatGPT is a conversation tool. Apollo[Claw] agents are connected to your actual business systems and take autonomous action. The difference is like having a calculator vs. having a bookkeeper.",
-  },
+// Every FAQ on the site, grouped by where it comes from (David, Sept 27 2026). The lists live in
+// config/faqs.ts, which the home page, the agent pages and the industry pages read too, so this
+// page always carries every question the rest of the site asks.
+const GROUPS: { id: string; title: string; href?: string; faqs: Faq[] }[] = [
+  { id: "getting-started", title: "Getting Started", faqs: HOME_FAQS },
+  { id: "general", title: "General Questions", faqs: GENERAL_FAQS },
+  { id: "ceo-agent", title: "The CEO Agent", href: "/ai-agents/ceo", faqs: CEO_AGENT_FAQS },
+  { id: "cfo-agent", title: "The CFO Agent", href: "/ai-agents/cfo", faqs: CFO_AGENT_FAQS },
+  { id: "law-agent", title: "The Law Agent", href: "/ai-agents/legal", faqs: LAW_AGENT_FAQS },
+  { id: "insurance", title: "Insurance", href: "/industries/insurance", faqs: INSURANCE_FAQS },
+  { id: "law-firms", title: "Law Firms", href: "/industries/law-firms", faqs: LAW_FIRMS_FAQS },
+  { id: "personal-injury", title: "Personal Injury Law", href: "/industries/personal-injury-law", faqs: PERSONAL_INJURY_FAQS },
+  { id: "medical", title: "Medical Practices", href: "/industries/medical-practices", faqs: MEDICAL_FAQS },
+  { id: "real-estate", title: "Real Estate", href: "/industries/real-estate", faqs: REAL_ESTATE_FAQS },
 ];
 
+// Structured data lists each question once; several pages ask the same one ("How long does it
+// take to get up and running?"), and the first answer wins.
+const seen = new Set<string>();
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: faqs.map((faq) => ({
-    "@type": "Question",
-    name: faq.q,
-    acceptedAnswer: { "@type": "Answer", text: faq.a },
-  })),
+  mainEntity: GROUPS.flatMap((g) => g.faqs)
+    .filter((f) => (seen.has(f.q) ? false : (seen.add(f.q), true)))
+    .map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
 };
+
+const RED = "#D72B2B";
 
 export default function FAQPage() {
   return (
@@ -75,24 +76,48 @@ export default function FAQPage() {
         label="FAQ"
         title="Frequently"
         titleAccent="Asked Questions"
-        description="Everything you want to know before your first call."
+        description="Everything you want to know before your first call, from getting started to each specialist agent."
       />
       <div className="bg-background py-16">
-      <div className="container mx-auto max-w-7xl px-4 md:px-8">
+        <div className="container mx-auto max-w-7xl px-4 md:px-8">
+          {/* Jump links, one per group */}
+          <nav aria-label="FAQ topics" className="mb-14 flex flex-wrap gap-2">
+            {GROUPS.map((g) => (
+              <a
+                key={g.id}
+                href={`#${g.id}`}
+                className="font-body rounded-full border px-4 py-2 text-[13.5px] font-semibold transition-colors hover:border-[#D72B2B] hover:text-[#D72B2B]"
+                style={{ borderColor: "rgba(11,23,41,0.15)", color: "#0B1729" }}
+              >
+                {g.title}
+              </a>
+            ))}
+          </nav>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {faqs.map((faq, i) => (
-            <ScrollReveal key={i} delay={i * 50}>
-              <div className="bauhaus-card p-8">
-                <h2 className="font-display text-lg md:text-xl text-foreground mb-3">{faq.q}</h2>
-                <p className="font-body text-base text-muted-foreground leading-relaxed">{faq.a}</p>
-              </div>
-            </ScrollReveal>
-          ))}
+          <div className="flex flex-col gap-16">
+            {GROUPS.map((g) => (
+              <section key={g.id} id={g.id} className="scroll-mt-36">
+                <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">{g.title}</h2>
+                  {g.href && (
+                    <Link href={g.href} className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: RED }}>
+                      Visit the page &rarr;
+                    </Link>
+                  )}
+                </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {g.faqs.map((faq) => (
+                    <div key={faq.q} className="bauhaus-card p-8">
+                      <h3 className="font-display text-lg md:text-xl text-foreground mb-3">{faq.q}</h3>
+                      <p className="font-body text-base text-muted-foreground leading-relaxed">{faq.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
-
       </div>
-    </div>
     </>
   );
 }

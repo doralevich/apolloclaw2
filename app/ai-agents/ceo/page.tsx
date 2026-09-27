@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
+import { CEO_AGENT_FAQS } from "@/config/faqs";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/ceo" },
@@ -126,32 +127,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  {
-    q: "What exactly is an AI bot?",
-    a: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up, without being asked.",
-  },
-  {
-    q: "How is this different from using ChatGPT or a generic AI tool?",
-    a: "ChatGPT is a conversation tool. The CEO Bot is connected to your systems and configured for your workflows. It knows your voice, your priorities, your team. The difference is a calculator versus a chief of staff.",
-  },
-  {
-    q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training.",
-  },
-  {
-    q: "Is my data secure?",
-    a: "Yes. We build on your infrastructure wherever possible. All connections use least-privilege access and your data does not pass through servers we do not control.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Every engagement is custom-scoped. Pricing is discussed during your consultation. Book a call and we will give you a precise number.",
-  },
-  {
-    q: "Do I need a technical team to run this?",
-    a: "No. We handle all technical setup. You interact with your bot through Telegram or email, the same way you would communicate with a team member.",
-  },
-];
+const faqs = CEO_AGENT_FAQS;
 
 const NAVY = "#0B1729";
 const CREAM = "#F2F1ED";

@@ -4,7 +4,8 @@ import { HeroSteps } from "@/components/home/HeroSteps";
 import { BuiltForYou } from "@/components/home/BuiltForYou";
 import { Proof } from "@/components/home/Proof";
 import { AgentCards } from "@/components/home/AgentCards";
-import { HomeFaq, HOME_FAQS } from "@/components/home/HomeFaq";
+import { HomeFaq } from "@/components/home/HomeFaq";
+import { HOME_FAQS } from "@/config/faqs";
 import { FinalCta } from "@/components/home/FinalCta";
 import { OG_IMAGES } from "@/lib/seo";
 
