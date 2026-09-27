@@ -14,8 +14,8 @@ export default function HeroAssistantInput({ placeholder = "Type your message…
   return (
     <div
       style={{
-        background: "#070F1C",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "#FFFFFF",
+        border: "1px solid rgba(26,26,26,0.14)",
         borderRadius: 10,
         padding: "12px 14px",
         display: "flex",
@@ -35,7 +35,7 @@ export default function HeroAssistantInput({ placeholder = "Type your message…
           background: "transparent",
           border: "none",
           outline: "none",
-          color: "#ffffff",
+          color: "#1A1A1A",
           fontSize: 13.5,
           fontFamily: "inherit",
         }}
@@ -45,7 +45,7 @@ export default function HeroAssistantInput({ placeholder = "Type your message…
         onClick={submit}
         aria-label="Send"
         style={{
-          background: "#D72B2B",
+          background: "#E12E30",
           color: "#fff",
           border: "none",
           width: 30,

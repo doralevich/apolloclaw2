@@ -1,62 +1,59 @@
 import HeroAssistantInput from "@/components/HeroAssistantInput";
 import { HeroAssistantDemo } from "@/components/home/HeroAssistantDemo";
-import { NAVY, PAPER, PAPER_MUTED, PrimaryButton, RED, TextureBackground } from "@/components/home/ui";
+import { PrimaryButton } from "@/components/home/ui";
+import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
-const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
+// Brand palette for the hero: cream ground, near-black ink, brand red. David's rule for this
+// section is no dark backgrounds, so the hero and the Apollo[Claw] Assistant card beside it are
+// light; the side-by-side layout is unchanged.
+const CREAM = "#F2F0EB";
+const INK = "#1A1A1A";
+const INK_MUTED = "rgba(26,26,26,0.7)";
+const INK_SOFT = "rgba(26,26,26,0.55)";
+const RED = "#E12E30";
 
-// Side-by-side layout matching the structure of the current live hero (copy widened on the
-// left, the Apollo[Claw] Assistant card on the right), per David's direct request, still the
-// new Phase 1 copy/CTAs, not a revert of content.
 export function Hero() {
   return (
-    <section style={{ background: NAVY }} className="relative overflow-hidden">
-      <TextureBackground />
-      <div className="container relative z-20 mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
+    <section style={{ background: CREAM }} className="relative overflow-hidden">
+      <div className="container relative z-20 mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
           <div>
-            {/* Eyebrow above the headline, mirroring the hero on the current live site. */}
             <span
               className="font-mono mb-5 inline-block text-[12px] font-bold uppercase tracking-[0.16em]"
               style={{ color: RED }}
             >
-              AI Strategy &amp; Implementation
+              Your AI Chief of Staff
             </span>
             <h1
-              // Scaled down from clamp(2.5rem, 5.5vw, 4.25rem): the current headline is far
-              // longer than the one this size was set for, so at 68px it wrapped to four lines
-              // and overwhelmed the section. Leading opened up slightly to suit the smaller size.
-              className="font-heading text-[clamp(1.875rem,3.4vw,3rem)] font-extrabold leading-[1.12] tracking-tight"
-              style={{ color: PAPER, textWrap: "balance" }}
+              className="font-heading text-[clamp(2rem,3.8vw,3.25rem)] font-extrabold leading-[1.1] tracking-tight"
+              style={{ color: INK, textWrap: "balance" }}
             >
-              Your Business Runs on Decisions. Make Every One Smarter with AI
+              Meet the Chief of Staff You&apos;ve Always Wanted.
             </h1>
-            <p
-              className="font-body mt-6 text-[1.125rem] leading-[1.65]"
-              style={{ color: PAPER_MUTED, maxWidth: 560 }}
-            >
-              Apollo Claw partners with executives and leadership teams to design, deploy, and
-              manage AI across the entire organization, from strategy to execution.
+            <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: INK_MUTED, maxWidth: 580 }}>
+              A custom AI agent built around how you work. It knows your business, keeps everything
+              moving, and gives you back the hours you&apos;ve been missing.
             </p>
-            {/* Single CTA for now, per David's call: "Get Started" pointed at /agents, which
-                isn't where he wants hero traffic going yet. Book a Discovery Call was the
-                secondary button and is promoted to primary now that it stands alone. */}
-            <div className="mt-8 flex flex-wrap gap-4">
-              <PrimaryButton href={CONSULT_URL} external>
+            <p className="font-body mt-4 text-[14px]" style={{ color: INK_SOFT }}>
+              Already running for founders, physicians, and company leaders.
+            </p>
+            <div className="mt-8">
+              <PrimaryButton href={SCHEDULE_CONSULT_URL} external>
                 Book a Discovery Call
               </PrimaryButton>
+              <p className="font-body mt-3 text-[13px]" style={{ color: INK_SOFT }}>
+                30 minutes. No pressure. You&apos;ll walk away with real ideas either way.
+              </p>
             </div>
           </div>
 
-          {/* Donna, the existing hero chat widget/persona (components/HeroAssistantInput.tsx +
-              components/ChatWidget.tsx), reused as-is, styled as a standalone card to the right
-              of the header, matching the live site's current "Apollo[Claw] Assistant" card. */}
+          {/* Donna, the hero chat persona (components/HeroAssistantInput.tsx +
+              components/ChatWidget.tsx), shown as a light card to the right of the copy. */}
           <div
-            className="flex flex-col rounded-2xl border p-5"
+            className="flex flex-col rounded-2xl border bg-white p-5"
             style={{
-              background: "rgba(7,15,28,0.8)",
-              borderColor: "rgba(225,46,48,0.2)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(225,46,48,0.05)",
-              backdropFilter: "blur(16px)",
+              borderColor: "rgba(26,26,26,0.08)",
+              boxShadow: "0 20px 50px rgba(26,26,26,0.08)",
             }}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -66,16 +63,13 @@ export function Hero() {
                     className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
                     style={{ background: "#16a34a" }}
                   />
-                  <span
-                    className="relative inline-flex h-full w-full rounded-full"
-                    style={{ background: "#16a34a", boxShadow: "0 0 8px rgba(22,163,74,0.6)" }}
-                  />
+                  <span className="relative inline-flex h-full w-full rounded-full" style={{ background: "#16a34a" }} />
                 </span>
-                <span className="font-mono text-xs font-bold" style={{ color: PAPER }}>
+                <span className="font-mono text-xs font-bold" style={{ color: INK }}>
                   Apollo<span style={{ color: RED }}>[</span>Claw<span style={{ color: RED }}>]</span> Assistant
                 </span>
               </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: PAPER_MUTED }}>
+              <span className="font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: INK_SOFT }}>
                 Online
               </span>
             </div>
