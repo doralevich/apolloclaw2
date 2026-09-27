@@ -39,9 +39,10 @@ const faqJsonLd = {
   })),
 };
 
-// Section order per David's spec (Sept 27 2026): Hero, Three Steps, Built for You, Proven
-// Results, Specialist Agents, FAQ, Final CTA. The Founder Note came off at his call. The
-// sitewide PreFooter is skipped here (RootShell) because FinalCta closes the page.
+// Section order per David's spec (Sept 27 2026), with his later calls: Hero, Three Steps, Built
+// for You, Specialist Agents (moved up one), Proven Results, FAQ, Final CTA. The Founder Note
+// came off. Backgrounds alternate: navy, cream, white, cream, navy, white, cream. The sitewide
+// PreFooter is skipped here (RootShell) because FinalCta closes the page.
 export default function HomePage() {
   return (
     <>
@@ -49,8 +50,8 @@ export default function HomePage() {
       <Hero />
       <HeroSteps />
       <BuiltForYou />
-      <Proof />
       <AgentCards />
+      <Proof />
       <HomeFaq />
       <FinalCta />
     </>
