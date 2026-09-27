@@ -40,7 +40,7 @@ export default function HomePage() {
     <>
       <Hero />
       <HeroSteps />
-      {/* Order per David's call: positioning first ("What Is an AI Implementation Partner?"),
+      {/* Order per David's call: positioning first (the Built for You section),
           then the client results, then the product explainer with the John demo. */}
       <TrustStrip />
       <Proof />
