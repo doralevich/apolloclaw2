@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
+import { INSURANCE_FAQS } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo[Claw]" },
@@ -113,32 +114,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  {
-    q: "What agency management systems does the Insurance Agent connect to?",
-    a: "We connect to Applied Epic, Hawksoft, AMS360, EZLynx, and most major AMS platforms. We also work with spreadsheet-based systems. Every engagement is scoped individually.",
-  },
-  {
-    q: "How does it handle renewal outreach?",
-    a: "The agent identifies policies approaching renewal, initiates outreach at your configured lead time (typically 90 days), follows up on non-responses, and escalates to your producers when a decision is needed.",
-  },
-  {
-    q: "Will it replace my service team?",
-    a: "No. It handles the first-touch communication, follow-up sequences, and status updates. Your team handles coverage decisions, complex questions, and relationship conversations.",
-  },
-  {
-    q: "Is client data secure?",
-    a: "Yes. We connect using least-privilege API credentials and your data does not pass through servers we do not control. All connections are encrypted.",
-  },
-  {
-    q: "How long does it take to get up and running?",
-    a: "Most agencies are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your book of business, AMS, and workflow. Pricing is discussed during your consultation.",
-  },
-];
+const faqs = INSURANCE_FAQS;
 
 const NAVY = "#0B1729";
 const CREAM = "#F2F1ED";

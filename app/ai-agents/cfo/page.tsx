@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
+import { CFO_AGENT_FAQS } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "CFO AI Agent | Financial Intelligence for Finance Leaders | Apollo[Claw]" },
@@ -113,32 +114,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  {
-    q: "What financial systems does the CFO Agent connect to?",
-    a: "We connect to QuickBooks, NetSuite, Sage, Xero, and most major ERP platforms. We also work with Excel and Google Sheets-based workflows. Every engagement is scoped individually.",
-  },
-  {
-    q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
-  },
-  {
-    q: "Will it replace my finance team?",
-    a: "No. It removes the production work, report generation, data pulls, reconciliation tracking, so your team can focus on analysis, interpretation, and strategic advice.",
-  },
-  {
-    q: "Is our financial data secure?",
-    a: "Yes. We connect using read-only API credentials wherever possible and use least-privilege access throughout. Your data does not pass through servers we do not control.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your systems, reporting cadence, and team size. Pricing is discussed during your consultation.",
-  },
-  {
-    q: "Can it handle multi-entity reporting?",
-    a: "Yes. Multi-entity consolidation is one of the most common use cases. We configure the agent to handle intercompany eliminations and consolidated reporting.",
-  },
-];
+const faqs = CFO_AGENT_FAQS;
 
 const NAVY = "#0B1729";
 const CREAM = "#F2F1ED";

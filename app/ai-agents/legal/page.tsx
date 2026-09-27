@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
+import { LAW_AGENT_FAQS } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Law AI Agent | Contract Drafting & Review for Businesses | Apollo[Claw]" },
@@ -101,32 +102,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  {
-    q: "Is the Law Agent a substitute for a lawyer?",
-    a: "No. It is a drafting and review tool, not a licensed attorney, and it does not provide legal advice. It removes the production work so your team or your counsel can focus on judgment. A qualified attorney should review anything binding before you sign or file, and the agent recommends exactly that.",
-  },
-  {
-    q: "What tools does the Law Agent work with?",
-    a: "It works where your documents already live: Microsoft Word, Google Docs, DocuSign, common contract-management platforms, and your storage in SharePoint, OneDrive, Google Drive, or Box. Every engagement is scoped to your setup.",
-  },
-  {
-    q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. We onboard the agent on your templates and standard positions, connect your tools, and configure how it drafts, reviews, and escalates.",
-  },
-  {
-    q: "Can it draft from our own templates and playbook?",
-    a: "Yes, and it should. The agent works from your template library and standard positions, so first drafts and redlines start from your language rather than a generic form.",
-  },
-  {
-    q: "Is our data confidential?",
-    a: "Yes. We use least-privilege access throughout and honor the confidentiality rules you set, including keeping privileged material off shared systems. Your data does not pass through servers we do not control.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your document volume, your systems, and how much you want the agent to own. Pricing is discussed during your consultation.",
-  },
-];
+const faqs = LAW_AGENT_FAQS;
 
 const NAVY = "#0B1729";
 const CREAM = "#F2F1ED";

@@ -39,13 +39,6 @@ const agentLinks = [
 ];
 const industryLinks = INDUSTRIES.map((i) => ({ label: i.label, to: i.to }));
 
-const consultingLinks = [
-  { label: "AI for Business", to: "/ai-agent-for-business" },
-  { label: "Long Island", to: "/ai-consulting-long-island" },
-  { label: "New York City", to: "/ai-consulting-nyc" },
-  { label: "Education", to: "/ai-consulting-education" },
-];
-
 const resourceLinks = [
   { label: "AI 101", to: "/ai-101" },
   { label: "Integrations", to: "/integrations" },
@@ -97,7 +90,7 @@ export default function Footer() {
             <NewsletterForm />
           </div>
 
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-6 lg:gap-8">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8">
             <div>
               <h4
                 className="font-mono uppercase mb-4"
@@ -132,27 +125,6 @@ export default function Footer() {
                     key={link.to}
                     href={link.to}
                     {...(link.external ? externalLinkProps : {})}
-                    className="font-body text-[14px] transition-colors hover:text-white"
-                    style={{ color: WHITE_MUTED }}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4
-                className="font-mono uppercase mb-4"
-                style={{ fontSize: 11, letterSpacing: "0.16em", color: RED, fontWeight: 700 }}
-              >
-                Consulting
-              </h4>
-              <div className="flex flex-col gap-2">
-                {consultingLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    href={link.to}
                     className="font-body text-[14px] transition-colors hover:text-white"
                     style={{ color: WHITE_MUTED }}
                   >

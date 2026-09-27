@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
+import { LAW_FIRMS_FAQS } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo[Claw]" },
@@ -113,32 +114,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  {
-    q: "What case management systems does the Law Agent connect to?",
-    a: "We connect to Clio, MyCase, PracticePanther, Filevine, and most major legal practice management platforms. We also work with firms using Outlook and shared drives. Every engagement is scoped individually.",
-  },
-  {
-    q: "How does client intake work?",
-    a: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects key facts, and routes qualified prospects to the right attorney with a summary already written.",
-  },
-  {
-    q: "Is client data secure and ethically compliant?",
-    a: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is reviewed against applicable bar rules in your jurisdiction. We do not store client communications on third-party servers without explicit authorization.",
-  },
-  {
-    q: "Will it replace my paralegals?",
-    a: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive legal support instead of coordination.",
-  },
-  {
-    q: "How long does it take to get up and running?",
-    a: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your practice size, case types, and systems. Pricing is discussed during your consultation.",
-  },
-];
+const faqs = LAW_FIRMS_FAQS;
 
 const NAVY = "#0B1729";
 const CREAM = "#F2F1ED";

@@ -1,32 +1,12 @@
 import { ChevronDown } from "lucide-react";
-import { BracketLabel, H2, Section, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
+import { BracketLabel, H2, Section, SoftLink, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
+import { HOME_FAQS } from "@/config/faqs";
 
 // Section 6 of the home page, Questions, Answered (David's spec, Sept 27 2026). Native
 // <details> rather than a client component: keyboard and screen-reader behaviour for free, and
-// it works before hydration. The first item starts open.
-export const HOME_FAQS = [
-  {
-    q: "How is my data protected?",
-    a: "Every agent is privately deployed for one client, on a dedicated private server or your own Mac Mini. Your data stays in your environment and your accounts.",
-  },
-  {
-    q: "How quickly will my agent be up and running?",
-    a: "Most agents are live within about two weeks, followed by 30 days of hands-on training so it fits the way you work.",
-  },
-  {
-    q: "Which tools does it work with?",
-    a: "Google Workspace, Microsoft 365, Slack, Telegram, calendars, CRMs, and more. We connect your agent to the tools you already use.",
-  },
-  {
-    q: "What does support look like after launch?",
-    a: "Every build includes 30 days of hands-on training. After that, ongoing support plans keep your agent sharp as your business grows.",
-  },
-  {
-    q: "Is this a fit for a business my size?",
-    a: "Yes. We work with solo founders, growing teams, and established companies. Your agent scales right along with you.",
-  },
-];
-
+// it works before hydration. The first item starts open. The questions live in config/faqs.ts
+// (HOME_FAQS) with every other FAQ on the site, and /faq shows them all.
+// Three a side (David's call), so the columns match.
 const FAQ_SPLIT = Math.ceil(HOME_FAQS.length / 2);
 
 export function HomeFaq() {
@@ -75,6 +55,12 @@ export function HomeFaq() {
               ))}
             </div>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <SoftLink light href="/faq">
+            See All FAQs →
+          </SoftLink>
         </div>
       </div>
     </Section>

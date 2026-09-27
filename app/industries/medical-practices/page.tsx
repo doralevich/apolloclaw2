@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
+import { MEDICAL_FAQS } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Medical AI Agent | AI for Medical Practices & Healthcare | Apollo[Claw]" },
@@ -113,32 +114,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  {
-    q: "What EHR and practice management systems does the Medical Agent connect to?",
-    a: "We connect to athenahealth, Epic, DrChrono, Kareo, Jane App, and most major EHR and practice management platforms. Every engagement is scoped individually.",
-  },
-  {
-    q: "Is this HIPAA compliant?",
-    a: "Yes. We execute a Business Associate Agreement with every healthcare client. All data handling follows HIPAA requirements and we do not store protected health information on systems outside your approved infrastructure.",
-  },
-  {
-    q: "Will it replace my front desk staff?",
-    a: "No. It removes the high-volume repetitive work, reminders, intake collection, follow-up sequences, so your staff can focus on the patients in front of them.",
-  },
-  {
-    q: "How does the scheduling integration work?",
-    a: "We connect to your existing scheduling system. The agent reads availability and books, confirms, and reschedules appointments based on rules you define. No double-booking, no overrides.",
-  },
-  {
-    q: "How long does it take to get up and running?",
-    a: "Most practices are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
-  },
-  {
-    q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your practice size, patient volume, and systems. Pricing is discussed during your consultation.",
-  },
-];
+const faqs = MEDICAL_FAQS;
 
 const NAVY = "#0B1729";
 const CREAM = "#F2F1ED";
