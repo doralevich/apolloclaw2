@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import { BracketLabel, H2, Section, TAN, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
+import { BracketLabel, H2, Section, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
 
 // Section 6 of the home page, Questions, Answered (David's spec, Sept 27 2026). Native
 // <details> rather than a client component: keyboard and screen-reader behaviour for free, and
@@ -31,7 +31,7 @@ const FAQ_SPLIT = Math.ceil(HOME_FAQS.length / 2);
 
 export function HomeFaq() {
   return (
-    <Section bg={TAN}>
+    <Section bg="#FFFFFF">
       <div className="mx-auto max-w-7xl">
         <div className="text-center">
           <BracketLabel light>Questions, Answered</BracketLabel>

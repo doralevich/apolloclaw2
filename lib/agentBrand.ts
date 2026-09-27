@@ -173,6 +173,24 @@ export function onDarkCard(color: string): string {
   return "#FFFFFF";
 }
 
+/**
+ * The mirror of onDarkCard for a light card: the brand colour, darkened toward black just far
+ * enough to read as small text on white. Used by the homepage agent grid now that it sits on
+ * cream with white cards.
+ */
+export function onLightCard(color: string): string {
+  const rgb = parseHex(color);
+  const white: [number, number, number] = [255, 255, 255];
+  if (contrast(rgb, white) >= 4.5) return color;
+  for (let mix = 0.05; mix <= 1; mix += 0.05) {
+    const dimmed = rgb.map((c) => Math.round(c * (1 - mix))) as [number, number, number];
+    if (contrast(dimmed, white) >= 4.5) {
+      return `#${dimmed.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+    }
+  }
+  return "#000000";
+}
+
 /** The brand for an agent type, falling back to ApolloClaw's own. */
 export function agentBrand(agentTypeId?: string): AgentBrand {
   const found = agentTypeId ? BRANDS[agentTypeId] : undefined;
