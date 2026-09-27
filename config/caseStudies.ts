@@ -20,6 +20,9 @@ export type CaseStudy = {
   quote: string;
   role: string;
   detail: string;
+  /** An illustrative scenario rather than a client quote (David's call, Sept 27 2026, for the
+   *  Property Management and Personal Agent sections). The card says so; see CaseStudyCard. */
+  example?: boolean;
 };
 
 export const CASE_STUDY_INDUSTRY_LABELS: Record<string, string> = {
@@ -152,11 +155,71 @@ export const CASE_STUDIES: CaseStudy[] = [
     role: "CEO, Wealth Management Firm",
     detail: "RIA, $400M AUM, New York",
   },
+  // PROPERTY MANAGEMENT. The first is the client quote /industries/real-estate already carries;
+  // the other two are labeled example scenarios. `industry` is a group key rather than a page,
+  // since property management has no page of its own; /use-cases links it to Real Estate.
+  {
+    industry: "property-management",
+    sector: "Property Management",
+    result: "Tenant response times under five minutes.",
+    quote: "Tenant inquiries, maintenance requests, lease renewals, the agent handles the first response on all of it. My team only steps in when a decision is needed. Our response times are down to under five minutes.",
+    role: "Owner, Property Management Company",
+    detail: "350-unit portfolio, New York",
+  },
+  {
+    industry: "property-management",
+    sector: "Maintenance",
+    result: "Every work order routed to the right vendor the same day.",
+    quote: "A residential manager has the agent triage maintenance requests as they arrive, match each one to the right vendor, schedule the visit, and keep the tenant updated until the job is closed.",
+    role: "Example scenario",
+    detail: "Residential portfolio, 200 units",
+    example: true,
+  },
+  {
+    industry: "property-management",
+    sector: "Leasing & Renewals",
+    result: "Renewal offers out 90 days ahead, on every lease.",
+    quote: "A mixed-use manager has the agent track every lease end date, draft renewal offers from the owner's terms, follow up with each tenant, and give the team a weekly view of signed, pending, and upcoming renewals.",
+    role: "Example scenario",
+    detail: "Mixed-use portfolio, 40 owners",
+    example: true,
+  },
+  // PERSONAL AGENT. Labeled example scenarios.
+  {
+    industry: "/ai-agents/personal-assistant",
+    sector: "Founder",
+    result: "The inbox sorted down to what needs you.",
+    quote: "A founder has the agent sort the inbox each morning, draft replies in their voice, and hand over a short list of the messages that call for a personal answer.",
+    role: "Example scenario",
+    detail: "Founder, 25-person company",
+    example: true,
+  },
+  {
+    industry: "/ai-agents/personal-assistant",
+    sector: "Executive",
+    result: "A briefing ready before every meeting.",
+    quote: "An executive has the agent build a one-page brief for each meeting on the calendar, with attendee background, open threads, and notes from the last conversation, delivered the evening before.",
+    role: "Example scenario",
+    detail: "Executive, multi-location business",
+    example: true,
+  },
+  {
+    industry: "/ai-agents/personal-assistant",
+    sector: "Physician",
+    result: "Personal calendar, travel, and deadlines handled.",
+    quote: "A physician with a full clinical schedule has the agent manage personal appointments, book travel, track renewals and deadlines, and send a daily summary of what is done and what is next.",
+    role: "Example scenario",
+    detail: "Physician, private practice",
+    example: true,
+  },
 ];
 
 export function caseStudiesFor(industryPath: string): CaseStudy[] {
   return CASE_STUDIES.filter((c) => c.industry === industryPath);
 }
+
+/** Shown on /use-cases, which carries the example scenarios as well as client results. */
+export const CASE_STUDY_EXAMPLE_NOTE = "Cards marked Example are illustrative scenarios of how an agent is set up.";
 
 export const CASE_STUDY_DISCLAIMER =
   "Outcomes from real client engagements. Names and identifying details changed or withheld at client request.";
