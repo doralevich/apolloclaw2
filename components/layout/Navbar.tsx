@@ -8,8 +8,8 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // Site IA, current top-level order per David's direct call: Company · Agents · Use Cases ·
-// Security · Integrations · Contact. Use Cases holds both the jobs and the industries (each
-// industry page carries its own case studies - config/caseStudies.ts). Industries and
+// Security · Integrations · Contact. Use Cases is a short set of examples plus a link to the hub;
+// industry pages are reached from the footer, the homepage cards, and Agents. Industries and
 // Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
 // dropdown (About, Security); About's content moved to /company (next.config.ts redirects the
@@ -56,15 +56,13 @@ const NAV_INK = "#000000";
 const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
-import { AGENTS, NAV_INDUSTRIES, externalLinkProps } from "@/config/navigation";
-import { USE_CASES } from "@/config/useCases";
+import { AGENTS, externalLinkProps } from "@/config/navigation";
+import { USE_CASE_MENU, USE_CASES } from "@/config/useCases";
 
-const USE_CASE_NAV = USE_CASES.map((u) => ({
-  label: u.label,
-  description: u.summary,
-  to: `/use-cases/${u.slug}`,
-  Icon: u.Icon,
-}));
+const USE_CASE_NAV = USE_CASE_MENU.map((m) => {
+  const u = USE_CASES.find((x) => x.slug === m.slug)!;
+  return { label: m.label, to: `/use-cases/${m.slug}`, Icon: u.Icon };
+});
 
 const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
@@ -219,48 +217,45 @@ function tilePanel(
   );
 }
 
-// A two-column list for menus too long for icon tiles (Use Cases: 13 jobs + 14 industries). Rows
-// are icon + label only; tile descriptions at this length would make the panel taller than the
-// screen.
-function columnsPanel(
-  columns: { heading: string; items: { label: string; to: string; Icon: LucideIcon; external?: boolean }[] }[],
+// The Use Cases menu: a short set of examples in two columns, then a link to the hub for the rest.
+// Icon + short verb label only, David's call - it reads as "here is what an agent can do", not a
+// catalogue.
+function examplesPanel(
+  items: { label: string; to: string; Icon: LucideIcon }[],
   pathname: string,
 ) {
   return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(620)}>
-      <div className="grid grid-cols-2 gap-x-8">
-        {columns.map((col) => (
-          <div key={col.heading}>
-            <p
-              className="font-mono mb-2 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em]"
-              style={{ color: PAPER_MUTED }}
-            >
-              {col.heading}
-            </p>
-            <ul className="space-y-0.5">
-              {col.items.map((item) => {
-                const Icon = item.Icon;
-                const active = pathname === item.to;
-                return (
-                  <li key={item.to}>
-                    <Link
-                      href={item.to}
-                      {...(item.external ? externalLinkProps : {})}
-                      className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-[13px] font-semibold transition-colors"
-                      style={{ color: active ? RED : PAPER }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      <Icon size={15} style={{ color: active ? RED : PAPER_MUTED, flexShrink: 0 }} />
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </div>
+    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(460)}>
+      <p className="font-mono mb-3 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: PAPER_MUTED }}>
+        What an agent can do
+      </p>
+      <ul className="grid grid-flow-col grid-cols-2 grid-rows-6 gap-x-6 gap-y-0.5">
+        {items.map((item) => {
+          const Icon = item.Icon;
+          const active = pathname === item.to;
+          return (
+            <li key={item.to}>
+              <Link
+                href={item.to}
+                className="flex items-center gap-2.5 whitespace-nowrap rounded-md px-1.5 py-1.5 text-[13.5px] font-semibold transition-colors"
+                style={{ color: active ? RED : PAPER }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <Icon size={15} style={{ color: active ? RED : PAPER_MUTED, flexShrink: 0 }} />
+                {item.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      <Link
+        href="/use-cases"
+        className="mt-4 inline-block px-1.5 text-[13px] font-bold underline underline-offset-4"
+        style={{ color: PAPER }}
+      >
+        See all use cases &rarr;
+      </Link>
     </div>
   );
 }
@@ -301,24 +296,15 @@ export default function Navbar() {
       render: () => tilePanel(AGENTS, pathname, 560),
     },
     {
-      // One menu for "what it does", David's call: Use Cases and Case Studies were two menus for
-      // the same question. Two columns - the jobs (config/useCases.ts) and the industries, whose
-      // pages carry their case studies. The trigger opens the /use-cases hub; /case-studies now
-      // redirects there.
+      // Examples of what an agent can do (config/useCases.ts USE_CASE_MENU), David's call: short
+      // labels and a "See all" link, not every job and every industry. The trigger opens the
+      // /use-cases hub; /case-studies redirects to its Results section.
       kind: "group",
       label: "Use Cases",
       to: "/use-cases",
-      active: (p) =>
-        p.startsWith("/use-cases") || NAV_INDUSTRIES.some((i) => !i.external && p === i.to),
-      mobileItems: [...USE_CASE_NAV, ...NAV_INDUSTRIES],
-      render: () =>
-        columnsPanel(
-          [
-            { heading: "By task", items: USE_CASE_NAV },
-            { heading: "By industry", items: NAV_INDUSTRIES },
-          ],
-          pathname,
-        ),
+      active: (p) => p.startsWith("/use-cases"),
+      mobileItems: USE_CASE_NAV,
+      render: () => examplesPanel(USE_CASE_NAV, pathname),
     },
     {
       kind: "link",
