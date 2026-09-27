@@ -42,7 +42,7 @@ export function Hero() {
                 Book a Discovery Call
               </PrimaryButton>
               <p className="font-body mt-3 text-[13px]" style={{ color: INK_SOFT }}>
-                30 minutes. No pressure. You&apos;ll walk away with real ideas either way.
+                30 relaxed minutes. You&apos;ll walk away with real ideas either way.
               </p>
             </div>
           </div>

@@ -10,20 +10,20 @@ const RED = "#E12E30";
 // A continuous, looping conversation between a first-time visitor and the assistant, instead of
 // isolated Q&A pairs, so the hero reads as an actual chat happening rather than a static
 // screenshot. Every agent line paraphrases something already said elsewhere in the approved
-// copy (Hero, What We Do, Two-Fold Model, Trust Strip); it claims nothing beyond that. Purely
+// copy (the home page hero, Built for You, and the FAQ); it claims nothing beyond that. Purely
 // presentational, doesn't call any real backend, the real HeroAssistantInput below it does.
 type Role = "user" | "agent";
 const CONVERSATION: { role: Role; text: string }[] = [
-  { role: "user", text: "Hi, what does Apollo[Claw] actually do?" },
-  { role: "agent", text: "We build AI agents that do real work for your business, research, follow-ups, reports, scheduling, then check with you before anything that matters." },
+  { role: "user", text: "Hi, what can Apollo[Claw] do for me?" },
+  { role: "agent", text: "We build a custom AI agent around how you work. It handles research, follow-ups, reports, and scheduling, and checks in with you on anything that matters." },
   { role: "user", text: "Does it work with the tools we already use?" },
-  { role: "agent", text: "Yes, Slack, WhatsApp, email, Google Workspace, Microsoft 365, Dropbox, wherever your team already works." },
+  { role: "agent", text: "Yes. Google Workspace, Microsoft 365, Slack, email, calendars, CRMs, wherever your team already works." },
   { role: "user", text: "How fast can we get one running?" },
-  { role: "agent", text: "Answer a few questions and it's ready, dashboard and integrations included from day one." },
-  { role: "user", text: "What if we'd rather you build and run it for us?" },
-  { role: "agent", text: "We can do that too, a 30-day onboarding, we design, deploy, and run it for you." },
+  { role: "agent", text: "Most agents are live in about two weeks, followed by 30 days of hands-on training." },
+  { role: "user", text: "Is it a fit for a business our size?" },
+  { role: "agent", text: "Yes. Solo founders, growing teams, and established companies all get an agent built to fit the way they work." },
   { role: "user", text: "Is our data safe?" },
-  { role: "agent", text: "Encrypted in transit and at rest, isolated per client, hosted in the US." },
+  { role: "agent", text: "Every agent is privately deployed for one client, on a dedicated private server or your own Mac Mini." },
   { role: "user", text: "Great, how do I get started?" },
   { role: "agent", text: "Hit Book a Discovery Call, or ask me anything right here first." },
 ];

@@ -7,9 +7,9 @@ import type { LucideIcon } from "lucide-react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
-// Site IA, current top-level order per David's direct call: Company · Agents · Use Cases ·
-// Security · Integrations · Contact. Use Cases is a short set of examples plus a link to the hub;
-// industry pages are reached from the footer, the homepage cards, and Agents. Industries and
+// Site IA, current top-level order per David's direct call: Agents · Integrations · Security ·
+// Enterprise · Case Studies · Connect. Case Studies is a short set of examples plus a link to the hub;
+// industry pages are reached from the footer and Agents. Industries and
 // Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
 // dropdown (About, Security); About's content moved to /company (next.config.ts redirects the
@@ -254,7 +254,7 @@ function examplesPanel(
         className="mt-4 inline-block px-1.5 text-[13px] font-bold underline underline-offset-4"
         style={{ color: PAPER }}
       >
-        See all use cases &rarr;
+        See all case studies &rarr;
       </Link>
     </div>
   );
@@ -270,17 +270,10 @@ export default function Navbar() {
     setOpenSection(null);
   }, [pathname]);
 
-  // Top-level order per David's direct call: Company (About, Security), Industries, Agents,
-  // Case Studies, Blog, Contact. Industries and Agents are two separate triggers again after
-  // a brief run as one merged "Solutions" mega-menu. Blog sits second-to-last so Contact keeps
-  // the end of the row, which is where people look for it.
+  // Top-level order per David's call (Sept 27 2026): Agents, Integrations, Security, Enterprise,
+  // Case Studies, Connect. Company lives in the footer; Pricing is off the nav and is reached
+  // from the home page's closing call to action.
   const navEntries: NavEntry[] = [
-    {
-      kind: "link",
-      label: "Company",
-      to: "/company",
-      active: (p) => p.startsWith("/company"),
-    },
     {
       kind: "group",
       label: "Agents",
@@ -296,15 +289,10 @@ export default function Navbar() {
       render: () => tilePanel(AGENTS, pathname, 560),
     },
     {
-      // Examples of what an agent can do (config/useCases.ts USE_CASE_MENU), David's call: short
-      // labels and a "See all" link, not every job and every industry. The trigger opens the
-      // /use-cases hub; /case-studies redirects to its Results section.
-      kind: "group",
-      label: "Use Cases",
-      to: "/use-cases",
-      active: (p) => p.startsWith("/use-cases"),
-      mobileItems: USE_CASE_NAV,
-      render: () => examplesPanel(USE_CASE_NAV, pathname),
+      kind: "link",
+      label: "Integrations",
+      to: "/integrations",
+      active: (p) => p.startsWith("/integrations"),
     },
     {
       kind: "link",
@@ -314,13 +302,23 @@ export default function Navbar() {
     },
     {
       kind: "link",
-      label: "Integrations",
-      to: "/integrations",
-      active: (p) => p.startsWith("/integrations"),
+      label: "Enterprise",
+      to: "/enterprise",
+      active: (p) => p.startsWith("/enterprise"),
+    },
+    {
+      // Was "Use Cases" (David, Sept 27 2026). Same short examples menu; the trigger opens the
+      // /use-cases page, which is now the client results grouped by industry.
+      kind: "group",
+      label: "Case Studies",
+      to: "/use-cases",
+      active: (p) => p.startsWith("/use-cases"),
+      mobileItems: USE_CASE_NAV,
+      render: () => examplesPanel(USE_CASE_NAV, pathname),
     },
     {
       kind: "link",
-      label: "Contact",
+      label: "Connect",
       to: "/contact",
       active: (p) => p.startsWith("/contact"),
     },
@@ -357,7 +355,9 @@ export default function Navbar() {
               <ApolloClawLogo ink={NAV_INK} height={36} />
             </Link>
 
-            <div className="hidden flex-1 items-center justify-center gap-5 md:flex">
+            {/* Full row from xl (1280px) up. Six links plus the button need about 1,150px, so from 768px
+                they ran the button off the right edge; tablets and small laptops get the menu button. */}
+            <div className="hidden flex-1 items-center justify-center gap-6 xl:flex">
               {navEntries.map((entry) =>
                 entry.kind === "group" ? (
                   <DesktopDropdown key={entry.label} group={entry} pathname={pathname} />
@@ -371,14 +371,14 @@ export default function Navbar() {
               href={CONSULT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] text-[13px] font-bold tracking-[0.02em] transition-opacity hover:opacity-90 md:inline-flex"
+              className="hidden shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] text-[13px] font-bold tracking-[0.02em] transition-opacity hover:opacity-90 xl:inline-flex"
               style={{ background: RED, color: "#ffffff", padding: "10px 18px" }}
             >
               Book a Discovery Call
             </a>
 
             <button
-              className="ml-auto p-2 md:hidden"
+              className="ml-auto p-2 xl:hidden"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
               style={{ color: NAV_INK }}
@@ -390,7 +390,7 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-[88px] md:hidden" style={{ background: NAVY }}>
+        <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto pt-[89px] md:pt-[127px] xl:hidden" style={{ background: NAVY }}>
           <div className="flex flex-col gap-1 px-6 py-8">
             {navEntries.map((entry) =>
               entry.kind === "link" ? (

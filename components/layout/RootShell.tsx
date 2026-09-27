@@ -66,8 +66,9 @@ export default function RootShell({
           The old values (88 / 124) were under the true height and survived only on the slack
           the shorter utility bar left behind. Raising that bar used the slack up. */}
       <main className="pt-[89px] md:pt-[127px]">{children}</main>
-      {/* Standing discovery-call + newsletter bands, identical on every marketing page. */}
-      <PreFooter />
+      {/* Standing discovery-call band, identical on every marketing page except the home page,
+          which closes on its own call to action (components/home/FinalCta.tsx). */}
+      {pathname !== '/' && <PreFooter />}
       <Footer />
       {showChat && <ChatWidget token={chatToken} />}
     </>
