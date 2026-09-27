@@ -114,6 +114,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        // Case Studies folded into Use Cases (David's call); the results live on the hub now.
+        source: "/case-studies",
+        destination: "/use-cases#results",
+        permanent: true,
+      },
+      {
         source: "/contact-us",
         destination: "/contact",
         permanent: true,

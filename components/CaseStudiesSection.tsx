@@ -26,7 +26,7 @@ export function CaseStudiesSection({ industryPath }: { industryPath: string }) {
         </div>
         <p className="mt-8 font-mono text-xs" style={{ color: "rgba(11,23,41,0.35)" }}>
           {CASE_STUDY_DISCLAIMER}{" "}
-          <Link href="/case-studies" className="underline underline-offset-2" style={{ color: "rgba(11,23,41,0.55)" }}>
+          <Link href="/use-cases#results" className="underline underline-offset-2" style={{ color: "rgba(11,23,41,0.55)" }}>
             All case studies
           </Link>
         </p>

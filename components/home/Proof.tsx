@@ -86,7 +86,7 @@ export function Proof() {
           </div>
 
           <div className="mt-12 text-center">
-            <SoftLink href="/case-studies">Read more case studies →</SoftLink>
+            <SoftLink href="/use-cases#results">Read more case studies →</SoftLink>
           </div>
         </Section>
       </div>
