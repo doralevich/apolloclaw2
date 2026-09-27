@@ -8,8 +8,8 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 
 // Site IA, current top-level order per David's direct call: Agents · Integrations · Security ·
-// Enterprise · Case Studies · Connect. Case Studies is a short set of examples plus a link to the hub;
-// industry pages are reached from the footer and Agents. Industries and
+// Enterprise · Case Studies · Connect. Case Studies is a plain link to /use-cases; industry pages
+// are reached from the footer and Agents. Industries and
 // Agents (which one you're hiring) are two separate triggers, briefly merged into one two-column
 // "Solutions" mega-menu and then split back out as too dense. Company used to be a small
 // dropdown (About, Security); About's content moved to /company (next.config.ts redirects the
@@ -57,12 +57,7 @@ const NAV_HAIRLINE = "rgba(26,26,26,0.12)";
 
 const CONTACT_EMAIL = "hello@apolloclaw.ai";
 import { AGENTS, externalLinkProps } from "@/config/navigation";
-import { USE_CASE_MENU, USE_CASES } from "@/config/useCases";
 
-const USE_CASE_NAV = USE_CASE_MENU.map((m) => {
-  const u = USE_CASES.find((x) => x.slug === m.slug)!;
-  return { label: m.label, to: `/use-cases/${m.slug}`, Icon: u.Icon };
-});
 
 const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 
@@ -217,49 +212,6 @@ function tilePanel(
   );
 }
 
-// The Use Cases menu: a short set of examples in two columns, then a link to the hub for the rest.
-// Icon + short verb label only, David's call - it reads as "here is what an agent can do", not a
-// catalogue.
-function examplesPanel(
-  items: { label: string; to: string; Icon: LucideIcon }[],
-  pathname: string,
-) {
-  return (
-    <div className="overflow-hidden rounded-xl p-5" style={panelStyle(460)}>
-      <p className="font-mono mb-3 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: PAPER_MUTED }}>
-        What an agent can do
-      </p>
-      <ul className="grid grid-flow-col grid-cols-2 grid-rows-6 gap-x-6 gap-y-0.5">
-        {items.map((item) => {
-          const Icon = item.Icon;
-          const active = pathname === item.to;
-          return (
-            <li key={item.to}>
-              <Link
-                href={item.to}
-                className="flex items-center gap-2.5 whitespace-nowrap rounded-md px-1.5 py-1.5 text-[13.5px] font-semibold transition-colors"
-                style={{ color: active ? RED : PAPER }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,246,248,0.05)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <Icon size={15} style={{ color: active ? RED : PAPER_MUTED, flexShrink: 0 }} />
-                {item.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-      <Link
-        href="/use-cases"
-        className="mt-4 inline-block px-1.5 text-[13px] font-bold underline underline-offset-4"
-        style={{ color: PAPER }}
-      >
-        See all case studies &rarr;
-      </Link>
-    </div>
-  );
-}
-
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -307,14 +259,12 @@ export default function Navbar() {
       active: (p) => p.startsWith("/enterprise"),
     },
     {
-      // Was "Use Cases" (David, Sept 27 2026). Same short examples menu; the trigger opens the
-      // /use-cases page, which is now the client results grouped by industry.
-      kind: "group",
+      // Was the "Use Cases" dropdown (David, Sept 27 2026): now a plain link to /use-cases, the
+      // client results grouped by industry. The individual task pages stay live and in the sitemap.
+      kind: "link",
       label: "Case Studies",
       to: "/use-cases",
       active: (p) => p.startsWith("/use-cases"),
-      mobileItems: USE_CASE_NAV,
-      render: () => examplesPanel(USE_CASE_NAV, pathname),
     },
     {
       kind: "link",
