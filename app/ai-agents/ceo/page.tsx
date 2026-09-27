@@ -340,58 +340,6 @@ export default function CeoPage() {
         </div>
       </section>
 
-      {/* Founder */}
-      <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
-        <div
-          aria-hidden
-          style={{
-            position: "absolute", inset: 0,
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-        <div className="container mx-auto max-w-4xl px-5 md:px-8 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-12 items-start">
-            <div className="flex flex-col items-center md:items-start gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/david-oralevich.png"
-                alt="David Oralevich"
-                className="rounded-xl"
-                style={{ width: "100%", maxWidth: 180, objectFit: "cover", filter: "grayscale(100%)" }}
-              />
-              <div>
-                <p className="font-display text-sm font-bold text-white">David Oralevich</p>
-                <p className="font-mono text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Founder, Apollo Claw</p>
-                <p className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Long Island, NY</p>
-              </div>
-            </div>
-            <div>
-              <p className="font-mono text-xs uppercase tracking-widest mb-5" style={{ color: RED }}>The Story</p>
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-white mb-6">
-                One Founder. Eighteen Years. One Unavoidable Conclusion.
-              </h2>
-              <div className="flex flex-col gap-4 font-body text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
-                <p>David Oralevich has spent his career at the edge of what is next. He rode the first wave of the internet in the late 90s, built Designs By Dave O. in 2007, and spent nearly two decades helping businesses compete and grow in a digital world.</p>
-                <p>Then came AI. While the world was still debating ChatGPT, David was already working alongside senior engineers at leading AI startups, watching the technology develop before it hit the headlines.</p>
-                <p>What he saw was a gap. Executives were the last to benefit from the AI revolution. The intelligence was there. But nobody had built it for the person running the organization.</p>
-                <p>So he built it. Apollo Claw and a portfolio of industry-specific AI agents, each one purpose-built for a role. The CEO Bot is built on the same foundation.</p>
-                <p>Every engagement is handled in-house, on Long Island, New York. No offshore teams. No outsourced builds. When you work with us, you work with us.</p>
-              </div>
-              <blockquote
-                className="mt-8 pl-5 font-display text-lg text-white italic"
-                style={{ borderLeft: `3px solid ${RED}` }}
-              >
-                &ldquo;Every revolution has an early chapter. The executives who read it first write the rest of the story.&rdquo;
-                <footer className="font-mono text-xs mt-2 not-italic" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  David Oralevich, Founder &amp; Chief Visionary Officer, Apollo Claw
-                </footer>
-              </blockquote>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </>
   );
 }
