@@ -19,7 +19,7 @@ export const OG_IMAGES = [
     url: OG_IMAGE_URL,
     width: 1200,
     height: 630,
-    alt: "Apollo[Claw] | AI Strategy & Implementation for Business",
+    alt: "Apollo Claw | Your AI Chief of Staff",
   },
 ];
 

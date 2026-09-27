@@ -471,3 +471,22 @@ export const USE_CASES: UseCase[] = [
 export function findUseCase(slug: string): UseCase | undefined {
   return USE_CASES.find((u) => u.slug === slug);
 }
+
+// The top-nav Use Cases menu: examples of what an agent can do, not a catalogue of everything it
+// covers - David's call after the two-column menu (13 jobs + 14 industries) ran the height of the
+// screen. Short verb labels, two columns in this order, and a "See all" link to the hub for the
+// rest (Client Intake is on the hub, not here).
+export const USE_CASE_MENU: { slug: string; label: string }[] = [
+  { slug: "inbox-triage", label: "Triage your inbox" },
+  { slug: "follow-up", label: "Chase follow-ups" },
+  { slug: "front-desk", label: "Answer the phones" },
+  { slug: "meeting-prep", label: "Prep your meetings" },
+  { slug: "appointment-reminders", label: "Cut no-shows" },
+  { slug: "lead-follow-up", label: "Follow up on leads" },
+  { slug: "month-end-close", label: "Close the books" },
+  { slug: "invoicing-collections", label: "Collect invoices" },
+  { slug: "document-drafting", label: "Draft contracts" },
+  { slug: "recruiting-pipeline", label: "Screen candidates" },
+  { slug: "hr-requests", label: "Handle HR requests" },
+  { slug: "renewal-outreach", label: "Run renewals" },
+];

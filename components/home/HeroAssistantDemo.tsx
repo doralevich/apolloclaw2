@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { HAIRLINE, PAPER, PAPER_MUTED, RED } from "@/components/home/ui";
+// Light palette: the hero sits on cream now (no dark backgrounds, David's brand rule).
+const INK = "#1A1A1A";
+const INK_MUTED = "rgba(26,26,26,0.72)";
+const LINE = "rgba(26,26,26,0.08)";
+const RED = "#E12E30";
 
-// A continuous, looping conversation between a new visitor and the assistant, instead of
+// A continuous, looping conversation between a first-time visitor and the assistant, instead of
 // isolated Q&A pairs, so the hero reads as an actual chat happening rather than a static
 // screenshot. Every agent line paraphrases something already said elsewhere in the approved
-// copy (Hero, What We Do, Two-Fold Model, Trust Strip), nothing new is claimed. Purely
+// copy (Hero, What We Do, Two-Fold Model, Trust Strip); it claims nothing beyond that. Purely
 // presentational, doesn't call any real backend, the real HeroAssistantInput below it does.
 type Role = "user" | "agent";
 const CONVERSATION: { role: Role; text: string }[] = [
@@ -21,7 +25,7 @@ const CONVERSATION: { role: Role; text: string }[] = [
   { role: "user", text: "Is our data safe?" },
   { role: "agent", text: "Encrypted in transit and at rest, isolated per client, hosted in the US." },
   { role: "user", text: "Great, how do I get started?" },
-  { role: "agent", text: "Hit Get Started below, or schedule a call if you'd rather talk it through first." },
+  { role: "agent", text: "Hit Book a Discovery Call, or ask me anything right here first." },
 ];
 
 // Only appended after the first full pass, points the visitor at the real input below instead
@@ -41,7 +45,7 @@ function TypingDots() {
         <span
           key={i}
           className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{ background: PAPER_MUTED, animation: `hero-dot 1s ease-in-out ${i * 0.15}s infinite` }}
+          style={{ background: INK_MUTED, animation: `hero-dot 1s ease-in-out ${i * 0.15}s infinite` }}
         />
       ))}
       <style>{`
@@ -57,9 +61,9 @@ function Bubble({ role, text, cursor }: { role: Role; text: string; cursor?: boo
     <div
       className={`rounded-[10px] border px-4 py-2.5 text-[13px] leading-[1.55] ${isUser ? "self-start" : ""}`}
       style={{
-        borderColor: HAIRLINE,
-        background: isUser ? "rgba(225,46,48,0.06)" : "rgba(245,246,248,0.04)",
-        color: isUser ? PAPER : PAPER_MUTED,
+        borderColor: LINE,
+        background: isUser ? "rgba(225,46,48,0.07)" : "#F7F6F3",
+        color: isUser ? INK : INK_MUTED,
         maxWidth: isUser ? "85%" : undefined,
       }}
     >
@@ -157,7 +161,7 @@ export function HeroAssistantDemo({ className = "" }: { className?: string }) {
         <Bubble key={i} role={msg.role} text={msg.text} />
       ))}
       {thinking ? (
-        <div className="rounded-[10px] border px-4 py-3" style={{ borderColor: HAIRLINE, background: "rgba(245,246,248,0.04)" }}>
+        <div className="rounded-[10px] border px-4 py-3" style={{ borderColor: LINE, background: "#F7F6F3" }}>
           <TypingDots />
         </div>
       ) : typingRole ? (
