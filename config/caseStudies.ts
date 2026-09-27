@@ -7,6 +7,11 @@
 // is the finer label printed on the card. Two filings are judgment calls, confirmed with David:
 // the regional insurance group's CFO sits under Insurance, and the B2B services founder under
 // Professional Services.
+//
+// Three per industry on /use-cases (David, Sept 27 2026). The third Real Estate and Law studies and
+// the two added Professional Services ones are the same quotes already published on
+// /industries/real-estate, /industries/law-firms, /ai-agents/legal and /ai-agents/ceo, filed here so
+// the Results page carries them too. Wealth Management sits under Professional Services.
 
 export type CaseStudy = {
   industry: string;
@@ -92,6 +97,14 @@ export const CASE_STUDIES: CaseStudy[] = [
     detail: "Independent brokerage, 30 agents",
   },
   {
+    industry: "/industries/real-estate",
+    sector: "Commercial",
+    result: "Every prospect kept warm through the deal.",
+    quote: "Commercial deals have long timelines and a lot of touchpoints. The agent keeps every prospect warm, follows up on every LOI, and makes sure nothing goes quiet. I stopped losing deals to inattention.",
+    role: "Commercial Real Estate Broker",
+    detail: "Office and industrial, Mid-Atlantic",
+  },
+  {
     industry: "/industries/personal-injury-law",
     sector: "Personal Injury",
     result: "Retained cases up 40%.",
@@ -108,12 +121,36 @@ export const CASE_STUDIES: CaseStudy[] = [
     detail: "Litigation firm, 18 attorneys, Mid-Atlantic",
   },
   {
+    industry: "/industries/law-firms",
+    sector: "Corporate",
+    result: "Shorter deal timelines.",
+    quote: "We do M&A work and due diligence requires reviewing hundreds of documents. The agent pre-processes everything: categorizes it, flags the key issues, and gives my associates a starting point instead of a blank page. Deal timelines got shorter.",
+    role: "Corporate Partner",
+    detail: "Mid-market M&A practice, New York",
+  },
+  {
     industry: "/industries/professional-services",
     sector: "B2B Services",
     result: "Cleared the bottleneck. Things move now.",
     quote: "I have a great team but I was still the bottleneck on everything. Decisions sat with me, follow-ups sat with me, research sat with me. The CEO Agent cleared the queue. Things move now without me touching them, and I only get involved when I actually need to.",
     role: "Founder & CEO",
     detail: "B2B services company, 45 employees",
+  },
+  {
+    industry: "/industries/professional-services",
+    sector: "Consulting",
+    result: "NDA turnaround from a week to the same afternoon.",
+    quote: "Every NDA used to start from scratch and sit in my inbox for days. Now the agent drafts it from our template the moment we need one, and I review instead of retype. Turnaround went from a week to the same afternoon.",
+    role: "Operations Lead, Consulting Firm",
+    detail: "40-person firm, Northeast",
+  },
+  {
+    industry: "/industries/professional-services",
+    sector: "Wealth Management",
+    result: "Every client update drafted, every review prepped.",
+    quote: "Client communication is everything in this business. The bot drafts quarterly updates, flags clients who haven't heard from us in 60 days, and preps me before every review meeting. My clients think I have a larger team. In a way, I do.",
+    role: "CEO, Wealth Management Firm",
+    detail: "RIA, $400M AUM, New York",
   },
 ];
 

@@ -73,7 +73,8 @@ export function H2({ children, light = false }: { children: React.ReactNode; lig
   return (
     <h2
       className="font-heading text-[clamp(1.875rem,3.2vw,2.75rem)] font-bold leading-[1.1] tracking-tight"
-      style={{ color: light ? TAN_INK : PAPER }}
+      // Balanced wrapping so a two-line heading splits evenly instead of leaving one word alone.
+      style={{ color: light ? TAN_INK : PAPER, textWrap: "balance" }}
     >
       {children}
     </h2>

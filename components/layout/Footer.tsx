@@ -14,7 +14,8 @@ const navLinks = [
   { label: "Company", to: "/company" },
   { label: "What We Do", to: "/what-we-do" },
   { label: "How It Works", to: "/how-it-works" },
-  { label: "Use Cases", to: "/use-cases" },
+  { label: "Case Studies", to: "/use-cases" },
+  { label: "Enterprise", to: "/enterprise" },
   // "Blog", not "Insights". The page was always here under the old label and read as missing,
   // because nobody scanning a footer for a blog looks for the word Insights.
   { label: "Blog", to: "/blog" },
@@ -90,7 +91,7 @@ export default function Footer() {
                 The Weekly Claw
               </p>
               <p className="font-body mt-1 text-[13.5px]" style={{ color: WHITE_MUTED }}>
-                What happened in AI last week and what to watch this week. Every Monday. No spam.
+                What happened in AI last week and what to watch this week, in your inbox every Monday.
               </p>
             </div>
             <NewsletterForm />
