@@ -22,6 +22,17 @@ export const metadata: Metadata = {
 const NAVY = "#0B1729";
 const RED = "#D72B2B";
 
+// How the industries group on this page. Law Firms (the Litigation study) and Personal Injury Law
+// share one group so their two cards sit side by side, David's call; every other industry is its
+// own group. Industry pages still show only their own studies (CaseStudiesSection).
+const GROUPS: { label: string; paths: string[] }[] = [
+  { label: "Insurance", paths: ["/industries/insurance"] },
+  { label: "Medical Practices", paths: ["/industries/medical-practices"] },
+  { label: "Real Estate", paths: ["/industries/real-estate"] },
+  { label: "Law", paths: ["/industries/law-firms", "/industries/personal-injury-law"] },
+  { label: "Professional Services", paths: ["/industries/professional-services"] },
+];
+
 export default function UseCasesHub() {
   return (
     <>
@@ -37,18 +48,23 @@ export default function UseCasesHub() {
           links each task page, so the hub is just the results. */}
       <section id="results" style={{ background: "#F2F1ED" }} className="scroll-mt-28 py-16 md:py-20">
         <div className="container mx-auto max-w-6xl space-y-12 px-5 md:px-8">
-          {Object.entries(CASE_STUDY_INDUSTRY_LABELS).map(([path, label]) => {
-            const studies = CASE_STUDIES.filter((c) => c.industry === path);
+          {GROUPS.map(({ label, paths }) => {
+            // Config order, so Personal Injury and Litigation stay next to each other.
+            const studies = CASE_STUDIES.filter((c) => paths.includes(c.industry));
             if (!studies.length) return null;
             return (
-              <div key={path}>
+              <div key={label}>
                 <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
                   <h3 className="font-display text-xl font-extrabold tracking-tight" style={{ color: NAVY }}>
                     {label}
                   </h3>
-                  <Link href={path} className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: RED }}>
-                    {label} &rarr;
-                  </Link>
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    {paths.map((path) => (
+                      <Link key={path} href={path} className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: RED }}>
+                        {CASE_STUDY_INDUSTRY_LABELS[path]} &rarr;
+                      </Link>
+                    ))}
+                  </div>
                 </div>
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {studies.map((c) => (
