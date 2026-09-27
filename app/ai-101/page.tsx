@@ -48,7 +48,7 @@ export default function AI101Page() {
       <div className="bg-background py-16">
       <div className="container mx-auto max-w-7xl px-4 md:px-8">
 
-        <div className="flex flex-col gap-6 mb-16">
+        <div className="mb-16 grid gap-6 md:grid-cols-2">
           {topics.map((t, i) => (
             <ScrollReveal key={i} delay={i * 50}>
               <div className="bauhaus-card p-8">

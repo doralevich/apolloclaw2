@@ -325,7 +325,7 @@ export default function CeoPage() {
               Frequently Asked Questions
             </h2>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((f, i) => (
               <div
                 key={i}

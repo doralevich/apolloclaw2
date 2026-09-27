@@ -285,7 +285,7 @@ export default function CfoPage() {
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>Frequently Asked Questions</h2>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((f, i) => (
               <div key={i} className="rounded-xl p-7" style={{ background: CREAM2, border: "1px solid rgba(11,23,41,0.07)" }}>
                 <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>{f.q}</h3>
