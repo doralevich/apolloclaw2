@@ -5,7 +5,6 @@ import { BuiltForYou } from "@/components/home/BuiltForYou";
 import { Proof } from "@/components/home/Proof";
 import { AgentCards } from "@/components/home/AgentCards";
 import { HomeFaq, HOME_FAQS } from "@/components/home/HomeFaq";
-import { FounderNote } from "@/components/home/FounderNote";
 import { FinalCta } from "@/components/home/FinalCta";
 import { OG_IMAGES } from "@/lib/seo";
 
@@ -41,8 +40,8 @@ const faqJsonLd = {
 };
 
 // Section order per David's spec (Sept 27 2026): Hero, Three Steps, Built for You, Proven
-// Results, Specialist Agents, FAQ, Founder Note, Final CTA. The sitewide PreFooter is skipped
-// here (RootShell) because FinalCta closes the page.
+// Results, Specialist Agents, FAQ, Final CTA. The Founder Note came off at his call. The
+// sitewide PreFooter is skipped here (RootShell) because FinalCta closes the page.
 export default function HomePage() {
   return (
     <>
@@ -53,7 +52,6 @@ export default function HomePage() {
       <Proof />
       <AgentCards />
       <HomeFaq />
-      <FounderNote />
       <FinalCta />
     </>
   );

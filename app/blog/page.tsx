@@ -44,7 +44,7 @@ export default async function BlogPage() {
         description="Expert thoughts on AI automation, strategy, and implementation for business owners."
       />
       <div className="bg-background py-16">
-      <div className="container mx-auto max-w-5xl px-4 md:px-8">
+      <div className="container mx-auto max-w-7xl px-4 md:px-8">
 
         {posts.length === 0 ? (
           <div className="text-center py-20">

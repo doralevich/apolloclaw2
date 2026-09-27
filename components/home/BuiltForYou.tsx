@@ -53,7 +53,7 @@ export function BuiltForYou() {
             <div className="min-w-0">
               <BracketLabel light>Built for You</BracketLabel>
               <H2 light>An Agent That Knows Your Business Inside and Out.</H2>
-              <div className="mt-6 max-w-2xl">
+              <div className="mt-6 max-w-7xl">
                 <BodyLarge light>
                   Your agent starts with you. It learns how your business runs, works inside the tools
                   you already use, and gets sharper every week it&apos;s with you. Solo founders, growing

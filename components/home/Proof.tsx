@@ -53,7 +53,7 @@ export function Proof() {
       />
       <div className="relative z-10">
         <Section bg="transparent">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto max-w-7xl text-center">
             <BracketLabel>Proven Results</BracketLabel>
             <H2>10 to 20 Hours a Week, Back in Your Hands.</H2>
             <div className="mt-6">
@@ -64,7 +64,7 @@ export function Proof() {
             </div>
           </div>
 
-          <div className="mx-auto mt-12 grid max-w-6xl gap-6 md:grid-cols-2">
+          <div className="mx-auto mt-12 grid max-w-7xl gap-6 md:grid-cols-2">
             {CASES.map((c) => (
               <div
                 key={c.title}

@@ -62,13 +62,13 @@ export default function IntegrationsPage() {
           </span>
           <h1
             className="font-heading mx-auto text-[clamp(1.875rem,3.4vw,3rem)] font-extrabold leading-[1.12] tracking-tight"
-            style={{ color: PAPER, textWrap: "balance", maxWidth: 780 }}
+            style={{ color: PAPER, textWrap: "balance" }}
           >
             Connect Every Tool You Already Use
           </h1>
           <p
             className="font-body mx-auto mt-6 text-[1.125rem] leading-[1.65]"
-            style={{ color: PAPER_MUTED, maxWidth: 620 }}
+            style={{ color: PAPER_MUTED }}
           >
             Mail, calendars, files, CRM, payments, and more - connect the tools you already use
             once your agent is built.

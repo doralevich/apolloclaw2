@@ -11,13 +11,13 @@ const CONSULT_URL = "https://cal.com/therealdaveo/dbdo-consultation";
 export function PreFooter() {
   return (
     <Section bg={TAN}>
-      <div className="mx-auto max-w-3xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         {/* Hard break before "AI Implemented?" is deliberate (David's call), so the two halves of
             the line always split at the same place rather than wherever the viewport puts them. */}
         <H2 light>
           Ready to move from AI curiosity to<br />AI <span style={{ color: RED }}>Implemented?</span>
         </H2>
-        <p className="font-body mx-auto mt-5 text-[1.0625rem] leading-[1.7]" style={{ color: TAN_INK_MUTED, maxWidth: 560 }}>
+        <p className="font-body mx-auto mt-5 text-[1.0625rem] leading-[1.7]" style={{ color: TAN_INK_MUTED }}>
           Schedule a free 30-minute consultation. You bring the bottlenecks, we bring the build.
         </p>
         <div className="mt-9">

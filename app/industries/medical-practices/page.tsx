@@ -159,15 +159,15 @@ export default function HealthcarePage() {
       />
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Healthcare Intelligence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             The Best Practices Focus on Patients. Not Paperwork.
           </h2>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
             Your staff is spending hours every day on reminders, intake collection, follow-up calls, and scheduling coordination. Every minute on admin is a minute away from the patient in front of them.
           </p>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             The Medical Agent handles the operational layer, scheduling, reminders, follow-up, intake, recall, so your team spends time on care, not coordination.
           </p>
         </div>
@@ -176,7 +176,7 @@ export default function HealthcarePage() {
       {/* What It Does */}
       <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">A Dedicated AI Agent for Medical Practices</h2>
@@ -196,7 +196,7 @@ export default function HealthcarePage() {
 
       {/* Process */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>From Consultation to Running in 2 Weeks</h2>
@@ -221,7 +221,7 @@ export default function HealthcarePage() {
 
       {/* Testimonials */}
       <section style={{ background: NAVY }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Medical Practices Say After 30 Days</h2>
@@ -245,7 +245,7 @@ export default function HealthcarePage() {
 
       {/* Investment */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Practices Ready to Deliver Better Care at Scale</h2>
           <p className="font-body text-lg leading-relaxed mb-6" style={{ color: "rgba(11,23,41,0.65)" }}>
@@ -265,12 +265,12 @@ export default function HealthcarePage() {
 
       {/* FAQ */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-12">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>Frequently Asked Questions</h2>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((f, i) => (
               <div key={i} className="rounded-xl p-7" style={{ background: CREAM2, border: "1px solid rgba(11,23,41,0.07)" }}>
                 <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>{f.q}</h3>

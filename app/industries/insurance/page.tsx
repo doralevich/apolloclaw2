@@ -159,15 +159,15 @@ export default function InsurancePage() {
       />
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Insurance Intelligence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             The Best Agencies Win on Follow-Up. Not Just Price.
           </h2>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
             Renewals slip through because outreach starts too late. Quotes go cold because follow-up falls off after two attempts. Claims clients call constantly because nobody updated them.
           </p>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             The Insurance Agent handles all of it automatically: renewal sequences, quote follow-up, claims updates, certificate requests, so your producers stay in front of buyers instead of behind on admin.
           </p>
         </div>
@@ -176,7 +176,7 @@ export default function InsurancePage() {
       {/* What It Does */}
       <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">A Dedicated AI Agent for Insurance Agencies</h2>
@@ -196,7 +196,7 @@ export default function InsurancePage() {
 
       {/* Process */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>From Consultation to Running in 2 Weeks</h2>
@@ -221,7 +221,7 @@ export default function InsurancePage() {
 
       {/* Testimonials */}
       <section style={{ background: NAVY }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Insurance Professionals Say After 30 Days</h2>
@@ -245,7 +245,7 @@ export default function InsurancePage() {
 
       {/* Investment */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Agencies That Are Done Losing Renewals to Slow Outreach</h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
@@ -259,12 +259,12 @@ export default function InsurancePage() {
 
       {/* FAQ */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-12">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>Frequently Asked Questions</h2>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((f, i) => (
               <div key={i} className="rounded-xl p-7" style={{ background: CREAM2, border: "1px solid rgba(11,23,41,0.07)" }}>
                 <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>{f.q}</h3>

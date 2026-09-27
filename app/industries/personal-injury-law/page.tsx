@@ -105,13 +105,13 @@ export default function PersonalInjuryLawPage() {
 
       {/* Pain Points */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The PI Problem</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-4" style={{ color: NAVY }}>
               Personal Injury Is Won at Intake and Lost in the Follow-Up
             </h2>
-            <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
+            <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
               PI firms don&apos;t lose cases in court. They lose them to the voicemail box, the slow
               callback, the records request nobody chased, and the client who stopped hearing from you.
             </p>
@@ -131,7 +131,7 @@ export default function PersonalInjuryLawPage() {
       {/* What It Does */}
       <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">An AI Intake Specialist Built for Injury Law</h2>
@@ -154,7 +154,7 @@ export default function PersonalInjuryLawPage() {
 
       {/* CTA */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Get Started</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             Built for PI Firms That Are Done Losing Cases to a Faster Phone

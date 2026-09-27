@@ -68,7 +68,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
               pointerEvents: "none",
             }}
           />
-          <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-6xl relative z-10">
+          <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-7xl relative z-10">
             <h1
               className="font-display leading-[1.05] tracking-tight"
               style={{
@@ -88,7 +88,6 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
                 fontSize: "clamp(15px, 1.15vw, 18px)",
                 lineHeight: 1.7,
                 color: "rgba(255,255,255,0.7)",
-                maxWidth: 940,
                 margin: "16px auto 0",
               }}
             >
@@ -120,7 +119,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
 
       {/* CHALLENGES - cream */}
       <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl">
           <ScrollReveal>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span
@@ -197,7 +196,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
             pointerEvents: "none",
           }}
         />
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-5xl relative z-10">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl relative z-10">
           <ScrollReveal>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span
@@ -260,7 +259,7 @@ export default function UseCaseTemplate({ uc }: { uc: UseCase }) {
 
       {/* RESULTS - cream */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-4xl">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl">
           <ScrollReveal>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span

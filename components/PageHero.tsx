@@ -45,7 +45,7 @@ export default function PageHero({ title, titleAccent, accentFirst, description,
           pointerEvents: "none",
         }}
       />
-      <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-6xl relative z-10">
+      <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 text-center max-w-7xl relative z-10">
         <h1
           className="font-display leading-[1.05] tracking-tight"
           style={{
@@ -75,7 +75,6 @@ export default function PageHero({ title, titleAccent, accentFirst, description,
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 940,
               margin: "16px auto 0",
             }}
           >

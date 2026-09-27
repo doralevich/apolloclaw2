@@ -71,7 +71,7 @@ function SectionIntro({ kicker, title, children }: { kicker: string; title: stri
         {title}
       </h2>
       {children && (
-        <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, maxWidth: 640, marginBottom: 32 }}>
+        <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, marginBottom: 32 }}>
           {children}
         </p>
       )}
@@ -317,7 +317,7 @@ export default function SecurityPage() {
           it belongs before the general principles below restate the same posture in policy
           language. */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
           <SectionIntro kicker="[ Deployment ]" title="How Your Agent Actually Runs">
             Every Apollo[Claw] agent lands on one of two infrastructures. Which one is a decision
             you make at setup, not a black box you have to take our word for.
@@ -361,7 +361,7 @@ export default function SecurityPage() {
 
       {/* CORE PRINCIPLES - icon-box grid, white bg */}
       <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <ScrollReveal delay={0}>
               <IconBox icon={Lock} title="Your Data, Your Infrastructure">
@@ -399,7 +399,7 @@ export default function SecurityPage() {
 
       {/* SECURITY POLICIES - cream */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
           <SectionIntro kicker="[ Written Policies ]" title="Formal Security Policies">
             A documented security policy framework, versioned and reviewed, available to
             enterprise clients and procurement teams on request.
@@ -436,7 +436,7 @@ export default function SecurityPage() {
 
       {/* BUILT ON TRUSTED INFRASTRUCTURE - white, logo row */}
       <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
           <SectionIntro kicker="[ Infrastructure ]" title="Built on Trusted Infrastructure">
             This is the infrastructure behind the Apollo[Claw] dashboard, billing, and account
             data, not where your agent itself runs — see &ldquo;How Your Agent Actually
@@ -476,7 +476,7 @@ export default function SecurityPage() {
 
       {/* COMPLIANCE & PRIVACY - cream, square boxes */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
           <SectionIntro kicker="[ Compliance ]" title="Compliance Posture">
             Where we hold a certification directly and where we lean on a sub-processor&apos;s,
             named plainly rather than blurred together.
@@ -510,7 +510,7 @@ export default function SecurityPage() {
 
       {/* FOR IT & PROCUREMENT - white, checkbox grid + contact */}
       <section style={{ background: WHITE }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-5xl">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
           <SectionIntro kicker="[ Vendor Readiness ]" title="What Institutional Buyers Check For">
             The same checklist your IT and procurement team will run through. Where something is
             still in progress, we say so, plainly.
@@ -556,7 +556,7 @@ export default function SecurityPage() {
 
       {/* QUESTIONS - cream, closing */}
       <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-24 max-w-2xl text-center">
+        <div className="container mx-auto px-5 md:px-8 py-16 md:py-24 max-w-7xl text-center">
           <ScrollReveal>
             <h2
               className="font-display"

@@ -9,7 +9,7 @@ export function CaseStudiesSection({ industryPath }: { industryPath: string }) {
   if (!studies.length) return null;
   return (
     <section style={{ background: "#FAFAF7" }} className="py-16 md:py-20">
-      <div className="container mx-auto max-w-6xl px-5 md:px-8">
+      <div className="container mx-auto max-w-7xl px-5 md:px-8">
         <p className="font-mono mb-3 text-xs uppercase tracking-widest" style={{ color: "#D72B2B" }}>
           Case Studies
         </p>
@@ -19,7 +19,7 @@ export function CaseStudiesSection({ industryPath }: { industryPath: string }) {
         >
           Real results in this industry
         </h2>
-        <div className={`grid gap-6 ${studies.length === 1 ? "max-w-2xl" : "md:grid-cols-2"} ${studies.length >= 3 ? "lg:grid-cols-3" : ""}`}>
+        <div className={`grid gap-6 ${studies.length === 1 ? "max-w-7xl" : "md:grid-cols-2"} ${studies.length >= 3 ? "lg:grid-cols-3" : ""}`}>
           {studies.map((c) => (
             <CaseStudyCard key={c.role + c.detail} study={c} />
           ))}

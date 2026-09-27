@@ -152,7 +152,7 @@ export default function PricingPage() {
       <section className="relative overflow-hidden">
         <Grid />
         <div className="container relative z-10 mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
-          <div className="max-w-4xl">
+          <div className="max-w-7xl">
             <Eyebrow>Pricing</Eyebrow>
             <h1
               className="font-heading text-[clamp(1.875rem,3.4vw,3rem)] font-extrabold leading-[1.12] tracking-tight"
@@ -160,7 +160,7 @@ export default function PricingPage() {
             >
               One setup fee, one monthly, and nothing you have to work out afterwards
             </h1>
-            <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: INK_MUTED, maxWidth: 620 }}>
+            <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: INK_MUTED }}>
               Two ways to start, depending on whether the build is scoped to you. The monthly is
               the same either way and it is all in.
             </p>
@@ -278,7 +278,7 @@ export default function PricingPage() {
 
           {/* David's exact sentence, from the catalog. Both tiers, one wording. */}
           <p
-            className="font-body mx-auto mt-10 max-w-3xl rounded-xl px-6 py-5 text-center text-[15px] leading-[1.7]"
+            className="font-body mx-auto mt-10 max-w-7xl rounded-xl px-6 py-5 text-center text-[15px] leading-[1.7]"
             style={{ border: `1px solid ${RULE}`, color: INK_MUTED }}
           >
             {MONTHLY_API_ALLOWANCE_LABEL}
@@ -318,7 +318,7 @@ export default function PricingPage() {
       <section className="relative overflow-hidden" style={{ borderTop: `1px solid ${RULE}` }}>
         <Grid />
         <div className="container relative z-10 mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-7xl text-center">
             <h2 className="font-heading text-[clamp(1.75rem,3vw,2.5rem)] font-bold leading-[1.15] tracking-tight">
               Not sure which tier you are
             </h2>

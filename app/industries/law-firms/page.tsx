@@ -160,18 +160,18 @@ export default function LegalPage() {
 
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Legal Intelligence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             The Best Attorneys Focus on Law. Not Admin.
           </h2>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
             Client intake takes too long. Deadlines pile up across dozens of matters. Clients call for status updates nobody has time to give. Billing gaps eat into revenue that was already earned.
           </p>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             The Law Agent handles the administrative layer: intake, communication, deadline tracking, document routing, so your team spends time on legal work, not operational overhead.
           </p>
-          <div className="mx-auto mt-10 max-w-2xl rounded-xl p-6 text-left" style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.09)" }}>
+          <div className="mx-auto mt-10 max-w-7xl rounded-xl p-6 text-left" style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.09)" }}>
             <p className="font-body text-base leading-relaxed" style={{ color: "rgba(11,23,41,0.75)" }}>
               Personal injury firm?{" "}
               <a href="/industries/personal-injury-law" className="font-bold underline underline-offset-4" style={{ color: RED }}>
@@ -185,7 +185,7 @@ export default function LegalPage() {
       {/* What It Does */}
       <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">A Dedicated AI Agent for Law Firms</h2>
@@ -205,7 +205,7 @@ export default function LegalPage() {
 
       {/* Process */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>From Consultation to Running in 2 Weeks</h2>
@@ -230,7 +230,7 @@ export default function LegalPage() {
 
       {/* Testimonials */}
       <section style={{ background: NAVY }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Law Firms Say After 30 Days</h2>
@@ -254,7 +254,7 @@ export default function LegalPage() {
 
       {/* Investment */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Firms That Are Done Leaving Billable Hours on the Table</h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
@@ -268,12 +268,12 @@ export default function LegalPage() {
 
       {/* FAQ */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-12">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>Frequently Asked Questions</h2>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((f, i) => (
               <div key={i} className="rounded-xl p-7" style={{ background: CREAM2, border: "1px solid rgba(11,23,41,0.07)" }}>
                 <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>{f.q}</h3>
