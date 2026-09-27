@@ -77,7 +77,8 @@ const CURATED: Category[] = (() => {
 
 const ALL = "All";
 const MORE = "More apps";
-const PER_PAGE = 60;
+// 24 a page (Lindy-sized pages), so the page numbers show on the curated list alone too.
+const PER_PAGE = 24;
 const MAX_CATALOG_ATTEMPTS = 8;
 
 function normalize(s: string) {

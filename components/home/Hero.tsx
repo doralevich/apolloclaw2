@@ -1,20 +1,19 @@
 import HeroAssistantInput from "@/components/HeroAssistantInput";
 import { HeroAssistantDemo } from "@/components/home/HeroAssistantDemo";
-import { PrimaryButton } from "@/components/home/ui";
+import { NAVY, PAPER, PAPER_MUTED, PAPER_SOFT, PrimaryButton, RED, TextureBackground } from "@/components/home/ui";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
-// Brand palette for the hero: cream ground, near-black ink, brand red. David's rule for this
-// section is no dark backgrounds, so the hero and the Apollo[Claw] Assistant card beside it are
-// light; the side-by-side layout is unchanged.
-const CREAM = "#F2F0EB";
-const INK = "#1A1A1A";
-const INK_MUTED = "rgba(26,26,26,0.7)";
-const INK_SOFT = "rgba(26,26,26,0.55)";
-const RED = "#E12E30";
+// The dark navy hero with the grid texture and red glow, back at David's call (Sept 27 2026: "I
+// liked the dark home page banner"), carrying the Chief of Staff copy. It was cream for one
+// release under the brief's "no dark backgrounds" rule; the sections below it stay light.
+const INK = PAPER;
+const INK_MUTED = PAPER_MUTED;
+const INK_SOFT = PAPER_SOFT;
 
 export function Hero() {
   return (
-    <section style={{ background: CREAM }} className="relative overflow-hidden">
+    <section style={{ background: NAVY }} className="relative overflow-hidden">
+      <TextureBackground />
       <div className="container relative z-20 mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
           <div>
@@ -48,12 +47,14 @@ export function Hero() {
           </div>
 
           {/* Donna, the hero chat persona (components/HeroAssistantInput.tsx +
-              components/ChatWidget.tsx), shown as a light card to the right of the copy. */}
+              components/ChatWidget.tsx), shown as a dark glass card to the right of the copy. */}
           <div
-            className="flex flex-col rounded-2xl border bg-white p-5"
+            className="flex flex-col rounded-2xl border p-5"
             style={{
-              borderColor: "rgba(26,26,26,0.08)",
-              boxShadow: "0 20px 50px rgba(26,26,26,0.08)",
+              background: "rgba(7,15,28,0.8)",
+              borderColor: "rgba(225,46,48,0.2)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(225,46,48,0.05)",
+              backdropFilter: "blur(16px)",
             }}
           >
             <div className="mb-4 flex items-center justify-between">

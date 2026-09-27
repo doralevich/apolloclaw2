@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-// Light palette: the hero sits on cream now (no dark backgrounds, David's brand rule).
-const INK = "#1A1A1A";
-const INK_MUTED = "rgba(26,26,26,0.72)";
-const LINE = "rgba(26,26,26,0.08)";
-const RED = "#E12E30";
+import { HAIRLINE, PAPER, PAPER_MUTED, RED } from "@/components/home/ui";
+// Dark palette, matching the navy hero it sits in.
+const INK = PAPER;
+const INK_MUTED = PAPER_MUTED;
+const LINE = HAIRLINE;
 
 // A continuous, looping conversation between a first-time visitor and the assistant, instead of
 // isolated Q&A pairs, so the hero reads as an actual chat happening rather than a static
@@ -62,7 +62,7 @@ function Bubble({ role, text, cursor }: { role: Role; text: string; cursor?: boo
       className={`rounded-[10px] border px-4 py-2.5 text-[13px] leading-[1.55] ${isUser ? "self-start" : ""}`}
       style={{
         borderColor: LINE,
-        background: isUser ? "rgba(225,46,48,0.07)" : "#F7F6F3",
+        background: isUser ? "rgba(225,46,48,0.06)" : "rgba(245,246,248,0.04)",
         color: isUser ? INK : INK_MUTED,
         maxWidth: isUser ? "85%" : undefined,
       }}
@@ -161,7 +161,7 @@ export function HeroAssistantDemo({ className = "" }: { className?: string }) {
         <Bubble key={i} role={msg.role} text={msg.text} />
       ))}
       {thinking ? (
-        <div className="rounded-[10px] border px-4 py-3" style={{ borderColor: LINE, background: "#F7F6F3" }}>
+        <div className="rounded-[10px] border px-4 py-3" style={{ borderColor: LINE, background: "rgba(245,246,248,0.04)" }}>
           <TypingDots />
         </div>
       ) : typingRole ? (
