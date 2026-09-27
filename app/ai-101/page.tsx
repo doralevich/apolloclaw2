@@ -46,7 +46,7 @@ export default function AI101Page() {
         description="No hype, no jargon. Just what matters for your business."
       />
       <div className="bg-background py-16">
-      <div className="container mx-auto max-w-3xl px-4 md:px-8">
+      <div className="container mx-auto max-w-7xl px-4 md:px-8">
 
         <div className="flex flex-col gap-6 mb-16">
           {topics.map((t, i) => (

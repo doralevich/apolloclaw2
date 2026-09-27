@@ -78,7 +78,7 @@ export default function FAQPage() {
         description="Everything you want to know before your first call."
       />
       <div className="bg-background py-16">
-      <div className="container mx-auto max-w-3xl px-4 md:px-8">
+      <div className="container mx-auto max-w-7xl px-4 md:px-8">
 
         <div className="flex flex-col gap-6">
           {faqs.map((faq, i) => (

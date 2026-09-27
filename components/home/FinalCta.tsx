@@ -7,10 +7,10 @@ import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 export function FinalCta() {
   return (
     <Section bg={TAN}>
-      <div className="mx-auto max-w-3xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         <div className="py-4 md:py-6">
           <H2 light>Your Chief of Staff Is Ready When You Are.</H2>
-          <p className="font-body mx-auto mt-5 text-[1.125rem] leading-[1.7]" style={{ color: TAN_INK_MUTED, maxWidth: 560 }}>
+          <p className="font-body mx-auto mt-5 text-[1.125rem] leading-[1.7]" style={{ color: TAN_INK_MUTED }}>
             Let&apos;s map out what your agent could do for you.
           </p>
           <div className="mt-9">

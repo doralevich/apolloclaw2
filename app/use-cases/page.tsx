@@ -57,7 +57,7 @@ export default function UseCasesHub() {
           cards that used to sit above it came out at David's call: the Use Cases menu already
           links each task page, so the hub is just the results. */}
       <section id="results" style={{ background: "#F2F1ED" }} className="scroll-mt-28 py-16 md:py-20">
-        <div className="container mx-auto max-w-6xl space-y-12 px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl space-y-12 px-5 md:px-8">
           {GROUPS.map(({ label, keys, links }) => {
             // Config order, so Personal Injury and Litigation stay next to each other.
             const studies = CASE_STUDIES.filter((c) => keys.includes(c.industry));

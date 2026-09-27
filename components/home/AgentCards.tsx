@@ -42,7 +42,7 @@ export function AgentCards() {
       />
       <div className="relative z-10">
         <Section bg="transparent">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto max-w-7xl text-center">
             <BracketLabel>Specialist Agents</BracketLabel>
             <H2>Start With a Specialist. We Tailor It to You.</H2>
             <div className="mt-6">
@@ -50,7 +50,7 @@ export function AgentCards() {
             </div>
           </div>
 
-          <div className="mx-auto mt-12 grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto mt-12 grid max-w-7xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {CARDS.map(({ label, line, to, mascot, ink }) => (
               <Link
                 key={label}

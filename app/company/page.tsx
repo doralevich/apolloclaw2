@@ -66,7 +66,7 @@ export default function CompanyPage() {
             pointerEvents: "none",
           }}
         />
-        <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 max-w-6xl relative z-10 text-center">
+        <div className="container mx-auto px-5 md:px-8 py-10 md:py-14 max-w-7xl relative z-10 text-center">
           <span
             className="inline-block font-mono uppercase mb-7"
             style={{
@@ -96,7 +96,6 @@ export default function CompanyPage() {
               fontSize: "clamp(15px, 1.15vw, 18px)",
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
-              maxWidth: 940,
               margin: "28px auto 0",
             }}
           >
@@ -137,7 +136,7 @@ export default function CompanyPage() {
 
       {/* LETS FIND OUT - cream */}
       <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-4xl text-center">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl text-center">
           <ScrollReveal>
             <span
               className="inline-block font-mono uppercase mb-5"
@@ -153,7 +152,7 @@ export default function CompanyPage() {
             </h2>
             <div
               className="font-body"
-              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555", maxWidth: 640, margin: "0 auto 32px" }}
+              style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555", margin: "0 auto 32px" }}
             >
               <p style={{ marginBottom: 18 }}>
                 Every organization operates differently. That&apos;s why every AI implementation begins
@@ -196,7 +195,7 @@ export default function CompanyPage() {
 
       {/* FOUNDER - cream, 2-col */}
       <section style={{ background: "#FAFAF7", color: "#1A1A1A" }} className="relative overflow-hidden">
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-6xl">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-7xl">
           <style>{`
             #about-founder-grid {
               display: grid;
@@ -308,7 +307,7 @@ export default function CompanyPage() {
             pointerEvents: "none",
           }}
         />
-        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-6xl relative z-10">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-7xl relative z-10">
           <ScrollReveal>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
               <span

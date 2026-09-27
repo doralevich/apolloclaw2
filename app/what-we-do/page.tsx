@@ -65,7 +65,7 @@ export default function WhatWeDoPage() {
       {(services as any[]).map((group, gi) => (
         <div key={gi}>
           <section className={`py-16 ${gi % 2 === 0 ? "bg-surface-alt" : "bg-background"}`}>
-            <div className="container mx-auto px-4 md:px-8 max-w-6xl">
+            <div className="container mx-auto px-4 md:px-8 max-w-7xl">
               <ScrollReveal>
                 <div className="flex items-center gap-4 mb-10">
                   <div className="w-8 h-[3px] bg-primary rounded-full" />

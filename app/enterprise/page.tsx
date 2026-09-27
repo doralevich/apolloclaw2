@@ -134,7 +134,7 @@ export default function EnterprisePage() {
 
       {/* ROLLOUT - cream */}
       <Section bg={TAN}>
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-7xl text-center">
           <BracketLabel light>Built to Scale</BracketLabel>
           <H2 light>One Partner From Your First Agent to Every Team.</H2>
           <div className="mt-6">
@@ -144,7 +144,7 @@ export default function EnterprisePage() {
             </BodyLarge>
           </div>
         </div>
-        <div className="mx-auto mt-12 grid max-w-6xl gap-5 md:grid-cols-3">
+        <div className="mx-auto mt-12 grid max-w-7xl gap-5 md:grid-cols-3">
           {ROLLOUT.map(({ Icon, title, body }) => (
             <div key={title} className="rounded-xl bg-white p-7" style={{ border: BORDER }}>
               <Icon size={26} strokeWidth={1.5} aria-hidden style={{ color: RED }} />
@@ -161,14 +161,14 @@ export default function EnterprisePage() {
 
       {/* DEPLOYMENT - white */}
       <Section bg="#FFFFFF">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-7xl text-center">
           <BracketLabel light>Deployment</BracketLabel>
           <H2 light>Dedicated Infrastructure, Your Choice.</H2>
           <div className="mt-6">
             <BodyLarge light>Every agent runs privately for one client, in the environment you choose at setup.</BodyLarge>
           </div>
         </div>
-        <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-7xl gap-6 md:grid-cols-2">
           {DEPLOY.map(({ Icon, eyebrow, title, points }) => (
             <div
               key={title}
@@ -199,14 +199,14 @@ export default function EnterprisePage() {
 
       {/* PROCUREMENT - cream */}
       <Section bg={TAN}>
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-7xl text-center">
           <BracketLabel light>Procurement Ready</BracketLabel>
           <H2 light>The Documentation Your Review Team Expects.</H2>
           <div className="mt-6">
             <BodyLarge light>Ready for IT, security, and procurement review from the first conversation.</BodyLarge>
           </div>
         </div>
-        <ul className="mx-auto mt-12 grid max-w-5xl gap-3 sm:grid-cols-2">
+        <ul className="mx-auto mt-12 grid max-w-7xl gap-3 sm:grid-cols-2">
           {READINESS.map((item) => (
             <li key={item} className="flex items-center gap-3 rounded-lg bg-white px-5 py-4" style={{ border: BORDER }}>
               <ShieldCheck size={18} aria-hidden className="shrink-0" style={{ color: RED }} />
@@ -225,11 +225,11 @@ export default function EnterprisePage() {
 
       {/* AUDIENCES - white */}
       <Section bg="#FFFFFF">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-7xl text-center">
           <BracketLabel light>Who We Serve</BracketLabel>
           <H2 light>Trusted Across Leadership, Portfolios, and Campuses.</H2>
         </div>
-        <div className="mx-auto mt-12 grid max-w-6xl gap-5 sm:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-7xl gap-5 sm:grid-cols-2">
           {AUDIENCES.map(({ Icon, title, body, to }) => (
             <Link
               key={title}

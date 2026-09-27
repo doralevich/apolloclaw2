@@ -72,7 +72,7 @@ export default function AgentHero({
 
       <div
         className={`container relative z-10 mx-auto grid items-center gap-8 px-5 py-10 md:px-8 md:py-14 ${
-          hasMascot ? "max-w-7xl md:grid-cols-[1.3fr_0.7fr]" : "max-w-6xl text-center"
+          hasMascot ? "max-w-7xl md:grid-cols-[1.3fr_0.7fr]" : "max-w-7xl text-center"
         }`}
       >
         <div className={hasMascot ? "" : "mx-auto"}>
@@ -121,7 +121,6 @@ export default function AgentHero({
               lineHeight: 1.7,
               color: "rgba(255,255,255,0.7)",
               margin: "12px 0 0",
-              maxWidth: 760,
               marginInline: hasMascot ? undefined : "auto",
             }}
           >

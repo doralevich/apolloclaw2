@@ -103,7 +103,7 @@ export default function FleetPage() {
       <section style={{ background: NAVY }} className="relative overflow-hidden">
         <TextureBackground />
         <div className="container relative z-20 mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
-          <div className="max-w-4xl">
+          <div className="max-w-7xl">
             <span
               className="font-mono mb-5 inline-block text-[12px] font-bold uppercase tracking-[0.16em]"
               style={{ color: RED }}
@@ -116,7 +116,7 @@ export default function FleetPage() {
             >
               Every Agent We Build, in One Place
             </h1>
-            <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: PAPER_MUTED, maxWidth: 620 }}>
+            <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: PAPER_MUTED }}>
               {AGENTS.length} agents, each one scoped to a job somebody is currently doing by hand.
               Same platform underneath, same connection to your tools, same approval before
               anything leaves the building. What changes is what it is pointed at.
@@ -149,7 +149,7 @@ export default function FleetPage() {
       </Section>
 
       <Section bg={TAN}>
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="mx-auto max-w-7xl text-center">
           <BracketLabel light>The Same Underneath</BracketLabel>
           {/* Not "Ten names, one build" - a headline carrying the roster count is a headline
               that goes quietly wrong the first time an agent is added. The count appears once,

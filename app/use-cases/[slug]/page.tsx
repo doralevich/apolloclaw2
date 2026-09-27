@@ -42,7 +42,7 @@ export default async function UseCasePage({ params }: Props) {
       <UseCaseTemplate uc={uc} />
 
       <section style={{ background: "#F2F1ED" }} className="py-16 md:py-20">
-        <div className="container mx-auto grid max-w-6xl gap-10 px-5 md:px-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="container mx-auto grid max-w-7xl gap-10 px-5 md:px-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             {study ? (
               <>

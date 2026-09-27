@@ -53,7 +53,7 @@ export default function HowItWorksPage() {
       />
 
       <section className="bg-surface-alt py-24">
-        <div className="container mx-auto px-4 md:px-8 max-w-4xl">
+        <div className="container mx-auto px-4 md:px-8 max-w-7xl">
           <div className="flex flex-col gap-16">
             {steps.map((s, i) => (
               <ScrollReveal key={i} delay={i * 100}>

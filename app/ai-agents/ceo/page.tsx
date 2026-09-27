@@ -172,15 +172,15 @@ export default function CeoPage() {
       />
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Executive Intelligence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             The Best CEOs Focus on What Only They Can Do
           </h2>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
             Imagine walking into every day already briefed, every meeting already prepped, every follow-up already handled. Your team moves. Decisions get made. Nothing falls through.
           </p>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             That is what a great executive assistant makes possible. The CEO Bot delivers that at a level no human EA can match, running 24 hours a day, across every system you use, without ever needing to be asked twice.
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function CeoPage() {
             backgroundSize: "40px 40px",
           }}
         />
-        <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
@@ -224,7 +224,7 @@ export default function CeoPage() {
 
       {/* The Process */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>
@@ -258,7 +258,7 @@ export default function CeoPage() {
 
       {/* Testimonials */}
       <section style={{ background: NAVY }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">
@@ -292,7 +292,7 @@ export default function CeoPage() {
 
       {/* Investment */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             Built for Executives Who Value Their Time
@@ -318,7 +318,7 @@ export default function CeoPage() {
 
       {/* FAQ */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-12">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>

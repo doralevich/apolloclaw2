@@ -32,7 +32,7 @@ const FAQ_SPLIT = Math.ceil(HOME_FAQS.length / 2);
 export function HomeFaq() {
   return (
     <Section bg={TAN}>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <div className="text-center">
           <BracketLabel light>Questions, Answered</BracketLabel>
           <H2 light>Everything You&apos;ll Want to Know.</H2>

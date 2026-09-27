@@ -148,15 +148,15 @@ export default function LegalPage() {
 
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Legal Leverage</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             Good Lawyers Make Judgment Calls. Not First Drafts.
           </h2>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto" style={{ color: "rgba(11,23,41,0.65)" }}>
             Contracts sit in an inbox for a week. Every NDA starts from scratch. Nobody is quite sure what renews when. The routine drafting and review that fills the day is exactly the work that does not need a legal mind, only a legal template.
           </p>
-          <p className="font-body text-lg leading-relaxed max-w-2xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
+          <p className="font-body text-lg leading-relaxed max-w-7xl mx-auto mt-4" style={{ color: "rgba(11,23,41,0.65)" }}>
             The Law Agent handles that production, drafting from your templates, redlining against your positions, and tracking every deadline, on schedule. Your team, or your counsel, shows up to review and decide, not to retype.
           </p>
         </div>
@@ -164,7 +164,7 @@ export default function LegalPage() {
 
       {/* What is an AI Law Agent? - SEO Section */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>About</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             What is an AI Law Agent?
@@ -186,7 +186,7 @@ export default function LegalPage() {
       {/* What It Does */}
       <section style={{ background: NAVY }} className="py-20 relative overflow-hidden">
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="container mx-auto max-w-5xl px-5 md:px-8 relative z-10">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 relative z-10">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>What It Does</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">A Dedicated AI Agent for Contract Work</h2>
@@ -206,7 +206,7 @@ export default function LegalPage() {
 
       {/* Process */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-4xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>From Consultation to Running in 2 Weeks</h2>
@@ -231,7 +231,7 @@ export default function LegalPage() {
 
       {/* Testimonials */}
       <section style={{ background: NAVY }} className="py-20">
-        <div className="container mx-auto max-w-5xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Teams Say After 30 Days</h2>
@@ -255,7 +255,7 @@ export default function LegalPage() {
 
       {/* Investment */}
       <section style={{ background: CREAM2 }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8 text-center">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Teams Who Are Done Retyping Contracts</h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
@@ -269,7 +269,7 @@ export default function LegalPage() {
 
       {/* FAQ */}
       <section style={{ background: CREAM }} className="py-20">
-        <div className="container mx-auto max-w-3xl px-5 md:px-8">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-12">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>Frequently Asked Questions</h2>

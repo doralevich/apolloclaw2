@@ -172,7 +172,7 @@ export function IntegrationsDirectory() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-7xl">
       <div className="relative mx-auto max-w-xl">
         <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2" style={{ color: INK_MUTED }} />
         <input

@@ -129,7 +129,7 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
                   pointerEvents: "none",
                 }}
               />
-              <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 text-center relative z-10 max-w-4xl">
+              <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 text-center relative z-10 max-w-7xl">
                 <ScrollReveal>
                   <h2
                     className="font-display leading-[1.1] tracking-tight"
@@ -152,7 +152,6 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
                         fontSize: "clamp(15px, 1.15vw, 17px)",
                         lineHeight: 1.65,
                         color: "rgba(255,255,255,0.72)",
-                        maxWidth: 560,
                         margin: "22px auto 0",
                       }}
                     >
@@ -192,13 +191,13 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
           <section key={i} style={{ background, color: INK }} className="relative overflow-hidden">
             <div className="container mx-auto px-5 md:px-8 py-20 md:py-28 max-w-7xl">
               <ScrollReveal>
-                <div style={{ maxWidth: 960 }}>
+                <div>
                   {section.kicker && <Kicker>[ {section.kicker} ]</Kicker>}
                   <Heading text={section.heading} accent={section.headingAccent} />
                   {"intro" in section && section.intro && (
                     <p
                       className="font-body"
-                      style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: MUTED, marginTop: 22, maxWidth: 820 }}
+                      style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: MUTED, marginTop: 22 }}
                     >
                       {section.intro}
                     </p>
@@ -207,7 +206,7 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
               </ScrollReveal>
 
               {section.type === "prose" && (
-                <div style={{ marginTop: 24, maxWidth: 960 }}>
+                <div style={{ marginTop: 24 }}>
                   {section.paragraphs.map((p, j) => (
                     <ScrollReveal key={j} delay={j * 80}>
                       <p
