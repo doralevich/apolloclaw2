@@ -6,6 +6,7 @@ import {
   BarChart3,
   Boxes,
   Check,
+  ChevronLeft,
   ChevronRight,
   Code2,
   ExternalLink,
@@ -35,7 +36,9 @@ import {
   INTEGRATION_CATEGORIES,
 } from "@/lib/integration-catalog";
 import { cn } from "@/lib/utils";
+import { pageList } from "@/lib/pagination";
 import type {
+  CatalogApp,
   IntegrationConnection,
   IntegrationConnectionsResult,
   IntegrationToolkit,
@@ -53,10 +56,10 @@ const BROWSE_LIMIT = 24; // the v1 route clamps to 24; ask for a full page so Br
 const POLL_INTERVAL_MS = 2000;
 const POLL_MAX_ATTEMPTS = 22; // give up polling for the connect to land after ~45s
 
-// How many apps a category shows on the landing view before it hands off to "View all".
-// Two rows at the widest breakpoint: enough to see what a category is about, few enough
-// that the whole page stays scannable instead of being one long wall of cards.
-const SECTION_PREVIEW = 6;
+// Browse is one paginated grid with a category sidebar, the same layout as the public
+// /integrations directory (David's call, Sept 28 2026). 24 a page, as there.
+const PER_PAGE = 24;
+const MAX_CATALOG_ATTEMPTS = 8;
 
 type SubTab = "browse" | "connected";
 type StatusFilter = "all" | "connected" | "available";
@@ -65,6 +68,23 @@ type StatusFilter = "all" | "connected" | "available";
 // INTEGRATION_CATEGORIES.
 const ALL = "all";
 const ESSENTIALS = "essentials";
+// Everything in the full catalog that no curated category carries.
+const MORE = "more";
+
+// The public catalog (app/api/integrations/catalog, CDN-cached) lists every app with just a
+// slug, name and description. The card needs a toolkit, so fill in the rest; the connect
+// redirect resolves the app's auth scheme itself.
+function catalogToolkit(a: CatalogApp): IntegrationToolkit {
+  return {
+    slug: a.slug,
+    name: a.name,
+    description: a.description || null,
+    logo: composioLogoUrl(a.slug),
+    enabled: true,
+    isNoAuth: false,
+    authSchemes: [],
+  };
+}
 
 // One icon per curated category, keyed by the exact title in INTEGRATION_CATEGORIES.
 //
@@ -193,13 +213,13 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [confirmDisconnect, setConfirmDisconnect] = useState<IntegrationConnection | null>(null);
 
-  // "Show more apps": pages through the full remote catalog (popularity-ranked) below the
-  // curated categories. Fetched on demand, deduped against everything already on screen;
-  // the button hides once the upstream cursor is exhausted (or a page adds nothing new).
-  const [extraApps, setExtraApps] = useState<IntegrationToolkit[]>([]);
-  const [extraCursor, setExtraCursor] = useState<string | null>(null);
-  const [extraLoaded, setExtraLoaded] = useState(false);
-  const [loadingExtra, setLoadingExtra] = useState(false);
+  // The full app catalog, loaded once after first paint from the same cached endpoint the public
+  // directory uses. The curated categories render at once; everything else fills in behind them
+  // under "More apps". A partial answer (complete: false) is kept and asked for again.
+  const [catalog, setCatalog] = useState<CatalogApp[] | null>(null);
+  const [loadingCatalog, setLoadingCatalog] = useState(true);
+  const [page, setPage] = useState(1);
+  const gridTop = useRef<HTMLDivElement>(null);
 
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -254,6 +274,32 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     };
   }, [agentId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function load(attempt: number) {
+      try {
+        const r = await fetch("/api/integrations/catalog");
+        const body = (r.ok ? await r.json() : null) as { apps?: CatalogApp[]; complete?: boolean } | null;
+        if (cancelled) return;
+        if (body?.apps?.length) setCatalog((prev) => (prev && prev.length > body.apps!.length ? prev : body.apps!));
+        if (!body?.complete && attempt < MAX_CATALOG_ATTEMPTS) {
+          setTimeout(() => !cancelled && load(attempt + 1), 3000);
+          return;
+        }
+      } catch {
+        if (!cancelled && attempt < MAX_CATALOG_ATTEMPTS) {
+          setTimeout(() => !cancelled && load(attempt + 1), 3000);
+          return;
+        }
+      }
+      if (!cancelled) setLoadingCatalog(false);
+    }
+    load(1);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Debounced live search. Empty query uses the static default catalog above so Browse does not
   // wait on Agent37/Composio; a query of 3+ chars searches live; 1-2 chars wait (the server 400s).
   useEffect(() => {
@@ -304,30 +350,6 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     }, POLL_INTERVAL_MS);
   }
 
-  async function loadMoreApps() {
-    setLoadingExtra(true);
-    try {
-      const params = new URLSearchParams({ limit: String(BROWSE_LIMIT) });
-      if (extraCursor) params.set("cursor", extraCursor);
-      const res = await apiFetch<IntegrationToolkitsResult>(
-        `/api/agents/${agentId}/integrations/toolkits?${params}`
-      );
-      const seen = new Set(
-        [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps].map((t) => toolkitKey(t.slug))
-      );
-      const fresh = res.items.filter((t) => !seen.has(toolkitKey(t.slug)));
-      setExtraApps((prev) => [...prev, ...fresh]);
-      // Stop offering "load more" when the catalog is exhausted, or when paging isn't
-      // actually advancing (a whole page of already-seen apps).
-      setExtraCursor(res.items.length > 0 && fresh.length > 0 ? (res.nextCursor ?? null) : null);
-      setExtraLoaded(true);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setLoadingExtra(false);
-    }
-  }
-
   // Errors propagate to the ConfirmDialog's useAsyncAction, which toasts them and keeps
   // the dialog open so the user can retry.
   async function disconnect(connectedAccountId: string) {
@@ -352,6 +374,13 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     for (const cat of INTEGRATION_CATEGORIES) map.set(cat.title, cat.toolkits.length);
     return map;
   }, []);
+  // Catalog apps no curated category carries: the "More apps" group.
+  const moreApps = useMemo(() => {
+    if (!catalog) return [];
+    const curated = new Set(DEFAULT_INTEGRATION_TOOLKITS.map((t) => toolkitKey(t.slug)));
+    return catalog.filter((a) => !curated.has(toolkitKey(a.slug))).map(catalogToolkit);
+  }, [catalog]);
+  const allApps = useMemo(() => [...DEFAULT_INTEGRATION_TOOLKITS, ...moreApps], [moreApps]);
   const activeConnections = connections.filter((c) => !c.isDisabled);
   const q = search.trim();
   const connectedCount = activeConnections.length;
@@ -360,8 +389,8 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   // query ALSO searches the full remote catalog (1,000+ apps) and appends whatever the curated
   // list doesn't already show once the live results land.
   const localMatches = useMemo(
-    () => (q ? DEFAULT_INTEGRATION_TOOLKITS.filter((t) => matchesQuery(t, q)) : []),
-    [q]
+    () => (q ? allApps.filter((t) => matchesQuery(t, q)) : []),
+    [q, allApps]
   );
   const remoteExtras = useMemo(() => {
     if (q.length < MIN_SEARCH || loadingToolkits) return [];
@@ -387,15 +416,18 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   // filter. Counting off `base` is what makes "Connected 3" mean three of the cards below.
   const base = useMemo(() => {
     if (q) {
+      const moreSlugs = new Set(moreApps.map((t) => toolkitKey(t.slug)));
       const curated = category === ALL ? localMatches
         : category === ESSENTIALS ? localMatches.filter((t) => ESSENTIAL_INTEGRATION_SLUGS.includes(t.slug))
+        : category === MORE ? localMatches.filter((t) => moreSlugs.has(toolkitKey(t.slug)))
         : localMatches.filter((t) => categoryForSlug(t.slug) === category);
-      return category === ALL ? [...curated, ...remoteExtras] : curated;
+      return category === ALL || category === MORE ? [...curated, ...remoteExtras] : curated;
     }
     if (category === ESSENTIALS) return ESSENTIAL_TOOLKITS;
-    if (category === ALL) return [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps];
+    if (category === ALL) return allApps;
+    if (category === MORE) return moreApps;
     return INTEGRATION_CATEGORIES.find((c) => c.title === category)?.toolkits ?? [];
-  }, [q, category, localMatches, remoteExtras, extraApps]);
+  }, [q, category, localMatches, remoteExtras, allApps, moreApps]);
 
   const filtered = useMemo(() => byStatus(base), [base, byStatus]);
 
@@ -408,20 +440,30 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
     [base, connections]
   );
 
-  // What "All apps" actually yields when clicked: the curated shelf plus whatever "Show more
-  // apps" has paged in so far. It grows as you page, which is the honest behaviour — the
-  // number goes up because the list did.
-  const browsableCount = DEFAULT_INTEGRATION_TOOLKITS.length + extraApps.length;
-
-  // The landing view: every category as its own shelf. Any filter or query at all collapses
-  // it into a single flat grid, so there is only ever one place to look for results.
-  const showSections = !q && category === ALL && status === "all";
+  // One grid, paged. Any change to what it shows goes back to page 1.
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const current = Math.min(page, pageCount);
+  const start = (current - 1) * PER_PAGE;
+  const shown = filtered.slice(start, start + PER_PAGE);
   const filtersActive = category !== ALL || status !== "all" || q.length > 0;
 
+  function pickCategory(c: string) {
+    setCategory(c);
+    setPage(1);
+  }
+  function pickStatus(s: StatusFilter) {
+    setStatus(s);
+    setPage(1);
+  }
+  function goTo(p: number) {
+    setPage(p);
+    gridTop.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   function clearFilters() {
     setCategory(ALL);
     setStatus("all");
     setSearch("");
+    setPage(1);
   }
 
   const renderCard = (t: IntegrationToolkit) => (
@@ -473,7 +515,10 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               // The catalogue total lives here rather than on a filter row, because this is the
               // one control that actually reaches all of it. On a filter it was a promise the
               // click could not keep; on the search box it is a description of what typing does.
@@ -510,14 +555,14 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
               <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
                 <FilterRow
                   active={category === ALL}
-                  onClick={() => setCategory(ALL)}
-                  count={browsableCount}
+                  onClick={() => pickCategory(ALL)}
+                  count={allApps.length}
                 >
                   All apps
                 </FilterRow>
                 <FilterRow
                   active={category === ESSENTIALS}
-                  onClick={() => setCategory(ESSENTIALS)}
+                  onClick={() => pickCategory(ESSENTIALS)}
                   count={ESSENTIAL_TOOLKITS.length}
                 >
                   <Star
@@ -534,7 +579,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                     <FilterRow
                       key={cat.title}
                       active={category === cat.title}
-                      onClick={() => setCategory(cat.title)}
+                      onClick={() => pickCategory(cat.title)}
                       count={categoryCounts.get(cat.title) ?? 0}
                     >
                       <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -542,6 +587,16 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                     </FilterRow>
                   );
                 })}
+                {moreApps.length > 0 && (
+                  <FilterRow
+                    active={category === MORE}
+                    onClick={() => pickCategory(MORE)}
+                    count={moreApps.length}
+                  >
+                    <Plus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    More apps
+                  </FilterRow>
+                )}
               </div>
             </div>
 
@@ -550,14 +605,14 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
               <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap">
                 <FilterRow
                   active={status === "all"}
-                  onClick={() => setStatus("all")}
+                  onClick={() => pickStatus("all")}
                   count={base.length}
                 >
                   All
                 </FilterRow>
                 <FilterRow
                   active={status === "connected"}
-                  onClick={() => setStatus("connected")}
+                  onClick={() => pickStatus("connected")}
                   count={baseConnected}
                 >
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
@@ -565,7 +620,7 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
                 </FilterRow>
                 <FilterRow
                   active={status === "available"}
-                  onClick={() => setStatus("available")}
+                  onClick={() => pickStatus("available")}
                   count={base.length - baseConnected}
                 >
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-hidden />
@@ -589,115 +644,106 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
           </aside>
 
           <div className="min-w-0 flex-1 space-y-5">
-          {showSections ? (
-            <div className="space-y-7">
-              {/* Shown in full, not previewed. Every other shelf caps at SECTION_PREVIEW and
-                  hands off to "View all", which is right for a category of 8 you're browsing —
-                  and wrong here. The whole point of pinning eleven apps is that you see the
-                  eleven; hiding five behind a click would undo it. */}
-              <Section
-                title="Essentials"
-                icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
-                total={ESSENTIAL_TOOLKITS.length}
-              >
-                {ESSENTIAL_TOOLKITS.map(renderCard)}
-              </Section>
-
-              {INTEGRATION_CATEGORIES.map((cat) => (
-                <Section
-                  key={cat.title}
-                  title={cat.title}
-                  total={cat.toolkits.length}
-                  onViewAll={() => setCategory(cat.title)}
-                >
-                  {cat.toolkits.slice(0, SECTION_PREVIEW).map(renderCard)}
-                </Section>
-              ))}
-
-              <div className="space-y-3">
-                {extraApps.length > 0 && (
-                  <Section title="More from the app store" total={extraApps.length}>
-                    {extraApps.map(renderCard)}
-                  </Section>
+          <div ref={gridTop} className="scroll-mt-28 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+              <div className="text-xs font-medium text-muted-foreground">
+                {q
+                  ? `Results for “${q}”`
+                  : category === ALL
+                    ? "All apps"
+                    : category === ESSENTIALS
+                      ? "Essentials"
+                      : category === MORE
+                        ? "More apps"
+                        : category}
+                {status !== "all" && (
+                  <span className="ml-1.5 font-normal">
+                    · {status === "connected" ? "connected only" : "not connected"}
+                  </span>
                 )}
-                <LoadMore
-                  exhausted={extraLoaded && !extraCursor}
-                  loading={loadingExtra}
-                  loaded={extraLoaded}
-                  onClick={loadMoreApps}
-                />
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {(loadingCatalog || searchingRemote) && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    {searchingRemote ? "Searching the full catalog…" : "Loading the full catalog…"}
+                  </span>
+                )}
+                {filtered.length > 0 && (
+                  <span className="tabular-nums">
+                    Showing {start + 1}–{start + shown.length} of {filtered.length.toLocaleString()}
+                  </span>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3 px-1">
-                <div className="text-xs font-medium text-muted-foreground">
-                  {q ? `Results for “${q}”` : category === ALL ? "All apps" : category}
-                  {status !== "all" && (
-                    <span className="ml-1.5 font-normal">
-                      · {status === "connected" ? "connected only" : "not connected"}
-                    </span>
+
+            {filtered.length === 0 && !searchingRemote ? (
+              <div className="rounded-xl border border-dashed px-6 py-12 text-center">
+                <Search className="mx-auto h-5 w-5 text-muted-foreground" />
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {q ? (
+                    <>
+                      No apps found for &ldquo;{q}&rdquo;.
+                      {q.length < MIN_SEARCH && " Keep typing to search the full catalog."}
+                    </>
+                  ) : status === "connected" ? (
+                    "Nothing connected in this category yet."
+                  ) : (
+                    "Nothing left to connect in this category - you've got them all."
                   )}
-                  <span className="ml-1.5 font-normal">
-                    ({filtered.length}
-                    {searchingRemote ? "+" : ""})
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs text-muted-foreground"
-                  onClick={clearFilters}
-                >
-                  Back to all categories
+                </p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
+                  Clear filters
                 </Button>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{shown.map(renderCard)}</div>
+            )}
 
-              {filtered.length === 0 && !searchingRemote ? (
-                <div className="rounded-xl border border-dashed px-6 py-12 text-center">
-                  <Search className="mx-auto h-5 w-5 text-muted-foreground" />
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {q ? (
-                      <>
-                        No apps found for &ldquo;{q}&rdquo;.
-                        {q.length < MIN_SEARCH && " Keep typing to search the full catalog."}
-                      </>
-                    ) : status === "connected" ? (
-                      "Nothing connected in this category yet."
-                    ) : (
-                      "Nothing left to connect in this category - you've got them all."
-                    )}
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
-                    Clear filters
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {filtered.map(renderCard)}
-                </div>
-              )}
-
-              {searchingRemote && (
-                <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Searching the full catalog…
-                </p>
-              )}
-
-              {/* The full catalog is only pageable when nothing narrows it - the remote list
-                  is popularity-ranked, not category-tagged, so paging it inside a category
-                  would append apps that don't belong to that category. */}
-              {!q && category === ALL && (
-                <LoadMore
-                  exhausted={extraLoaded && !extraCursor}
-                  loading={loadingExtra}
-                  loaded={extraLoaded}
-                  onClick={loadMoreApps}
-                />
-              )}
-            </div>
-          )}
+            {pageCount > 1 && (
+              <nav aria-label="Pages" className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0"
+                  aria-label="Previous page"
+                  disabled={current === 1}
+                  onClick={() => goTo(current - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {pageList(current, pageCount).map((p, i) =>
+                  p === "…" ? (
+                    <span key={`gap-${i}`} className="px-1.5 text-sm text-muted-foreground">
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={p === current ? "default" : "outline"}
+                      size="sm"
+                      className="h-9 min-w-9 px-2.5 tabular-nums"
+                      aria-label={`Page ${p}`}
+                      aria-current={p === current ? "page" : undefined}
+                      onClick={() => goTo(p)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0"
+                  aria-label="Next page"
+                  disabled={current === pageCount}
+                  onClick={() => goTo(current + 1)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </nav>
+            )}
+          </div>
 
           {pendingSlug && (
             <p className="px-1 text-xs text-muted-foreground">
@@ -818,47 +864,6 @@ function IntegrationsPanel({ agentId }: { agentId: string }) {
   );
 }
 
-// One shelf on the landing view: a heading, up to SECTION_PREVIEW cards, and a "View all"
-// that hands off to the category filter rather than expanding in place — so there is only
-// ever one grid on screen showing one thing.
-function Section({
-  title,
-  icon,
-  total,
-  onViewAll,
-  children,
-}: {
-  title: string;
-  icon?: React.ReactNode;
-  total: number;
-  onViewAll?: () => void;
-  children: React.ReactNode;
-}) {
-  const hidden = total - SECTION_PREVIEW;
-  return (
-    <div className="space-y-2.5">
-      <div className="flex items-center justify-between gap-3 px-1">
-        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {icon}
-          {title}
-          <span className="font-normal normal-case tracking-normal">({total})</span>
-        </div>
-        {onViewAll && hidden > 0 && (
-          <button
-            type="button"
-            onClick={onViewAll}
-            className="inline-flex cursor-pointer items-center gap-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            View all {total}
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{children}</div>
-    </div>
-  );
-}
-
 // The box. Logo, name, what the app is, and exactly one action — sized so a row of three
 // reads as three things rather than a striped list.
 function IntegrationCard({
@@ -876,7 +881,6 @@ function IntegrationCard({
   onConnect: () => void;
   onManage: () => void;
 }) {
-  const category = categoryForSlug(t.slug);
   return (
     // A compact row: logo, name and status on the left, the one action on the right, and a single
     // line of description under them. It WAS a tall stacked card - logo, name, a two-line blurb,
@@ -907,10 +911,6 @@ function IntegrationCard({
                 Not connected
               </span>
             )}
-            {/* Undefined for anything from the remote catalogue, which has no curated category -
-                omitted rather than printed as "Other", which would claim a classification we
-                never made. */}
-            {category && <span className="text-muted-foreground/70">{category}</span>}
           </div>
         </div>
 
@@ -954,32 +954,6 @@ function IntegrationCard({
         </p>
       )}
     </div>
-  );
-}
-
-function LoadMore({
-  exhausted,
-  loading,
-  loaded,
-  onClick,
-}: {
-  exhausted: boolean;
-  loading: boolean;
-  loaded: boolean;
-  onClick: () => void;
-}) {
-  if (exhausted) {
-    return (
-      <p className="px-1 pt-1 text-center text-xs text-muted-foreground">
-        That&apos;s everything we can list here. Search above to find any of 1,000+ apps.
-      </p>
-    );
-  }
-  return (
-    <Button variant="outline" className="w-full" disabled={loading} onClick={onClick}>
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-      {loaded ? "Load more apps" : "Show more apps"}
-    </Button>
   );
 }
 
