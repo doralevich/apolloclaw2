@@ -26,12 +26,7 @@ interface Step2Fields {
   anthropic_api_key: string;
   telegram_bot_token: string;
   telegram_bot_username: string;
-  meeting_recorder: "fathom" | "fireflies" | "";
-  fathom_email: string;
-  fathom_password: string;
-  fireflies_api_key: string;
   tavily_api_key: string;
-  calendly_url: string;
 }
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -119,7 +114,7 @@ export default function SetupPage() {
   const [error, setError] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [s1, setS1] = useState<Step1Fields>({ first_name: "", last_name: "", email: "", phone: "", assistant_name: "", timezone: "", computer_name: "", it_contact_name: "", it_contact_email: "", it_notes: "" });
-  const [s2, setS2] = useState<Step2Fields>({ anthropic_api_key: "", telegram_bot_token: "", telegram_bot_username: "", meeting_recorder: "", fathom_email: "", fathom_password: "", fireflies_api_key: "", tavily_api_key: "", calendly_url: "" });
+  const [s2, setS2] = useState<Step2Fields>({ anthropic_api_key: "", telegram_bot_token: "", telegram_bot_username: "", tavily_api_key: "" });
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [itEmailCopied, setItEmailCopied] = useState<"google"|"ms365"|null>(null);
   const updateS1 = (key: keyof Step1Fields, value: string) => setS1(p => ({ ...p, [key]: value }));
@@ -285,11 +280,12 @@ ${name}`;
   async function submitStep2() {
     setError("");
     const { anthropic_api_key, telegram_bot_token, telegram_bot_username } = s2;
-    if (!anthropic_api_key || !telegram_bot_token || !telegram_bot_username) {
+    // The Anthropic key is optional (David, Sept 28 2026); it is checked only when one is given.
+    if (!telegram_bot_token || !telegram_bot_username) {
       setError("Please complete all required fields before submitting.");
       return;
     }
-    if (!anthropic_api_key.startsWith("sk-ant-")) {
+    if (anthropic_api_key && !anthropic_api_key.trim().startsWith("sk-ant-")) {
       setError("Your Anthropic API key should start with sk-ant-... Please double-check it.");
       return;
     }
@@ -495,7 +491,7 @@ ${name}`;
                 <Step>The key starts with <Code>sk-ant-api03-...</Code>; paste it below.</Step>
                 <Step>You&apos;ll need to add a payment method and purchase credits. We recommend starting with $20–$50.</Step>
               </Disclosure>
-              <FF label="Anthropic API Key" hint="Starts with sk-ant-..." required>
+              <FF label="Anthropic API Key (optional)" hint="Starts with sk-ant-... Leave blank and we can set this up with you.">
                 <TInput value={s2.anthropic_api_key} onChange={v => updateS2("anthropic_api_key", v)} placeholder="sk-ant-api03-..." />
               </FF>
             </Card>
@@ -519,51 +515,11 @@ ${name}`;
               </Stack>
             </Card>
             <Card>
-              <SectionHeader number="2B" label="Meeting Intelligence" />
-              <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Required for post-call workflow, pre-meeting briefs, and contact intelligence. Select which platform you use.</p>
-              <Stack gap={16}>
-                <FF label="Which meeting recorder do you use?" required>
-                  <div style={{ display: "flex", gap: 12 }}>
-                    {(["fathom", "fireflies"] as const).map(opt => (
-                      <button key={opt} type="button" onClick={() => updateS2("meeting_recorder", opt)}
-                        style={{ flex: 1, padding: "10px 0", borderRadius: 6, border: `2px solid ${s2.meeting_recorder === opt ? R : BDR}`, background: s2.meeting_recorder === opt ? "rgba(232,52,42,0.06)" : "transparent", color: s2.meeting_recorder === opt ? R : TXM, fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 700, cursor: "pointer", textTransform: "capitalize", letterSpacing: "0.05em" }}>
-                        {opt === "fathom" ? "Fathom" : "Fireflies"}
-                      </button>
-                    ))}
-                  </div>
-                </FF>
-                {s2.meeting_recorder === "fathom" && (<>
-                  <p style={{ fontSize: 11, color: TXM, margin: 0, lineHeight: 1.6 }}>Get a free account at <a href="https://fathom.video" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>fathom.video</a></p>
-                  <FF label="Fathom Account Email" hint="The email you use to log into Fathom">
-                    <TInput type="email" value={s2.fathom_email} onChange={v => updateS2("fathom_email", v)} placeholder="you@company.com" />
-                  </FF>
-                  <FF label="Fathom Account Password" hint="Used to connect the integration during setup">
-                    <TInput type="password" value={s2.fathom_password} onChange={v => updateS2("fathom_password", v)} placeholder="••••••••••••" />
-                  </FF>
-                </>)}
-                {s2.meeting_recorder === "fireflies" && (<>
-                  <p style={{ fontSize: 11, color: TXM, margin: 0, lineHeight: 1.6 }}>Get your API key at <a href="https://app.fireflies.ai/integrations/custom/fireflies" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>fireflies.ai</a> → Integrations → API</p>
-                  <FF label="Fireflies API Key" hint="Found in Fireflies → Integrations → API Key">
-                    <TInput value={s2.fireflies_api_key} onChange={v => updateS2("fireflies_api_key", v)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
-                  </FF>
-                </>)}
-              </Stack>
-            </Card>
-            <Card>
-              <SectionHeader number="2C" label="Tavily: Web Search & Research" />
+              <SectionHeader number="03" label="Tavily: Web Search & Research" />
               <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Powers real-time research, competitive intelligence, and market monitoring. Get your free API key at <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>tavily.com</a>: takes 2 minutes.</p>
               <Stack gap={16}>
                 <FF label="Tavily API Key" hint="Format: tvly-...">
                   <TInput value={s2.tavily_api_key} onChange={v => updateS2("tavily_api_key", v)} placeholder="tvly-..." />
-                </FF>
-              </Stack>
-            </Card>
-            <Card>
-              <SectionHeader number="2D" label="Calendly: Scheduling" />
-              <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Required for automated scheduling and calendar management. Leave blank if you don&apos;t use Calendly.</p>
-              <Stack gap={16}>
-                <FF label="Calendly Link" hint="Your personal or team scheduling URL">
-                  <TInput type="url" value={s2.calendly_url} onChange={v => updateS2("calendly_url", v)} placeholder="https://calendly.com/yourname" />
                 </FF>
               </Stack>
             </Card>
