@@ -64,6 +64,10 @@ const ROLE_INTAKES: Record<
     // OPT IN to a lighter "Final Details" page: an open "anything else?" question saved into this
     // role's own blob under `key`, in place of the file upload. The honesty checkbox stays.
     finalNote?: { key: string; label: string; placeholder: string };
+    // Tech Stack sections this role's own deep-dive already asks, hidden so nothing is asked
+    // twice: the CFO's accounting system, a salesperson's or realtor's CRM, a firm's document
+    // tools.
+    stackSkip?: readonly ("crm" | "comms" | "docs" | "pm" | "billing")[];
     // OPT IN to dropping just the "Monthly Revenue" question on "Your Business", keeping Team
     // Size beside it. Narrower than `personalScale`, which drops all three company-scale
     // questions for a buyer who may have no company at all - this is for a role whose buyer
@@ -106,6 +110,7 @@ const ROLE_INTAKES: Record<
 > = {
   cfo: {
     branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent",
+    stackSkip: ["billing"],
     coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
   },
   legal: {
@@ -117,6 +122,7 @@ const ROLE_INTAKES: Record<
     standardGuard:
       "Anything filed with a court, any advice given directly to a client, any opinion on the merits or likely outcome of a matter, and anything requiring a signature always goes through a licensed attorney before it moves. Privileged or confidential client material is never summarized into shared or non-firm systems.",
     hideRevenue: true,
+    stackSkip: ["docs"],
     // "Describe your business" moved onto the bottom of "Your Legal Practice", right after
     // practice areas, David's call - so it reads with the answer that gives it context instead
     // of arriving as its own page beforehand. dropPages removes the generic page asking the
@@ -128,6 +134,7 @@ const ROLE_INTAKES: Record<
   },
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
+    stackSkip: ["crm"],
     coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
   },
   ceo: {
@@ -140,6 +147,7 @@ const ROLE_INTAKES: Record<
   },
   sales: {
     branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent",
+    stackSkip: ["crm"],
     coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
   },
   recruiting: {
@@ -179,10 +187,11 @@ const ROLE_INTAKES: Record<
     //   "biz"       - "You and Where You Work", a company form asked of a person.
     //   "whatyoudo" - "Describe your business", unanswerable for most buyers.
     //   "exec"      - growth bottlenecks, a business question with no personal equivalent.
+    //   "stack", "voice" - the business agents' tools and voice pages (Sept 29, 2026).
     //
     // "scope" stays, David's call: the flow needs a closing question and the "I'm ready"
     // checkbox before it builds. `finalNote` swaps its file upload for "anything else?".
-    dropPages: ["biz", "whatyoudo", "exec"],
+    dropPages: ["biz", "whatyoudo", "exec", "stack", "voice"],
     quickGate: true,
     finalNote: {
       key: "anything_else",
@@ -325,8 +334,13 @@ const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint",
 // IT_COMPLY (the "Any compliance requirements?" options) was removed with that question at David's call.
 // BROKEN_AREAS (the "which areas feel most broken?" options) lived here until the Operations &
 // Pain Points page was removed at David's call. It was that page's only consumer, so it went with it.
-// KIDS_COUNT went with the Life Context page and WRITING_TONE with "Your natural tone", both
-// removed at David's call. Each had exactly one consumer, so neither outlived its question.
+// KIDS_COUNT went with the Life Context page, removed at David's call.
+//
+// WRITING_TONE and BRAND_LIKE are back, on the Voice page (Sept 29, 2026): David asked for "the
+// same tones as the main website intake form", and these are those two lists as they were. The
+// only edit is Hormozi's "no fluff", reworded to keep the copy positively framed.
+const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive","Calm & measured"];
+const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, to the point","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Other"];
 const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
@@ -1483,7 +1497,7 @@ const emptyS2 = () => ({ biz: "", url: "", industry: "", size: "", revenue: "", 
 const emptyS3 = () => ({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
 const emptyS4 = () => ({ marital: "", partnerName: "", kids: "", kidsDetails: "", household: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
 const emptyS5 = () => ({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
-const emptyS6 = () => ({ tone: [] as string[], writingComf: "", brandLike: "", brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
+const emptyS6 = () => ({ tone: [] as string[], writingComf: "", brandLike: [] as string[], brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
 const emptyS7 = () => ({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
 const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
 
@@ -1500,7 +1514,7 @@ function hydrateBizState(a: PrefillAnswers) {
     s3: { ...emptyS3(), pain: pfStr(a.mainPain), depts: pfArr(a.brokenAreas), hours: pfStr(a.manualHours), duration: pfStr(a.painDuration), hate: pfStr(a.hatedTasks), tried: pfArr(a.triedBefore), costImpact: pfStr(a.costImpact), opsVolume: pfStr(a.opsVolume) },
     s4: { ...emptyS4(), marital: pfStr(a.maritalStatus), partnerName: pfStr(a.partnerName), kids: pfStr(a.children), kidsDetails: pfStr(a.childrenDetails), household: pfStr(a.household), kidsAges: pfArr(a.childrenAges), caretaking: pfArr(a.caretaking), homeLife: pfStr(a.homeLife), protect: pfArr(a.protecting), lifeStage: pfStr(a.lifeStage), timeline3yr: pfArr(a.threeYearGoals), personalGoal: pfStr(a.personalGoal) },
     s5: { ...emptyS5(), decStyle: pfArr(a.decisionStyle), decStyleOther: pfStr(a.decisionStyleOther), stressResp: pfStr(a.stressResponse), motivators: pfArr(a.motivators), blockers: pfArr(a.blockers), moneyMind: pfStr(a.moneyMindset), agencyHist: pfStr(a.agencyHistory), techTrust: pfNum(a.techTrust), controlComfort: pfNum(a.controlComfort), worthIt: pfStr(a.worthIt), strategicBet: pfStr(a.strategicBet), growthBottleneck: pfArr(a.growthBottleneck), growthBottleneckOther: pfStr(a.growthBottleneckOther) },
-    s6: { ...emptyS6(), tone: pfArr(a.writingTone), writingComf: pfStr(a.writingComfort), brandLike: pfStr(a.brandVoiceLike), brandLikeOther: pfStr(a.brandVoiceLikeOther), voiceStyle: pfArr(a.voiceDescription), loveWords: pfStr(a.loveWords), hateWords: pfStr(a.hateWords), socialActive: pfStr(a.socialPresence), platforms: pfArr(a.platforms), sample: pfStr(a.writingSample) },
+    s6: { ...emptyS6(), tone: pfArr(a.writingTone), writingComf: pfStr(a.writingComfort), brandLike: typeof a.brandVoiceLike === "string" ? (a.brandVoiceLike ? [a.brandVoiceLike] : []) : pfArr(a.brandVoiceLike), brandLikeOther: pfStr(a.brandVoiceLikeOther), voiceStyle: pfArr(a.voiceDescription), loveWords: pfStr(a.loveWords), hateWords: pfStr(a.hateWords), socialActive: pfStr(a.socialPresence), platforms: pfArr(a.platforms), sample: pfStr(a.writingSample) },
     s7: { ...emptyS7(), goals: pfArr(a.aiGoals), goalsOther: pfStr(a.aiGoalsOther), metric: pfArr(a.successMetric), metricOther: pfStr(a.successMetricOther), prior: pfStr(a.priorAI), past: pfStr(a.pastExperience), aiThoughts: pfStr(a.aiThoughts), aiStartup: pfStr(a.aiStartup), teamSent: pfStr(a.teamSentiment), horizon3: pfStr(a.horizon3Months), horizon6: pfStr(a.horizon6Months), horizon12: pfStr(a.horizon12Months) },
     s8: { ...emptyS8(), hosting: pfArr(a.hosting), os: pfStr(a.os), security: pfArr(a.securityMeasures), data: pfArr(a.dataTypes), comply: pfArr(a.compliance), budget: pfStr(a.budgetRange ?? a.budget), timeline: pfStr(a.timeline), engagement: pfStr(a.engagement), internalTech: pfStr(a.internalTech), constraints: pfStr(a.constraints), decisionAuthority: pfStr(a.decisionAuthority), agree: true },
     keyPeople: Array.isArray(a.keyPeople) && a.keyPeople.length ? (a.keyPeople as KeyPerson[]) : [{ name: "", role: "" }],
@@ -1545,9 +1559,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const [s3] = useState(() => seed?.s3 ?? emptyS3());
   const [s4] = useState(() => seed?.s4 ?? emptyS4());
   const [s5, setS5] = useState(() => seed?.s5 ?? emptyS5());
-  // No setter. "Your Writing" (voiceStyle, sample) was the only thing that wrote to s6, and it is
-  // gone sitewide - see the "sample" removal note above the Goals & AI page.
-  const [s6] = useState(() => seed?.s6 ?? emptyS6());
+  // Written by the Voice page (tone and "whose voice"). voiceStyle and sample stay empty; their
+  // page is gone sitewide - see the "sample" removal note above the Goals & AI page.
+  const [s6, setS6] = useState(() => seed?.s6 ?? emptyS6());
   const [s7, setS7] = useState(() => seed?.s7 ?? emptyS7());
   const [s8, setS8] = useState(() => seed?.s8 ?? emptyS8());
   const [keyPeople, setKeyPeople] = useState<KeyPerson[]>(() => seed?.keyPeople ?? [{ name: "", role: "" }]);
@@ -1573,6 +1587,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // and the required marks it draws can never disagree with each other.
   const personalScale = roleIntake?.personalScale;
   const finalNote = roleIntake?.finalNote;
+  const stackSkip = roleIntake?.stackSkip ?? [];
   // A role deep-dive is one or more pages. Normalising to an array here means the rest of the
   // form does not care which, and the page keys are derived rather than hand-listed so a branch
   // can gain a page without touching the ordering below.
@@ -1597,14 +1612,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   //
   // It stays a literal because the handlers below close over it and allPages is built from
   // state further down; the assertion is what makes the duplication safe.
-  // A role agent gets the standard intake MINUS the tech-stack and generic-industry pages: company
-  // basics, what the business does, the role deep-dive, the executive profile, the personal pages
-  // (life context, voice, writing sample), the AI goals and what-it-should-do pages, and the final
-  // details/agreement. Only the tech stack and the generic industry branch (replaced by the role
-  // deep-dive) are dropped - David's call, so a role agent keeps the personal questions that make it
-  // feel built for the person. UNLIKE the generic flow (ordered by allPageKeys), a role agent takes
-  // its order straight from this list. Both pageKeys and allPages below derive from this list, so
-  // the step-order assertion stays satisfied.
+  // A role agent gets company basics, what the business does, its own deep-dive, the Tech Stack
+  // and Voice pages, the executive profile, its own "what the agent should own" page, and the
+  // final details. The generic industry branch is dropped (the role deep-dive replaces it).
+  // Tech Stack and Voice came back for every role agent at David's call (Sept 29, 2026) after he
+  // found the CEO Agent's setup had neither; a role can hide stack sections its deep-dive already
+  // asks (ROLE_INTAKES' stackSkip) or drop pages outright (dropPages). UNLIKE the generic flow
+  // (ordered by allPageKeys), a role agent takes its order straight from this list. Both pageKeys
+  // and allPages below derive from this list, so the step-order assertion stays satisfied.
   // NOTE the missing "scopeai". A role agent does NOT get the generic "What your agent should
   // take on" page, because its own deep-dive already asked both of that page's questions in the
   // customer's own vocabulary. A realtor was picking their agent's jobs twice: once from
@@ -1640,7 +1655,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const roleLeadKeys = splitRole ? roleStepKeys.slice(0, -1) : roleStepKeys;
   const roleScopeKey = splitRole ? roleStepKeys.slice(-1) : [];
   const rolePageKeys = isRoleFlow
-    ? ["biz", "whatyoudo", ...roleLeadKeys, "exec",
+    ? ["biz", "whatyoudo", ...roleLeadKeys, "stack", "voice", "exec",
        ...(roleIntake!.coversScope ? roleScopeKey : ["goals", "scopeai", ...roleScopeKey]), "scope"]
         .filter(k => !roleIntake!.dropPages?.includes(k))
     : [];
@@ -1648,7 +1663,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // call. It used to sit here for every flow, role or generic. `s6.sample` and its setter stay
   // (see f6 below): the payload still carries `writingSample`, empty now, the same way s2.model
   // and s2.differentiate do for questions removed before this one.
-  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "goals", "scopeai", "scope"];
+  const allPageKeys = ["biz", "whatyoudo", "exec", ...(branch ? ["industry"] : []), ...roleStepKeys, "stack", "voice", "goals", "scopeai", "scope"];
   const pageKeys = isRoleFlow ? rolePageKeys : allPageKeys;
   const f2 = (k: string, v: unknown) => setS2(p => ({ ...p, [k]: v }));
   // No f3. "What work do you hate doing?" was the only page that wrote to s3 (see the Executive
@@ -1657,9 +1672,8 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // No f4. Life Context was the only page that wrote to s4; the state and setS4 stay because the
   // payload still carries partnerName/children/household (empty now), and buildData reads them.
   const f5 = (k: string, v: unknown) => setS5(p => ({ ...p, [k]: v }));
-  // No f6. "Your Writing" was the only page that wrote to s6 (voiceStyle, sample); the state and
-  // setS6 stay because the payload still carries writingSample and the voice fields (empty now),
-  // and buildData reads them. Same shape as the missing f3 and f4, above.
+  // The Voice page is the only writer to s6 (tone and "whose voice").
+  const f6 = (k: string, v: unknown) => setS6(p => ({ ...p, [k]: v }));
   const f7 = (k: string, v: unknown) => setS7(p => ({ ...p, [k]: v }));
   const f8 = (k: string, v: unknown) => setS8(p => ({ ...p, [k]: v }));
   // A role agent answers "what should it do" and "what does winning look like" on its own
@@ -1675,7 +1689,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const scopeKeys = roleIntake?.coversScope;
   const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
   const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1834,26 +1848,48 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "stack", label: "Tech Stack", node: (
     <Stack key="s2stack">
       <SHead stepNum={3} total={0} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
+      {!stackSkip.includes("crm") && (<>
       <Divider label="Sales & CRM" />
       <LogoCheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} />
       {s2.crm.includes("Other") && <FF label="Which CRM?"><TInput value={s2.crmOther || ""} onChange={v => f2("crmOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
+      {!stackSkip.includes("comms") && (<>
       <Divider label="Communication" />
       <LogoCheckGroup options={STACK_COMMS} value={s2.comms} onChange={v => f2("comms", v)} />
       {s2.comms.includes("Other") && <FF label="Which tool?"><TInput value={s2.commsOther || ""} onChange={v => f2("commsOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
+      {!stackSkip.includes("docs") && (<>
       <Divider label="Documents & Files" />
       <LogoCheckGroup options={STACK_DOCS} value={s2.docs} onChange={v => f2("docs", v)} />
       {s2.docs.includes("Other") && <FF label="Which tool?"><TInput value={s2.docsOther || ""} onChange={v => f2("docsOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
+      {!stackSkip.includes("pm") && (<>
       <Divider label="Projects & Operations" />
       <LogoCheckGroup options={STACK_PM} value={s2.pm} onChange={v => f2("pm", v)} />
       {s2.pm.includes("Other") && <FF label="Which tool?"><TInput value={s2.pmOther || ""} onChange={v => f2("pmOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
+      {!stackSkip.includes("billing") && (<>
       <Divider label="Finance & Billing" />
       <LogoCheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
       {/* Moved here from Final Details at David's call. Who can touch the stack after launch is
           a fact about the stack, and asking it beside the tools it applies to gets a truer
           answer than asking it on the last page beside compliance and a file upload. */}
       <Divider label="After Launch" />
       <FF label="Internal technical resources after launch"><TSelect value={s8.internalTech} onChange={v => f8("internalTech", v)} options={INTERNAL_TECH} /></FF>
+    </Stack>
+    ) },
+    // Back at David's call (Sept 29, 2026) for every business agent, with the two lists the main
+    // intake form used: "Your natural tone" and "Whose voice do you sound most like?". Replaces
+    // the one-off "How should it sound?" boxes each role deep-dive used to carry. The Personal
+    // Agent drops it (ROLE_INTAKES.personal.dropPages).
+    { key: "voice", label: "Your Voice", node: (
+    <Stack key="s6voice">
+      <SHead stepNum={4} total={0} title="Your Voice" subtitle="How your agent should sound when it writes for you." badge="Business" />
+      <CheckGroup label="Your natural tone" hint="Select all that apply" options={WRITING_TONE} value={s6.tone} onChange={v => f6("tone", v)} cols={2} />
+      <CheckGroup label="Whose voice do you sound most like?" hint="Pick up to 3" split options={BRAND_LIKE} value={s6.brandLike} onChange={v => f6("brandLike", v.slice(-3))} cols={2} />
+      {s6.brandLike.includes("Other") && <FF label="Who else?" hint="A person or brand you'd like to sound like."><TInput value={s6.brandLikeOther} onChange={v => f6("brandLikeOther", v)} placeholder="Name them" /></FF>}
     </Stack>
     ) },
     // The "Operations & Pain Points" page (biggest operational headache + which areas feel most

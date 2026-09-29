@@ -115,6 +115,7 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
       "How to sound",
       [
         bullet("Tone", answers.writingTone),
+        bullet("Voices they'd like to sound like", withWriteIn(answers.brandVoiceLike, answers.brandVoiceLikeOther)),
         bullet("How they'd describe their voice", answers.voiceDescription),
         bullet("Words and phrases they like", answers.loveWords),
         bullet("Words and styles they hate", answers.hateWords),

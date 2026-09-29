@@ -228,6 +228,8 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
       title: "Voice & Communication Style",
       rows: [
         { label: "Writing Tone", value: d.writingTone },
+        { label: "Sounds Most Like", value: d.brandVoiceLike },
+        { label: "Sounds Most Like (Other)", value: d.brandVoiceLikeOther },
         { label: "Voice Description", value: d.voiceDescription },
         { label: "Loves These Words/Phrases", value: d.loveWords },
         { label: "Hates These Words/Styles", value: d.hateWords },
