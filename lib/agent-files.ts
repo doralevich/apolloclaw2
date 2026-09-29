@@ -115,6 +115,7 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
       "How to sound",
       [
         bullet("Tone", answers.writingTone),
+        bullet("Voices they'd like to sound like", withWriteIn(answers.brandVoiceLike, answers.brandVoiceLikeOther)),
         bullet("How they'd describe their voice", answers.voiceDescription),
         bullet("Words and phrases they like", answers.loveWords),
         bullet("Words and styles they hate", answers.hateWords),
@@ -258,7 +259,9 @@ export function buildToolsMd(answers: Record<string, unknown>): string {
   // saying they had not listed any software - on the same instance whose USER.md said otherwise
   // three sections up. See config/role-tools.ts.
   const role = roleToolFields(answers);
-  const roleRows = role ? role.fields.map((f) => bullet(f.label, role.blob[f.key])) : [];
+  // "Other" is swapped for what they typed in its "Please specify" box (`<key>_other`), now that
+  // most of these answers are dropdowns and checklists.
+  const roleRows = role ? role.fields.map((f) => bullet(f.label, withWriteIn(role.blob[f.key], role.blob[`${f.key}_other`]))) : [];
 
   const rows = [...generic, ...roleRows].filter((r): r is string => !!r);
 

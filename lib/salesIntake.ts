@@ -11,12 +11,17 @@
 // objection kills deals, what a bad-fit prospect looks like, and where deals actually stall - so
 // this intake asks all three directly rather than inferring them from a win story.
 //
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made the form
+// slow and corporate, so every question is a click except "What do you sell?", the one answer
+// only the owner can give. "How should it sound to a prospect?" (`sales_voice`) is gone; the
+// shared Voice page now asks tone for every agent.
+//
 // WHAT IS DELIBERATELY NOT ASKED, same rule as the other role intakes: does the agent need this
 // before its first useful action, or can it just ask? No quota, no headcount, no commission
 // structure, no territory map, and no "biggest sales headache" - the Executive Profile page asks
 // about the bottleneck two steps later and the second ask got the shorter answer.
 //
-// Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
+// Brand rules: no em dashes in any user-facing string; positive framing throughout.
 
 import type { IndustryBranch } from "@/lib/industryConfig";
 
@@ -33,22 +38,52 @@ const OFFER: IndustryBranch = {
       type: "textarea",
       required: true,
       placeholder: "e.g. a compliance platform for mid-market insurers, sold as an annual license.",
-      helper: "In the words you would use on a call, not the words on the website.",
+      helper: "In the words you would use on a call.",
+    },
+    {
+      key: "customer_size",
+      label: "How big are your customers?",
+      type: "dropdown",
+      options: [
+        "Individuals / consumers",
+        "Micro businesses (1-10 people)",
+        "Small businesses (10-50)",
+        "Mid-market (50-1,000)",
+        "Enterprise (1,000+)",
+        "A mix",
+      ],
     },
     {
       key: "icp",
-      label: "Who is your ideal customer?",
-      type: "textarea",
-      placeholder:
-        "e.g. 200 to 1000 people, has a compliance officer but no dedicated team, already been fined once.",
-      helper: "Size, role, and the situation that makes them ready to buy.",
+      label: "Who usually makes the buying decision?",
+      type: "multiselect",
+      options: [
+        "Founders and owners",
+        "C-suite executives",
+        "VPs and directors",
+        "Operations managers",
+        "IT and technical buyers",
+        "Finance and procurement",
+        "Marketing and sales leaders",
+        "Consumers buying for themselves",
+        "Other",
+      ],
     },
     {
       key: "competitors",
-      label: "Who do you lose to, and why?",
-      type: "textarea",
-      placeholder:
-        "e.g. we lose to the incumbent on inertia and to a cheaper tool on price, almost never on the product itself.",
+      label: "Why do you usually lose deals?",
+      type: "multiselect",
+      options: [
+        "Price",
+        "They stay with what they have today",
+        "Timing or budget cycle",
+        "A bigger, better-known competitor",
+        "A cheaper point tool",
+        "They build it in-house",
+        "A feature gap",
+        "The deal goes quiet after the demo",
+        "Other",
+      ],
       helper: "Naming the real reason matters more than naming the competitor.",
     },
   ],
@@ -92,18 +127,39 @@ const MOTION: IndustryBranch = {
     },
     {
       key: "stages",
-      label: "Walk us through a deal, first contact to signed.",
-      type: "textarea",
-      placeholder:
-        "e.g. discovery call, technical demo with their IT, security review which takes three weeks, procurement, signature.",
-      helper: "The real steps in your order, including the one everybody forgets to plan for.",
+      label: "Which steps does a typical deal go through?",
+      type: "multiselect",
+      options: [
+        "Discovery call",
+        "Demo",
+        "Free trial or pilot",
+        "Proposal or quote",
+        "Technical or security review",
+        "Legal and contract review",
+        "Procurement",
+        "Sign-off from several decision-makers",
+        "Signature",
+        "Other",
+      ],
+      helper: "Your agent plans each deal around these, slow steps included.",
     },
     {
       key: "objections",
-      label: "What objections come up most, and where do deals usually stall?",
-      type: "textarea",
-      placeholder: "e.g. too expensive, we already have something, not the right time, security review is too much work.",
-      helper: "And, if you have them, the answers that actually work.",
+      label: "Which objections come up most?",
+      type: "multiselect",
+      options: [
+        "Too expensive",
+        "We already have something",
+        "Bad timing",
+        "Need to check with my boss or team",
+        "Budget is spent for the year",
+        "Unsure it will work for us",
+        "Too much work to switch",
+        "Security or compliance concerns",
+        "Send me more info",
+        "Other",
+      ],
+      helper: "Your agent preps answers to these before every call.",
     },
     {
       key: "crm",
@@ -118,7 +174,7 @@ const MOTION: IndustryBranch = {
         "Zoho CRM",
         "Microsoft Dynamics 365",
         "Spreadsheets only",
-        "Nothing yet",
+        "None yet",
         "Other",
       ],
     },
@@ -128,8 +184,7 @@ const MOTION: IndustryBranch = {
 // ─── Page 3: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
-  stepSubtitle:
-    "The last page. What you want handed over, how it should sound, and the lines it must not cross.",
+  stepSubtitle: "The last page. What you want handed over, and where it checks with you first.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -148,31 +203,41 @@ const AGENT: IndustryBranch = {
         "Renewals and upsell prompts",
       ],
     },
-    // The follow-up to the one option that puts words in front of a stranger under the
-    // customer's name. Everything else on this list is internal or reactive; cold outreach is
-    // the customer's reputation, sent at volume, and "make it sound like us" does not configure it.
-    {
-      key: "sales_voice",
-      label: "How should it sound to a prospect?",
-      type: "textarea",
-      placeholder:
-        "e.g. short, specific, no exclamation marks, never 'just circling back', lead with something true about their business.",
-      helper: "Including the phrases you never want to see sent in your name.",
-    },
+    // Price and approval stay one answer: a wrong number in a quote is the hardest thing on
+    // this list to walk back, so it leads the options.
     {
       key: "approval_line",
-      label: "What must never go out without you seeing it, and what may it say about price?",
-      type: "textarea",
-      placeholder:
-        "e.g. anything with a price in it, any proposal, anything to an existing customer, anything promising a delivery date. It can quote list price and standard terms, but never a discount and never a custom rate.",
-      helper: "A wrong number in a quote is hard to walk back, which is why price and approval are one answer here rather than two.",
+      label: "Always check with me first before it...",
+      type: "multiselect",
+      options: [
+        "Quotes a price or discount",
+        "Sends a proposal or contract",
+        "Offers custom terms",
+        "Promises a delivery date or timeline",
+        "Emails an existing customer",
+        "Sends the first message to a cold prospect",
+        "Adds anyone to an outreach sequence",
+        "Books a meeting on my calendar",
+        "Other",
+      ],
+      helper: "A wrong number in a quote is hard to walk back, so pricing belongs on this list.",
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. nobody goes cold after a demo.",
-      helper: "This is what your agent gets configured around first.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Follow-up after every demo",
+        "Faster replies to inbound leads",
+        "A steady outbound pipeline",
+        "Prospect research before calls",
+        "Proposals out the same day",
+        "A clean, current CRM",
+        "An honest pipeline forecast",
+        "Renewals and upsells on time",
+        "Other",
+      ],
+      helper: "Your agent gets configured around this first.",
     },
   ],
 };

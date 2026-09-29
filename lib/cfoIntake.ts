@@ -20,10 +20,14 @@
 // systems it has to work inside, who is allowed to see which numbers, the review line before
 // anything goes to a board or a bank, and what to fix first.
 //
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made the form
+// slow and corporate, so every question here is a click. "How do you want financial writing to
+// sound?" (`numbers_voice`) is gone; the shared Voice page now asks tone for every agent.
+//
 // All fields are optional except the accounting system, which decides where every number the
 // agent touches comes from.
 //
-// Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
+// Brand rules: no em dashes in any user-facing string; positive framing throughout.
 
 import type { IndustryBranch } from "@/lib/industryConfig";
 
@@ -48,31 +52,36 @@ const BOOKS: IndustryBranch = {
         "Wave",
         "FreshBooks",
         "Spreadsheets only",
-        "Nothing yet",
+        "None yet",
         "Other",
       ],
       helper: "Every number your agent gives you traces back to here.",
     },
     {
       key: "books_state",
-      label: "How current are the books, and what does month-end close look like?",
+      label: "How current are the books?",
       type: "dropdown",
       options: [
         "Closed and reconciled through last month",
-        "A month or so behind",
+        "About a month behind",
         "A quarter or more behind",
-        "Reconciled only at tax time",
-        "Genuinely not sure",
+        "Reconciled at tax time only",
+        "Unsure",
       ],
-      helper:
-        "There is no wrong answer, and the honest one is the useful one. An agent that thinks the books are current will state stale numbers with confidence.",
+      helper: "The honest answer is the useful one. It tells your agent how far to trust the ledger.",
     },
     {
       key: "entities",
-      label: "How many legal entities, and how are they structured?",
-      type: "text",
-      placeholder: "e.g. one LLC, or 3 entities under a C-corp holdco",
-      helper: "Number, structure, and where they file. Consolidation is where reporting goes wrong.",
+      label: "How many legal entities does the business run through?",
+      type: "dropdown",
+      options: [
+        "One entity",
+        "2 to 3 entities",
+        "4 to 10 entities",
+        "More than 10 entities",
+        "Unsure",
+      ],
+      helper: "Consolidation is where reporting goes wrong, so your agent checks it first.",
     },
     {
       key: "reporting_cadence",
@@ -107,11 +116,20 @@ const MONEY: IndustryBranch = {
     },
     {
       key: "ar_process",
-      label: "How does getting paid work?",
-      type: "textarea",
-      placeholder:
-        "e.g. invoice on the first, net 30, two clients always run to 60 and I chase them myself.",
-      helper: "Terms, who invoices, and where collections actually stall.",
+      label: "What are your usual payment terms?",
+      type: "dropdown",
+      options: [
+        "Paid upfront or at checkout",
+        "Due on receipt",
+        "Net 15",
+        "Net 30",
+        "Net 45 to 60",
+        "Net 90 or longer",
+        "Milestone or progress billing",
+        "Mixed, it varies by client",
+        "Other",
+      ],
+      helper: "Your agent uses this to spot slow payers early.",
     },
     {
       key: "finance_stack",
@@ -135,11 +153,21 @@ const MONEY: IndustryBranch = {
     },
     {
       key: "compliance_rules",
-      label: "Any audit, lender, or regulatory rules it must follow?",
-      type: "textarea",
-      placeholder:
-        "e.g. we are audited annually, our lender needs a covenant certificate quarterly, revenue recognition follows ASC 606.",
-      helper: "Anything your accountant, auditor, or lender requires belongs here.",
+      label: "Which audit, lender, or regulatory rules apply?",
+      type: "multiselect",
+      options: [
+        "Annual audit",
+        "Annual CPA review",
+        "Lender covenants and reporting",
+        "Investor or board reporting",
+        "Revenue recognition (ASC 606)",
+        "Sales tax in multiple states",
+        "Grant or government funding rules",
+        "Industry regulation (healthcare, financial services)",
+        "None that I know of",
+        "Other",
+      ],
+      helper: "Anything your accountant, auditor, or lender requires.",
     },
   ],
 };
@@ -147,8 +175,7 @@ const MONEY: IndustryBranch = {
 // ─── Page 3: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
-  stepSubtitle:
-    "The last page. What you want handed over, who it may speak to, and the lines it must not cross.",
+  stepSubtitle: "The last page. What you want handed over, and where it checks with you first.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -167,32 +194,39 @@ const AGENT: IndustryBranch = {
         "Vendor, spend and payroll review",
       ],
     },
-    // Follow-ups to the two options that ask the agent to write for an audience it has never
-    // met. Board reporting and fundraising both go OUT of the building, to people whose
-    // questions the agent cannot guess, so ticking either opens the question that configures it.
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. I want to know my real runway without asking anyone.",
-      helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "numbers_voice",
-      label: "How do you want financial writing to sound?",
-      type: "textarea",
-      placeholder:
-        "e.g. lead with the number and the so-what, no hedging, tell me what you would do about it, never bury bad news in paragraph three.",
-      helper: "How you want a variance explained to you, and how blunt you want it.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Knowing my real cash runway",
+        "Closing the month on time",
+        "A monthly P&L I can read at a glance",
+        "Getting paid faster",
+        "Budget vs actual tracking",
+        "Cleaning up expense categories",
+        "Board and investor reporting",
+        "Tightening spend and margins",
+        "Other",
+      ],
+      helper: "Your agent gets configured around this first.",
     },
     {
       key: "approval_line",
-      label: "What must never go out without you seeing it first?",
-      type: "textarea",
-      placeholder:
-        "e.g. anything to the board or the bank, any number sent to an investor, anything touching payroll or an employee's compensation.",
+      label: "Always check with me first before it...",
+      type: "multiselect",
+      options: [
+        "Sends numbers to the board or investors",
+        "Shares anything with a bank or lender",
+        "Sends anything to a client or vendor",
+        "Touches payroll or compensation",
+        "Moves money or schedules a payment",
+        "Sends anything to our accountant or auditor",
+        "Shares financials with my team",
+        "Other",
+      ],
       helper:
-        "The one question on this form worth being strict about. A finance agent can send a wrong number somewhere it cannot be taken back from.",
+        "The one question on this form worth being strict about. A number sent to a board or a bank is hard to take back.",
     },
   ],
 };

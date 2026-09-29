@@ -17,6 +17,10 @@
 // historical time-to-fill, and no "biggest hiring headache" - the Executive Profile page asks
 // about the bottleneck two steps later and the second ask got the shorter answer.
 //
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made setup feel slow
+// and corporate. One short text field is left, for job titles, because those are unique to the
+// business. The candidate-voice question moved to the shared Voice page every agent gets.
+//
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
 
 import type { IndustryBranch } from "@/lib/industryConfig";
@@ -40,13 +44,13 @@ const HIRING: IndustryBranch = {
         "A staffing or contract placement business",
       ],
       helper:
-        "An in-house agent works one pipeline deeply. An agency agent juggles many, and must never mix them up.",
+        "An in-house agent works one pipeline deeply. An agency agent juggles many and keeps each client's pipeline separate.",
     },
     {
       key: "roles",
-      label: "What roles do you hire for most?",
-      type: "textarea",
-      placeholder: "e.g. field service technicians, and one or two office roles a year.",
+      label: "Which job titles do you hire for most?",
+      type: "text",
+      placeholder: "e.g. field service technician, dispatcher, office coordinator",
     },
     {
       key: "seniority",
@@ -64,19 +68,38 @@ const HIRING: IndustryBranch = {
     },
     {
       key: "good_hire",
-      label: "What does a great hire look like that a resume would miss?",
-      type: "textarea",
-      placeholder:
-        "e.g. they have run a route alone before, they can talk to a frustrated customer without escalating, they stay when it gets boring.",
-      helper:
-        "The most useful question here. This is what stops your agent shortlisting the best-formatted CV instead of the right person.",
+      label: "What makes a great hire that a resume would miss?",
+      type: "multiselect",
+      options: [
+        "Reliable, shows up on time",
+        "Calm with customers under pressure",
+        "Learns quickly",
+        "Works well independently",
+        "Strong team player",
+        "Stays for the long haul",
+        "Clear communicator",
+        "Takes ownership of problems",
+        "Other",
+      ],
+      helper: "This is what points your agent at the right person over the best-formatted CV.",
     },
     {
       key: "dealbreakers",
-      label: "What rules a candidate out?",
-      type: "textarea",
-      placeholder: "e.g. no valid licence, cannot work the shift pattern, needs sponsorship we cannot provide.",
-      helper: "Hard requirements only, please. Preferences belong in the question above.",
+      label: "Which hard requirements apply?",
+      type: "multiselect",
+      options: [
+        "Valid driver's license",
+        "Specific license or certification",
+        "Work authorization, sponsorship unavailable",
+        "Available for the shift pattern or weekends",
+        "Passes a background check",
+        "Passes a drug screen",
+        "Minimum years of experience",
+        "Lives within commuting distance",
+        "Meets physical job requirements",
+        "Other",
+      ],
+      helper: "Job-related requirements only. Your agent applies them the same way to every candidate.",
     },
   ],
 };
@@ -85,7 +108,7 @@ const HIRING: IndustryBranch = {
 const PROCESS: IndustryBranch = {
   stepTitle: "How Hiring Runs",
   stepSubtitle:
-    "The pipeline as it actually works, including where it breaks. The more specific here, the less your agent has to guess.",
+    "The pipeline as it runs today. The more specific here, the less your agent has to guess.",
   stepLabel: "The Process",
   fields: [
     {
@@ -106,11 +129,19 @@ const PROCESS: IndustryBranch = {
     },
     {
       key: "interview_process",
-      label: "What does your interview process look like, and where do you lose candidates?",
-      type: "textarea",
-      placeholder:
-        "e.g. phone screen with me, a working interview on site, then a reference call. About two weeks end to end.",
-      helper: "The stages, who runs each, and how long it really takes.",
+      label: "Which stages are in your interview process?",
+      type: "multiselect",
+      options: [
+        "Phone or video screen",
+        "Skills test or assessment",
+        "Working interview or trial shift",
+        "Interview with the hiring manager",
+        "Panel interview",
+        "Final interview with an owner or executive",
+        "Reference checks",
+        "Background check",
+        "Other",
+      ],
     },
     {
       key: "ats",
@@ -126,7 +157,7 @@ const PROCESS: IndustryBranch = {
         "JazzHR",
         "Indeed / LinkedIn only",
         "Spreadsheets and email",
-        "Nothing yet",
+        "None yet",
         "Other",
       ],
     },
@@ -137,7 +168,7 @@ const PROCESS: IndustryBranch = {
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
-    "The last page. What you want handed over, and the decisions it must never make alone.",
+    "The last page. What you want handed over, and the decisions that stay with you.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -168,24 +199,45 @@ const AGENT: IndustryBranch = {
       options: [
         "Summarize only, I read every application myself",
         "Summarize and flag against my hard requirements, I decide",
-        "Shortlist a recommended few, nobody is rejected without me",
+        "Shortlist a recommended few, I make every rejection",
         "Screen out clear misses on hard requirements only",
       ],
       helper:
-        "Hiring decisions carry legal weight and affect real people. Starting at the top of this list costs you very little and is easy to loosen later. Tell us in the box below if you have fairness, EEO or record-keeping rules the agent must follow, and what must never reach a candidate without you reading it.",
+        "Hiring decisions carry legal weight and affect real people. The top option is the safest start and easy to loosen later.",
     },
+    // Took over the fairness and record-keeping half of the old free-text box that sat below the
+    // dropdown. It lands in USER.md with the rest of the blob; the Boundaries line still reads
+    // `screening_authority` alone (coversScope.guard in OnboardingForm).
     {
-      key: "outreach_voice",
-      label: "How should it sound to a candidate?",
-      type: "textarea",
-      placeholder:
-        "e.g. warm and specific, name what they did that caught our eye, never templated, never oversell the role.",
+      key: "human_review",
+      label: "Always hand to a person when it involves...",
+      type: "multiselect",
+      options: [
+        "Rejecting or declining a candidate",
+        "Offers, pay and benefits",
+        "Disability, accommodation or medical questions",
+        "Age, religion, family or other protected traits (EEO)",
+        "Visa and work authorization questions",
+        "Background checks and references",
+        "Anything sent to a candidate in my name",
+        "Other",
+      ],
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. nobody waits more than a day to hear from us.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Faster first replies to applicants",
+        "Clearing the backlog of applications",
+        "Interview scheduling",
+        "Keeping candidates updated through the process",
+        "Better job ads and descriptions",
+        "Sourcing more qualified candidates",
+        "Clean ATS data and pipeline reporting",
+        "Offer letters and onboarding paperwork",
+        "Other",
+      ],
       helper: "This is what your agent gets configured around first.",
     },
   ],

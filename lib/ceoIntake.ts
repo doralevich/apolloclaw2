@@ -1,80 +1,138 @@
 // The CEO Agent's intake deep-dive.
 //
-// Three pages rather than one: your seat, your week, and what the agent should own.
+// Three pages: your seat, your week, and what the agent should own.
 //
-// Same shape as an industry branch (lib/industryConfig.ts) so each page renders through the exact
-// same generic step in the onboarding form (IndustryStep). All three write into ONE blob
-// (`ceoDetails`), so USER.md, the intake email and the edit pre-fill are unchanged.
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026). The version before this was two thin
+// pages and four type-in boxes, and walking it he found it slow, cursory and corporate. Every
+// answer here is now a click. Tools moved to the shared Tech Stack page and voice to the shared
+// Voice page, which every business agent now gets (components/onboard/OnboardingForm.tsx), so
+// this branch no longer asks `email_tool` or `ops_stack`. Both stay in the blob on records
+// already written; config/connect-flow.ts reads the Tech Stack's mail tiles when they are absent.
 //
-// WHAT MAKES THIS ONE DIFFERENT FROM THE OTHER ROLE AGENTS: every other agent is configured around
-// a body of work. This one is configured around a PERSON and the people around them. An agent that
-// drafts in a chief executive's name can do real damage with a message that is merely tone-deaf,
-// so the questions that matter most here are about who it may speak to, in whose name, and what it
-// must never send without being asked. Those sit on the last page and are worth the time even if
-// the customer skims the rest.
+// Same shape as an industry branch (lib/industryConfig.ts) so each page renders through the
+// generic IndustryStep. All three write into ONE blob (`ceoDetails`), so USER.md, the intake
+// email and the edit pre-fill are unchanged.
 //
-// WHAT IS DELIBERATELY NOT ASKED, same rule as the other role intakes: does the agent need this
-// before its first useful action, or can it just ask? No org chart, no meeting count, no travel
-// preferences, and no "biggest time drain" as a separate question - the Executive Profile page
-// asks about the bottleneck two steps later and the second ask got the shorter answer.
+// Keys other code reads by name, so keep them: owns_work, first_priority and guardrails
+// (OnboardingForm.tsx's coversScope maps them to aiGoals, successMetric and autonomyLine).
 //
-// Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
+// Brand rules: no em dashes in any user-facing string; positive framing throughout.
 
 import type { IndustryBranch } from "@/lib/industryConfig";
 
 // ─── Page 1: the seat ────────────────────────────────────────────────────────
 const SEAT: IndustryBranch = {
   stepTitle: "Your Seat",
-  stepSubtitle:
-    "What you actually run, and who is around you. Your agent has to know whose name it is writing in.",
+  stepSubtitle: "What you run and who is around you, so your agent knows whose name it writes in.",
   stepLabel: "Your Seat",
   fields: [
     {
       key: "title",
-      label: "Your role or title?",
-      type: "text",
-      placeholder: "e.g. Founder & CEO, Managing Partner, President",
+      label: "What's your role?",
+      type: "dropdown",
+      options: [
+        "Founder & CEO",
+        "CEO",
+        "President",
+        "Owner",
+        "Managing Partner",
+        "Managing Director",
+        "Executive Director",
+        "COO",
+        "Other",
+      ],
     },
     {
       key: "team_size",
-      label: "How big is the organisation you run?",
+      label: "How big is the organization you run?",
       type: "dropdown",
       options: ["Just me", "2-10", "11-50", "51-200", "201-1000", "More than 1000"],
     },
     {
+      key: "reports_to",
+      label: "Who do you answer to?",
+      type: "dropdown",
+      options: [
+        "I own the company outright",
+        "A board of directors",
+        "Investors",
+        "Partners or co-owners",
+        "A parent company",
+        "Other",
+      ],
+    },
+    {
       key: "direct_reports",
-      label: "Who reports to you, and what do they own?",
-      type: "textarea",
-      placeholder:
-        "e.g. Maria runs sales, Dan runs engineering, our COO seat is empty and I am covering it.",
-      helper: "Names and remits. Your agent should never ask you who runs something twice.",
+      label: "Which functions report to you?",
+      type: "multiselect",
+      options: [
+        "Sales",
+        "Marketing",
+        "Operations",
+        "Finance",
+        "Engineering or product",
+        "Customer success",
+        "People and HR",
+        "Legal",
+        "Other",
+      ],
+      helper: "Check all that apply.",
     },
   ],
 };
 
-// "Your Week" was page two and it is gone at David's call. Three of its five questions went with
-// it - what you are trying to move, which recurring meetings you sit in, and how bad the inbox is.
-//
-// TWO DID NOT, and they are not on the page below by accident:
-//
-//   email_tool  is one of the two keys config/connect-flow.ts reads in guessVendor. It is what
-//               pre-selects Google or Microsoft on the first screen a new owner meets, with the
-//               reason printed under it. A role flow never sees the generic Tech Stack page, so
-//               for a CEO agent this field is the ONLY email signal we hold - drop it and that
-//               screen asks cold.
-//   ops_stack   is, for the same reason, the only tools question a CEO agent is ever asked.
-//
-// They moved onto the page below rather than being deleted with the rest, and they read better
-// there anyway: "what should it own" and "which tools should it work across" are the same
-// thought. Nothing else on this branch is lost - priorities, recurring_meetings and
-// inbox_reality stay in the blob on every record already written, and lib/onboardingSections.ts
-// drops rows it finds empty.
+// ─── Page 2: the week ────────────────────────────────────────────────────────
+const WEEK: IndustryBranch = {
+  stepTitle: "Your Week",
+  stepSubtitle: "Where your time goes, so your agent knows what to protect and what to prepare.",
+  stepLabel: "Your Week",
+  fields: [
+    {
+      key: "time_sinks",
+      label: "Where does most of your week go?",
+      type: "multiselect",
+      options: [
+        "Internal meetings",
+        "Customer and partner calls",
+        "Board and investor work",
+        "Email and messages",
+        "Hiring and interviews",
+        "Travel",
+        "Reviewing numbers and reports",
+        "Putting out fires",
+        "Other",
+      ],
+      helper: "Check all that apply.",
+    },
+    {
+      key: "recurring_meetings",
+      label: "Which recurring meetings do you run or sit in?",
+      type: "multiselect",
+      options: [
+        "Leadership team meeting",
+        "One-on-ones",
+        "Board meetings",
+        "Investor updates",
+        "All-hands",
+        "Pipeline or sales review",
+        "Weekly business review",
+        "Other",
+      ],
+      helper: "Check all that apply.",
+    },
+    {
+      key: "inbox_reality",
+      label: "How many emails land in your inbox on a typical day?",
+      type: "dropdown",
+      options: ["Under 50", "50-100", "100-200", "200-500", "More than 500"],
+    },
+  ],
+};
 
 // ─── Page 3: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
-  stepSubtitle:
-    "The last page. What you want handed over, who it may speak to, and the lines it must not cross.",
+  stepSubtitle: "The last page. What you want handed over, and where it checks with you first.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -85,78 +143,67 @@ const AGENT: IndustryBranch = {
       options: [
         "Inbox triage and drafting",
         "Calendar and scheduling",
-        "Meeting prep and follow-ups",
+        "Meeting prep and briefs",
+        "Meeting notes and follow-ups",
         "Board and investor updates",
         "Internal comms and announcements",
-        "Research before decisions",
-        "Tracking what you asked people for",
         "Weekly business review",
+        "Tracking what I asked people for",
+        "Research before decisions",
+        "Travel planning",
+        "Other",
       ],
+      helper: "Check all that apply.",
     },
-    // The follow-up to the option that carries the most risk on this list. An agent writing in a
-    // chief executive's name to their own company is a different thing from drafting a document,
-    // and "how should it sound" is not enough to configure it safely.
+    // An agent writing in a chief executive's name can do real damage with a message that is
+    // merely tone-deaf, so this stays required - as checkboxes now, the riskiest first.
     {
       key: "guardrails",
-      label: "What may it handle alone, and what must never happen without your say-so?",
-      type: "textarea",
+      label: "Always check with me first before it...",
+      type: "multiselect",
       required: true,
-      placeholder:
-        "e.g. it can book, reschedule, chase and summarize on its own. It must never contact the board, message anyone about their performance or role, commit to a number, or reply to press. When it writes as me it stays short and never makes a promise.",
-      helper:
-        "Both halves in one answer - what it does without asking, and what it never does without asking, including when it writes in your name. Worth being strict: your agent carries your name, and a message sent in it cannot be unsent.",
+      options: [
+        "Messages the board or investors",
+        "Replies to press or media",
+        "Commits to a number, price or deadline",
+        "Discusses anyone's role or performance",
+        "Sends anything in my name to a client",
+        "Sends a company-wide announcement",
+        "Accepts or declines a meeting for me",
+        "Spends money or books travel",
+        "Other",
+      ],
+      helper: "Check all that apply. Your agent carries your name, so it's worth being strict.",
     },
     {
       key: "comm_style",
       label: "How should it communicate with you?",
       type: "dropdown",
       options: [
-        "Short and direct, no preamble",
-        "Brief with the reasoning underneath",
+        "Short and direct",
+        "Brief, with the reasoning underneath",
         "Full context, I like to read",
         "Bullet points only",
-        "Ask me before long explanations",
       ],
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. I stop being the reason things wait.",
-      helper: "This is what your agent gets configured around first.",
-    },
-    // Both up from the retired "Your Week" page. See the note above it for why these two came
-    // and the other three did not.
-    {
-      key: "email_tool",
-      label: "What do you run email and calendar in?",
+      label: "What should it tackle first?",
       type: "dropdown",
-      options: ["Google Workspace", "Microsoft 365 / Outlook", "Both", "Other"],
-    },
-    {
-      key: "ops_stack",
-      label: "Which tools should it work across?",
-      type: "multiselect",
       options: [
-        "Slack",
-        "Microsoft Teams",
-        "Notion",
-        "Asana",
-        "Linear",
-        "Jira",
-        "Monday.com",
-        "Salesforce",
-        "HubSpot",
-        "Google Drive",
-        "SharePoint",
+        "Getting my inbox under control",
+        "Protecting my calendar",
+        "Prepping me for every meeting",
+        "Following up on what people owe me",
+        "Board and investor reporting",
+        "A clear weekly view of the business",
         "Other",
       ],
     },
   ],
 };
 
-/** Two pages now, one blob. The onboarding form renders these in order, and the form moves the
- *  LAST one to the end of the questionnaire - see rolePageKeys in components/onboard/
- *  OnboardingForm.tsx. So a CEO answers "Your Seat" up front and "Your Agent" once everything
- *  else is known. */
-export const CEO_BRANCH: IndustryBranch[] = [SEAT, AGENT];
+/** Three pages, one blob. The onboarding form moves the LAST one to the end of the questionnaire
+ *  (see rolePageKeys in components/onboard/OnboardingForm.tsx), so a CEO answers "Your Seat" and
+ *  "Your Week" up front and "Your Agent" once everything else is known. */
+export const CEO_BRANCH: IndustryBranch[] = [SEAT, WEEK, AGENT];
