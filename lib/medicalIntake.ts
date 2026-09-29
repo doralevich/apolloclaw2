@@ -15,6 +15,11 @@
 //   2. Patient information is regulated. Whether the customer is a HIPAA covered entity changes
 //      what may be touched at all, so it is asked directly and early rather than assumed.
 //
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made setup feel slow
+// and corporate. One short text field is left, for specialty. The clinical boundary is now a
+// required checklist with the dangerous cases listed first, so a customer who ticks only the top
+// few still gets a safe agent. The patient-voice question moved to the shared Voice page.
+//
 // WHAT IS DELIBERATELY NOT ASKED, same rule as the other role intakes: does the agent need this
 // before its first useful action, or can it just ask? No payer mix, no procedure codes, no
 // clinical protocols, and no "biggest administrative headache" - the Executive Profile page asks
@@ -34,22 +39,36 @@ const PRACTICE: IndustryBranch = {
     {
       key: "practice_type",
       label: "What kind of practice is it?",
-      type: "textarea",
+      type: "dropdown",
       required: true,
-      placeholder: "e.g. a two-location dental practice, or a solo dermatology clinic, or a physical therapy group.",
+      options: [
+        "Primary care / family medicine",
+        "Dental",
+        "Orthodontics",
+        "Dermatology",
+        "Physical therapy / rehab",
+        "Chiropractic",
+        "Mental and behavioral health",
+        "Pediatrics",
+        "Optometry / eye care",
+        "Specialist clinic",
+        "Med spa / aesthetics",
+        "Urgent care",
+        "Other",
+      ],
     },
     {
       key: "specialty",
       label: "What is your specialty or focus?",
       type: "text",
-      placeholder: "e.g. paediatric dentistry, sports medicine, cosmetic dermatology",
+      placeholder: "e.g. pediatric dentistry, sports medicine, cosmetic dermatology",
     },
     {
       key: "practice_size",
       label: "How big is the practice?",
       type: "dropdown",
       options: [
-        "Solo provider, no staff",
+        "Solo provider, working alone",
         "Solo provider with support staff",
         "2-5 providers",
         "6-15 providers",
@@ -65,11 +84,11 @@ const PRACTICE: IndustryBranch = {
       options: [
         "Yes",
         "No",
-        "Not in the US, but under equivalent rules",
-        "Not sure",
+        "Outside the US, under equivalent rules",
+        "Unsure",
       ],
       helper:
-        "This decides what your agent may touch at all. If you are not sure, say so and we will work it out before anything is connected.",
+        "This decides what your agent may touch at all. Unsure is a fine answer, and we will work it out before anything is connected.",
     },
     {
       key: "ehr",
@@ -96,7 +115,7 @@ const PRACTICE: IndustryBranch = {
 const FRONT_OFFICE: IndustryBranch = {
   stepTitle: "Your Front Office",
   stepSubtitle:
-    "How patients actually reach you and how the day runs. The more specific here, the less your agent has to guess.",
+    "How patients reach you and how the day runs. The more specific here, the less your agent has to guess.",
   stepLabel: "Front Office",
   fields: [
     {
@@ -115,11 +134,20 @@ const FRONT_OFFICE: IndustryBranch = {
     },
     {
       key: "scheduling_rules",
-      label: "How does scheduling really work, including no-shows and cancellations?",
-      type: "textarea",
-      placeholder:
-        "e.g. new patients need a 40 minute slot and only on Tuesdays and Thursdays, we hold two same-day slots back, Dr Patel never doubles up after 3pm.",
-      helper: "The rules your staff know by heart and nobody has written down.",
+      label: "Which scheduling rules apply at your practice?",
+      type: "multiselect",
+      options: [
+        "First-time patients need longer slots",
+        "Some visit types only on certain days",
+        "Same-day slots held back for urgent visits",
+        "Each provider keeps their own schedule rules",
+        "Waitlist for earlier openings",
+        "Cancellation or late fee policy",
+        "Card on file or deposit to book",
+        "Patients can self-book online",
+        "Other",
+      ],
+      helper: "Your agent asks for the details on each one once it is connected.",
     },
     {
       key: "billing",
@@ -140,7 +168,7 @@ const FRONT_OFFICE: IndustryBranch = {
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
-    "The last page. Administrative work only, and the lines it must never cross.",
+    "The last page. Administrative work only, and where a clinician takes over.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -151,7 +179,7 @@ const AGENT: IndustryBranch = {
       options: [
         "Appointment reminders and confirmations",
         "Rescheduling and waitlist filling",
-        "New patient intake paperwork",
+        "First-time patient intake paperwork",
         "Answering routine practice questions",
         "Insurance and eligibility chasing",
         "Recall and recare outreach",
@@ -162,29 +190,44 @@ const AGENT: IndustryBranch = {
     // The follow-up to the two options that put the agent in front of a patient in writing.
     // Reminders and routine questions are where an administrative agent is most likely to be
     // asked something clinical, and the customer needs to have decided what happens then BEFORE
-    // it happens rather than reading it in a transcript afterwards.
+    // it happens rather than reading it in a transcript afterwards. Clinical and PHI cases are
+    // listed first on purpose: the persona holds this line too, and this answer adds to it.
     {
       key: "clinical_boundary",
-      label: "Where must a clinician take over, what may it say to a patient, and how must records be handled?",
-      type: "textarea",
+      label: "Always hand to a clinician or your staff when it involves...",
+      type: "multiselect",
       required: true,
-      placeholder:
-        "e.g. anything about symptoms, medication, results or urgency goes to a person immediately. It may confirm appointments and send reminders. No PHI in SMS, no chart detail in anything outside the EHR, and nothing goes to a patient without a person reading it.",
+      options: [
+        "Symptoms, diagnosis or medical advice",
+        "Urgent or emergency situations",
+        "Mental health crisis or self-harm risk",
+        "Medications, prescriptions and refills",
+        "Test results and lab values",
+        "Chart details and protected health information (PHI)",
+        "Patient information outside the EHR or portal",
+        "Billing disputes and payment plans",
+        "Complaints and upset patients",
+        "Every outgoing patient message, reviewed first",
+        "Other",
+      ],
       helper:
-        "Three rules in one answer: where a clinician must step in, what the agent may say to a patient on its own, and how patient information must be handled. They were separate questions and each got a shorter answer than this one deserves. Be generous - your agent is an administrative tool and must not drift into clinical territory even when a patient asks it to directly.",
-    },
-    {
-      key: "patient_voice",
-      label: "How should it sound to a patient?",
-      type: "textarea",
-      placeholder:
-        "e.g. warm and plain, no jargon, never rushed, our patients are mostly elderly so short sentences and no abbreviations.",
+        "Tick generously. Your agent handles scheduling and admin, and hands anything clinical or sensitive to your team.",
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. nobody's voicemail goes unanswered past the same day.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Same-day callbacks and voicemail replies",
+        "Appointment reminders and confirmations",
+        "Filling cancellations from a waitlist",
+        "First-time patient intake paperwork",
+        "Insurance verification before visits",
+        "Recall and recare outreach",
+        "Referral coordination",
+        "More reviews from happy patients",
+        "Other",
+      ],
       helper: "This is what your agent gets configured around first.",
     },
   ],

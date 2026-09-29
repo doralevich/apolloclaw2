@@ -1394,7 +1394,12 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
       {branch.fields.filter(f => fieldVisible(f, values)).map(f => {
         const val = values[f.key];
         const str = typeof val === "string" ? val : "";
-        const arr = Array.isArray(val) ? val : [];
+        // Many of these were type-in boxes before Sept 29, 2026. A saved paragraph under a key
+        // that is now a checklist or dropdown is shown as one more (ticked) option rather than
+        // silently dropped, so a true edit keeps it until the owner unticks it.
+        const arr = Array.isArray(val) ? val : (f.type === "multiselect" && str ? [str] : []);
+        const opts = f.options ?? [];
+        const withLegacy = (picked: string[]) => [...opts, ...picked.filter(p => !opts.includes(p))];
         // Same rule as the multiselect below, David's: "Other" is never a dead end - picking it
         // always opens somewhere to say what the other thing IS. A dropdown that ends at
         // "Other" collects nothing.
@@ -1403,7 +1408,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
           const ddOtherVal = values[ddOtherKey];
           return (
             <Fragment key={f.key}>
-              <FF label={f.label} required={f.required} hint={f.helper}><TSelect value={str} onChange={v => onChange(f.key, v)} options={f.options ?? []} /></FF>
+              <FF label={f.label} required={f.required} hint={f.helper}><TSelect value={str} onChange={v => onChange(f.key, v)} options={withLegacy(str ? [str] : [])} /></FF>
               {str === "Other" && (
                 <FF label="Please specify">
                   <TInput value={typeof ddOtherVal === "string" ? ddOtherVal : ""} onChange={v => onChange(ddOtherKey, v)} placeholder="Tell us more" />
@@ -1417,7 +1422,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
           const otherVal = values[otherKey];
           return (
             <Fragment key={f.key}>
-              <CheckGroup label={f.label} required={f.required} hint={f.helper ?? "Select all that apply"} options={f.options ?? []} value={arr} onChange={v => onChange(f.key, v)} cols={2} />
+              <CheckGroup label={f.label} required={f.required} hint={f.helper ?? "Select all that apply"} options={withLegacy(arr)} value={arr} onChange={v => onChange(f.key, v)} cols={2} />
               {arr.includes("Other") && (
                 <FF label="Please specify">
                   <TInput value={typeof otherVal === "string" ? otherVal : ""} onChange={v => onChange(otherKey, v)} placeholder="Tell us more" />
@@ -1687,9 +1692,19 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // list is that question asked in the customer's vocabulary, which is why it replaced the
   // generic one rather than joining it.
   const scopeKeys = roleIntake?.coversScope;
-  const roleOwns = scopeKeys ? roleDetails[scopeKeys.owns] : undefined;
-  const roleWin = scopeKeys ? roleDetails[scopeKeys.win] : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleDetails[scopeKeys.guard] : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
+  // A role answer with "Other" ticked, with the "Please specify" text (`<key>_other`) in its
+  // place. These three feed the agent's own instructions (aiGoals, successMetric, autonomyLine),
+  // where a bare "Other" tells it nothing. Most of them are checklists since Sept 29, 2026.
+  const roleAnswer = (key: string) => {
+    const v = roleDetails[key];
+    const o = roleDetails[`${key}_other`];
+    const w = typeof o === "string" ? o.trim() : "";
+    if (!w) return v;
+    return Array.isArray(v) ? v.map(x => (x === "Other" ? w : x)) : v === "Other" ? w : v;
+  };
+  const roleOwns = scopeKeys ? roleAnswer(scopeKeys.owns) : undefined;
+  const roleWin = scopeKeys ? roleAnswer(scopeKeys.win) : undefined;
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];

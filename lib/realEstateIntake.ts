@@ -1,23 +1,28 @@
 // The Real Estate Agent's intake deep-dive.
 //
-// Four pages rather than one. This is the flagship agent and the questionnaire is the whole
+// Three pages rather than one. This is the flagship agent and the questionnaire is the whole
 // product experience before anything is built, so it is deliberately the most thorough of the
 // role intakes: a twelve-question single page could not tell a solo buyer's agent from a
 // broker-owner running three offices, and both were being sold the same agent.
 //
 // Same shape as an industry branch (lib/industryConfig.ts) so each page renders through the exact
-// same generic step in the onboarding form (IndustryStep). All four write into ONE blob
+// same generic step in the onboarding form (IndustryStep). All three write into ONE blob
 // (`realEstateDetails`), so USER.md, the intake email and the edit pre-fill are unchanged.
 //
-// The pages move from who you are, to where you work, to how deals actually run, to what the
-// agent should own. That order matters: the last page's answers only make sense once the first
-// three have established the practice they apply to.
+// The pages move from who you are, to how deals run, to what the agent should own. That order
+// matters: the last page's answers only make sense once the first two have established the
+// practice they apply to.
 //
 // All fields are optional (David's call): answer what applies, skip the rest.
 //
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made the form
+// slow and corporate, so every question is a click except `markets`, the one answer only the
+// realtor can give. `license_states` folded into it. "How do you want your listing copy to
+// sound?" (`listing_voice`) is gone; the shared Voice page now asks tone for every agent.
+//
 // WHAT IS DELIBERATELY NOT ASKED HERE, and the rule behind it.
 //
-// This page set peaked at 37 questions and is now 25. The test each survivor had to pass: does
+// This page set peaked at 37 questions and is now ten. The test each survivor had to pass: does
 // the agent need this BEFORE its first useful action, or is it something the agent can simply
 // ask? It talks to its owner every day. Anything it can learn by asking does not belong in front
 // of somebody who has already decided to buy, because every question there is a chance to close
@@ -38,7 +43,7 @@
 //
 // What stayed is what the agent cannot infer, cannot easily ask, or must not get wrong:
 // licensing and compliance boundaries, the approval line, office structure (who it may act for),
-// market and price band, voice, the systems it has to work inside, and what to fix first.
+// market and price band, the systems it has to work inside, and what to fix first.
 //
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
 
@@ -58,8 +63,20 @@ const PRACTICE: IndustryBranch = {
     {
       key: "brokerage",
       label: "What brokerage are you with?",
-      type: "text",
-      placeholder: "e.g. Keller Williams, RE/MAX, eXp, Compass, or independent",
+      type: "dropdown",
+      options: [
+        "Keller Williams",
+        "RE/MAX",
+        "eXp Realty",
+        "Compass",
+        "Coldwell Banker",
+        "Century 21",
+        "Berkshire Hathaway HomeServices",
+        "Sotheby's International Realty",
+        "Real Brokerage",
+        "Independent brokerage",
+        "Other",
+      ],
     },
     {
       key: "role",
@@ -77,19 +94,14 @@ const PRACTICE: IndustryBranch = {
         "Other",
       ],
     },
-    {
-      key: "license_states",
-      label: "Which states are you licensed in?",
-      type: "text",
-      placeholder: "e.g. NY, NJ, CT",
-      helper: "So the agent does not draft around rules that do not apply to you.",
-    },
+    // The one free-text answer on this intake, because a market is a list of names only the
+    // realtor knows. It carries the licence states too, which saves a question.
     {
       key: "markets",
-      label: "Which markets do you work?",
+      label: "Which markets do you work, and in which states?",
       type: "text",
-      placeholder: "e.g. Austin metro; Round Rock and Cedar Park",
-      helper: "Cities, neighborhoods, or regions the agent should know by name.",
+      placeholder: "e.g. Austin metro, TX; Hoboken and Jersey City, NJ",
+      helper: "Cities, neighborhoods, or regions your agent should know by name.",
     },
   ],
 };
@@ -99,7 +111,7 @@ const PRACTICE: IndustryBranch = {
 const DEALS: IndustryBranch = {
   stepTitle: "Your Deal Flow",
   stepSubtitle:
-    "How business actually moves through your practice, from first contact to closing. The more specific here, the less your agent has to guess.",
+    "How business moves through your practice, from first contact to closing. The more specific here, the less your agent has to guess.",
   stepLabel: "Deal Flow",
   fields: [
     {
@@ -114,7 +126,7 @@ const DEALS: IndustryBranch = {
         "Land / lots",
         "Commercial (office / retail / industrial)",
         "Short-term rentals",
-        "New construction",
+        "Pre-construction and builder homes",
         "Farm / ranch",
         "Other",
       ],
@@ -150,18 +162,30 @@ const DEALS: IndustryBranch = {
         "Chime",
         "HubSpot",
         "Spreadsheets only",
-        "Nothing yet",
+        "None yet",
         "Other",
       ],
     },
+    // config/skills/real-estate.ts reads this as **Transaction Process**, the spine of the
+    // transaction checklist, so the key stays even though the answer is now a set of ticks.
     {
       key: "transaction_process",
-      label: "Walk us through a deal from accepted offer to closing.",
-      type: "textarea",
-      placeholder:
-        "e.g. accepted offer, order inspection within 3 days, negotiate repairs by day 10, appraisal, clear to close, final walkthrough the morning of.",
-      helper:
-        "The dates, the order, and who you chase at each step. This is what the agent turns into your transaction checklist.",
+      label: "Which steps does a typical deal run through, offer to close?",
+      type: "multiselect",
+      options: [
+        "Earnest money deposit",
+        "Home inspection",
+        "Repair negotiation",
+        "Appraisal",
+        "Loan approval and clear to close",
+        "HOA or condo documents",
+        "Title search and survey",
+        "Attorney review",
+        "Final walkthrough",
+        "Closing and signing",
+        "Other",
+      ],
+      helper: "Your agent turns these into your dated transaction checklist.",
     },
   ],
 };
@@ -169,8 +193,7 @@ const DEALS: IndustryBranch = {
 // ─── Page 3: what the agent owns ─────────────────────────────────────────────
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
-  stepSubtitle:
-    "The last page. What you want handed over, how it should sound, and the lines it must not cross.",
+  stepSubtitle: "The last page. What you want handed over, and where it checks with you first.",
   stepLabel: "Your Agent",
   // The mascot lives here now. It was on the generic "What your agent should take on" page,
   // which a role agent no longer sees - that page asked the same two questions this one does,
@@ -192,42 +215,39 @@ const AGENT: IndustryBranch = {
         "CRM hygiene and data entry",
       ],
     },
-    // The two follow-ups to owns_work, and the reason they exist: those two options are the
-    // only ones on the list that ask the agent to APPLY A RULE it cannot infer. "Write listing
-    // copy" is configured by the voice question below; "run my investment math" is not
-    // configured by anything unless we ask what the numbers have to clear, and "handle my
-    // scheduling" is not configured by anything unless we ask what it is booking into.
-    //
-    // Without these the agent is told to do two jobs and has to open by interviewing its owner
-    // about both, on day one, having just been handed forty other answers.
-    //
-    // Conditional, so the realtor who ticked neither never sees them.
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. nobody falls through the cracks after an open house.",
-      helper: "This is what your agent gets configured around first.",
-    },
-    {
-      key: "listing_voice",
-      label: "How do you want your listing copy to sound?",
-      type: "textarea",
-      placeholder:
-        "e.g. warm and specific, never 'stunning' or 'must see', always lead with the thing a buyer actually cares about.",
-      // Deliberately asks for the RULE, not an example. The writing-sample page later in the
-      // form asks for a listing they were proud of; asking for one here too would get the same
-      // paste twice and lose the one thing this question can get that a sample cannot - the
-      // words they refuse to use.
-      helper: "The house style, not an example. There is a page for a listing later.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Follow-up after open houses and showings",
+        "Faster replies to incoming leads",
+        "Keeping past clients and referrals warm",
+        "Listing descriptions and marketing",
+        "Staying ahead of transaction deadlines",
+        "Comps and pricing prep",
+        "Showing and inspection scheduling",
+        "A clean, current CRM",
+        "Other",
+      ],
+      helper: "Your agent gets configured around this first.",
     },
     {
       key: "approval_line",
-      label: "What must never go out without you seeing it first?",
-      type: "textarea",
-      placeholder:
-        "e.g. anything with a price in it, anything to a client under contract, anything on social.",
-      helper: "The agent drafts up to this line and waits.",
+      label: "Always check with me first before it...",
+      type: "multiselect",
+      options: [
+        "Sends anything with a price in it",
+        "Messages a client under contract",
+        "Posts anything on social media",
+        "Publishes or updates a listing",
+        "Replies to an incoming lead",
+        "Contacts another agent or broker",
+        "Shares contract or disclosure details",
+        "Books a showing or inspection",
+        "Other",
+      ],
+      helper: "Your agent drafts up to this line and waits for you.",
     },
     // "Biggest headache in your business right now?" was here and is gone. The Executive
     // Profile page already asks "Where's the real bottleneck to growth right now?" two pages
@@ -236,5 +256,5 @@ const AGENT: IndustryBranch = {
   ],
 };
 
-/** Four pages, one blob. The onboarding form renders these in order. */
+/** Three pages, one blob. The onboarding form renders these in order. */
 export const REALESTATE_BRANCH: IndustryBranch[] = [PRACTICE, DEALS, AGENT];

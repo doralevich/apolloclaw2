@@ -18,10 +18,9 @@
 // THE TWO-AUDIENCE PROBLEM IS THE DEFINING FACT of this role and it shapes the whole form. Every
 // other role agent writes to one party. This one writes to a tenant and to an owner in the same
 // hour, about the same event, and the registers are not the same - the tenant needs to know
-// somebody is coming, the owner needs to know what it costs and why it was approved. So the voice
-// question asks for both in one answer rather than asking twice, and `who_you_answer_to` is on the
-// form at all because managing for one landlord and managing for an HOA board are different jobs
-// with the same job title.
+// somebody is coming, the owner needs to know what it costs and why it was approved. That is why
+// `who_you_answer_to` is on the form at all: managing for one landlord and managing for an HOA
+// board are different jobs with the same job title.
 //
 // WHAT IS DELIBERATELY NOT ASKED, same rule as the other nine role intakes: does the agent need
 // this before its first useful action, or can it just ask? No unit-level rent roll, no vendor list,
@@ -31,9 +30,13 @@
 // the Executive Profile page asks about the bottleneck two steps later and the second ask got the
 // shorter answer.
 //
-// Twelve questions, matching the ceiling every role intake was cut to. The last four are the shared
-// family tail - what it owns, where it stops, how it sounds, what to fix first - so this reads as
-// the tenth member of a family rather than a form that arrived from somewhere else.
+// The last page is the shared family tail - what it owns, where it stops, what to fix first - so
+// this reads as the tenth member of a family rather than a form that arrived from somewhere else.
+//
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made setup feel slow
+// and corporate. One text field is left, `markets`, because landlord-tenant law is local and no
+// list covers it. The handoff line is now a required checklist with emergencies, fair housing and
+// evictions listed first. The tenant-and-owner voice question moved to the shared Voice page.
 //
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
 
@@ -68,7 +71,7 @@ const PORTFOLIO: IndustryBranch = {
         "Other",
       ],
       helper:
-        "This changes everything downstream. An HOA manager answers to a board and a budget; a short-term operator turns units over weekly; a commercial manager reads leases nobody else in this list has.",
+        "This changes everything downstream. An HOA manager answers to a board and a budget; a short-term operator turns units over weekly; a commercial manager reads leases unlike anyone else on this list.",
     },
     {
       key: "portfolio_size",
@@ -88,22 +91,31 @@ const PORTFOLIO: IndustryBranch = {
       // Agent's `jurisdictions`. Landlord-tenant law is local down to the city: notice periods,
       // deposit limits and deposit deadlines, rent regulation, entry rules, late fee caps. An
       // agent that reasons from the wrong state does not fail loudly, it answers confidently and
-      // wrongly, and a wrong notice period is a lost case rather than a typo.
+      // wrongly, and a wrong notice period is a lost case rather than a typo. The one text box
+      // left on this form, for that reason.
       helper:
         "Down to the city where it matters. Notice periods, deposit rules and entry rights are local, and this is the single most common way a confident answer goes wrong.",
     },
     {
       key: "management_systems",
       label: "What do you run the business on?",
-      type: "textarea",
-      placeholder:
-        "e.g. AppFolio for accounting and the owner portal, a shared inbox for maintenance, Slack with the vendors, spreadsheets for turnovers.",
-      // Textarea rather than a picker, following the insurance intake's `agency_systems`. A
-      // management shop is never on one system - there is the platform of record, and then the
-      // three places the work actually happens. The gaps between them are where the agent earns
-      // its money, and a checklist of vendor names cannot describe a gap.
-      helper:
-        "AppFolio, Buildium, Yardi, Rent Manager, DoorLoop, or a stack of spreadsheets. Say where the work really happens, not just what you pay for.",
+      type: "multiselect",
+      options: [
+        "AppFolio",
+        "Buildium",
+        "Yardi",
+        "Rent Manager",
+        "DoorLoop",
+        "Entrata",
+        "RealPage",
+        "Propertyware",
+        "A shared inbox for maintenance",
+        "Spreadsheets",
+        "Other",
+      ],
+      // A multiselect rather than a single pick: a management shop is never on one system - there
+      // is the platform of record, and then the places the work really happens.
+      helper: "Tick the platform of record and everywhere else the work happens.",
     },
   ],
 };
@@ -147,30 +159,46 @@ const OPERATIONS: IndustryBranch = {
     },
     {
       key: "maintenance_flow",
-      label: "Walk us through a maintenance request, from the tenant's message to the paid invoice.",
-      type: "textarea",
+      label: "Which of these describe your maintenance process?",
+      type: "multiselect",
       required: true,
-      placeholder:
-        "e.g. tenant texts or uses the portal, we triage same day, anything with water or heat is an emergency and gets a vendor within 4 hours, everything else is scheduled within 3 business days. Over $500 we call the owner first. Vendor invoices us, we pay from the operating account and it lands on the owner's monthly statement.",
-      // The highest-signal answer in the form, and the reason it is required. This is the loop the
-      // agent will spend most of its day inside, and it is the one process no two shops run the
-      // same way. It is this intake's equivalent of the real estate agent's `transaction_process`,
-      // and it does the same job: it becomes the checklist the agent works from.
-      helper:
-        "The order, the timings, and who you chase at each step. This is what your agent turns into its working checklist, so it is worth being long.",
+      options: [
+        "Tenants submit requests through a portal",
+        "Tenants text, call or email",
+        "We triage every request the same day",
+        "Heat, water and locks are always emergencies",
+        "Emergency vendor on site within 4 hours",
+        "Routine work scheduled within 3 business days",
+        "Owner approval above a set amount",
+        "In-house maintenance team",
+        "Outside vendors",
+        "Vendor invoices land on the owner's monthly statement",
+        "Other",
+      ],
+      // The loop the agent will spend most of its day inside, and this intake's equivalent of the
+      // real estate agent's `transaction_process`. Still required: it becomes the checklist the
+      // agent works from, and the agent asks for the timings it cannot see once connected.
+      helper: "Tick every step that fits. Your agent turns this into its working checklist.",
     },
     {
       key: "spend_authority",
-      label: "What can be spent without asking the owner first?",
-      type: "text",
+      label: "How much can be spent before the owner is asked?",
+      type: "dropdown",
       required: true,
-      placeholder: "e.g. $500 per item, or $250 unless it is heat, water or a lock",
+      options: [
+        "$0, the owner approves every expense",
+        "Up to $250",
+        "Up to $500",
+        "Up to $1,000",
+        "Up to $2,500",
+        "Set per owner or property",
+        "Other",
+      ],
       // The one number the agent cannot infer and must not get wrong in either direction. Guess
       // low and it interrupts the owner over a $40 washer; guess high and it authorises spending
-      // somebody else's money. There is usually an emergency carve-out, which is why the
-      // placeholder shows one rather than just a figure.
+      // somebody else's money. Emergency carve-outs go in "Other" or the handoff list below.
       helper:
-        "The threshold in your management agreement, and any emergency carve-out above it. Your agent will not commit money past this line.",
+        "The threshold in your management agreement. Your agent keeps spending inside this line and brings emergencies straight to you.",
     },
   ],
 };
@@ -179,7 +207,7 @@ const OPERATIONS: IndustryBranch = {
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
-    "The last page, and the most important one. What you want handed over, and the lines it must never cross.",
+    "The last page, and the most important one. What you want handed over, and where a person takes over.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -200,39 +228,46 @@ const AGENT: IndustryBranch = {
     },
     {
       key: "handoff_line",
-      label: "Where must a person take over, and what must never go out without you seeing it?",
-      type: "textarea",
+      label: "Always hand to a person when it involves...",
+      type: "multiselect",
       required: true,
-      placeholder:
-        "e.g. anything to do with an eviction or a legal notice, any deduction from a deposit, any screening decision or a reason somebody was turned down, anything that commits us to a lease term or a rent number, and anything about heat, water or a lock stops being email and becomes a phone call to me.",
-      // Two things in one answer because they are the same instinct, same as the Law Agent's
-      // question of this name. This is the guard slot for this role, and it is carrying more than
-      // the others: the list of things a property management agent must not do on its own is
-      // longer and more specific than for any role in the family except medical. Fair housing in
-      // particular is where a fluent writer is actively dangerous - the phrasing that gets a
-      // manager sued reads as friendly and helpful, so the persona holds that line too and does
-      // not rely on this answer alone.
+      options: [
+        "Habitability emergencies (heat, water, gas, locks, safety)",
+        "Fair housing, accessibility and accommodation requests",
+        "Applicant screening decisions and denials",
+        "Evictions, legal notices and court matters",
+        "Security deposit deductions and disputes",
+        "Signing, changing or ending a lease",
+        "Rent amounts, concessions and payment plans",
+        "Discrimination or harassment complaints",
+        "Entry into an occupied unit",
+        "Spending above the owner's limit",
+        "Other",
+      ],
+      // This is the guard slot for this role, and it is carrying more than the others: the list of
+      // things a property management agent must not do on its own is longer and more specific than
+      // for any role in the family except medical. The dangerous cases are listed first so ticking
+      // only the top few still gives a safe agent. Fair housing in particular is where a fluent
+      // writer is actively dangerous - the phrasing that gets a manager sued reads as friendly and
+      // helpful, so the persona holds that line too and does not rely on this answer alone.
       helper:
-        "Be generous here. Evictions and legal notices, screening decisions and the reasons behind them, deposit deductions, anything binding a lease or a rent, and anything that is a habitability emergency. Your agent drafts up to this line and stops.",
-    },
-    {
-      key: "tenant_owner_voice",
-      label: "How should it sound to a tenant, and how should it sound to an owner?",
-      type: "textarea",
-      placeholder:
-        "e.g. to a tenant: short, warm, always says what happens next and when, never defensive even when we are in the wrong. To an owner: plain numbers first, then the recommendation, no drama, and never a surprise in a monthly statement.",
-      // Deliberately one question rather than two, and the gap between the halves IS the answer.
-      // Asked separately these get the same paragraph twice; asked together, people write the
-      // contrast, which is the thing the agent actually needs in order to switch registers.
-      helper:
-        "Both, in one answer. The difference between the two is the part your agent cannot work out on its own.",
+        "Tick generously. Your agent drafts up to this line and hands the rest to you.",
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder:
-        "e.g. no tenant waits more than an hour for a first reply, and no work order sits unassigned overnight.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Faster first replies to tenants",
+        "Maintenance triage and vendor dispatch",
+        "Leasing enquiries and showings",
+        "Rent reminders and delinquency follow-up",
+        "Renewal outreach",
+        "Owner updates and monthly reporting",
+        "Turnovers and make-ready",
+        "Vendor scheduling and chasing",
+        "Other",
+      ],
       helper: "This is what your agent gets configured around first.",
     },
   ],

@@ -10,7 +10,7 @@
 // WHAT MAKES THESE DIFFERENT FROM A PROMPT, and the test each one had to pass: it must be
 // configured by an answer the intake already collects (lib/realEstateIntake.ts), so it works on
 // day one rather than opening with an interview. Those answers land in USER.md under "Real Estate
-// Deep-Dive" with humanised labels - `listing_voice` becomes **Listing Voice** - and every skill
+// Deep-Dive" with humanised labels - `transaction_process` becomes **Transaction Process** - and every skill
 // below names the ones it needs. A skill that would have to ask three questions before it could
 // start is a skill the owner may as well have asked for in their own words.
 //
@@ -74,8 +74,8 @@ property's actual selling point, and nothing that breaks the advertising rules.
 
 ## Before you write
 
-Read three things in USER.md: **Listing Voice** (the house style, including the words they
-refuse to use), **Price Band** and **Client Profile** (who is reading it). A description written
+Read three things: their tone and the voices they want to sound like (**How to sound** in
+AGENTS.md), and **Price Band** and **Client Profile** in USER.md (who is reading it). A description written
 for a first-time buyer at $300k and one written at $2M are different documents, and the tell is
 usually length: the expensive one says less.
 
@@ -102,7 +102,7 @@ does.
 
 Stunning, must see, charming, cozy, immaculate, one of a kind, dream home, opportunity knocks,
 priced to sell, TLC, motivated seller. They are filler in every listing on the page, which means
-they do not distinguish this one. Their **Listing Voice** answer usually names more; those win.
+they do not distinguish this one. Any words the owner has asked you to avoid win too.
 
 Cozy and TLC have a second problem: they are read as code, and the reader is right.
 

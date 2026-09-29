@@ -17,6 +17,11 @@
 // carrier appointment history, and no "biggest headache" - the Executive Profile page asks about
 // the bottleneck two steps later and the second ask got the shorter answer.
 //
+// DROPDOWNS AND CHECKBOXES, David's call (Sept 29, 2026): the free-text boxes made setup feel slow
+// and corporate. One short text field is left, for licensed states. The handoff line is now a
+// required checklist with binding and coverage advice listed first. The client-voice question
+// moved to the shared Voice page.
+//
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
 
 import type { IndustryBranch } from "@/lib/industryConfig";
@@ -25,7 +30,7 @@ import type { IndustryBranch } from "@/lib/industryConfig";
 const AGENCY: IndustryBranch = {
   stepTitle: "Your Agency",
   stepSubtitle:
-    "What kind of shop this is and who works in it. This sets what your agent may do without a licensed person present.",
+    "What kind of shop this is and who works in it. This sets what your agent handles and what goes to a licensed person.",
   stepLabel: "Agency",
   fields: [
     {
@@ -54,14 +59,26 @@ const AGENCY: IndustryBranch = {
       label: "Which states are you licensed in?",
       type: "text",
       placeholder: "e.g. NY, NJ, CT",
-      helper: "So your agent does not reason from the wrong state's rules.",
+      helper: "So your agent reasons from the right state's rules.",
     },
     {
       key: "agency_systems",
       label: "What do you run the agency on?",
-      type: "textarea",
-      placeholder: "e.g. AMS360, plus carrier portals and a lot of email.",
-      helper: "Management system, rater, and anything else the day runs through.",
+      type: "multiselect",
+      options: [
+        "Applied Epic",
+        "AMS360 or Sagitta (Vertafore)",
+        "HawkSoft",
+        "EZLynx",
+        "QQCatalyst",
+        "NowCerts",
+        "AgencyZoom",
+        "A comparative rater",
+        "Carrier portals",
+        "Email and spreadsheets",
+        "Other",
+      ],
+      helper: "Tick everything the day runs through: management system, rater and portals.",
     },
   ],
 };
@@ -70,7 +87,7 @@ const AGENCY: IndustryBranch = {
 const BOOK: IndustryBranch = {
   stepTitle: "Your Book",
   stepSubtitle:
-    "What you write and how the work actually moves. The more specific here, the less your agent has to guess.",
+    "What you write and how the work moves. The more specific here, the less your agent has to guess.",
   stepLabel: "The Book",
   fields: [
     {
@@ -96,16 +113,31 @@ const BOOK: IndustryBranch = {
     {
       key: "primary_line",
       label: "Which line is most of your revenue?",
-      type: "text",
-      placeholder: "e.g. commercial property for contractors",
+      type: "dropdown",
+      options: [
+        "Personal lines, auto and home",
+        "Commercial property and casualty",
+        "Workers compensation",
+        "Professional liability / E&O",
+        "Life",
+        "Health / benefits",
+        "Bonds",
+        "Other",
+      ],
     },
     {
       key: "renewal_work",
-      label: "How do renewals run today?",
-      type: "textarea",
-      placeholder:
-        "e.g. a list comes out 60 days ahead, my CSR re-markets anything with a rate increase, I only touch the accounts over $10k.",
-      helper: "The lead time, who does what, and where it slips.",
+      label: "When does renewal work start?",
+      type: "dropdown",
+      options: [
+        "120 days or more before expiry",
+        "90 days before",
+        "60 days before",
+        "30 days before",
+        "When the carrier sends the renewal",
+        "It varies by account",
+      ],
+      helper: "Your agent plans reminders and re-marketing around this.",
     },
     {
       key: "service_load",
@@ -129,7 +161,7 @@ const BOOK: IndustryBranch = {
 const AGENT: IndustryBranch = {
   stepTitle: "What Your Agent Should Own",
   stepSubtitle:
-    "The last page. What you want handed over, and where a licensed person must always take over.",
+    "The last page. What you want handed over, and where a licensed person always takes over.",
   stepLabel: "Your Agent",
   art: true,
   fields: [
@@ -151,28 +183,43 @@ const AGENT: IndustryBranch = {
     // The follow-up to the option that most often crosses the licensing line without anybody
     // noticing. A certificate is a statement about coverage; issuing one that says something the
     // policy does not say is an E&O claim waiting to happen, so the rules are asked for up front.
+    // Licensed activities are listed first, so ticking only the top few still gives a safe agent.
     {
       key: "handoff_line",
-      label: "Where must a licensed person take over, and what never goes out without you seeing it?",
-      type: "textarea",
+      label: "Always hand to a licensed person when it involves...",
+      type: "multiselect",
       required: true,
-      placeholder:
-        "e.g. anything that binds, any advice on whether a loss is covered, any coverage recommendation, any conversation with an adjuster. Nothing goes to a carrier under my code without me reading it, and certificates follow the wording our E&O carrier requires.",
+      options: [
+        "Binding, quoting or changing coverage",
+        "Whether a loss is covered",
+        "Coverage recommendations and limits",
+        "Certificates with special wording or additional insureds",
+        "Claims decisions and adjuster conversations",
+        "Anything sent to a carrier under our code",
+        "Cancellations and non-renewals",
+        "Complaints and E&O-sensitive situations",
+        "Clients or risks in other states",
+        "Every outgoing client message, reviewed first",
+        "Other",
+      ],
       helper:
-        "This was three questions - the licensed handoff, the approval line, and carrier or compliance rules - and they are one instinct. Answering it once, at length, gets a better answer than three smaller boxes did. Be generous: quoting, binding and advising on coverage are licensed activities.",
-    },
-    {
-      key: "client_voice",
-      label: "How should it sound to a client?",
-      type: "textarea",
-      placeholder:
-        "e.g. plain English, no policy jargon, never make them feel stupid for asking, always say what happens next and when.",
+        "Tick generously. Quoting, binding and advising on coverage are licensed activities, and your agent drafts up to this line and hands over.",
     },
     {
       key: "first_priority",
-      label: "If it only fixed one thing in the first 90 days, what should it be?",
-      type: "textarea",
-      placeholder: "e.g. certificates go out same day without me touching them.",
+      label: "What should it tackle first?",
+      type: "dropdown",
+      options: [
+        "Same-day certificates",
+        "Renewal prep and reminders",
+        "Faster replies to client service email",
+        "Endorsement requests",
+        "Claims intake and status updates",
+        "Submissions and quote comparison",
+        "Cross-sell and account rounding",
+        "Clean management system data",
+        "Other",
+      ],
       helper: "This is what your agent gets configured around first.",
     },
   ],
