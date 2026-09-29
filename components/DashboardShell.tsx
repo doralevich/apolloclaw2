@@ -34,8 +34,9 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 // former.
 const NAV = [
   // HOME IS NOT HERE ANY MORE, David's call, and it is the fourth row to go the same way as
-  // Matters, What Needs You and the Checklist: only the ROW is gone. /dashboard/start-here
-  // still renders, StartHereView is untouched, and putting the row back is this line alone.
+  // Matters, What Needs You and the Checklist. Since Sept 29, 2026 /dashboard/start-here
+  // redirects to Chat too (David: "I thought we got rid of this page"); StartHereView is
+  // untouched, so bringing it back is that route plus this line.
   //
   // It was a launcher - a greeting and four tiles, each one a link to a surface that is also in
   // this rail. So the product opened on a menu of other screens, with the thing people come

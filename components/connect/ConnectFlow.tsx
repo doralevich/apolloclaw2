@@ -221,7 +221,7 @@ export function ConnectFlow() {
           calendar to it here.
         </p>
         <Button asChild className="mt-4">
-          <Link href="/dashboard/start-here">Go to my dashboard</Link>
+          <Link href="/dashboard/chat">Go to my dashboard</Link>
         </Button>
       </div>
     );
@@ -284,7 +284,7 @@ export function ConnectFlow() {
           >
             I use something else
           </Link>
-          <Link href="/dashboard/start-here" className="text-muted-foreground/60 hover:text-foreground">
+          <Link href="/dashboard/chat" className="text-muted-foreground/60 hover:text-foreground">
             Skip for now
           </Link>
         </div>
@@ -394,9 +394,6 @@ export function ConnectFlow() {
         </Button>
 
         <div className="mt-8 flex flex-col items-center gap-3 text-sm">
-          <Link href="/dashboard/start-here" className="text-muted-foreground underline underline-offset-4 hover:text-foreground">
-            Go to my dashboard
-          </Link>
           <Link href="/dashboard/integrations" className="text-muted-foreground/60 hover:text-foreground">
             Browse all apps
           </Link>
