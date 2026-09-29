@@ -54,6 +54,19 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
     if (e instanceof Agent37Error && e.status === 422) {
       return errorPage("This app can't be connected here yet. You can close this tab.", 422);
     }
+    // Any other upstream failure. This tab is a browser page, so answer with a page rather than
+    // the raw JSON error, and log which app failed so it can be traced in the Vercel logs.
+    // Agent37 has answered some apps (Instacart, Sept 29 2026) with a bare 500 where a 422 was
+    // expected, typically an app that needs its own API key rather than a sign-in.
+    if (e instanceof Agent37Error) {
+      console.error("[integrations-connect]", toolkit, e.status, e.code, e.message);
+      return errorPage(
+        e.status >= 500
+          ? "This app couldn't be connected right now. Please try again in a few minutes. If it keeps happening, email hello@apolloclaw.ai and we'll connect it for you."
+          : "This app can't be connected here yet. Email hello@apolloclaw.ai and we'll connect it for you. You can close this tab.",
+        e.status >= 500 ? 502 : e.status
+      );
+    }
     throw e;
   }
 });
