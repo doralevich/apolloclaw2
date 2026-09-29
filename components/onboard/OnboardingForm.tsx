@@ -57,6 +57,10 @@ const ROLE_INTAKES: Record<
     // Setting this reframes the page, makes the company optional, and drops team size, monthly
     // revenue and years in business - three questions about a company, asked of a person.
     personalScale?: { title: string; subtitle: string };
+    // OPT IN to the short contact screen: first name, last name and email required, phone
+    // optional, LinkedIn hidden. For a buyer signing up for themselves, where a LinkedIn profile
+    // and a required phone number read as a sales form.
+    quickGate?: boolean;
     // OPT IN to dropping just the "Monthly Revenue" question on "Your Business", keeping Team
     // Size beside it. Narrower than `personalScale`, which drops all three company-scale
     // questions for a buyer who may have no company at all - this is for a role whose buyer
@@ -159,21 +163,18 @@ const ROLE_INTAKES: Record<
     coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
   },
   personal: {
-    branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "Your People", detailsKey: "personalDetails", roleName: "Personal Agent",
+    branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "About You", detailsKey: "personalDetails", roleName: "Personal Agent",
     coversScope: { owns: "owns_work", win: "first_priority", guard: "never_unattended" },
-    intro: "Before we build your assistant, we need to get to know you and what it may see. Takes about 15 minutes. The more detail, the better the result.",
-    // "whatyoudo": the deep-dive opens with its own version of that question, in the person's
-    // own words. The generic page asks "Describe your business" and requires it, which is the
-    // same question asked worse and unanswerable for somebody who does not have one.
-    //
-    // "exec": Executive Profile asks "biggest growth bottleneck" and the like - a business
-    // question with no personal equivalent. Left in, it was the single biggest reason this
-    // flow read as Apollo's business questionnaire wearing a personal costume. David's call.
-    dropPages: ["whatyoudo", "exec"],
-    personalScale: {
-      title: "You and Where You Work",
-      subtitle: "Enough context to write as you. If you are not attached to a company, leave it blank.",
-    },
+    intro: "A few quick questions, mostly clicks. Takes about two minutes.",
+    // THE WHOLE FLOW IS ITS OWN TWO PAGES, David's call (Sept 29, 2026): the five-page version
+    // read as a corporate questionnaire. Every generic page goes:
+    //   "biz"       - "You and Where You Work", a company form asked of a person.
+    //   "whatyoudo" - "Describe your business", unanswerable for most buyers.
+    //   "exec"      - growth bottlenecks, a business question with no personal equivalent.
+    //   "scope"     - a file upload and an honesty checkbox. submit() only asks for the checkbox
+    //                 when this page is in the flow.
+    dropPages: ["biz", "whatyoudo", "exec", "scope"],
+    quickGate: true,
   },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
@@ -597,7 +598,9 @@ function detectTimezone(): string {
 // when to call while a customer's has no reader. David's call is that it has no reader on either
 // track now. Timezone stays on every track, because that one is for the agent rather than for us:
 // it decides what "today" means (lib/agent-files.ts, "Their day").
-function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = false }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; skipEmailCheck?: boolean }) {
+// `quick` is the Personal Agent's short version (ROLE_INTAKES' quickGate): phone optional and
+// LinkedIn hidden, so the screen asks for a name and an email and moves on.
+function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = false, quick = false }: { onPass: (d: GateData) => void; heading?: React.ReactNode; intro?: string; initial?: GateData; brand?: AgentBrand; skipEmailCheck?: boolean; quick?: boolean }) {
   // The accent is the agent's own colour when the funnel is pinned to one, and
   // ApolloClaw red otherwise.
   const accent = brand?.color ?? R;
@@ -627,7 +630,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = f
   };
 
   const submit = async () => {
-    if (!d.first.trim() || !d.last.trim() || !d.email.trim() || !d.phone.trim()) { setErr("Please fill in all required fields to continue."); return; }
+    if (!d.first.trim() || !d.last.trim() || !d.email.trim() || (!quick && !d.phone.trim())) { setErr("Please fill in all required fields to continue."); return; }
     if (!/\S+@\S+\.\S+/.test(d.email)) { setErr("Please enter a valid email address."); return; }
     setErr("");
     setTaken(false);
@@ -717,8 +720,8 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = f
                 used for login", which asked the very first question of the flow twice and had
                 to explain in a hint why the answer didn't matter. Nothing ever read it. */}
             <Row2>
-              <FF label="Email" hint="This is the email you'll use to log in."><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder="jane@yourcompany.com" /></FF>
-              <FF label="Phone Number"><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
+              <FF label="Email" hint="This is the email you'll use to log in."><TInput type="email" value={d.email} onChange={v => set("email", v)} placeholder={quick ? "jane@gmail.com" : "jane@yourcompany.com"} /></FF>
+              <FF label={quick ? "Phone Number (optional)" : "Phone Number"}><TInput type="tel" value={d.phone} onChange={v => set("phone", v)} placeholder="+1 (___) ___-____" /></FF>
             </Row2>
             {/* LinkedIn belongs here, with the rest of "who are you". It used to sit in the
                 optional Life Context step between relationship status and children — filed
@@ -746,7 +749,9 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = f
                   answered it before this keeps the answer rather than silently losing it on an
                   edit, and lib/agent-files.ts keeps rendering the bullet for those records. */}
             </Row2>
+            {!quick && (
             <FF label="LinkedIn" hint="Optional. Helps your agent understand your professional background."><TInput value={d.linkedin} onChange={v => set("linkedin", v)} placeholder="linkedin.com/in/you" /></FF>
+            )}
           </Stack>
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: "rgba(215,43,43,0.1)", border: `1px solid rgba(215,43,43,0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
 
@@ -1658,7 +1663,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         // showIf would block Continue with an error naming a question that is not on screen.
         if (!f.required || !fieldVisible(f, industryDetails)) continue;
         const v = industryDetails[f.key];
-        if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
+        if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label.replace(/[?.]+$/, "")}.`;
       }
     }
     const rolePageIdx = key ? roleStepKeys.indexOf(key) : -1;
@@ -1666,7 +1671,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       for (const f of rolePages[rolePageIdx].fields) {
         if (!f.required || !fieldVisible(f, roleDetails)) continue;
         const v = roleDetails[f.key];
-        if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label}.`;
+        if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label.replace(/[?.]+$/, "")}.`;
       }
     }
     return "";
@@ -1690,7 +1695,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const submit = async () => {
     const err = validate(pageKeys[step]);
     if (err) { setVErr(err); return; }
-    if (!s8.agree) { setAgreeErr(true); return; }
+    // Only when the page with the checkbox is in this flow. A role that drops "scope" (the
+    // Personal Agent) would otherwise be stuck on a submit that asks for a box it never showed.
+    if (!s8.agree && pageKeys.includes("scope")) { setAgreeErr(true); return; }
     setAgreeErr(false);
     let uploadedFiles: unknown[] = [];
     try { uploadedFiles = await Promise.all(files.map(readFileAsBase64)); } catch { uploadedFiles = []; }
@@ -1725,9 +1732,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       {!personalScale && (
       <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
       )}
-      {/* Redundant with the Personal Agent's own "Who are the people whose messages always
-          matter?" (lib/personalIntake.ts's People page), asked in a voice that actually fits
-          somebody who may have no business at all. */}
+      {/* A list of colleagues, asked of somebody who may have no business at all. */}
       {!personalScale && (
       <KeyPeople people={keyPeople} onChange={setKeyPeople} />
       )}
@@ -2265,6 +2270,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
         // The demo must not tell David his own address already has an account, which it would,
         // every time, on the one screen he is trying to show somebody.
         skipEmailCheck={isDemo}
+        quick={!!roleIntake?.quickGate}
         // Named as early as possible. Someone arriving from therealestateagent.ai should see
         // "Let's Build Your Real Estate Agent", not a generic ApolloClaw heading - the funnel
         // is pinned to one type, so there is no reason to be vague about which.
