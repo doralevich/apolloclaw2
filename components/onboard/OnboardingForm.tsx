@@ -61,6 +61,9 @@ const ROLE_INTAKES: Record<
     // optional, LinkedIn hidden. For a buyer signing up for themselves, where a LinkedIn profile
     // and a required phone number read as a sales form.
     quickGate?: boolean;
+    // OPT IN to a lighter "Final Details" page: an open "anything else?" question saved into this
+    // role's own blob under `key`, in place of the file upload. The honesty checkbox stays.
+    finalNote?: { key: string; label: string; placeholder: string };
     // OPT IN to dropping just the "Monthly Revenue" question on "Your Business", keeping Team
     // Size beside it. Narrower than `personalScale`, which drops all three company-scale
     // questions for a buyer who may have no company at all - this is for a role whose buyer
@@ -164,17 +167,28 @@ const ROLE_INTAKES: Record<
   },
   personal: {
     branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "About You", detailsKey: "personalDetails", roleName: "Personal Agent",
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "never_unattended" },
+    // No `guard`: "Can it send messages for you?" and "Always check with me first" are gone from
+    // the form, David's call. The boundary is fixed instead, and matches the persona
+    // (config/personas.ts, "I draft, and a person sends").
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Drafts rather than sends. Checks with the owner first before messaging family, clients or anyone new, spending money or booking anything, accepting or declining invitations, sharing personal information, or cancelling or moving plans.",
     intro: "A few quick questions, mostly clicks. Takes about two minutes.",
     // THE WHOLE FLOW IS ITS OWN TWO PAGES, David's call (Sept 29, 2026): the five-page version
     // read as a corporate questionnaire. Every generic page goes:
     //   "biz"       - "You and Where You Work", a company form asked of a person.
     //   "whatyoudo" - "Describe your business", unanswerable for most buyers.
     //   "exec"      - growth bottlenecks, a business question with no personal equivalent.
-    //   "scope"     - a file upload and an honesty checkbox. submit() only asks for the checkbox
-    //                 when this page is in the flow.
-    dropPages: ["biz", "whatyoudo", "exec", "scope"],
+    //
+    // "scope" stays, David's call: the flow needs a closing question and the "I'm ready"
+    // checkbox before it builds. `finalNote` swaps its file upload for "anything else?".
+    dropPages: ["biz", "whatyoudo", "exec"],
     quickGate: true,
+    finalNote: {
+      key: "anything_else",
+      label: "Anything else you'd like your agent to know?",
+      placeholder: "e.g. I coach my son's soccer team on Saturdays, and Sundays are family days.",
+    },
   },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
@@ -533,6 +547,37 @@ function KeyPeople({ people, onChange }: { people: KeyPerson[]; onChange: (p: Ke
       </div>
       <button type="button" onClick={() => onChange([...people, { name: "", role: "" }])} style={{ marginTop: 10, border: `1px dashed ${BDR}`, background: "transparent", color: TXM, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, padding: "8px 14px", borderRadius: 6 }}>
         + Add another person
+      </button>
+    </FF>
+  );
+}
+// A "people" field (lib/industryConfig.ts): one row per person, a name box and an age dropdown,
+// growing on "+ Add another". Stored as a string[] of "Mia (8)" entries, which reads naturally
+// wherever the answers are printed and parses back for an edit. Blank rows are kept while the
+// form is open (there has to be a row to type into) and dropped by every renderer downstream.
+const splitNameAge = (entry: string): { name: string; age: string } => {
+  const m = entry.match(/^(.*?)(?: \(([^()]*)\))?$/);
+  return { name: m?.[1] ?? entry, age: m?.[2] ?? "" };
+};
+const joinNameAge = (name: string, age: string) => (age ? `${name} (${age})` : name);
+function NameAgeList({ label, hint, value, onChange, ageOptions, namePlaceholder }: { label: string; hint?: string; value: string[]; onChange: (v: string[]) => void; ageOptions: string[]; namePlaceholder?: string }) {
+  const rows = value.length ? value.map(splitNameAge) : [{ name: "", age: "" }];
+  const write = (next: { name: string; age: string }[]) => onChange(next.map(r => joinNameAge(r.name, r.age)));
+  const update = (i: number, patch: Partial<{ name: string; age: string }>) => write(rows.map((r, n) => (n === i ? { ...r, ...patch } : r)));
+  const remove = (i: number) => write(rows.length > 1 ? rows.filter((_, n) => n !== i) : [{ name: "", age: "" }]);
+  return (
+    <FF label={label} hint={hint}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ flex: 1, minWidth: 0 }}><TInput value={r.name} onChange={v => update(i, { name: v.replace(/[()]/g, "") })} placeholder={namePlaceholder ?? "Name"} /></div>
+            <div style={{ width: 130, flexShrink: 0 }}><TSelect value={r.age} onChange={v => update(i, { age: v })} options={ageOptions} placeholder="Age" /></div>
+            <button type="button" onClick={() => remove(i)} aria-label={`Remove row ${i + 1}`} style={{ border: "none", background: "none", color: TXD, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px", flexShrink: 0 }}>x</button>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => write([...rows, { name: "", age: "" }])} style={{ marginTop: 10, border: `1px dashed ${BDR}`, background: "transparent", color: TXM, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, padding: "8px 14px", borderRadius: 6 }}>
+        + Add another
       </button>
     </FF>
   );
@@ -1367,6 +1412,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
             </Fragment>
           );
         }
+        if (f.type === "people") return <NameAgeList key={f.key} label={f.label} hint={f.helper} value={arr} onChange={v => onChange(f.key, v)} ageOptions={f.ageOptions ?? []} namePlaceholder={f.namePlaceholder} />;
         if (f.type === "radio") return <RadioGroup key={f.key} label={f.label} hint={f.helper} options={f.options ?? []} value={str} onChange={v => onChange(f.key, v)} />;
         if (f.type === "scale") return <ScaleRow key={f.key} label={f.label} low="Low" high="High" value={str ? Number(str) : null} onChange={v => onChange(f.key, String(v))} />;
         if (f.type === "textarea") return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><TArea value={str} onChange={v => onChange(f.key, v)} placeholder={f.placeholder} rows={3} /></FF>;
@@ -1526,6 +1572,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // its validation, and by the CompanyRepeater underneath it, so the page, the rules it enforces
   // and the required marks it draws can never disagree with each other.
   const personalScale = roleIntake?.personalScale;
+  const finalNote = roleIntake?.finalNote;
   // A role deep-dive is one or more pages. Normalising to an array here means the rest of the
   // form does not care which, and the page keys are derived rather than hand-listed so a branch
   // can gain a page without touching the ordering below.
@@ -1882,9 +1929,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     // "Where This Is Going" (the 3/6/12-month horizons) was removed at David's call - dropped
     // from every form. The s7.horizon* fields stay in state and go out empty in the payload;
     // nothing reads them to decide anything, and the empty rows are dropped by every renderer.
-    { key: "scope", label: "Scope", node: (
+    { key: "scope", label: finalNote ? "Final Details" : "Scope", node: (
     <Stack key="s8">
-      <SHead stepNum={9} total={0} title="Final Details" subtitle="A few last things so we can start building for you." badge="Business" />
+      <SHead stepNum={9} total={0} title="Final Details" subtitle={finalNote ? "One last question, then we start building your agent." : "A few last things so we can start building for you."} badge={finalNote ? "Last Step" : "Business"} />
       {/* "Any compliance requirements?" was here and is gone at David's call. s8.comply stays in
           state and in the payload as an empty array; nothing reads it to decide anything. */}
       {/* "Anything else we should know?" and "Upload company materials" were both here and are
@@ -1897,6 +1944,12 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
           rather than reusing the old per-role `sampleCopy` wording (real estate's "upload
           listings instead") - without the writing-sample question beside it to answer for, one
           plain prompt covers every agent type. */}
+      {finalNote ? (
+        <FF label={finalNote.label} hint="Optional.">
+          <TArea value={typeof roleDetails[finalNote.key] === "string" ? (roleDetails[finalNote.key] as string) : ""} onChange={v => setRoleDetail(finalNote.key, v)} placeholder={finalNote.placeholder} rows={4} />
+        </FF>
+      ) : (
+      <>
       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0 2px" }}>
         <span style={{ flex: 1, height: 1, background: BDR }} />
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXD }}>Drop files in</span>
@@ -1905,9 +1958,11 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <FF label="Have templates or materials to share?" hint="Optional. Contracts, playbooks, past work, anything you'd rather hand over than describe.">
         <FileUpload files={files} onFiles={setFiles} />
       </FF>
+      </>
+      )}
       {/* What is left below is the honesty checkbox, which is the only thing here that gates the
           submit. */}
-      <button type="button" onClick={() => f8("agree", !s8.agree)} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? `rgba(${accentRgb},0.12)` : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? accent : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? `0 0 0 4px rgba(${accentRgb},0.12)` : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
+      <button type="button" onClick={() => { f8("agree", !s8.agree); setAgreeErr(false); }} style={{ display: "flex", alignItems: "center", gap: 16, textAlign: "left", padding: "20px 24px", borderRadius: 10, cursor: "pointer", fontSize: 15.5, fontWeight: 600, fontFamily: "inherit", lineHeight: 1.5, background: s8.agree ? `rgba(${accentRgb},0.12)` : agreeErr ? "rgba(215,43,43,0.06)" : "#fff", border: `2px solid ${s8.agree ? accent : agreeErr ? "rgba(215,43,43,0.65)" : "rgba(0,0,0,0.18)"}`, color: s8.agree ? TX : agreeErr ? "#dc2626" : TX, boxShadow: s8.agree ? `0 0 0 4px rgba(${accentRgb},0.12)` : "0 1px 3px rgba(0,0,0,0.06)", transition: "all 0.15s" }}>
         <span style={{ width: 24, height: 24, borderRadius: 6, flexShrink: 0, border: `2px solid ${s8.agree ? accent : "rgba(0,0,0,0.28)"}`, background: s8.agree ? accent : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {s8.agree && <svg width="15" height="15" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
         </span>

@@ -27,10 +27,9 @@ import { Button } from "@/components/ui/button";
 // the admin's home on future logins.
 export async function openWorkspaceInApolloClaw(workspaceId: string): Promise<void> {
   await apiFetch(`/api/admin/workspaces/${workspaceId}/join`, { method: "POST" });
-  // Open the FINAL page (start-here), not /dashboard: /dashboard is a server redirect to
-  // start-here, and that redirect drops the query string - so opening /dashboard?ws= lost the
-  // param before the provider could read it. Targeting the real destination keeps ?ws= intact.
-  window.open(`/dashboard/start-here?ws=${encodeURIComponent(workspaceId)}`, "_blank", "noopener");
+  // Open the FINAL page (chat), not /dashboard: that is a server redirect, and landing on the
+  // real destination keeps ?ws= intact without depending on the redirect forwarding it.
+  window.open(`/dashboard/chat?ws=${encodeURIComponent(workspaceId)}`, "_blank", "noopener");
 }
 
 export type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };

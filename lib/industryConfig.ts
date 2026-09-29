@@ -12,7 +12,10 @@ export type FieldType =
   | "radio"
   | "scale"
   | "text"
-  | "textarea";
+  | "textarea"
+  // Repeating rows of a name plus an age dropdown ("+ Add another"), stored as a string[] of
+  // "Name (age)" entries. Built for the Personal Agent's kids question.
+  | "people";
 
 export interface IndustryField {
   key: string; // becomes the key inside industry_details JSONB
@@ -22,14 +25,17 @@ export interface IndustryField {
   placeholder?: string; // text | textarea
   required?: boolean;
   helper?: string; // small grey subtext under the label
+  ageOptions?: string[]; // people: the age dropdown on each row
+  namePlaceholder?: string; // people: placeholder for each row's name box
   // Show this field only when an EARLIER multiselect on the same page has a given option
   // ticked. For the follow-up question that only makes sense once someone has asked for the
   // thing: "handle my showing scheduling" is the job, "which calendar" is how, and asking the
   // second of everyone would put two dead questions in front of the realtors who said no.
   //
-  // Deliberately limited to one option of one field. A general condition language here would
-  // be a small rules engine nobody can read at a glance, and every case so far is this shape.
-  showIf?: { key: string; includes: string };
+  // Deliberately limited to one field. A general condition language here would be a small
+  // rules engine nobody can read at a glance. `includes` may list several answers, any of which
+  // shows the field: "Partner's name" follows Dating, In a relationship, Engaged and Married.
+  showIf?: { key: string; includes: string | string[] };
 }
 
 /**
@@ -45,7 +51,8 @@ export function fieldVisible(
 ): boolean {
   if (!f.showIf) return true;
   const v = values[f.showIf.key];
-  return Array.isArray(v) ? v.includes(f.showIf.includes) : v === f.showIf.includes;
+  const want = Array.isArray(f.showIf.includes) ? f.showIf.includes : [f.showIf.includes];
+  return want.some((w) => (Array.isArray(v) ? v.includes(w) : v === w));
 }
 
 export interface IndustryBranch {

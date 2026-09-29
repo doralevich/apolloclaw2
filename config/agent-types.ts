@@ -342,9 +342,9 @@ export const AGENT_TYPES: AgentType[] = [
   // WHAT MAKES THIS ONE DIFFERENT from its eight siblings is the surface it is pointed at.
   // Every other role agent reads a bounded thing: contracts, a book of business, a brand guide.
   // This one reads an inbox and a calendar, which do not separate work from the rest of a life
-  // and which hold other people's information as much as the customer's. So its intake, short as
-  // it is, always asks what the agent may read, with the narrowest option first, and the persona
-  // holds the same line.
+  // and which hold other people's information as much as the customer's. The intake is kept to a
+  // few clicks, so the line is held by the persona ("I draft, and a person sends") and by a fixed
+  // boundary written into every Personal Agent (ROLE_INTAKES.personal.standardGuard).
   //
   // Same white-glove shape as the other role agents: NO `planKey`, `internal` so only a platform
   // admin sees the card, and the same stock template and $25 hosting cap as every other agent.

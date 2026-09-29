@@ -229,7 +229,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             {savingPw ? "Setting up…" : "Set Password & Continue →"}
           </button>
         ) : (
-          <a href={viaSession ? "/login" : "/dashboard/start-here"} style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" || useLogin ? R : "transparent", color: phase === "slow" || useLogin ? "#fff" : TXM, border: phase === "slow" || useLogin ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
+          <a href={viaSession ? "/login" : "/dashboard/chat"} style={{ display: "block", textAlign: "center", marginTop: 20, background: phase === "slow" || useLogin ? R : "transparent", color: phase === "slow" || useLogin ? "#fff" : TXM, border: phase === "slow" || useLogin ? "none" : `1px solid ${BDR}`, fontWeight: 700, fontSize: 14, padding: "11px 28px", borderRadius: 6, textDecoration: "none" }}>
             {viaSession ? "Go to Log In →" : "Go to My Dashboard →"}
           </a>
         )}
