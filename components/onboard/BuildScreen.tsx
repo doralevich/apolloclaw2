@@ -84,8 +84,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             // Only the logged-in flow can be walked into the dashboard. A license buyer has
             // no session yet, so they stay here and read the closing instructions.
             //
-            // Into the connect flow rather than Home: a freshly built agent cannot see an inbox,
-            // a calendar or a file, and this is the one moment somebody is certainly watching.
+            // Straight into Chat (POST_BUILD_LANDING), David's call.
             if (!viaSession) {
               setTimeout(() => { if (!cancelled) window.location.assign(POST_BUILD_LANDING); }, 1800);
             }
