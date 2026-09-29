@@ -122,7 +122,8 @@ const ROLE_INTAKES: Record<
     standardGuard:
       "Anything filed with a court, any advice given directly to a client, any opinion on the merits or likely outcome of a matter, and anything requiring a signature always goes through a licensed attorney before it moves. Privileged or confidential client material is never summarized into shared or non-firm systems.",
     hideRevenue: true,
-    stackSkip: ["docs"],
+    // Law asks both on its own pages (Your Documents, Email & Calendar).
+    stackSkip: ["docs", "comms"],
     // "Describe your business" moved onto the bottom of "Your Legal Practice", right after
     // practice areas, David's call - so it reads with the answer that gives it context instead
     // of arriving as its own page beforehand. dropPages removes the generic page asking the
