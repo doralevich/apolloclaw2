@@ -8,15 +8,43 @@ import type { AgentModel, ModelsResponse } from "@/lib/types";
 // with — and no basis whatsoever for choosing between them. The default was whatever the
 // gateway happened to lead with.
 //
-// David's call: Anthropic and OpenAI only, Claude Sonnet 5 as the default. Everything else
-// is filtered out.
+// David's call: Anthropic and OpenAI only, Claude Sonnet 5.5 as the default (Sept 30, 2026,
+// the day it shipped; Sonnet 5 before that). Everything else is filtered out.
 //
 // Curation happens on the SERVER (app/api/agents/[id]/chat/models/route.ts), not in the
 // component. A filter that only exists in the UI is a suggestion — the ids are still on the
 // wire and any other caller sees the unfiltered list.
 
-/** The model a new conversation uses unless the customer picks otherwise. */
-export const DEFAULT_CHAT_MODEL_ID = "anthropic/claude-sonnet-5";
+/** The model a new conversation uses unless the customer picks otherwise. The gateway spells
+ *  versioned ids with a dot ("anthropic/claude-haiku-4.5"), so this follows suit; the other
+ *  spellings are in APPROVED_MODELS below. */
+export const DEFAULT_CHAT_MODEL_ID = "anthropic/claude-sonnet-5.5";
+
+/** Where a turn goes if the instance refuses DEFAULT_CHAT_MODEL_ID: the previous default. */
+export const FALLBACK_CHAT_MODEL_ID = "anthropic/claude-sonnet-5";
+
+// Every spelling of Sonnet 5.5, and the Sonnet 5 id in the same form to fall back to. The
+// gateway's exact id for a model this new is unconfirmed (no instance could be queried when it
+// was added), so a turn that names Sonnet 5.5 and is refused retries on Sonnet 5 rather than
+// failing - see modelFallbackFor.
+const SONNET_55_FALLBACKS: Record<string, string> = {
+  "anthropic/claude-sonnet-5.5": FALLBACK_CHAT_MODEL_ID,
+  "anthropic/claude-sonnet-5-5": FALLBACK_CHAT_MODEL_ID,
+  "claude-sonnet-5-5": "claude-sonnet-5",
+};
+
+/** The model to retry on when an instance refuses this one, or null if there is none. */
+export function modelFallbackFor(id: string | null | undefined): string | null {
+  return (id && SONNET_55_FALLBACKS[id]) || null;
+}
+
+/** Does this upstream body say the named model was refused? Looser than the metered gateway's
+ *  own "Invalid model. Use openclaw" check in lib/channels/turn.ts, because a gateway that does
+ *  route vendor models words an unknown id its own way. Both words must appear, so ordinary
+ *  reply text is very unlikely to trip it on an error response. */
+export function looksLikeModelRejection(text: string): boolean {
+  return /model/i.test(text) && /(invalid|unknown|not found|unsupported|not available|does not exist|no such|not allowed)/i.test(text);
+}
 
 interface ApprovedModel {
   /** Every id form this model is known by, in preference order. The managed gateway uses
@@ -33,7 +61,12 @@ interface ApprovedModel {
 // Order matters: this is the order of the menu, and the first entry is the default.
 const APPROVED_MODELS: ApprovedModel[] = [
   {
-    ids: [DEFAULT_CHAT_MODEL_ID, "claude-sonnet-5"],
+    ids: [DEFAULT_CHAT_MODEL_ID, "anthropic/claude-sonnet-5-5", "claude-sonnet-5-5"],
+    label: "Claude Sonnet 5.5",
+    displayProvider: "anthropic",
+  },
+  {
+    ids: [FALLBACK_CHAT_MODEL_ID, "claude-sonnet-5"],
     label: "Claude Sonnet 5",
     displayProvider: "anthropic",
   },
@@ -99,9 +132,10 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
     if (aliasOnly) {
       // The instance is on the metered gateway, which reports ONE internal alias rather than the
       // vendor models behind it. David's call: a business owner should still get to pick a model
-      // by name - "Claude Sonnet 5", not a hidden menu or a raw "Agent/37". So offer the Anthropic
-      // line we sell as a stable product menu, Sonnet 5 first, synthesized rather than read from
-      // the instance.
+      // by name - "Claude Sonnet 5.5", not a hidden menu or a raw "Agent/37". So offer the
+      // Anthropic line we sell as a stable product menu, Sonnet 5.5 first, synthesized rather than
+      // read from the instance. A Sonnet 5.5 turn the gateway refuses retries on Sonnet 5
+      // (modelFallbackFor, in the chat responses route).
       //
       // The gateway routes the managed models, and the vendor-prefixed id is what it expects on a
       // turn - so enabling the Anthropic models on the gateway is the half that makes a PICK
