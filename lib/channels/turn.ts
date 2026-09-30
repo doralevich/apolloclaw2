@@ -1,6 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
-import { DEFAULT_CHAT_MODEL_ID } from "@/config/chat-models";
+import { DEFAULT_CHAT_MODEL_ID, FALLBACK_CHAT_MODEL_ID, looksLikeModelRejection } from "@/config/chat-models";
 
 // Running one turn on the instance, shared by every channel receiver.
 //
@@ -8,10 +8,10 @@ import { DEFAULT_CHAT_MODEL_ID } from "@/config/chat-models";
 // answer out, on a session that persists so the conversation continues. Everything channel-
 // specific — how the message is authenticated, how the reply is delivered — stays in the route.
 //
-// EVERY channel turn names the model, the same Sonnet 5 the web composer defaults to. A channel
+// EVERY channel turn names the model, the same Sonnet 5.5 the web composer defaults to. A channel
 // has no model picker, so left unspecified it fell to the instance's own default - the metered
 // gateway's alias - which is the path that answered Russell "I couldn't finish that one" while
-// the web chat (which does name a real model) worked. Naming it makes Sonnet 5 the default for
+// the web chat (which does name a real model) worked. Naming it makes Sonnet 5.5 the default for
 // everyone, web and chat apps alike, and takes the channels off the alias for good.
 
 export interface TurnResult {
@@ -101,28 +101,35 @@ export async function runTurn(
   input: string,
   sessionId: string | null
 ): Promise<TurnResult> {
-  // Prefer Sonnet 5, but not every instance's gateway accepts a vendor model id: the metered
-  // OpenClaw build refuses one with "Invalid `model`. Use `openclaw`...". Naming Sonnet 5
-  // unconditionally broke exactly those instances. So ask for Sonnet 5, and if the instance
-  // refuses the id, resend WITHOUT a model so it runs its own default - the channel gets the
-  // better model where it's available and a working answer everywhere else.
+  // Prefer Sonnet 5.5 (then Sonnet 5), but not every instance's gateway accepts a vendor model
+  // id: the metered OpenClaw build refuses one with "Invalid `model`. Use `openclaw`...". Naming
+  // a model unconditionally broke exactly those instances. So ask for Sonnet 5.5, step down to
+  // Sonnet 5 if the gateway refuses that id in its own words, and if the instance refuses vendor
+  // ids altogether, resend WITHOUT a model so it runs its own default - the channel gets the best
+  // model available and a working answer everywhere else.
   //
   // Crucially the refusal is caught from the RESPONSE BODY, not our call's HTTP status: those
   // instances return 200 with the 400 wrapped inside a failed turn, so a status-only check (the
   // first version of this) never fired and the bots stayed broken. rejectsModel reads the body.
   const attempt = async (sid: string | null) => {
-    const send = (withModel: boolean) =>
+    const send = (model: string | null) =>
       agent37.createResponse(agentId, {
         input,
-        ...(withModel ? { model: DEFAULT_CHAT_MODEL_ID } : {}),
+        ...(model ? { model } : {}),
         ...(sid ? { session_id: sid } : {}),
         stream: false,
       });
 
-    let res = await send(true);
+    let res = await send(DEFAULT_CHAT_MODEL_ID);
     let text = await res.text();
+    // A gateway that routes vendor models but not Sonnet 5.5 (yet) refuses the id in its own
+    // words: step down to Sonnet 5 before giving up on naming a model at all.
+    if (!rejectsModel(text) && looksLikeModelRejection(text) && (!res.ok || /"status"\s*:\s*"failed"/.test(text))) {
+      res = await send(FALLBACK_CHAT_MODEL_ID);
+      text = await res.text();
+    }
     if (rejectsModel(text)) {
-      res = await send(false);
+      res = await send(null);
       text = await res.text();
     }
     return { res, text };

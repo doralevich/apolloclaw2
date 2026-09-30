@@ -1,4 +1,5 @@
 import { agent37 } from "@/lib/agent37";
+import { looksLikeModelRejection, modelFallbackFor } from "@/config/chat-models";
 import { requireAgentAccess, requireEntitled } from "@/lib/auth";
 import { ApiError, readJson, route, upstreamErrorMessage } from "@/lib/http";
 
@@ -45,7 +46,19 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   if (body.reasoning_effort) payload.reasoning_effort = body.reasoning_effort;
   if (files.length) payload.files = files;
 
-  const upstream = await agent37.createResponse(id, payload);
+  let upstream = await agent37.createResponse(id, payload);
+
+  // Sonnet 5.5 is the default, and an instance whose gateway does not route it yet (or spells it
+  // differently) refuses the id. Retry once on Sonnet 5 so the customer gets an answer rather
+  // than an error. Only a refusal before streaming can be caught here.
+  const fallback = modelFallbackFor(payload.model);
+  if (fallback && !upstream.ok) {
+    const text = await upstream.clone().text().catch(() => "");
+    if (looksLikeModelRejection(text)) {
+      console.warn("[chat/responses] model refused, retrying on fallback", payload.model, "->", fallback);
+      upstream = await agent37.createResponse(id, { ...payload, model: fallback });
+    }
+  }
 
   if (!upstream.ok || !upstream.body) {
     const text = await upstream.text().catch(() => "");
