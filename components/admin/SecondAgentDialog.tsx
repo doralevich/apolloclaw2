@@ -28,6 +28,9 @@ import {
 type Verify = {
   file?: string;
   agents?: unknown;
+  ownership?: unknown;
+  defaultMarker?: string[];
+  owners?: unknown;
   telegramAccounts?: string[] | null;
   bindings?: unknown;
   agentToAgent?: unknown;
@@ -55,6 +58,8 @@ function summarize(v?: Verify): string {
   const lines = [
     `config: ${v.file ?? "?"}`,
     `agents: ${JSON.stringify(v.agents ?? null)}`,
+    `ownership: ${JSON.stringify(v.ownership ?? null)} | default marker on: ${JSON.stringify(v.defaultMarker ?? [])}`,
+    `owners: ${JSON.stringify(v.owners ?? null)}`,
     `telegram accounts: ${JSON.stringify(v.telegramAccounts ?? null)}`,
     `bindings: ${JSON.stringify(v.bindings ?? null)}`,
     `agentToAgent: ${JSON.stringify(v.agentToAgent ?? null)}`,
