@@ -6,7 +6,8 @@ import { agent37 } from "@/lib/agent37";
 // instead of from a laptop with the Agent37 key in a terminal.
 //
 // What setup writes into openclaw.json (deep-merged, everything else untouched):
-//   agents.ownership      -> "explicit", which the gateway requires for any multi-agent roster
+//   agents.entries.main.default -> true, the legacy marker that keeps main the fallback owner
+//                            for sessions that name no agent (the app's chat, via Agent37)
 //   agents.defaults.{heartbeat,systemAgent}.agentId -> main, the owners it had implicitly
 //   agents.entries.main   -> the existing agent, on the existing workspace
 //   agents.entries.atlas  -> the second agent, own workspace, a CFO persona with one planted
@@ -193,12 +194,17 @@ export async function setupSecondAgent(
     // existing agent carries on exactly as before. The second agent gets its own workspace.
     'const mainWs=root+"/workspace";' +
     'const secondWs=root+"/workspace-"+o.second.id;' +
-    // The gateway rejects a multi-agent roster without this (seen on David's box, Oct 3 2026:
-    // "multi-agent rosters require agents.ownership=explicit"). With it set, nothing is the
-    // ambient default any more, so the services the first agent used to own implicitly are
-    // handed to it by name: heartbeat, the system agent, and a channel-wide Telegram fallback
-    // binding below. Auth inheritance stays implicit because the previous owner was "main".
-    'set(cfg,["agents","ownership"],"explicit");' +
+    // The gateway rejects a multi-agent roster without one of two things (seen on David's box,
+    // Oct 3 2026): agents.ownership="explicit", or one agent carrying the legacy default=true
+    // marker. The first was tried and it broke the app's own chat: Agent37 sends every chat turn
+    // with an unprefixed session key, and under explicit ownership the gateway refuses to guess
+    // the owner ("session key has no explicit owner"). The marker keeps "main" as the fallback
+    // owner for exactly those sessions, which is what a box with one app-facing agent needs. The
+    // two cannot coexist, so an ownership stamp from the earlier run is removed. Heartbeat and
+    // the system agent are still named explicitly, and the Telegram fallback binding below
+    // keeps every other Telegram account on main.
+    'if(cfg.agents&&cfg.agents.ownership!==undefined)delete cfg.agents.ownership;' +
+    'set(cfg,["agents","entries","main","default"],true);' +
     'set(cfg,["agents","defaults","heartbeat","agentId"],"main");' +
     'set(cfg,["agents","defaults","systemAgent","agentId"],"main");' +
     'set(cfg,["agents","entries","main","workspace"],mainWs);' +
