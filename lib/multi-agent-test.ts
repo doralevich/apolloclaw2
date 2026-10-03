@@ -95,6 +95,25 @@ const VERIFY_SH =
   'echo; echo "openclaw channels status --probe:"; timeout 60 openclaw channels status --probe 2>&1 | head -60 || echo "(probe did not run)"; ' +
   // And the gateway's own recent words about Telegram, for the errors the probe summarises away.
   'echo; echo "recent gateway log lines mentioning telegram:"; (timeout 30 openclaw logs --limit 400 --plain --no-color 2>&1 | grep -i telegram | tail -n 25) || echo "(logs did not run)"; ' +
+  // The CLI could not reach the gateway on David's box (a different service answered on the
+  // default port), which raises the question of whether the gateway even reads the file we
+  // write. Read-only facts that settle it: which processes run, with the OpenClaw-related
+  // environment they were started with (secrets masked), which ports are listened on, and
+  // every openclaw.json on the box.
+  'echo; echo "processes, environment and ports:"; node -e \'' +
+  'const fs=require("fs");const out=[];' +
+  'for(const d of fs.readdirSync("/proc")){if(!/^\\d+$/.test(d))continue;try{' +
+  'const cmd=fs.readFileSync("/proc/"+d+"/cmdline","utf8").replace(/\\0/g," ").trim();' +
+  // Skip the shell running this very command: its text holds the guard markers below.
+  'if(!cmd||!/openclaw|gateway|node|agent/i.test(cmd)||cmd.includes("OPENCLAW_STATE_DIR:-"))continue;' +
+  'let env="";try{env=fs.readFileSync("/proc/"+d+"/environ","utf8").split("\\0").filter(e=>/^(OPENCLAW|CLAWDBOT|GATEWAY|TELEGRAM|PORT|HOME|NODE_ENV|AGENT37)/i.test(e)).map(e=>e.replace(/^([^=]*(TOKEN|KEY|SECRET|PASSWORD)[^=]*)=.*/i,"$1=***")).join("  ");}catch(e){}' +
+  'out.push("  pid "+d+": "+cmd.slice(0,220)+(env?"\\n      env: "+env:""));}catch(e){}}' +
+  'console.log(out.join("\\n")||"  (no matching processes visible)");' +
+  'const ports=new Set();for(const f of ["/proc/net/tcp","/proc/net/tcp6"]){try{for(const line of fs.readFileSync(f,"utf8").split("\\n").slice(1)){const p=line.trim().split(/\\s+/);if(p[3]==="0A")ports.add(parseInt(p[1].split(":").pop(),16));}}catch(e){}}' +
+  'console.log("  listening ports: "+[...ports].sort((a,b)=>a-b).join(", "));' +
+  "'; " +
+  'echo; echo "openclaw.json files on the box:"; timeout 20 find /home /root /opt /app /srv /etc /var /data -maxdepth 6 -name openclaw.json -not -path "*/node_modules/*" 2>/dev/null | head -n 10 | sed "s/^/  /"; ' +
+  'echo; echo "state dir listing:"; ls -la "$ROOT" 2>&1 | head -n 40 | sed "s/^/  /"; ' +
   'echo "CLI_END"';
 
 function parseVerify(stdout: string): SecondAgentVerify {
@@ -250,8 +269,10 @@ async function runWithRetries(agentId: string, cmd: string): Promise<{ stdout: s
   for (let attempt = 1; attempt <= 6; attempt++) {
     try {
       const { stdout } = await agent37.exec(agentId, cmd);
-      if (stdout.includes("NOT_OPENCLAW")) return { stdout, note: "not-openclaw" };
-      if (stdout.includes("NO_NODE")) return { stdout, note: "no-node-on-box" };
+      // Whole lines only: the readout now lists processes, and a command line that quotes the
+      // guard would otherwise read as the guard firing.
+      if (/^NOT_OPENCLAW\s*$/m.test(stdout)) return { stdout, note: "not-openclaw" };
+      if (/^NO_NODE\s*$/m.test(stdout)) return { stdout, note: "no-node-on-box" };
       return { stdout };
     } catch {
       // Still booting. Wait and retry.
