@@ -6,11 +6,14 @@ import { agent37 } from "@/lib/agent37";
 // instead of from a laptop with the Agent37 key in a terminal.
 //
 // What setup writes into openclaw.json (deep-merged, everything else untouched):
+//   agents.ownership      -> "explicit", which the gateway requires for any multi-agent roster
+//   agents.defaults.{heartbeat,systemAgent}.agentId -> main, the owners it had implicitly
 //   agents.entries.main   -> the existing agent, on the existing workspace
 //   agents.entries.atlas  -> the second agent, own workspace, a CFO persona with one planted
 //                            fact ("cash on hand is $412,000") that only it knows
 //   channels.telegram.accounts.atlas -> its own bot, DMs allow-listed to the tester
-//   bindings              -> the atlas bot routed to the atlas agent (other bindings kept)
+//   bindings              -> the atlas bot routed to the atlas agent, every other Telegram
+//                            account to main (other bindings kept)
 //   tools.agentToAgent    -> enabled, allow: [main, atlas]
 //
 // The test is then: DM Atlas "what is our cash on hand" and expect $412,000, then ask the first
@@ -142,6 +145,14 @@ export async function setupSecondAgent(
     // existing agent carries on exactly as before. The second agent gets its own workspace.
     'const mainWs=root+"/workspace";' +
     'const secondWs=root+"/workspace-"+o.second.id;' +
+    // The gateway rejects a multi-agent roster without this (seen on David's box, Oct 3 2026:
+    // "multi-agent rosters require agents.ownership=explicit"). With it set, nothing is the
+    // ambient default any more, so the services the first agent used to own implicitly are
+    // handed to it by name: heartbeat, the system agent, and a channel-wide Telegram fallback
+    // binding below. Auth inheritance stays implicit because the previous owner was "main".
+    'set(cfg,["agents","ownership"],"explicit");' +
+    'set(cfg,["agents","defaults","heartbeat","agentId"],"main");' +
+    'set(cfg,["agents","defaults","systemAgent","agentId"],"main");' +
     'set(cfg,["agents","entries","main","workspace"],mainWs);' +
     'set(cfg,["agents","entries",o.second.id,"name"],o.second.name);' +
     'set(cfg,["agents","entries",o.second.id,"workspace"],secondWs);' +
@@ -149,9 +160,12 @@ export async function setupSecondAgent(
     // Telegram wiring the app already gave it.
     'set(cfg,["channels","telegram","enabled"],true);' +
     'set(cfg,["channels","telegram","accounts",o.second.id],{botToken:o.botB,dmPolicy:"allowlist",allowFrom:[o.telegramUser]});' +
-    // Route the bot to its agent. Replace a binding we wrote before; keep every other one.
-    'const keep=(Array.isArray(cfg.bindings)?cfg.bindings:[]).filter(b=>!(b&&b.match&&b.match.channel==="telegram"&&b.match.accountId===o.second.id));' +
-    "cfg.bindings=keep.concat([{agentId:o.second.id,match:{channel:\"telegram\",accountId:o.second.id}}]);" +
+    // Route the bot to its agent, and every other Telegram account (the first agent's existing
+    // one included) to the first agent. Most-specific binding wins, so the account match beats
+    // the "*" fallback. Replace the two we wrote before; keep every other binding.
+    'const ours=(b)=>b&&b.match&&b.match.channel==="telegram"&&(b.match.accountId===o.second.id||(b.match.accountId==="*"&&b.agentId==="main"));' +
+    'const keep=(Array.isArray(cfg.bindings)?cfg.bindings:[]).filter(b=>!ours(b));' +
+    "cfg.bindings=keep.concat([{agentId:o.second.id,match:{channel:\"telegram\",accountId:o.second.id}},{agentId:\"main\",match:{channel:\"telegram\",accountId:\"*\"}}]);" +
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +
