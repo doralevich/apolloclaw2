@@ -38,6 +38,12 @@ export interface SecondAgentVerify {
   /** Agent ids under agents.entries, or whatever sits at `agents` when the build spells it
    *  differently (older builds used agents.list). */
   agents?: unknown;
+  /** agents.ownership as the file carries it right now, or null when absent. */
+  ownership?: unknown;
+  /** Agent ids carrying the legacy default:true marker. */
+  defaultMarker?: string[];
+  /** The per-surface owners under agents.defaults. */
+  owners?: unknown;
   telegramAccounts?: string[] | null;
   bindings?: unknown;
   agentToAgent?: unknown;
@@ -86,11 +92,15 @@ const VERIFY_SH =
   'const c=JSON.parse(fs.readFileSync(f,"utf8"));' +
   "const out={file:f," +
   "agents:c.agents&&c.agents.entries?Object.keys(c.agents.entries):(c.agents===undefined?null:c.agents)," +
+  // The ownership keys, so a readout shows which of them the box actually carries right now.
+  "ownership:c.agents&&c.agents.ownership!==undefined?c.agents.ownership:null," +
+  "defaultMarker:c.agents&&c.agents.entries?Object.keys(c.agents.entries).filter(k=>c.agents.entries[k]&&c.agents.entries[k].default===true):[]," +
+  "owners:c.agents&&c.agents.defaults?{systemAgent:c.agents.defaults.systemAgent||null,heartbeat:c.agents.defaults.heartbeat||null,sessionStore:c.agents.defaults.sessionStore||null}:null," +
   "telegramAccounts:c.channels&&c.channels.telegram&&c.channels.telegram.accounts?Object.keys(c.channels.telegram.accounts):null," +
   "bindings:c.bindings===undefined?null:c.bindings," +
   "agentToAgent:c.tools&&c.tools.agentToAgent?c.tools.agentToAgent:null};" +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
-  'echo "CLI_START"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
+  'echo "CLI_START"; echo "openclaw version: $(openclaw --version 2>&1 | head -n 1)"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
   // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
   // wrapper, so the CLI's default port reaches the wrong service. Read the port off the running
   // gateway process and hand it to every CLI call that talks to the gateway.
@@ -149,6 +159,9 @@ function parseVerify(stdout: string): SecondAgentVerify {
       out.file = parsed.file;
       if (!parsed.missing) {
         out.agents = parsed.agents;
+        out.ownership = parsed.ownership;
+        out.defaultMarker = parsed.defaultMarker;
+        out.owners = parsed.owners;
         out.telegramAccounts = parsed.telegramAccounts;
         out.bindings = parsed.bindings;
         out.agentToAgent = parsed.agentToAgent;
