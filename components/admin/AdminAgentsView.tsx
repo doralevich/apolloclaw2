@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Clock, CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Wrench } from "lucide-react";
+import { Clock, CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Users, Wrench } from "lucide-react";
 import { timezoneOptions } from "@/config/timezones";
+import { runtimeForTemplate } from "@/config/agents";
 import { openWorkspaceInApolloClaw } from "@/components/admin/workspace-instances";
+import { SecondAgentDialog } from "@/components/admin/SecondAgentDialog";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
@@ -533,6 +535,10 @@ function AgentCard({
   const trashed = Boolean(agent.deleted_at);
   const initial = (agent.name || agent.agent37_id).slice(0, 1).toUpperCase();
   const [opening, setOpening] = useState<"apolloclaw" | "instance" | null>(null);
+  const [secondAgentOpen, setSecondAgentOpen] = useState(false);
+  // The two-agent test needs OpenClaw's multi-agent config; a Hermes box has no such thing, and
+  // an unknown template is not worth a button that fails on click.
+  const canTestSecondAgent = runtimeForTemplate(agent.template) === "OpenClaw";
 
   // Two doors into a customer's agent. "Open" is the ApolloClaw dashboard - support access
   // via workspace membership, where product gets installed and the checklist lives. "Instance"
@@ -679,6 +685,23 @@ function AgentCard({
               ))}
             </select>
           </div>
+        )}
+        {/* The two-agents-on-one-box test: add Atlas with its own Telegram bot and agent-to-agent
+            messaging, check what the gateway loaded, remove it again. Proof for the Command
+            Center plan before product code depends on it. */}
+        {agent.presence !== "ghost" && !trashed && !readOnly && canTestSecondAgent && (
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setSecondAgentOpen(true)} title="Add a second agent (Atlas) with its own Telegram bot and let the two talk">
+              <Users className="h-4 w-4" />
+              Second agent
+            </Button>
+            <SecondAgentDialog
+              agentId={agent.agent37_id}
+              agentName={agent.name || agent.agent37_id}
+              open={secondAgentOpen}
+              onOpenChange={setSecondAgentOpen}
+            />
+          </>
         )}
         {/* Recovery: undo the defaults on a box whose harness they took down. Removes exactly the
             keys Apply defaults set and restarts the instance. */}
