@@ -90,11 +90,34 @@ const VERIFY_SH =
   "agentToAgent:c.tools&&c.tools.agentToAgent?c.tools.agentToAgent:null};" +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
   'echo "CLI_START"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
-  // "configured" in the list above only means the token is in the file. The probe asks Telegram
-  // itself, which is the difference between a bot that is set up and one that answers.
-  'echo; echo "openclaw channels status --probe:"; timeout 60 openclaw channels status --probe 2>&1 | head -60 || echo "(probe did not run)"; ' +
+  // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
+  // wrapper, so the CLI's default port reaches the wrong service. Read the port off the running
+  // gateway process and hand it to every CLI call that talks to the gateway.
+  'GWPORT=$(node -e \'const fs=require("fs");for(const d of fs.readdirSync("/proc")){if(!/^\\d+$/.test(d))continue;try{const cmd=fs.readFileSync("/proc/"+d+"/cmdline","utf8").replace(/\\0/g," ").trim();if(!/^openclaw-gateway\\b|openclaw.*gateway/.test(cmd))continue;const env=fs.readFileSync("/proc/"+d+"/environ","utf8").split("\\0");const p=env.find(e=>e.startsWith("OPENCLAW_GATEWAY_PORT="));if(p){console.log(p.split("=")[1]);process.exit(0);}}catch(e){}}\' 2>/dev/null); ' +
+  'echo; echo "gateway port from the running process: ${GWPORT:-unknown}"; ' +
+  'if [ -n "$GWPORT" ]; then export OPENCLAW_GATEWAY_PORT="$GWPORT"; PORTFLAG="--port $GWPORT"; else PORTFLAG=""; fi; ' +
+  // "configured" in the list above only means the token is in the file. The probe asks the
+  // gateway and Telegram, which is the difference between a bot that is set up and one that
+  // answers. channels status is tried with the port flag first, then without.
+  'echo; echo "openclaw channels status --probe:"; (timeout 60 openclaw channels status --probe $PORTFLAG 2>&1 || timeout 60 openclaw channels status --probe 2>&1) | head -60; ' +
   // And the gateway's own recent words about Telegram, for the errors the probe summarises away.
-  'echo; echo "recent gateway log lines mentioning telegram:"; (timeout 30 openclaw logs --limit 400 --plain --no-color 2>&1 | grep -i telegram | tail -n 25) || echo "(logs did not run)"; ' +
+  'echo; echo "recent gateway log lines mentioning telegram:"; (timeout 30 openclaw logs $PORTFLAG --limit 400 --plain --no-color 2>&1 | grep -i telegram | tail -n 25) || echo "(logs did not run)"; ' +
+  // Then ask Telegram directly about each bot in the config. getWebhookInfo is the decisive one:
+  // a webhook URL on the Atlas bot means something else (the app's Connections card) claimed its
+  // updates and OpenClaw's polling is refused; an empty URL with a growing pending count means
+  // nobody is polling at all; an empty URL with zero pending means the gateway is reading it.
+  'echo; echo "telegram api, per bot in the config:"; CFG="$CFG" timeout 40 node -e \'' +
+  'const fs=require("fs");const c=JSON.parse(fs.readFileSync(process.env.CFG,"utf8"));' +
+  'const tg=c.channels&&c.channels.telegram||{};const bots=[];' +
+  'if(typeof tg.botToken==="string"&&tg.botToken)bots.push(["default",tg.botToken]);' +
+  'for(const [id,a] of Object.entries(tg.accounts||{}))if(a&&typeof a.botToken==="string"&&a.botToken)bots.push([id,a.botToken]);' +
+  'const get=async(tok,m)=>{try{const r=await fetch("https://api.telegram.org/bot"+tok+"/"+m,{signal:AbortSignal.timeout(8000)});return await r.json();}catch(e){return {ok:false,description:String(e&&e.message||e)};}};' +
+  '(async()=>{if(!bots.length)console.log("  (no bot tokens in the config)");' +
+  'for(const [id,tok] of bots){const me=await get(tok,"getMe");const wh=await get(tok,"getWebhookInfo");' +
+  'const who=me.ok?"@"+(me.result.username||"?"):"getMe failed: "+(me.description||"?");' +
+  'const w=wh.ok?wh.result:null;' +
+  'console.log("  "+id+": "+who+(w?" | webhook url: "+(w.url||"(none, polling allowed)")+" | pending updates: "+w.pending_update_count+(w.last_error_message?" | last error: "+w.last_error_date+" "+w.last_error_message:""):" | getWebhookInfo failed: "+(wh.description||"?")));}' +
+  '})();\' 2>&1 | sed "s/[0-9]\\{8,\\}:[A-Za-z0-9_-]\\{30,\\}/***token***/g"; ' +
   // The CLI could not reach the gateway on David's box (a different service answered on the
   // default port), which raises the question of whether the gateway even reads the file we
   // write. Read-only facts that settle it: which processes run, with the OpenClaw-related
