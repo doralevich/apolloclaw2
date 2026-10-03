@@ -5,6 +5,9 @@
 //
 // Runs from a laptop against the Agent37 control plane; the Vercel sandbox has no key and no
 // route to api.agent37.com. Needs AGENT37_API_KEY in the environment (same key as .env).
+// The same setup/verify/revert is available with one click from the admin Fleet page ("Second
+// agent" on an OpenClaw card), backed by lib/multi-agent-test.ts. This script adds --create for
+// building a fresh box and teardown for deleting one.
 //
 //   Add a second agent to an instance you already have:
 //     node scripts/multi-agent-test.mjs setup --instance <id> --bot-b <token> --telegram-user <id>
