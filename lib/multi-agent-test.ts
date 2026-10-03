@@ -89,7 +89,13 @@ const VERIFY_SH =
   "bindings:c.bindings===undefined?null:c.bindings," +
   "agentToAgent:c.tools&&c.tools.agentToAgent?c.tools.agentToAgent:null};" +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
-  'echo "CLI_START"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; echo "CLI_END"';
+  'echo "CLI_START"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
+  // "configured" in the list above only means the token is in the file. The probe asks Telegram
+  // itself, which is the difference between a bot that is set up and one that answers.
+  'echo; echo "openclaw channels status --probe:"; timeout 60 openclaw channels status --probe 2>&1 | head -60 || echo "(probe did not run)"; ' +
+  // And the gateway's own recent words about Telegram, for the errors the probe summarises away.
+  'echo; echo "recent gateway log lines mentioning telegram:"; (timeout 30 openclaw logs --limit 400 --plain --no-color 2>&1 | grep -i telegram | tail -n 25) || echo "(logs did not run)"; ' +
+  'echo "CLI_END"';
 
 function parseVerify(stdout: string): SecondAgentVerify {
   const out: SecondAgentVerify = {};
