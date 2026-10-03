@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { AgentNameCell } from "@/components/AgentNameCell";
+import { AgentTeam } from "@/components/AgentTeam";
 import { SetupCell } from "@/components/SetupPrompt";
 
 // One agent, as a card rather than a row.
@@ -168,6 +169,10 @@ export function AgentCard({
           />
         </div>
       </div>
+
+      {/* Every agent the instance itself reports, when there is more than the one this card is
+          for. Reads the box, so an agent added on the server shows here the same day. */}
+      <AgentTeam agentId={agent.agent37_id} mainName={name} />
 
       {/* Delete, ON the card it deletes - stage 2 of the settings rework. The old
           DeleteAgentSection sat on Settings > General and deleted whichever agent the hidden
