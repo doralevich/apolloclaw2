@@ -104,7 +104,7 @@ const VERIFY_SH =
   // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
   // wrapper, so the CLI's default port reaches the wrong service. Read the port off the running
   // gateway process and hand it to every CLI call that talks to the gateway.
-  'GWPORT=$(node -e \'const fs=require("fs");for(const d of fs.readdirSync("/proc")){if(!/^\\d+$/.test(d))continue;try{const cmd=fs.readFileSync("/proc/"+d+"/cmdline","utf8").replace(/\\0/g," ").trim();if(!/^openclaw-gateway\\b|openclaw.*gateway/.test(cmd))continue;const env=fs.readFileSync("/proc/"+d+"/environ","utf8").split("\\0");const p=env.find(e=>e.startsWith("OPENCLAW_GATEWAY_PORT="));if(p){console.log(p.split("=")[1]);process.exit(0);}}catch(e){}}\' 2>/dev/null); ' +
+  'GWPORT=$(node -e \'const fs=require("fs");for(const d of fs.readdirSync("/proc")){if(!/^\\d+$/.test(d))continue;try{const cmd=fs.readFileSync("/proc/"+d+"/cmdline","utf8").replace(/\\0/g," ").trim();if(!/(^|\\/|\\s)openclaw-gateway(\\s|$)/.test(cmd))continue;const env=fs.readFileSync("/proc/"+d+"/environ","utf8").split("\\0");const p=env.find(e=>e.startsWith("OPENCLAW_GATEWAY_PORT="));if(p){console.log(p.split("=")[1]);process.exit(0);}}catch(e){}}\' 2>/dev/null); ' +
   'echo; echo "gateway port from the running process: ${GWPORT:-unknown}"; ' +
   'if [ -n "$GWPORT" ]; then export OPENCLAW_GATEWAY_PORT="$GWPORT"; PORTFLAG="--port $GWPORT"; else PORTFLAG=""; fi; ' +
   // "configured" in the list above only means the token is in the file. The probe asks the
@@ -146,6 +146,13 @@ const VERIFY_SH =
   'const ports=new Set();for(const f of ["/proc/net/tcp","/proc/net/tcp6"]){try{for(const line of fs.readFileSync(f,"utf8").split("\\n").slice(1)){const p=line.trim().split(/\\s+/);if(p[3]==="0A")ports.add(parseInt(p[1].split(":").pop(),16));}}catch(e){}}' +
   'console.log("  listening ports: "+[...ports].sort((a,b)=>a-b).join(", "));' +
   "'; " +
+  // Agent37's wrapper sits between the app and the gateway and builds the session key the
+  // gateway rejects on a two-agent box ("openresponses-user:<id>"). The gateway's chat.send
+  // accepts an agentId, so what matters is whether the wrapper can be told to pass one. These
+  // are the lines of its bundle that mention the session key, the agent id, or chat.send.
+  'echo; echo "agent37 wrapper, lines about session keys and agent selection:"; ' +
+  'for f in /usr/local/lib/agent37-gateway/dist/server/server/index.js $(ls /usr/local/lib/agent37-gateway/dist/server/*.js /usr/local/lib/agent37-gateway/dist/server/server/*.js 2>/dev/null | head -n 20); do [ -f "$f" ] || continue; ' +
+  'grep -n -o -E ".{0,120}(openresponses-user|chat\\.send|agentId|agent_id|x-openclaw-agent|openclaw/[a-z]).{0,120}" "$f" 2>/dev/null | grep -v -i "token\\|secret\\|password" | head -n 40 | sed "s#^#  $(basename $f): #"; done; ' +
   'echo; echo "openclaw.json files on the box:"; timeout 20 find /home /root /opt /app /srv /etc /var /data -maxdepth 6 -name openclaw.json -not -path "*/node_modules/*" 2>/dev/null | head -n 10 | sed "s/^/  /"; ' +
   'echo; echo "state dir listing:"; ls -la "$ROOT" 2>&1 | head -n 40 | sed "s/^/  /"; ' +
   'echo "CLI_END"';
