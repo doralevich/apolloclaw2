@@ -21,25 +21,33 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // The College Agent's boxes are listed in the overview but are not ours to touch.
   await assertNotOtherApp(id);
 
-  const body = await readJson<{ botToken?: unknown; telegramUser?: unknown }>(request);
+  const body = await readJson<{ botToken?: unknown; telegramUser?: unknown; mainBotToken?: unknown }>(request);
   const botToken = typeof body.botToken === "string" ? body.botToken.trim() : "";
+  const mainBotToken = typeof body.mainBotToken === "string" ? body.mainBotToken.trim() : "";
   const telegramUser = typeof body.telegramUser === "string" ? body.telegramUser.trim() : "";
   // A BotFather token is "<numeric bot id>:<35-ish chars>". Checked here so a pasted username or
   // a trailing word never lands in a config file that then has to be reverted.
-  if (!/^\d+:[A-Za-z0-9_-]{20,}$/.test(botToken)) {
+  const TOKEN = /^\d+:[A-Za-z0-9_-]{20,}$/;
+  if (!TOKEN.test(botToken)) {
     throw new ApiError(400, "invalid_request", "That does not look like a bot token from @BotFather (digits, a colon, then letters).");
+  }
+  if (mainBotToken && !TOKEN.test(mainBotToken)) {
+    throw new ApiError(400, "invalid_request", "The first agent's bot token does not look like one from @BotFather.");
+  }
+  if (mainBotToken && mainBotToken === botToken) {
+    throw new ApiError(400, "invalid_request", "The two agents need two different bots; Telegram lets one bot talk to one listener.");
   }
   if (!/^\d+$/.test(telegramUser)) {
     throw new ApiError(400, "invalid_request", "The Telegram user id is a number (ask @userinfobot or @getmyid_bot).");
   }
 
-  const result = await setupSecondAgent(id, { botToken, telegramUser });
+  const result = await setupSecondAgent(id, { botToken, telegramUser, mainBotToken: mainBotToken || undefined });
   // The token stays out of the audit log; the user id is fine, it is what the allow list holds.
   await logAudit({
     actorEmail: user.email,
     action: "agent.second_agent_added",
     target: id,
-    metadata: { ok: result.ok, backedUp: result.backedUp, restarted: result.restarted, telegramUser, note: result.note ?? null },
+    metadata: { ok: result.ok, backedUp: result.backedUp, restarted: result.restarted, telegramUser, mainBot: Boolean(mainBotToken), note: result.note ?? null },
     request,
   });
   return json(result);

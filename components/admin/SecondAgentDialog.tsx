@@ -82,6 +82,7 @@ export function SecondAgentDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const [botToken, setBotToken] = useState("");
+  const [mainBotToken, setMainBotToken] = useState("");
   const [telegramUser, setTelegramUser] = useState("");
   const [busy, setBusy] = useState<"add" | "check" | "remove" | null>(null);
   const [readout, setReadout] = useState("");
@@ -93,7 +94,11 @@ export function SecondAgentDialog({
     try {
       const r = await apiFetch<SetupResult>(base, {
         method: "POST",
-        body: JSON.stringify({ botToken: botToken.trim(), telegramUser: telegramUser.trim() }),
+        body: JSON.stringify({
+          botToken: botToken.trim(),
+          telegramUser: telegramUser.trim(),
+          ...(mainBotToken.trim() ? { mainBotToken: mainBotToken.trim() } : {}),
+        }),
       });
       if (r.ok) {
         toast.success(
@@ -144,7 +149,9 @@ export function SecondAgentDialog({
     }
   }
 
-  const canAdd = /^\d+:[A-Za-z0-9_-]{20,}$/.test(botToken.trim()) && /^\d+$/.test(telegramUser.trim());
+  const TOKEN = /^\d+:[A-Za-z0-9_-]{20,}$/;
+  const mainOk = !mainBotToken.trim() || (TOKEN.test(mainBotToken.trim()) && mainBotToken.trim() !== botToken.trim());
+  const canAdd = TOKEN.test(botToken.trim()) && /^\d+$/.test(telegramUser.trim()) && mainOk;
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (busy === null) onOpenChange(o); }}>
@@ -191,10 +198,28 @@ export function SecondAgentDialog({
             </p>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="sa-main-token">{agentName}&apos;s own bot token (optional)</Label>
+            <Input
+              id="sa-main-token"
+              type="password"
+              autoComplete="off"
+              placeholder="A second bot from @BotFather, different from Atlas"
+              value={mainBotToken}
+              onChange={(e) => setMainBotToken(e.target.value)}
+              disabled={busy !== null}
+            />
+            <p className="text-xs text-muted-foreground">
+              Gives {agentName} a Telegram bot of its own on the server, so the agent-to-agent test
+              can run in Telegram even while the app&apos;s chat cannot pick an agent. A different
+              bot from Atlas, and from any bot on the Connections page.
+            </p>
+          </div>
+
           <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
             <li>Press Add Atlas. The instance restarts; wait a minute, then press Check.</li>
             <li>In Telegram, open the Atlas bot and send: What is our cash on hand? Expect $412,000.</li>
-            <li>Open the first agent&apos;s chat and send: Ask Atlas what our cash on hand is and tell me. The same number back means the two agents are talking.</li>
+            <li>Ask {agentName}, in the app or in its own Telegram bot: Ask Atlas what our cash on hand is and tell me. The same number back means the two agents are talking.</li>
             <li>Remove Atlas when done. That restores the config the box had before.</li>
           </ol>
 
