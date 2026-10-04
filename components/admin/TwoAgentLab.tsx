@@ -24,7 +24,7 @@ import {
 
 type Box = { id: string; status: string; name: string | null; created: number | null };
 type Question = { key: string; agent: string; text: string; expect: string };
-type Answer = { agent: string; question: string; status: number; answer: string; ms: number };
+type Answer = { agent: string; question: string; status: number; answer: string; ms: number; note?: string };
 
 export function TwoAgentLabButton() {
   const [open, setOpen] = useState(false);
@@ -184,6 +184,7 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
                     <div className="mt-2 rounded-md bg-muted/50 p-2 text-sm">
                       <div className="mb-1 text-[11px] text-muted-foreground">
                         {a.status === 200 ? "answered" : `status ${a.status}`} · {(a.ms / 1000).toFixed(1)}s
+                        {a.note ? ` · ${a.note}` : ""}
                       </div>
                       <pre className="whitespace-pre-wrap font-sans">{a.answer}</pre>
                     </div>
