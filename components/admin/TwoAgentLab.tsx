@@ -55,6 +55,9 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
   const [busy, setBusy] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [probe, setProbe] = useState<Probe | null>(null);
+  // Which way the questions travel: through the edge (the chat tabs' own path, from the app
+  // through a signed URL) or from inside the box (the chat's fallback).
+  const [path, setPath] = useState<"edge" | "box">("edge");
 
   // The reach test: the app, from Vercel, through an Agent37 signed URL, to the box's gateway.
   // What the per-agent chat tabs need. The questions above run from inside the box and so
@@ -118,7 +121,7 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
     try {
       const a = await apiFetch<Answer>("/api/admin/two-agent-lab", {
         method: "POST",
-        body: JSON.stringify({ action: "ask", id: box.id, key }),
+        body: JSON.stringify({ action: "ask", id: box.id, key, path }),
       });
       setAnswers((s) => ({ ...s, [key]: a }));
     } catch (e) {
@@ -135,7 +138,7 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
       try {
         const a = await apiFetch<Answer>("/api/admin/two-agent-lab", {
           method: "POST",
-          body: JSON.stringify({ action: "ask", id: box.id, key: q.key }),
+          body: JSON.stringify({ action: "ask", id: box.id, key: q.key, path }),
         });
         setAnswers((s) => ({ ...s, [q.key]: a }));
       } catch (e) {
@@ -253,6 +256,28 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
                 )}
               </div>
             )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Ask the questions</span>
+            <div className="inline-flex rounded-md border p-0.5" role="radiogroup" aria-label="Path for the questions">
+              {(["edge", "box"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  role="radio"
+                  aria-checked={path === p}
+                  onClick={() => setPath(p)}
+                  disabled={busy !== null}
+                  className={`rounded px-2.5 py-1 text-xs font-medium ${path === p ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {p === "edge" ? "through the edge" : "from inside the box"}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {path === "edge" ? "The chat tabs' own path: the app, a signed link, the gateway." : "The chat's fallback: a command run inside the box."}
+            </span>
           </div>
 
           <ol className="space-y-3">

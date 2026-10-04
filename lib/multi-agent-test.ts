@@ -272,12 +272,11 @@ export async function setupSecondAgent(
     "}" +
     // The gateway's own chat endpoint, off by default. Serves on the gateway port, takes the
     // agent as "openclaw/<id>" in the model field, and authenticates with the gateway token.
-    // The gateway also has to listen on the container's network, not loopback only: Agent37's
-    // edge connects to the port from outside the process and reported "container_unreachable"
-    // against the loopback-bound default (Oct 4 2026). "lan" is OpenClaw's all-interfaces
-    // mode; the token still guards every request, and the port is reachable only through the
-    // edge's signed URLs. The pre-multiagent backup restores the old value on revert.
-    'if(o.httpChat){set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);set(cfg,["gateway","bind"],"lan");}' +
+    // The app reaches it through the dashboard port, where Agent37's relay passes the request
+    // to the gateway. The gateway's own port is not reachable from their edge whatever the
+    // gateway's bind ("container_unreachable" with loopback and with "lan", Oct 4 2026), so
+    // the bind is left alone. A "lan" bind this setup wrote on an earlier run is taken back.
+    'if(o.httpChat){set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);if(cfg.gateway&&cfg.gateway.bind==="lan")delete cfg.gateway.bind;}' +
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +

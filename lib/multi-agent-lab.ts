@@ -2,7 +2,7 @@ import "server-only";
 import { agent37 } from "@/lib/agent37";
 import { APP_ID } from "@/config/agents";
 import { SECOND_AGENT, setupSecondAgent } from "@/lib/multi-agent-test";
-import { askOnBox } from "@/lib/gateway-chat";
+import { askOnBox, gatewayAccess, gatewayFetch } from "@/lib/gateway-chat";
 
 // The two-agent lab: a throwaway box that proves several agents on one OpenClaw instance can
 // each be reached and can message each other, with nothing else in the loop. No Telegram, no
@@ -131,11 +131,45 @@ export const LAB_QUESTIONS: { key: string; agent: string; text: string; expect: 
   },
 ];
 
-/** Ask one agent one question over the gateway's chat endpoint, from inside the box (see
- *  askOnBox in lib/gateway-chat.ts, which the per-agent chat falls back to as well). */
-export async function askLab(id: string, key: string): Promise<LabAnswer> {
+/** Ask one agent one question over the gateway's chat endpoint. Two paths, the same two the
+ *  per-agent chat has (lib/gateway-chat.ts): "edge" is the app reaching the gateway through
+ *  an Agent37 signed URL, exactly what a chat tab does; "box" runs the request from inside
+ *  the box with docker exec, the chat's fallback. */
+export async function askLab(id: string, key: string, path: "box" | "edge" = "box"): Promise<LabAnswer> {
   const q = LAB_QUESTIONS.find((x) => x.key === key);
   if (!q) throw Object.assign(new Error(`Unknown question "${key}".`), { code: "bad_question" });
+
+  if (path === "edge") {
+    const t0 = Date.now();
+    let res: Response;
+    try {
+      res = await gatewayFetch(id, "/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: `openclaw/${q.agent}`,
+          user: `apollo-lab-${q.agent}`,
+          messages: [{ role: "user", content: q.text }],
+        }),
+        signal: AbortSignal.timeout(240_000),
+      });
+    } catch (e) {
+      return { agent: q.agent, question: q.text, status: 0, answer: (e as Error).message, ms: Date.now() - t0, note: "through the edge" };
+    }
+    const text = await res.text();
+    let answer = text.slice(0, 1200);
+    try {
+      const j = JSON.parse(text) as { choices?: { message?: { content?: string } }[]; error?: unknown };
+      const c = j.choices?.[0]?.message?.content;
+      if (typeof c === "string") answer = c;
+      else if (j.error) answer = JSON.stringify(j.error).slice(0, 600);
+    } catch {
+      // not JSON; the raw start of it is the answer
+    }
+    const access = await gatewayAccess(id);
+    const via = access.via && access.via !== "none" ? `${access.via.port} ${access.via.way}` : "?";
+    return { agent: q.agent, question: q.text, status: res.status, answer, ms: Date.now() - t0, note: `through the edge via ${via}` };
+  }
 
   // The box may still be restarting from create; a few tries, spaced out.
   const parsed = await askOnBox(id, { agent: q.agent, text: q.text, user: `apollo-lab-${q.agent}` }, 4);
