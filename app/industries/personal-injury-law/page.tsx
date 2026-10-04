@@ -95,7 +95,7 @@ export default function PersonalInjuryLawPage() {
         agentTypeId="legal"
         buildSlug="law"
         badge="Apollo[Claw] Injury Law Edition"
-        title={<>Never Miss an<br />Injured Client Again.</>}
+        title={<>Every Injured Client,<br />Answered Within Minutes.</>}
         punch="The Law Agent. More Than AI. Your Intake Operating System."
         sub="Apollo Claw's AI intake specialist for injury law answers every inquiry the moment it arrives, triages the case, follows up until the retainer is signed, and keeps every client informed from sign-up to settlement."
       />

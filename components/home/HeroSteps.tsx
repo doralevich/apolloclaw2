@@ -8,7 +8,7 @@ const RED = "#E12E30";
 
 const STEPS = [
   { n: "01", title: "We Find the Friction", body: "We learn how you work and where your time is going." },
-  { n: "02", title: "We Build Around It", body: "Your agent is designed around you, from the ground up." },
+  { n: "02", title: "We Build Around It", body: "Your custom agent is built around you, online, in about 15 minutes." },
   { n: "03", title: "We Keep It Running", body: "Thirty days of hands-on training, then ongoing support as you grow." },
 ];
 

@@ -93,7 +93,7 @@ const INCLUDED = [
 ];
 
 const STEPS = [
-  { title: "We set it up", body: "Answer a short questionnaire about your business. We build your agent from it and connect it to your chat app." },
+  { title: "We set it up", body: "Answer a short questionnaire about your business. Your custom agent is built from it in about 15 minutes and connected to your chat app." },
   { title: "It learns your business", body: "It reads what you shared and the apps you connect, and keeps notes as it works." },
   { title: "It works for you", body: "Message it like a colleague. It drafts, follows up, schedules and reports back." },
 ];

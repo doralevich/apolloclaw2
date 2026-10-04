@@ -6,7 +6,6 @@ import {
   Circle,
   CircleDot,
   Cloud,
-  GraduationCap,
   KeyRound,
   Lock,
   Plug,
@@ -206,20 +205,6 @@ function CheckChip({ label, done, bg = CREAM }: { label: string; done: boolean |
   );
 }
 
-// A slightly larger square box for compliance frameworks, which each need one short line of
-// context a bare checkbox can't carry (who attests, and where the report lives).
-function ComplianceBox({ label, done, note }: { label: string; done: boolean | "partial"; note: string }) {
-  return (
-    <div className="flex h-full flex-col gap-2" style={{ background: WHITE, border: `1px solid ${BORDER}`, borderRadius: 10, padding: "18px 20px" }}>
-      <div className="flex items-center gap-2">
-        <StatusIcon done={done} />
-        <span style={{ fontSize: 14, fontWeight: 700, color: INK }}>{label}</span>
-      </div>
-      <p style={{ fontSize: 12.5, lineHeight: 1.55, color: MUTED, margin: 0 }}>{note}</p>
-    </div>
-  );
-}
-
 function Button({
   href,
   label,
@@ -290,15 +275,13 @@ const READINESS: { label: string; done: boolean | "partial" }[] = [
   { label: "Encryption in transit and at rest, on both deployment layers", done: true },
   { label: "Per-user data isolation (Postgres RLS) — verified live", done: true },
   { label: "Security headers, CSP, and per-IP rate limiting", done: true },
-  { label: "Payment security — Stripe, PCI DSS SAQ-A scope", done: true },
+  { label: "Payment security — card data handled entirely by Stripe", done: true },
   { label: "MFA on every admin and infrastructure account", done: true },
   { label: "Enforced in-app admin second factor (TOTP / AAL2 step-up)", done: true },
   { label: "Secrets management + automated dependency & secret scanning", done: true },
   { label: "Audit logging of sensitive admin actions", done: true },
   { label: "Published privacy policy + consent-gated analytics", done: true },
-  { label: "HECVAT questionnaire — pre-filled, ready to submit", done: true },
-  { label: "FERPA data-processing agreement, for education clients", done: true },
-  { label: "Apollo[Claw]'s own SOC 2 attestation", done: "partial" },
+  { label: "Data-processing agreement for institutional clients, on request", done: true },
   { label: "Third-party penetration test", done: false },
 ];
 
@@ -336,7 +319,7 @@ export default function SecurityPage() {
                   "Public-facing only — webhooks and hosted assets. No client credentials live here",
                   "Canceling stops the VPS first — nothing is destroyed until the retention window closes",
                 ]}
-                footer="Our runtime infrastructure is ISO 27001-certified, with a SOC 2 Type I report available on request."
+                footer="Encrypted, isolated, and inspectable. Your IT team can verify every line of this with us on a call."
               />
             </ScrollReveal>
             <ScrollReveal delay={80}>
@@ -474,40 +457,6 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      {/* COMPLIANCE & PRIVACY - cream, square boxes */}
-      <section style={{ background: CREAM }}>
-        <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
-          <SectionIntro kicker="[ Compliance ]" title="Compliance Posture">
-            Where we hold a certification directly and where we lean on a sub-processor&apos;s,
-            named plainly rather than blurred together.
-          </SectionIntro>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <ScrollReveal delay={0}>
-              <ComplianceBox
-                label="SOC 2"
-                done="partial"
-                note="Our runtime infrastructure is undergoing SOC 2 - a Type I report is available on request. Apollo[Claw]'s own attestation is on our roadmap."
-              />
-            </ScrollReveal>
-            <ScrollReveal delay={50}>
-              <ComplianceBox label="ISO 27001" done={true} note="Our runtime infrastructure holds ISO 27001 certification." />
-            </ScrollReveal>
-            <ScrollReveal delay={100}>
-              <ComplianceBox label="PCI DSS" done={true} note="SAQ-A scope. Card data is handled entirely by Stripe and never touches our systems." />
-            </ScrollReveal>
-            <ScrollReveal delay={150}>
-              <ComplianceBox label="GDPR / CCPA" done={true} note="Published privacy policy, consent-gated analytics, and deletion on request." />
-            </ScrollReveal>
-            <ScrollReveal delay={200}>
-              <ComplianceBox label="FERPA" done={true} note="We act as a school official under the institution's direct control and will execute a data-processing agreement." />
-            </ScrollReveal>
-            <ScrollReveal delay={250}>
-              <ComplianceBox label="HECVAT" done={true} note="Pre-filled questionnaire responses, ready to submit to your institution." />
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
-
       {/* FOR IT & PROCUREMENT - white, checkbox grid + contact */}
       <section style={{ background: WHITE }}>
         <div className="container mx-auto px-5 md:px-8 py-16 md:py-20 max-w-7xl">
@@ -540,9 +489,6 @@ export default function SecurityPage() {
               <div className="mb-5 flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-1.5" style={{ fontSize: 12.5, color: MUTED }}>
                   <Building2 size={14} style={{ color: RED }} /> Enterprise-ready
-                </span>
-                <span className="inline-flex items-center gap-1.5" style={{ fontSize: 12.5, color: MUTED }}>
-                  <GraduationCap size={14} style={{ color: RED }} /> FERPA / HECVAT-ready
                 </span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>

@@ -145,7 +145,7 @@ export default function LegalPage() {
               An <strong>AI law agent</strong> is a purpose-built AI system that takes over the recurring legal work a business and its counsel spend the most time on: drafting contracts from templates, reviewing and redlining incoming agreements, summarizing documents in plain English, and tracking obligations, deadlines, and renewals. Unlike a generic AI chatbot, it works from your own templates and standard positions and connects to where your documents actually live.
             </p>
             <p>
-              Think of it as an <strong>AI contract assistant</strong> that never loses track of a renewal. It drafts the first version, flags the clauses that fall outside your positions, explains what a party is agreeing to, and keeps the calendar of every notice window and expiry. Small and mid-size businesses gain the most: the drafting and review muscle of a larger legal team without the headcount.
+              Think of it as an <strong>AI contract assistant</strong> that keeps track of every renewal. It drafts the first version, flags the clauses that fall outside your positions, explains what a party is agreeing to, and keeps the calendar of every notice window and expiry. Small and mid-size businesses gain the most: the drafting and review muscle of a larger legal team without the headcount.
             </p>
             <p>
               A word on what it is not. The Law Agent from Apollo Claw is a <strong>drafting and review tool, not a licensed attorney, and it does not give legal advice.</strong> Nothing it produces creates an attorney-client relationship, and it recommends review by qualified counsel before you sign, file, or rely on anything binding. What it removes is the production work, so the people who do give advice spend their time on judgment instead of paperwork.
@@ -206,7 +206,7 @@ export default function LegalPage() {
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Client Results</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">What Teams Say After 30 Days</h2>
-            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Businesses across industries are moving contracts in hours, not weeks, and never missing a renewal.</p>
+            <p className="font-body text-base" style={{ color: "rgba(255,255,255,0.5)" }}>Businesses across industries are moving contracts in hours instead of weeks, with every renewal on the calendar.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {testimonials.map((t, i) => (

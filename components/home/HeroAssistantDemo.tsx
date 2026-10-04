@@ -19,7 +19,7 @@ const CONVERSATION: { role: Role; text: string }[] = [
   { role: "user", text: "Does it work with the tools we already use?" },
   { role: "agent", text: "Yes. Google Workspace, Microsoft 365, Slack, email, calendars, CRMs, wherever your team already works." },
   { role: "user", text: "How fast can we get one running?" },
-  { role: "agent", text: "Most agents are live in about two weeks, followed by 30 days of hands-on training." },
+  { role: "agent", text: "About 15 minutes. Your custom agent is built online from a short questionnaire, then 30 days of hands-on training as it learns how you work." },
   { role: "user", text: "Is it a fit for a business our size?" },
   { role: "agent", text: "Yes. Solo founders, growing teams, and established companies all get an agent built to fit the way they work." },
   { role: "user", text: "Is our data safe?" },
