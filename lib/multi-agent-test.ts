@@ -98,7 +98,10 @@ const VERIFY_SH =
   "owners:c.agents&&c.agents.defaults?{systemAgent:c.agents.defaults.systemAgent||null,heartbeat:c.agents.defaults.heartbeat||null,sessionStore:c.agents.defaults.sessionStore||null}:null," +
   "telegramAccounts:c.channels&&c.channels.telegram&&c.channels.telegram.accounts?Object.keys(c.channels.telegram.accounts):null," +
   "bindings:c.bindings===undefined?null:c.bindings," +
-  "agentToAgent:c.tools&&c.tools.agentToAgent?c.tools.agentToAgent:null};" +
+  "agentToAgent:c.tools&&c.tools.agentToAgent?c.tools.agentToAgent:null," +
+  // The direct-line keys: the chat endpoint switch and where the gateway listens.
+  "httpChat:c.gateway&&c.gateway.http&&c.gateway.http.endpoints&&c.gateway.http.endpoints.chatCompletions?c.gateway.http.endpoints.chatCompletions.enabled===true:false," +
+  "bind:c.gateway&&c.gateway.bind!==undefined?c.gateway.bind:null};" +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
   'echo "CLI_START"; echo "openclaw version: $(openclaw --version 2>&1 | head -n 1)"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
   // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
@@ -269,7 +272,12 @@ export async function setupSecondAgent(
     "}" +
     // The gateway's own chat endpoint, off by default. Serves on the gateway port, takes the
     // agent as "openclaw/<id>" in the model field, and authenticates with the gateway token.
-    'if(o.httpChat){set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);}' +
+    // The gateway also has to listen on the container's network, not loopback only: Agent37's
+    // edge connects to the port from outside the process and reported "container_unreachable"
+    // against the loopback-bound default (Oct 4 2026). "lan" is OpenClaw's all-interfaces
+    // mode; the token still guards every request, and the port is reachable only through the
+    // edge's signed URLs. The pre-multiagent backup restores the old value on revert.
+    'if(o.httpChat){set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);set(cfg,["gateway","bind"],"lan");}' +
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +

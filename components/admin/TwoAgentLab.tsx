@@ -25,7 +25,7 @@ import {
 type Box = { id: string; status: string; name: string | null; created: number | null };
 type Question = { key: string; agent: string; text: string; expect: string };
 type Answer = { agent: string; question: string; status: number; answer: string; ms: number; note?: string };
-type Attempt = { way: string; status: number; verdict: "ok" | "gateway" | "edge" | "error"; note: string };
+type Attempt = { port: number; way: string; status: number; verdict: "ok" | "gateway" | "edge" | "error"; note: string };
 type Probe = { ok: boolean; status: number; port: number; host: string; models: string[]; via: string; attempts: Attempt[]; note?: string };
 
 const VERDICT: Record<Attempt["verdict"], string> = {
@@ -146,6 +146,26 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
     setBusy(null);
   }
 
+  // The setup again on the box that exists: the config merge plus a restart. For a box made
+  // before the setup changed, without paying for a fresh one.
+  async function resetup() {
+    if (!box) return;
+    setBusy("setup");
+    try {
+      const r = await apiFetch<{ ok: boolean; note?: string }>("/api/admin/two-agent-lab", {
+        method: "POST",
+        body: JSON.stringify({ action: "setup", id: box.id }),
+      });
+      if (r.ok) toast.success("Setup ran again. The box is restarting; give it a minute, then Test.");
+      else toast.error(`The setup did not confirm${r.note ? `: ${r.note}` : ""}.`);
+      setProbe(null);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function remove() {
     if (!box) return;
     setBusy("delete");
@@ -202,9 +222,14 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
                   depends on this; without it the tabs still answer, by asking from inside the box.
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={runProbe} disabled={busy !== null || !box}>
-                {busy === "probe" ? "Testing..." : "Test"}
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={resetup} disabled={busy !== null || !box} title="Run the two-agent setup again on this box and restart it">
+                  {busy === "setup" ? "Running setup..." : "Re-run setup"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={runProbe} disabled={busy !== null || !box}>
+                  {busy === "probe" ? "Testing..." : "Test"}
+                </Button>
+              </div>
             </div>
             {probe && (
               <div className="mt-2 rounded-md bg-muted/50 p-2 text-sm">
@@ -217,7 +242,7 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
                   <ul className="mt-2 space-y-1 border-t pt-2 text-xs">
                     {probe.attempts.map((a, i) => (
                       <li key={i} className="flex flex-wrap gap-x-2">
-                        <span className="font-mono">{a.way}</span>
+                        <span className="font-mono">{a.port} {a.way}</span>
                         <span className={a.verdict === "ok" ? "text-emerald-700" : a.verdict === "edge" ? "text-destructive" : "text-muted-foreground"}>
                           {a.status || ""} {VERDICT[a.verdict]}
                         </span>
@@ -279,7 +304,7 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
               Close
             </Button>
             <Button onClick={askAll} disabled={busy !== null || !box}>
-              {busy && busy !== "create" && busy !== "delete" ? "Asking..." : "Ask all three"}
+              {busy && busy !== "create" && busy !== "delete" && busy !== "probe" && busy !== "setup" ? "Asking..." : "Ask all three"}
             </Button>
           </div>
         </DialogFooter>

@@ -1,5 +1,5 @@
 import { requirePlatformAdmin } from "@/lib/admin";
-import { askLab, createLabBox, deleteLabBox, findLabBox, LAB_QUESTIONS } from "@/lib/multi-agent-lab";
+import { askLab, createLabBox, deleteLabBox, findLabBox, LAB_QUESTIONS, resetupLabBox } from "@/lib/multi-agent-lab";
 import { probeGateway } from "@/lib/gateway-chat";
 import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
@@ -9,6 +9,8 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 //   GET                         the lab box that exists now, and the questions
 //   POST { action: "create" }   create the box with Atlas on it, restart it
 //   POST { action: "ask", id, key }  ask one agent one question over the gateway's chat endpoint
+//   POST { action: "probe", id }     can the app reach the box's gateway through the edge, which way
+//   POST { action: "setup", id }     run the two-agent setup again on the box and restart it
 //   POST { action: "delete", id }    delete the box
 //
 // Create waits for the box to boot and ask waits on a model answer, so both need the long
@@ -56,6 +58,19 @@ export const POST = route(async (request: Request) => {
     await logAudit({ actorEmail: user.email, action: "lab.two_agent_probed", target: id, metadata: { ok: result.ok, status: result.status, port: result.port, via: result.via }, request });
     return json(result);
   }
+  // Run the setup again on the existing box (config merge plus restart), for a box created
+  // before the setup changed.
+  if (action === "setup") {
+    if (!id) throw new ApiError(400, "invalid_request", "Pass the lab box id.");
+    try {
+      const result = await resetupLabBox(id);
+      await logAudit({ actorEmail: user.email, action: "lab.two_agent_resetup", target: id, metadata: { ...result }, request });
+      return json(result);
+    } catch (e) {
+      if ((e as { code?: string }).code === "not_lab") throw new ApiError(403, "not_lab", (e as Error).message);
+      throw e;
+    }
+  }
   if (action === "delete") {
     if (!id) throw new ApiError(400, "invalid_request", "Pass the lab box id.");
     try {
@@ -67,5 +82,5 @@ export const POST = route(async (request: Request) => {
       throw e;
     }
   }
-  throw new ApiError(400, "invalid_request", "action must be create, ask, probe or delete.");
+  throw new ApiError(400, "invalid_request", "action must be create, ask, probe, setup or delete.");
 });
