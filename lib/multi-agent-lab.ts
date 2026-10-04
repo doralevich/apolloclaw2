@@ -21,8 +21,10 @@ import { SECOND_AGENT, setupSecondAgent } from "@/lib/multi-agent-test";
 
 export const LAB_TAG = "two-agent-lab";
 const TEMPLATE = "agent37-openclaw";
-/** The $4.32 Starter tier. */
-const RESOURCES = { cpu: 1, memory: 4, disk: 8 };
+/** The smallest combination the API accepts. 1 vCPU is refused ("Unsupported resource
+ *  combination", Oct 4 2026): the API's floor is 2 vCPU / 4 GB / 2-12 GB disk, the same tier
+ *  the app provisions customers on. */
+const RESOURCES = { cpu: 2, memory: 4, disk: 6 };
 /** $5 of model spend, plenty for a few questions. */
 const BUDGET_MICROS = 5_000_000;
 

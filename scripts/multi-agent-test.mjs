@@ -42,7 +42,9 @@
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
 const KEY = process.env.AGENT37_API_KEY;
 
-const STARTER = { cpu: 1, memory: 4, disk: 8 }; // the $4.32 tier
+// The API's smallest accepted combination. 1 vCPU is refused ("Unsupported resource
+// combination"; the floor is 2 vCPU / 4 GB / 2-12 GB disk).
+const STARTER = { cpu: 2, memory: 4, disk: 6 };
 const TEMPLATE = "agent37-openclaw";
 const TEST_TAG = "apolloclaw-multi-agent-test";
 
