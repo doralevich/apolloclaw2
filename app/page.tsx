@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
+import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { HeroSteps } from "@/components/home/HeroSteps";
 import { BuiltForYou } from "@/components/home/BuiltForYou";
 import { Proof } from "@/components/home/Proof";
@@ -40,7 +41,7 @@ const faqJsonLd = {
   })),
 };
 
-// Section order per David's spec (Sept 27 2026), with his later calls: Hero, Three Steps, Built
+// Section order per David's spec (Sept 27 2026), with his later calls: Hero, What We Do, Three Steps, Built
 // for You, Specialist Agents (moved up one), Proven Results, FAQ, Final CTA.
 // The Founder Note came off, and Latest Insights (added Oct 3 2026) came off again Oct 4.
 // Backgrounds: navy, cream, white, cream, navy, white, cream. The sitewide PreFooter is skipped here (RootShell) because FinalCta
@@ -50,6 +51,7 @@ export default function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <Hero />
+      <WhatWeDo />
       <HeroSteps />
       <BuiltForYou />
       <AgentCards />
