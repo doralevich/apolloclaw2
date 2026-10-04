@@ -7,7 +7,10 @@ import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { Button } from "@/components/ui/button";
 import { useAgentPlan } from "@/components/AgentPlan";
+import Link from "next/link";
 import { PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
+import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import { HOSTING_PLAN } from "@/lib/pricing/catalog";
 
 // Plan — the page about the MONEY, which the settings area never had.
 //
@@ -25,8 +28,8 @@ import { PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
 // customer from before the plans sees exactly what they pay today, the license and the hosting
 // seats, because those are their real numbers and they are grandfathered on them.
 
-// From the catalog's cents so a reprice cannot leave this page lying.
-const SEAT_PRICE = 249; // == HOSTING_PLAN.amountCents / 100; kept in step by hand, see catalog
+// The legacy hosting seat, from the catalog so the number cannot drift from what Stripe charges.
+const SEAT_PRICE = HOSTING_PLAN.amountCents / 100;
 
 export function PlanView() {
   const { current } = useWorkspace();
@@ -184,28 +187,25 @@ export function PlanView() {
         </p>
       </div>
 
-      <div className="rounded-xl border bg-card p-5">
-        <h2 className="font-semibold">ApolloClaw Agent License</h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Owned. Paid once - it does not renew. Each additional agent carries its own one-time
-          $449 agent license.
-        </p>
-      </div>
-
+      {/* What they pay today, and nothing about the one-time license: that was history, not
+          something they manage here. A grandfathered customer keeps this price as long as they
+          stay on it. */}
       <div className="rounded-xl border bg-card p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-semibold">Agent hosting</h2>
+            <h2 className="font-semibold">Your current plan</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              One seat per agent, on one subscription and one invoice.
+              {seatCount === null
+                ? "Your agents are billed directly rather than through the dashboard."
+                : "Agent hosting, one seat per agent, on one subscription and one invoice. You keep this price for as long as you stay on it."}
             </p>
           </div>
           {seats === undefined ? (
             <span className="text-sm text-muted-foreground">Loading...</span>
           ) : seatCount === null ? (
-            <span className="text-sm text-muted-foreground">Billed directly</span>
+            <span className="shrink-0 text-sm text-muted-foreground">Billed directly</span>
           ) : (
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <div className="text-2xl font-semibold tabular-nums">
                 ${(seatCount * SEAT_PRICE).toLocaleString("en-US")}
                 <span className="text-sm font-normal text-muted-foreground">/mo</span>
@@ -216,11 +216,38 @@ export function PlanView() {
             </div>
           )}
         </div>
-        <p className="mt-3 border-t pt-3 text-xs leading-relaxed text-muted-foreground">
-          Each seat includes $25/mo of usage credit. Adding an agent bills a one-time $449 agent
-          license plus a seat pro-rated from that day, on one invoice; deleting an agent credits
-          its seat back automatically.
+      </div>
+
+      {/* The plans, for a customer from before them. Moving over is a short conversation rather
+          than a button: a plan is a separate subscription, and switching by checkout alone would
+          leave the old one billing beside it. */}
+      <div className="rounded-xl border bg-card p-5">
+        <h2 className="font-semibold">Move to a plan</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Several agents for one monthly price, with AI usage included.
         </p>
+        <ul className="mt-3 space-y-2 text-sm">
+          {PLANS_ON_SALE.map((o) => (
+            <li key={o.id} className="flex items-center justify-between gap-3">
+              <span>
+                <span className="font-medium">{o.label}</span>{" "}
+                <span className="text-muted-foreground">· {o.agentsText}</span>
+              </span>
+              <span className="tabular-nums text-muted-foreground">{dollars(o.monthlyCents ?? 0)}/mo</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t pt-4">
+          <Button asChild size="sm">
+            <a href={SCHEDULE_CONSULT_URL} target="_blank" rel="noopener noreferrer">
+              Talk to us about switching
+            </a>
+          </Button>
+          <Link href="/pricing" className="text-sm font-medium underline-offset-4 hover:underline">
+            See all plans
+          </Link>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">We switch you over so you are never billed twice.</p>
       </div>
 
       {seatCount !== null && (
