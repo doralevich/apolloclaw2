@@ -88,7 +88,7 @@ export async function createLabBox(): Promise<{ box: LabBox; setup: { ok: boolea
     return { box: { id: made.id, status, name: made.name, created: made.created }, setup: { ok: false, note: `box is ${status}` } };
   }
   // setupSecondAgent retries while OpenClaw finishes booting, then restarts the box.
-  const setup = await setupSecondAgent(made.id, { httpChat: true });
+  const setup = await setupSecondAgent(made.id, {});
   return {
     box: { id: made.id, status: "restarting", name: made.name, created: made.created },
     setup: { ok: setup.ok, note: setup.note },
@@ -103,7 +103,7 @@ export async function resetupLabBox(id: string): Promise<{ ok: boolean; note?: s
   if (!box || !isLab(box)) {
     throw Object.assign(new Error(`${id} is not a lab box; refusing to change it.`), { code: "not_lab" });
   }
-  const setup = await setupSecondAgent(id, { httpChat: true });
+  const setup = await setupSecondAgent(id, {});
   return { ok: setup.ok, note: setup.note };
 }
 

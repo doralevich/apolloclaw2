@@ -16,8 +16,11 @@ import { agent37 } from "@/lib/agent37";
 //   bindings              -> the atlas bot routed to the atlas agent, every other Telegram
 //                            account to main (other bindings kept)
 //   tools.agentToAgent    -> enabled, allow: [main, atlas]
-//   memory.search         -> enabled, extraPaths gains <stateDir>/shared, the shared company
-//                            brain every agent on the box indexes (seeded shared/COMPANY.md)
+//   the shared company brain -> shared/COMPANY.md (seeded once from the main agent's USER.md),
+//                            copied into each second agent's workspace USER.md so every agent
+//                            reads it as loaded context. Not wired into memory.search: changing
+//                            the indexed sources pauses OpenClaw's vector index, and loaded
+//                            context needs no search anyway.
 //
 // The test is then: DM Atlas "what is our cash on hand" and expect $412,000, then ask the first
 // agent "ask Atlas what our cash on hand is" and see whether the same number comes back, which it
@@ -33,8 +36,30 @@ export const SECOND_AGENT = {
   id: "atlas",
   name: "Atlas",
   role: "CFO",
+  persona: "You are the finance specialist on a small team of agents. Answer finance questions directly and briefly.",
   fact: "Cash on hand is $412,000 as of this morning.",
 };
+
+export interface AgentSpec {
+  id: string;
+  name: string;
+  role: string;
+  /** A few sentences on how the agent should act. Loaded into its SOUL.md. */
+  persona: string;
+  /** A planted fact, test-only. Real agents created from intake have none. */
+  fact?: string;
+}
+
+/** An OpenClaw agent id from a display name: lowercase, letters/digits/hyphens, never "main". */
+export function agentIdFromName(name: string): string {
+  const id = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 32)
+    .replace(/-+$/g, "");
+  return id && id !== "main" ? id : "";
+}
 
 export interface SecondAgentVerify {
   /** The config file the box uses. */
@@ -56,6 +81,8 @@ export interface SecondAgentVerify {
   memorySearch?: { enabled: boolean; provider: string | null; extraPaths: unknown } | null;
   /** Whether the shared company file (shared/COMPANY.md) exists on the box. */
   sharedBrain?: boolean;
+  /** Whether the second agent loaded the company brain as context (workspace-atlas/USER.md). */
+  secondBrain?: boolean;
   /** The gateway's own view: `openclaw agents list --bindings`, or a note when the CLI did not
    *  run. This is the line that settles whether the build accepted our keys. */
   cli?: string;
@@ -116,7 +143,9 @@ const VERIFY_SH =
   // (null means the default, which gives semantic when a key is present and keyword search
   // otherwise), the shared folder among the indexed paths, and whether the company file is there.
   "memorySearch:c.memory&&c.memory.search?{enabled:c.memory.search.enabled!==false,provider:c.memory.search.provider||null,extraPaths:c.memory.search.extraPaths||null}:{enabled:true,provider:null,extraPaths:null}," +
-  'sharedBrain:fs.existsSync(root+"/shared/COMPANY.md")};' +
+  'sharedBrain:fs.existsSync(root+"/shared/COMPANY.md"),' +
+  // Whether the second agent loaded the company brain as context (workspace-<id>/USER.md).
+  'secondBrain:(function(){var e=c.agents&&c.agents.entries?Object.keys(c.agents.entries).filter(function(k){return k!=="main";}):[];return e.length>0&&e.every(function(id){return fs.existsSync(root+"/workspace-"+id+"/USER.md");});})()};' +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
   'echo "CLI_START"; echo "openclaw version: $(openclaw --version 2>&1 | head -n 1)"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
   // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
@@ -192,6 +221,7 @@ function parseVerify(stdout: string): SecondAgentVerify {
         out.agentToAgent = parsed.agentToAgent;
         out.memorySearch = parsed.memorySearch;
         out.sharedBrain = parsed.sharedBrain;
+        out.secondBrain = parsed.secondBrain;
       }
     } catch {
       // Leave the fields empty; the CLI readout below still carries the useful part.
@@ -213,14 +243,14 @@ export async function setupSecondAgent(
     botToken?: string;
     telegramUser?: string;
     mainBotToken?: string;
-    /** Switch on the gateway's OpenAI-compatible chat endpoint, which takes the agent as part
-     *  of the model name ("openclaw/atlas"). The way to reach one agent of several while
-     *  Agent37's chat path names none. */
-    httpChat?: boolean;
+    /** The agent to create, from intake (name, role, persona). When omitted, the Atlas test
+     *  agent is used, which is what the two-agent lab and the original proof run. */
+    agent?: AgentSpec;
   }
 ): Promise<SecondAgentSetupResult> {
+  const second = input.agent ?? SECOND_AGENT;
   const payload = {
-    second: SECOND_AGENT,
+    second,
     botB: input.botToken?.trim() || "",
     // Optional: a native Telegram bot for the FIRST agent too. The app's own chat cannot name
     // an agent (Agent37 sends an unprefixed session key, see the ownership note below), so on
@@ -228,7 +258,6 @@ export async function setupSecondAgent(
     // that still works, and the agent-to-agent test can run through it.
     botA: input.mainBotToken?.trim() || "",
     telegramUser: input.telegramUser?.trim() || "",
-    httpChat: Boolean(input.httpChat),
   };
   const b64 = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
 
@@ -287,35 +316,35 @@ export async function setupSecondAgent(
     'add.push({agentId:"main",match:{channel:"telegram",accountId:"*"}});' +
     "cfg.bindings=keep.concat(add);" +
     "}" +
-    // The gateway's own chat endpoint, off by default. Serves on the gateway port, takes the
-    // agent as "openclaw/<id>" in the model field, and authenticates with the gateway token.
-    // The app reaches it through the dashboard port, where Agent37's relay passes the request
-    // to the gateway. The gateway's own port is not reachable from their edge whatever the
-    // gateway's bind ("container_unreachable" with loopback and with "lan", Oct 4 2026), so
-    // the bind is left alone. A "lan" bind this setup wrote on an earlier run is taken back.
-    'if(o.httpChat){set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);if(cfg.gateway&&cfg.gateway.bind==="lan")delete cfg.gateway.bind;}' +
+    // The gateway's own chat endpoint, always on for a multi-agent box: it is the only way to
+    // reach a named agent (the per-agent chat tabs, and the direct line the channels fall back
+    // to), so there is no case where a second agent should have it off. The app reaches it
+    // through the dashboard port, where Agent37's relay passes the request to the gateway. The
+    // gateway's own port is not reachable from their edge whatever the gateway's bind
+    // ("container_unreachable" with loopback and with "lan", Oct 4 2026), so the bind is left
+    // alone; a "lan" bind an earlier run wrote is taken back.
+    'set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);' +
+    'if(cfg.gateway&&cfg.gateway.bind==="lan")delete cfg.gateway.bind;' +
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +
-    // The shared company brain: one folder every agent on the box indexes, so a second agent
-    // knows the company while keeping its own role. It goes on the GLOBAL memory.search list,
-    // which the gateway combines with each agent's own paths; add our folder once, keep the rest.
+    // Memory search left at its default (on). We do NOT add the shared folder to
+    // memory.search.extraPaths: changing the indexed sources makes OpenClaw pause its vector
+    // index until a manual rebuild, which showed up as a second agent answering "memory search
+    // is paused because its index scope changed" (Oct 4 2026). The company brain reaches every
+    // agent through its loaded workspace context instead (USER.md below), which needs no search
+    // and never pauses an index. A sharedDir entry an earlier build added is stripped so we stop
+    // disturbing the index; the shared file itself stays as the editable master.
     'const sharedDir=root+"/shared";' +
-    'if(!cfg.memory)cfg.memory={};if(!cfg.memory.search)cfg.memory.search={};' +
-    // Memory search on. The embedding provider is left at its default: with a provider key on the
-    // box the search is semantic, and without one it falls back to keyword search rather than
-    // failing, so the shared brain is searchable either way. Naming a remote provider with no key
-    // would fail closed, so we do not.
-    'cfg.memory.search.enabled=true;' +
-    'const ex=Array.isArray(cfg.memory.search.extraPaths)?cfg.memory.search.extraPaths:[];' +
-    'if(!ex.some(e=>e===sharedDir||(e&&e.path===sharedDir)))ex.push(sharedDir);' +
-    'cfg.memory.search.extraPaths=ex;' +
+    "if(cfg.memory&&cfg.memory.search&&Array.isArray(cfg.memory.search.extraPaths)){" +
+    "cfg.memory.search.extraPaths=cfg.memory.search.extraPaths.filter(e=>!(e===sharedDir||(e&&e.path===sharedDir)));" +
+    "if(cfg.memory.search.extraPaths.length===0)delete cfg.memory.search.extraPaths;}" +
     "fs.writeFileSync(file,JSON.stringify(cfg,null,2));" +
     // The second agent's persona and the planted fact.
     "fs.mkdirSync(secondWs,{recursive:true});" +
     'fs.writeFileSync(secondWs+"/IDENTITY.md","# Identity\\n\\nYour name is "+o.second.name+". You are the "+o.second.role+" agent.\\n");' +
-    'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\nYou are the finance specialist on a small team of agents. Answer finance questions directly and briefly.\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n");' +
-    'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n\\nShared company knowledge lives in the team memory (a COMPANY.md the whole workspace indexes). Rely on it for anything about the company or the owner; it is the same source every agent here reads.\\n");' +
+    'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\n"+(o.second.persona||("You are the "+o.second.role+" on a small team of agents. Answer in your area directly and briefly."))+(o.second.fact?"\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n":"\\n"));' +
+    'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n\\nYour USER.md holds the shared company brain: who the company is and who the owner is, the same facts every agent here shares. Treat it as established fact and use it directly; you do not need to search for it.\\n");' +
     // The shared company brain, seeded once. Start it from what the main agent already records
     // about the owner (USER.md) when that file exists, so a second agent knows the company from
     // the first message; otherwise a short template to fill in. Never overwrite an existing
@@ -328,9 +357,14 @@ export async function setupSecondAgent(
     'if(fs.existsSync(userFile)){try{const u=fs.readFileSync(userFile,"utf8").trim();if(u)seed+="\\n## About the owner\\n\\n"+u+"\\n";}catch(e){}}' +
     "fs.writeFileSync(companyFile,seed);" +
     "}" +
+    // Load the company brain into the second agent as context it reads every turn. USER.md is
+    // the workspace file OpenClaw treats as who the owner is, so the agent knows the company and
+    // the owner from the first message, with no search involved. Rewritten on every setup from
+    // the current COMPANY.md, so an edit to the master flows to the agent on the next run.
+    'try{fs.writeFileSync(secondWs+"/USER.md",fs.readFileSync(companyFile,"utf8"));}catch(e){}' +
     // The first agent needs to know the second one exists and how to reach it.
     "fs.mkdirSync(mainWs,{recursive:true});" +
-    'const note="\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n- "+o.second.name+" (agent id `"+o.second.id+"`) is the "+o.second.role+" agent. For any finance question, ask "+o.second.name+" with the sessions_send tool (agent id `"+o.second.id+"`), wait for the reply, and relay the answer.\\n<!-- apollo:multi-agent-test:end -->\\n";' +
+    'const note="\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n- "+o.second.name+" (agent id `"+o.second.id+"`) is the "+o.second.role+" agent. For anything in its area, ask "+o.second.name+" with the sessions_send tool (agent id `"+o.second.id+"`), wait for the reply, and relay the answer.\\n<!-- apollo:multi-agent-test:end -->\\n";' +
     'const af=mainWs+"/AGENTS.md";' +
     'let cur=fs.existsSync(af)?fs.readFileSync(af,"utf8"):"";' +
     `cur=cur.replace(${NOTE_RE},"");` +
@@ -374,8 +408,9 @@ export async function revertSecondAgent(agentId: string): Promise<SecondAgentRev
     GUARD +
     'BAK="$CFG.pre-multiagent"; ' +
     '[ -f "$BAK" ] || { echo "NO_BACKUP:$BAK"; exit 0; }; ' +
+    // Remove every non-main agent's workspace, read from the live config before it is restored.
+    'CFG="$CFG" ROOT="$ROOT" node -e \'const fs=require("fs");try{const c=JSON.parse(fs.readFileSync(process.env.CFG,"utf8"));const e=c.agents&&c.agents.entries?Object.keys(c.agents.entries):[];for(const id of e){if(id==="main")continue;try{fs.rmSync(process.env.ROOT+"/workspace-"+id,{recursive:true,force:true});}catch(x){}}}catch(x){}\'; ' +
     'cp "$BAK" "$CFG" && rm -f "$BAK" && echo "RESTORED:$CFG"; ' +
-    `rm -rf "$ROOT/workspace-${SECOND_AGENT.id}"; ` +
     'ROOT="$ROOT" node -e \'const fs=require("fs");const f=process.env.ROOT+"/workspace/AGENTS.md";' +
     `if(fs.existsSync(f)){let s=fs.readFileSync(f,"utf8");s=s.replace(${NOTE_RE},"");fs.writeFileSync(f,s);console.log("NOTE_REMOVED");}'`;
 

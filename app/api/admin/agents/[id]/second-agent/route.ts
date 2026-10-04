@@ -1,5 +1,5 @@
 import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
-import { revertSecondAgent, setupSecondAgent, verifySecondAgent } from "@/lib/multi-agent-test";
+import { agentIdFromName, revertSecondAgent, setupSecondAgent, verifySecondAgent, type AgentSpec } from "@/lib/multi-agent-test";
 import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
 
@@ -24,10 +24,32 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // The College Agent's boxes are listed in the overview but are not ours to touch.
   await assertNotOtherApp(id);
 
-  const body = await readJson<{ botToken?: unknown; telegramUser?: unknown; mainBotToken?: unknown }>(request);
+  const body = await readJson<{
+    name?: unknown;
+    role?: unknown;
+    persona?: unknown;
+    botToken?: unknown;
+    telegramUser?: unknown;
+    mainBotToken?: unknown;
+  }>(request);
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const role = typeof body.role === "string" ? body.role.trim() : "";
+  const persona = typeof body.persona === "string" ? body.persona.trim() : "";
   const botToken = typeof body.botToken === "string" ? body.botToken.trim() : "";
   const mainBotToken = typeof body.mainBotToken === "string" ? body.mainBotToken.trim() : "";
   const telegramUser = typeof body.telegramUser === "string" ? body.telegramUser.trim() : "";
+
+  // The agent to create. When a name is given this is a real intake agent; with no name the
+  // Atlas test agent is used, which is what the original proof and a quick check still run.
+  let agent: AgentSpec | undefined;
+  if (name) {
+    const agentId = agentIdFromName(name);
+    if (!agentId) {
+      throw new ApiError(400, "invalid_request", "Give the agent a name with some letters or digits, not just symbols, and not \"main\".");
+    }
+    if (!role) throw new ApiError(400, "invalid_request", "Give the agent a role, such as CFO or Scheduler.");
+    agent = { id: agentId, name, role, persona };
+  }
   // A BotFather token is "<numeric bot id>:<35-ish chars>". Checked here so a pasted username or
   // a trailing word never lands in a config file that then has to be reverted.
   const TOKEN = /^\d+:[A-Za-z0-9_-]{20,}$/;
@@ -48,18 +70,17 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   }
 
   const result = await setupSecondAgent(id, {
+    agent,
     botToken: botToken || undefined,
     telegramUser: telegramUser || undefined,
     mainBotToken: mainBotToken || undefined,
-    // The per-agent chat tabs reach each agent over the gateway's own chat endpoint.
-    httpChat: true,
   });
   // The token stays out of the audit log; the user id is fine, it is what the allow list holds.
   await logAudit({
     actorEmail: user.email,
     action: "agent.second_agent_added",
     target: id,
-    metadata: { ok: result.ok, backedUp: result.backedUp, restarted: result.restarted, telegram: Boolean(botToken), telegramUser: telegramUser || null, mainBot: Boolean(mainBotToken), note: result.note ?? null },
+    metadata: { ok: result.ok, agent: agent ? { id: agent.id, name: agent.name, role: agent.role } : "atlas-test", backedUp: result.backedUp, restarted: result.restarted, telegram: Boolean(botToken), telegramUser: telegramUser || null, mainBot: Boolean(mainBotToken), note: result.note ?? null },
     request,
   });
   return json(result);
