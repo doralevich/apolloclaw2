@@ -47,7 +47,59 @@ export const HOSTING_PLAN = {
   interval: "month",
 } as const;
 
-// ─── The two tiers ────────────────────────────────────────────────────────────
+// ─── The plans: Solo, Team, Executive (David, Oct 4 2026) ─────────────────────
+//
+// What new customers buy. A monthly subscription per plan, no setup fee, and an add-on price per
+// extra agent billed as a quantity on the same subscription. What each plan includes (agents,
+// pooled usage credit, channels, support) lives in config/agent-plans.ts; this is only what
+// Stripe sells, kept here because scripts/seed-stripe-catalog.mjs parses this file for its
+// prices (catalogKey, then name, then amountCents, then interval).
+//
+// EXISTING CUSTOMERS ARE NOT ON THESE. HOSTING_PLAN above and LICENSE_TIERS below stay exactly
+// as they are: the customers on $249 (and the four on the retired $189) are subscribed to those
+// prices, and the seed creates and updates, it never deletes. Nothing here reprices them.
+//
+// Solo is in Stripe but not on sale yet: it runs on the customer's own AI account, which the
+// product cannot set up until own-key support is built (config/agent-plans.ts, `onSale`).
+export const PLAN_SKUS = {
+  solo: {
+    catalogKey: "apollo_plan_solo",
+    name: "ApolloClaw Solo",
+    amountCents: 4900,
+    interval: "month",
+  },
+  team: {
+    catalogKey: "apollo_plan_team",
+    name: "ApolloClaw Team",
+    amountCents: 9900,
+    interval: "month",
+  },
+  executive: {
+    catalogKey: "apollo_plan_executive",
+    name: "ApolloClaw Executive",
+    amountCents: 19900,
+    interval: "month",
+  },
+  solo_addon: {
+    catalogKey: "apollo_addon_agent_solo",
+    name: "ApolloClaw Solo - Additional Agent",
+    amountCents: 2400,
+    interval: "month",
+  },
+  team_addon: {
+    catalogKey: "apollo_addon_agent_team",
+    name: "ApolloClaw Team - Additional Agent",
+    amountCents: 1900,
+    interval: "month",
+  },
+} as const;
+
+export type PlanSkuId = keyof typeof PLAN_SKUS;
+
+// ─── The two tiers (retired for new customers) ────────────────────────────────
+//
+// Kept because existing customers bought these and their Stripe history names them; new
+// customers buy a plan above instead, with no setup fee.
 //
 // David's call. One product, two ways to buy the setup of it.
 //

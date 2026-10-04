@@ -1,61 +1,183 @@
-// How many agents a workspace may run, by plan.
+import { PLAN_SKUS, type PlanSkuId } from "@/lib/pricing/catalog";
+
+// The plans: what each one includes, and how many agents a workspace on it may run.
+//
+// Approved by David, Oct 4 2026: Solo $49, Team $99, Executive $199 a month, plus Enterprise as
+// "Contact us". Prices come from lib/pricing/catalog.ts (PLAN_SKUS, what Stripe sells), so each
+// number lives in one place; everything a plan INCLUDES lives here.
 //
 // Every agent counts: Timmy Turner and the SEO agent living on his instance are two agents,
-// whether they share one instance or sit on two. That is how a customer counts them, so the
-// limit reads the way they think ("I have 2 of 3").
+// whether they share one instance or sit on two. That is how a customer counts them ("2 of 3").
 //
-// FLUID ON PURPOSE (David, Oct 4 2026: "it needs to be fluid"). The tiers are this list and
-// nothing else: rename one, change a count, or add a fourth here, and every surface that shows
-// or enforces the limit follows. A single workspace can also be given its own number from Super
-// Admin, for the deal that does not fit a tier.
+// "Team" is 3 agents for ONE owner login, not several users. Multiple users and roles are an
+// Enterprise build. Do not use the old working names (Starter, Pro, Business, Basic, Medium,
+// Large) anywhere a customer can see.
 //
-// Set by an admin for now. Self-serve upgrades through Stripe come once every tier is priced;
-// until then "Upgrade" is a conversation, and the button says how to start it.
-//
-// PRICES. These tiers replace today's hosting line ($249/mo per instance, lib/pricing/catalog.ts)
-// once they are all priced. Set by David, Oct 4 2026: Basic is $49.99 a month with $10 of AI
-// credits included, Medium $99.99 with $20. Large is not priced yet, so it carries null and
-// nothing shows a price for it. Recorded here so the number lives beside the count it pays for;
-// nothing bills from it until the Stripe products exist.
+// EXISTING CUSTOMERS ARE GRANDFATHERED. A workspace with no plan recorded is on the "legacy"
+// tier: it keeps the price it pays today ($249, or $189 for the four on the retired line), its
+// agents, and the seat flow it already has. Only checkout records a plan, so nothing here can
+// reprice anyone by accident (workspace_agent_plans, migration 0033).
+
+export type PlanId = "solo" | "team" | "executive";
 
 export interface AgentTier {
   /** Stored against the workspace. Never rename an id that is in use; change the label. */
-  id: string;
+  id: PlanId | "legacy";
   label: string;
+  /** One line under the name on the pricing card. */
+  tagline: string;
   /** Agents included, the main one counted. */
   agents: number;
-  /** Monthly price in cents, or null while the tier is unpriced. */
+  /** How the card says it: "1 agent", "3 agents, 1 owner". */
+  agentsText: string;
+  /** Monthly price in cents; null for the legacy tier, whose price is whatever they pay now. */
   monthlyCents: number | null;
-  /** AI credits included each month, in cents, or null while unpriced. */
-  includedCreditCents: number | null;
+  /** Usage credit included each month, pooled across the plan's agents, in cents. */
+  includedCreditCents: number;
+  /** Extra agents past the included ones, billed monthly as a quantity; null when not offered. */
+  addOn: { sku: PlanSkuId; monthlyCents: number; creditCents: number } | null;
+  /** The most agents the plan can hold, add-ons included; null for no hard cap. */
+  maxAgents: number | null;
+  /** At this many agents, suggest the next plan up (it is cheaper by then). */
+  upgradeAt: number | null;
+  /** Chat channels the plan can connect (config/channels.ts ids). */
+  channels: readonly string[];
+  channelsText: string;
+  supportText: string;
+  /** The one plain phrase about usage the public page may carry. */
+  usageText: string;
+  /** Short plain-English feature list for the card. */
+  features: readonly string[];
+  /** The Stripe subscription this plan sells; null for legacy. */
+  sku: PlanSkuId | null;
+  /** On the pricing page and in checkout. Solo waits for own-key support. */
+  onSale: boolean;
+  /** The card the page highlights. */
+  featured?: boolean;
 }
 
-export const AGENT_TIERS: readonly AgentTier[] = [
-  { id: "basic", label: "Basic", agents: 1, monthlyCents: 4999, includedCreditCents: 1000 },
-  { id: "medium", label: "Medium", agents: 3, monthlyCents: 9999, includedCreditCents: 2000 },
-  { id: "large", label: "Large", agents: 7, monthlyCents: null, includedCreditCents: null },
+export const PLANS: readonly AgentTier[] = [
+  {
+    id: "solo",
+    label: "Solo",
+    tagline: "One agent working for you, on your own AI account.",
+    agents: 1,
+    agentsText: "1 agent",
+    monthlyCents: PLAN_SKUS.solo.amountCents,
+    includedCreditCents: 0,
+    addOn: { sku: "solo_addon", monthlyCents: PLAN_SKUS.solo_addon.amountCents, creditCents: 0 },
+    maxAgents: null,
+    upgradeAt: null,
+    channels: ["telegram"],
+    channelsText: "Telegram",
+    supportText: "Email support",
+    usageText: "Uses your own AI account",
+    features: ["An agent built around your business", "Hosting and updates included", "Connects to your apps"],
+    sku: "solo",
+    // Solo runs on the customer's own AI key, which the product cannot set up yet. In Stripe,
+    // off the page and out of checkout until it can (David, Oct 4 2026).
+    onSale: false,
+  },
+  {
+    id: "team",
+    label: "Team",
+    tagline: "A small team of agents, each with its own job.",
+    agents: 3,
+    agentsText: "3 agents, 1 owner",
+    monthlyCents: PLAN_SKUS.team.amountCents,
+    includedCreditCents: 2500,
+    addOn: { sku: "team_addon", monthlyCents: PLAN_SKUS.team_addon.amountCents, creditCents: 500 },
+    maxAgents: null,
+    upgradeAt: 6,
+    channels: ["telegram", "slack"],
+    channelsText: "Telegram and Slack",
+    supportText: "Email support",
+    usageText: "AI usage included",
+    features: [
+      "Three agents built around your business",
+      "Agents that hand work to each other",
+      "Hosting and updates included",
+      "Connects to your apps",
+    ],
+    sku: "team",
+    onSale: true,
+    featured: true,
+  },
+  {
+    id: "executive",
+    label: "Executive",
+    tagline: "A full bench of agents running your operation.",
+    agents: 10,
+    agentsText: "10 agents",
+    monthlyCents: PLAN_SKUS.executive.amountCents,
+    includedCreditCents: 6000,
+    addOn: null,
+    maxAgents: 10,
+    upgradeAt: null,
+    channels: ["telegram", "slack", "whatsapp"],
+    channelsText: "Telegram, Slack and WhatsApp",
+    supportText: "Priority email support",
+    usageText: "AI usage included",
+    features: [
+      "Ten agents built around your business",
+      "Agents that hand work to each other",
+      "Every supported channel",
+      "Hosting and updates included",
+      "Connects to your apps",
+    ],
+    sku: "executive",
+    onSale: true,
+  },
 ];
 
-/** "$49.99/mo with $10 in AI credits", or null for an unpriced tier. */
-export function tierPriceLabel(tier: AgentTier): string | null {
-  if (tier.monthlyCents === null) return null;
-  const dollars = (c: number) => (c % 100 === 0 ? `$${c / 100}` : `$${(c / 100).toFixed(2)}`);
-  const credit = tier.includedCreditCents ? ` with ${dollars(tier.includedCreditCents)} in AI credits` : "";
-  return `${dollars(tier.monthlyCents)}/mo${credit}`;
-}
+/** A customer from before the plans: their own price, their own agents, untouched. */
+export const LEGACY_TIER: AgentTier = {
+  id: "legacy",
+  label: "Your current plan",
+  tagline: "",
+  agents: 1,
+  agentsText: "",
+  monthlyCents: null,
+  includedCreditCents: 0,
+  addOn: null,
+  maxAgents: null,
+  upgradeAt: null,
+  channels: ["telegram", "slack", "whatsapp"],
+  channelsText: "",
+  supportText: "",
+  usageText: "",
+  features: [],
+  sku: null,
+  onSale: false,
+};
 
-/** A workspace nobody has set a plan for. */
-export const DEFAULT_AGENT_TIER = "basic";
+/** The plans a customer can buy today, in page order. */
+export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale);
 
-/** Where "Upgrade for more agents" goes until upgrades are self-serve. */
+/** Every tier Super Admin can put a workspace on: the plans, and back to legacy. */
+export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS];
+
+/** Enterprise: never a published price, except the one "starting at". */
+export const ENTERPRISE = {
+  label: "Enterprise",
+  headline: "Custom corporate builds. Contact us.",
+  privateServersFrom: "$6,500",
+} as const;
+
+/** Where "Upgrade for more agents" goes. */
 export const AGENT_UPGRADE_HREF = "/dashboard/settings/plan";
 
 export function agentTier(id: string | null | undefined): AgentTier {
-  return (
-    AGENT_TIERS.find((t) => t.id === id) ??
-    AGENT_TIERS.find((t) => t.id === DEFAULT_AGENT_TIER) ??
-    AGENT_TIERS[0]
-  );
+  return AGENT_TIERS.find((t) => t.id === id) ?? LEGACY_TIER;
+}
+
+export function isPlanId(id: unknown): id is PlanId {
+  return PLANS.some((p) => p.id === id);
+}
+
+/** "$99". Whole dollars, as the plans are priced. */
+export function dollars(cents: number): string {
+  return cents % 100 === 0 ? `$${(cents / 100).toLocaleString("en-US")}` : `$${(cents / 100).toFixed(2)}`;
 }
 
 /** "1 agent", "3 agents". */
@@ -66,7 +188,7 @@ export function agentsLabel(n: number): string {
 /** What the client gets from /api/workspaces/{id}/agent-plan. */
 export interface AgentPlanUsage {
   tier: AgentTier;
-  /** The tier's count, or the workspace's own number when one was set. */
+  /** The agents the workspace may run: the plan's, plus add-ons, or its own custom number. */
   limit: number;
   /** True when the limit is a per-workspace number rather than the tier's. */
   custom: boolean;

@@ -60,7 +60,8 @@ export function useAgentPlan(): AgentPlanUsage | null {
 export function AgentPlanLine({ usage, className }: { usage: AgentPlanUsage; className?: string }) {
   return (
     <span className={cn("text-xs text-muted-foreground", className)}>
-      {usage.custom ? "Your plan" : `${usage.tier.label} plan`} · {usage.used} of {agentsLabel(usage.limit)}
+      {usage.custom || usage.tier.id === "legacy" ? "Your plan" : `${usage.tier.label} plan`} · {usage.used} of{" "}
+      {agentsLabel(usage.limit)}
     </span>
   );
 }

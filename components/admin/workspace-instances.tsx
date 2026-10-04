@@ -246,7 +246,7 @@ export function AgentPlanControl({ workspaceId }: { workspaceId: string }) {
       >
         {AGENT_TIERS.map((t) => (
           <option key={t.id} value={t.id}>
-            {t.label} ({agentsLabel(t.agents)})
+            {t.id === "legacy" ? "Legacy (grandfathered, per instance)" : `${t.label} (${agentsLabel(t.agents)})`}
           </option>
         ))}
       </select>
