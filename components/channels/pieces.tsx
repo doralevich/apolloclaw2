@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { ChannelDef } from "@/config/channels";
 import type { ChannelId } from "@/lib/types";
+import { suggestBotUsername } from "@/lib/telegram-username";
 
 // The parts of channel setup that are the same wherever it is drawn.
 //
@@ -111,22 +112,8 @@ export function ManualDelivery({
 // them to search a name they might mistype (there are impersonator accounts), and it offers a
 // name derived from their own agent, which is far likelier to be free than "assistant_bot".
 export function BotFatherHelp({ agentName, seed }: { agentName?: string | null; seed: string }) {
-  // Telegram's rules: 5-32 characters, letters digits and underscores only, must end in "bot".
-  // Suffixed with a short tail because the clean form of any name is usually already taken, and a
-  // suggestion that gets rejected is worse than no suggestion.
-  //
-  // The tail is DERIVED FROM THE AGENT ID, not random. Math.random() here would be impure in
-  // render and, worse, would differ between the server and client passes - so the suggestion
-  // would visibly change on hydration and again on every re-render, which is no way to treat a
-  // value somebody is about to copy. Hashing the agent id gives the same four characters every
-  // time for this agent and different ones for the next.
-  const suggestion = useMemo(() => {
-    const base = (agentName || "apollo").replace(/[^a-zA-Z0-9]/g, "").slice(0, 18) || "apollo";
-    let h = 0;
-    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-    const tail = h.toString(36).slice(0, 4).padStart(4, "0");
-    return `${base}_${tail}_bot`;
-  }, [agentName, seed]);
+  // Derived from the agent id, so it is the same every render; see lib/telegram-username.ts.
+  const suggestion = useMemo(() => suggestBotUsername(agentName, seed), [agentName, seed]);
 
   // Controls only, in the order the steps above use them. This block used to open with a
   // paragraph repeating those steps in different words, so the card said everything twice.
