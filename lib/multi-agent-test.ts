@@ -16,6 +16,8 @@ import { agent37 } from "@/lib/agent37";
 //   bindings              -> the atlas bot routed to the atlas agent, every other Telegram
 //                            account to main (other bindings kept)
 //   tools.agentToAgent    -> enabled, allow: [main, atlas]
+//   memory.search         -> enabled, extraPaths gains <stateDir>/shared, the shared company
+//                            brain every agent on the box indexes (seeded shared/COMPANY.md)
 //
 // The test is then: DM Atlas "what is our cash on hand" and expect $412,000, then ask the first
 // agent "ask Atlas what our cash on hand is" and see whether the same number comes back, which it
@@ -23,7 +25,9 @@ import { agent37 } from "@/lib/agent37";
 //
 // Setup backs the config up once (openclaw.json.pre-multiagent) before the first write, and
 // revert restores that backup, removes the atlas workspace and the note setup appended to the
-// main agent's AGENTS.md, then restarts. Both are idempotent.
+// main agent's AGENTS.md, then restarts. Both are idempotent. Revert keeps the shared/ folder:
+// the config no longer indexes it once the backup is restored, but a customer's company facts
+// are their data, not ours to delete.
 
 export const SECOND_AGENT = {
   id: "atlas",
@@ -47,6 +51,11 @@ export interface SecondAgentVerify {
   telegramAccounts?: string[] | null;
   bindings?: unknown;
   agentToAgent?: unknown;
+  /** Memory search: on/off, the embedding provider (null is the default, semantic when a key is
+   *  present and keyword otherwise), and the indexed extra paths including the shared folder. */
+  memorySearch?: { enabled: boolean; provider: string | null; extraPaths: unknown } | null;
+  /** Whether the shared company file (shared/COMPANY.md) exists on the box. */
+  sharedBrain?: boolean;
   /** The gateway's own view: `openclaw agents list --bindings`, or a note when the CLI did not
    *  run. This is the line that settles whether the build accepted our keys. */
   cli?: string;
@@ -90,6 +99,7 @@ const VERIFY_SH =
   'CFG="$CFG" node -e \'const fs=require("fs");const f=process.env.CFG;' +
   'if(!fs.existsSync(f)){console.log("VERIFY:"+JSON.stringify({file:f,missing:true}));process.exit(0);}' +
   'const c=JSON.parse(fs.readFileSync(f,"utf8"));' +
+  'const root=require("path").dirname(f);' +
   "const out={file:f," +
   "agents:c.agents&&c.agents.entries?Object.keys(c.agents.entries):(c.agents===undefined?null:c.agents)," +
   // The ownership keys, so a readout shows which of them the box actually carries right now.
@@ -101,7 +111,12 @@ const VERIFY_SH =
   "agentToAgent:c.tools&&c.tools.agentToAgent?c.tools.agentToAgent:null," +
   // The direct-line keys: the chat endpoint switch and where the gateway listens.
   "httpChat:c.gateway&&c.gateway.http&&c.gateway.http.endpoints&&c.gateway.http.endpoints.chatCompletions?c.gateway.http.endpoints.chatCompletions.enabled===true:false," +
-  "bind:c.gateway&&c.gateway.bind!==undefined?c.gateway.bind:null};" +
+  "bind:c.gateway&&c.gateway.bind!==undefined?c.gateway.bind:null," +
+  // The shared company brain and memory search: whether search is on, which embedding provider
+  // (null means the default, which gives semantic when a key is present and keyword search
+  // otherwise), the shared folder among the indexed paths, and whether the company file is there.
+  "memorySearch:c.memory&&c.memory.search?{enabled:c.memory.search.enabled!==false,provider:c.memory.search.provider||null,extraPaths:c.memory.search.extraPaths||null}:{enabled:true,provider:null,extraPaths:null}," +
+  'sharedBrain:fs.existsSync(root+"/shared/COMPANY.md")};' +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
   'echo "CLI_START"; echo "openclaw version: $(openclaw --version 2>&1 | head -n 1)"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
   // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
@@ -175,6 +190,8 @@ function parseVerify(stdout: string): SecondAgentVerify {
         out.telegramAccounts = parsed.telegramAccounts;
         out.bindings = parsed.bindings;
         out.agentToAgent = parsed.agentToAgent;
+        out.memorySearch = parsed.memorySearch;
+        out.sharedBrain = parsed.sharedBrain;
       }
     } catch {
       // Leave the fields empty; the CLI readout below still carries the useful part.
@@ -280,12 +297,37 @@ export async function setupSecondAgent(
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +
+    // The shared company brain: one folder every agent on the box indexes, so a second agent
+    // knows the company while keeping its own role. It goes on the GLOBAL memory.search list,
+    // which the gateway combines with each agent's own paths; add our folder once, keep the rest.
+    'const sharedDir=root+"/shared";' +
+    'if(!cfg.memory)cfg.memory={};if(!cfg.memory.search)cfg.memory.search={};' +
+    // Memory search on. The embedding provider is left at its default: with a provider key on the
+    // box the search is semantic, and without one it falls back to keyword search rather than
+    // failing, so the shared brain is searchable either way. Naming a remote provider with no key
+    // would fail closed, so we do not.
+    'cfg.memory.search.enabled=true;' +
+    'const ex=Array.isArray(cfg.memory.search.extraPaths)?cfg.memory.search.extraPaths:[];' +
+    'if(!ex.some(e=>e===sharedDir||(e&&e.path===sharedDir)))ex.push(sharedDir);' +
+    'cfg.memory.search.extraPaths=ex;' +
     "fs.writeFileSync(file,JSON.stringify(cfg,null,2));" +
     // The second agent's persona and the planted fact.
     "fs.mkdirSync(secondWs,{recursive:true});" +
     'fs.writeFileSync(secondWs+"/IDENTITY.md","# Identity\\n\\nYour name is "+o.second.name+". You are the "+o.second.role+" agent.\\n");' +
     'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\nYou are the finance specialist on a small team of agents. Answer finance questions directly and briefly.\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n");' +
-    'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n");' +
+    'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n\\nShared company knowledge lives in the team memory (a COMPANY.md the whole workspace indexes). Rely on it for anything about the company or the owner; it is the same source every agent here reads.\\n");' +
+    // The shared company brain, seeded once. Start it from what the main agent already records
+    // about the owner (USER.md) when that file exists, so a second agent knows the company from
+    // the first message; otherwise a short template to fill in. Never overwrite an existing
+    // COMPANY.md, so a customer's edits and a re-run of setup both survive.
+    "fs.mkdirSync(sharedDir,{recursive:true});" +
+    'const companyFile=sharedDir+"/COMPANY.md";' +
+    "if(!fs.existsSync(companyFile)){" +
+    'let seed="# Company\\n\\nShared knowledge every agent on this workspace can use. Edit this file to say who the company is, what it does, and the facts all agents should know.\\n";' +
+    'const userFile=mainWs+"/USER.md";' +
+    'if(fs.existsSync(userFile)){try{const u=fs.readFileSync(userFile,"utf8").trim();if(u)seed+="\\n## About the owner\\n\\n"+u+"\\n";}catch(e){}}' +
+    "fs.writeFileSync(companyFile,seed);" +
+    "}" +
     // The first agent needs to know the second one exists and how to reach it.
     "fs.mkdirSync(mainWs,{recursive:true});" +
     'const note="\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n- "+o.second.name+" (agent id `"+o.second.id+"`) is the "+o.second.role+" agent. For any finance question, ask "+o.second.name+" with the sessions_send tool (agent id `"+o.second.id+"`), wait for the reply, and relay the answer.\\n<!-- apollo:multi-agent-test:end -->\\n";' +
