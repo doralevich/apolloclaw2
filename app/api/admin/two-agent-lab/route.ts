@@ -8,7 +8,9 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 //
 //   GET                         the lab box that exists now, and the questions
 //   POST { action: "create" }   create the box with Atlas on it, restart it
-//   POST { action: "ask", id, key }  ask one agent one question over the gateway's chat endpoint
+//   POST { action: "ask", id, key, path? }  ask one agent one question over the gateway's chat
+//                               endpoint; path "box" (default) from inside the box, "edge"
+//                               from the app through a signed URL, the chat tabs' own path
 //   POST { action: "probe", id }     can the app reach the box's gateway through the edge, which way
 //   POST { action: "setup", id }     run the two-agent setup again on the box and restart it
 //   POST { action: "delete", id }    delete the box
@@ -24,10 +26,13 @@ export const GET = route(async () => {
 
 export const POST = route(async (request: Request) => {
   const { user } = await requirePlatformAdmin();
-  const body = await readJson<{ action?: unknown; id?: unknown; key?: unknown }>(request);
+  const body = await readJson<{ action?: unknown; id?: unknown; key?: unknown; path?: unknown }>(request);
   const action = typeof body.action === "string" ? body.action : "";
   const id = typeof body.id === "string" ? body.id.trim() : "";
   const key = typeof body.key === "string" ? body.key.trim() : "";
+  // Which way an ask travels: "edge" is the app through a signed URL (what a chat tab does),
+  // "box" runs inside the box (the chat's fallback).
+  const path = body.path === "edge" ? "edge" : "box";
 
   if (action === "create") {
     try {
@@ -42,8 +47,8 @@ export const POST = route(async (request: Request) => {
   if (action === "ask") {
     if (!id) throw new ApiError(400, "invalid_request", "Pass the lab box id.");
     try {
-      const answer = await askLab(id, key);
-      await logAudit({ actorEmail: user.email, action: "lab.two_agent_asked", target: id, metadata: { key, status: answer.status, ms: answer.ms }, request });
+      const answer = await askLab(id, key, path);
+      await logAudit({ actorEmail: user.email, action: "lab.two_agent_asked", target: id, metadata: { key, path, status: answer.status, ms: answer.ms }, request });
       return json(answer);
     } catch (e) {
       if ((e as { code?: string }).code === "bad_question") throw new ApiError(400, "invalid_request", (e as Error).message);

@@ -42,10 +42,11 @@ export interface EdgeRoute {
 export interface GatewayAccess {
   /** The gateway's own port on the box, as read off it. */
   port: number;
-  /** The ports to try, gateway first. Agent37's edge could not connect to the gateway's own
-   *  port on the first live run ("container_unreachable", Oct 4 2026: the gateway binds to
-   *  loopback, and the edge connects over the container's network), while the dashboard
-   *  port, served by their relay, is the one the edge reaches every day. */
+  /** The ports to try, dashboard port first. Proved on the lab box (Oct 4 2026): Agent37's
+   *  relay on the dashboard port passes /v1/models and the chat endpoint straight through to
+   *  the gateway, with the gateway token as a bearer, while the gateway's own port answers
+   *  "container_unreachable" from the edge whatever the gateway's bind. The gateway's port
+   *  stays as the second try in case a later image changes that. */
   routes: EdgeRoute[];
   /** The gateway's own token. Never logged. */
   token: string;
@@ -96,7 +97,7 @@ export async function gatewayAccess(id: string, force = false): Promise<GatewayA
   if (!token) {
     throw Object.assign(new Error("No gateway token found on the instance."), { code: "no_gateway_token" });
   }
-  const ports = port === PORTS.dashboard ? [port] : [port, PORTS.dashboard];
+  const ports = port === PORTS.dashboard ? [port] : [PORTS.dashboard, port];
   const signed = await Promise.all(ports.map((p) => agent37.signedUrl(id, p, 15 * 60)));
   const routes: EdgeRoute[] = signed.map((s, i) => {
     const u = new URL(s.url);
