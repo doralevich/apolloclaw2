@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { SubAgentDialog, type EditingAgent } from "@/components/SubAgentDialog";
+import { useChatContext } from "@/components/chat/ChatProvider";
+import type { RosterAgent } from "@/components/chat/types";
 
 // The agents living on this instance, and the panel to manage them, under the card for the
 // primary one.
@@ -16,8 +18,6 @@ import { SubAgentDialog, type EditingAgent } from "@/components/SubAgentDialog";
 // reads the box's own roster and lets the instance's admin add one, edit its role/persona/image,
 // or remove it, each in place. One additional agent per instance for now; several at once is the
 // next build, at which point the Add button stops hiding once one exists.
-
-type RosterAgent = { id: string; name: string | null; role: string | null; persona: string | null; avatarUrl: string | null; telegram: boolean };
 
 export function AgentTeam({
   agentId,
@@ -35,6 +35,7 @@ export function AgentTeam({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<EditingAgent | null>(null);
   const [removing, setRemoving] = useState<RosterAgent | null>(null);
+  const { agentId: sidebarInstance, refreshRoster } = useChatContext();
 
   const load = useCallback(() => {
     let cancelled = false;
@@ -54,6 +55,13 @@ export function AgentTeam({
 
   useEffect(() => load(), [load]);
 
+  // The sidebar lists the same agents under the active instance's name. After a change here it
+  // reads the box again, so it never shows an agent that is gone or a name that changed.
+  const changed = useCallback(() => {
+    load();
+    if (sidebarInstance === agentId) refreshRoster();
+  }, [load, sidebarInstance, agentId, refreshRoster]);
+
   const subAgents = (agents ?? []).filter((a) => a.id !== "main");
   // The panel manages the OTHER agents, not the primary one: the primary is the card header
   // above, so repeating it here read as duplicative (David, Oct 4 2026). An admin sees the
@@ -67,7 +75,7 @@ export function AgentTeam({
     if (!removing) return;
     await apiFetch(`/api/agents/${agentId}/subagents/${encodeURIComponent(removing.id)}`, { method: "DELETE" });
     toast.success(`${removing.name || removing.id} removed. The instance is restarting.`);
-    load();
+    changed();
   }
 
   return (
@@ -151,7 +159,7 @@ export function AgentTeam({
           editing={editing}
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          onDone={load}
+          onDone={changed}
         />
       )}
 

@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { type ChatSession } from "./types";
+import { type ChatSession, type RosterAgent } from "./types";
 
 export const CHAT_BASE = "/dashboard/chat";
 
@@ -33,6 +33,14 @@ interface ChatContextValue {
   renameSession: (sessionId: string, title: string) => Promise<void>;
   // Move a thread to the top of the rail on new activity (most-recently-used first).
   bumpSession: (sessionId: string) => void;
+  /** Every agent on the active instance, "main" included. Null until the box has answered. */
+  roster: RosterAgent[] | null;
+  /** The agent on the instance the conversation is with. "main" unless another was picked. */
+  selectedAgentId: string;
+  /** Talk to another agent on the instance. Opens Chat when called from any other page. */
+  selectAgent: (agentId: string) => void;
+  /** Re-read the roster, after an agent is added, edited, or removed. */
+  refreshRoster: () => void;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -137,7 +145,44 @@ export function ChatProvider({
     if (agentId) prevAgentRef.current = agentId;
   }, [agentId, onChatRoute, navigateToSession]);
 
+  // The agents on this instance, read from the box. Here rather than in the chat page so the
+  // sidebar can list them from every page, under the agent's name at the top of the rail. Like
+  // the thread list, a switch of instance remounts this provider, so there is no reset to do.
+  const [roster, setRoster] = useState<RosterAgent[] | null>(null);
+  const [rosterVersion, setRosterVersion] = useState(0);
+  const refreshRoster = useCallback(() => setRosterVersion((n) => n + 1), []);
+  useEffect(() => {
+    if (!agentId) return;
+    let cancelled = false;
+    apiFetch<{ ok: boolean; agents: RosterAgent[] }>(`/api/agents/${agentId}/roster`)
+      .then((res) => {
+        if (!cancelled) setRoster(res.ok ? res.agents : []);
+      })
+      .catch(() => {
+        // A roster that could not be read is the one-agent case: the main agent, as always.
+        if (!cancelled) setRoster((prev) => prev ?? []);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId, rosterVersion]);
+
+  // A pick that has since been removed from the box falls back to the main agent.
+  const [pickedAgentId, setPickedAgentId] = useState("main");
+  const selectedAgentId = roster?.some((a) => a.id === pickedAgentId) ? pickedAgentId : "main";
+
   const requestComposerFocus = useCallback(() => setComposerFocusToken((n) => n + 1), []);
+
+  // An agent picked from the sidebar opens a fresh conversation with it. The open thread, if
+  // any, belongs to the main agent, so the URL drops back to the bare chat page.
+  const selectAgent = useCallback(
+    (id: string) => {
+      setPickedAgentId(id);
+      navigateToSession(null);
+      requestComposerFocus();
+    },
+    [navigateToSession, requestComposerFocus]
+  );
 
   const selectSession = useCallback(
     (sessionId: string | null) => {
@@ -252,8 +297,12 @@ export function ChatProvider({
       deleteSession,
       renameSession,
       bumpSession,
+      roster,
+      selectedAgentId,
+      selectAgent,
+      refreshRoster,
     }),
-    [agentId, sessions, activeSessionId, composerFocusToken, requestComposerFocus, loadingSessions, selectSession, startNewChat, onSessionCreated, deleteSession, renameSession, bumpSession]
+    [agentId, sessions, activeSessionId, composerFocusToken, requestComposerFocus, loadingSessions, selectSession, startNewChat, onSessionCreated, deleteSession, renameSession, bumpSession, roster, selectedAgentId, selectAgent, refreshRoster]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

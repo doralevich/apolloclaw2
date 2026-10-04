@@ -328,7 +328,7 @@ function SidebarContent({
           static name label for them, not the switching dropdown). */}
       <div className="mt-4 space-y-2">
         {(hasManyWorkspaces || isPlatformAdmin) && <WorkspaceSwitcher />}
-        <AgentSwitcher />
+        <AgentSwitcher onNavigate={onNavigate} />
       </div>
 
       <nav className="mt-6 flex flex-col gap-1">
