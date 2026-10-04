@@ -28,7 +28,8 @@ export interface AgentTier {
   tagline: string;
   /** Agents included, the main one counted. */
   agents: number;
-  /** How the card says it: "1 agent", "3 agents, 1 owner". */
+  /** How the card says it: "3 agents, 1 owner". Every plan is one owner login (David, Oct 4
+   *  2026: "it should be consistent"); several users are an Enterprise build. */
   agentsText: string;
   /** Monthly price in cents; null for the legacy tier, whose price is whatever they pay now. */
   monthlyCents: number | null;
@@ -62,7 +63,7 @@ export const PLANS: readonly AgentTier[] = [
     label: "Solo",
     tagline: "One agent working for you, built around your business.",
     agents: 1,
-    agentsText: "1 agent",
+    agentsText: "1 agent, 1 owner",
     monthlyCents: PLAN_SKUS.solo.amountCents,
     // $10 of usage a month, managed like the other plans (David, Oct 4 2026: "remove key support
     // for solo, keep it like the others"). The brief had Solo on the customer's own AI key with no
@@ -110,7 +111,7 @@ export const PLANS: readonly AgentTier[] = [
     label: "Executive",
     tagline: "A full bench of agents running your operation.",
     agents: 10,
-    agentsText: "10 agents",
+    agentsText: "10 agents, 1 owner",
     monthlyCents: PLAN_SKUS.executive.amountCents,
     includedCreditCents: 6000,
     addOn: null,
