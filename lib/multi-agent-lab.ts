@@ -41,6 +41,8 @@ export interface LabAnswer {
   status: number;
   answer: string;
   ms: number;
+  /** Which port answered as the gateway and what the probe saw, for the readout. */
+  note?: string;
 }
 
 function isLab(a: { metadata: Record<string, unknown> | null }): boolean {
@@ -130,25 +132,41 @@ export async function askLab(id: string, key: string): Promise<LabAnswer> {
     'const root=process.env.OPENCLAW_STATE_DIR||"/home/node/.openclaw";' +
     'let cfg={};try{cfg=JSON.parse(fs.readFileSync(root+"/openclaw.json","utf8"));}catch(e){}' +
     'let token=cfg.gateway&&cfg.gateway.auth&&typeof cfg.gateway.auth.token==="string"?cfg.gateway.auth.token:"";' +
-    "let port=cfg.gateway&&Number(cfg.gateway.port)||0;" +
+    // Candidate ports, best guess first: the openclaw-gateway process's own port, the config's,
+    // then every port the box listens on. Agent37 runs helpers on several ports (its wrapper,
+    // a dashboard relay, a file browser, a terminal) and the first lab run hit one of those: a
+    // 404 "No route for POST /v1/chat/completions", which is their wording, not the gateway's.
+    "const cands=[];const push=(p)=>{p=Number(p);if(p>0&&!cands.includes(p))cands.push(p);};" +
     'for(const d of fs.readdirSync("/proc")){if(!/^\\d+$/.test(d))continue;try{' +
-    'const cmd=fs.readFileSync("/proc/"+d+"/cmdline","utf8");const env=fs.readFileSync("/proc/"+d+"/environ","utf8").split("\\0");' +
-    'if(/openclaw-gateway/.test(cmd)){const p=env.find(e=>e.startsWith("OPENCLAW_GATEWAY_PORT="));if(p)port=Number(p.split("=")[1])||port;}' +
+    'const cmd=fs.readFileSync("/proc/"+d+"/cmdline","utf8").replace(/\\0/g," ").trim();' +
+    'if(!/(^|\\/|\\s)openclaw-gateway(\\s|$)/.test(cmd))continue;' +
+    'const env=fs.readFileSync("/proc/"+d+"/environ","utf8").split("\\0");' +
+    'const p=env.find(e=>e.startsWith("OPENCLAW_GATEWAY_PORT="));if(p)push(p.split("=")[1]);' +
     'if(!token){const t=env.find(e=>e.startsWith("OPENCLAW_GATEWAY_TOKEN=")||e.startsWith("OPENCLAW_TOKEN="));if(t)token=t.split("=").slice(1).join("=");}' +
     "}catch(e){}}" +
-    "port=port||18789;" +
+    "if(cfg.gateway&&cfg.gateway.port)push(cfg.gateway.port);" +
+    'for(const f of ["/proc/net/tcp","/proc/net/tcp6"]){try{for(const line of fs.readFileSync(f,"utf8").split("\\n").slice(1)){const p=line.trim().split(/\\s+/);if(p[3]==="0A")push(parseInt(p[1].split(":").pop(),16));}}catch(e){}}' +
     // Plain http.request rather than fetch: immune to any proxy a runtime might hang on
     // loopback calls, and the box's gateway is loopback.
-    'const http=require("http");const t0=Date.now();' +
+    'const http=require("http");' +
+    "const call=(port,method,path,body,timeoutMs)=>new Promise((resolve)=>{" +
+    'const req=http.request({host:"127.0.0.1",port:port,path:path,method:method,headers:Object.assign({authorization:"Bearer "+token},body?{"content-type":"application/json","content-length":Buffer.byteLength(body)}:{}),timeout:timeoutMs},(r)=>{' +
+    'let txt="";r.on("data",(c)=>{txt+=c;});r.on("end",()=>resolve({status:r.statusCode,text:txt}));});' +
+    'req.on("timeout",()=>{req.destroy(new Error("timed out after "+timeoutMs+"ms"));});' +
+    'req.on("error",(e)=>resolve({status:0,text:"error: "+(e&&e.message||String(e))}));' +
+    "req.end(body||undefined);});" +
+    "(async()=>{const t0=Date.now();const tried=[];let port=0;" +
+    // The gateway is the port whose /v1/models answers with an OpenAI-style list (200 and a
+    // data array) or at least with the gateway's own auth refusal, never with Agent37's 404.
+    'for(const p of cands){const r=await call(p,"GET","/v1/models",null,8000);let ok=false,gw=false;try{const j=JSON.parse(r.text);ok=r.status===200&&Array.isArray(j.data);gw=ok||((r.status===401||r.status===403)&&!/No route for/.test(r.text));}catch(e){}' +
+    'tried.push(p+":"+r.status);if(ok){port=p;break;}if(gw&&!port){port=p;}}' +
+    'const done=(out)=>{console.log("LAB:"+JSON.stringify(Object.assign(out,{ms:Date.now()-t0,port:port,tried:tried.join(" "),tokenFound:!!token})));};' +
+    'if(!port){done({status:0,answer:"no port on the box answered /v1/models like the gateway (tried "+tried.join(", ")+")"});return;}' +
     'const body=JSON.stringify({model:"openclaw/"+q.agent,user:"apollo-lab-"+q.agent,messages:[{role:"user",content:q.text}]});' +
-    'const done=(out)=>{console.log("LAB:"+JSON.stringify(Object.assign(out,{ms:Date.now()-t0,port:port,tokenFound:!!token})));};' +
-    'const req=http.request({host:"127.0.0.1",port:port,path:"/v1/chat/completions",method:"POST",headers:{"content-type":"application/json","content-length":Buffer.byteLength(body),authorization:"Bearer "+token},timeout:q.timeoutMs},(r)=>{' +
-    'let txt="";r.on("data",(c)=>{txt+=c;});r.on("end",()=>{let ans=txt.slice(0,1200);' +
-    "try{const j=JSON.parse(txt);const c=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;if(typeof c===\"string\")ans=c;else if(j.error)ans=JSON.stringify(j.error).slice(0,600);}catch(e){}" +
-    "done({status:r.statusCode,answer:ans});});});" +
-    'req.on("timeout",()=>{req.destroy(new Error("timed out after "+q.timeoutMs+"ms"));});' +
-    'req.on("error",(e)=>{done({status:0,answer:"error: "+(e&&e.message||String(e))});});' +
-    "req.end(body);";
+    'const r=await call(port,"POST","/v1/chat/completions",body,q.timeoutMs);' +
+    "let ans=r.text.slice(0,1200);" +
+    "try{const j=JSON.parse(r.text);const c=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;if(typeof c===\"string\")ans=c;else if(j.error)ans=JSON.stringify(j.error).slice(0,600);}catch(e){}" +
+    "done({status:r.status,answer:ans});})();";
 
   const cmd =
     'ROOT="${OPENCLAW_STATE_DIR:-/home/node/.openclaw}"; [ -d "$ROOT" ] || { echo NOT_OPENCLAW; exit 0; }; ' +
@@ -170,9 +188,13 @@ export async function askLab(id: string, key: string): Promise<LabAnswer> {
   if (!m) {
     return { agent: q.agent, question: q.text, status: 0, answer: /NOT_OPENCLAW/.test(stdout) ? "This is not an OpenClaw box." : "The box did not answer the exec call.", ms: 0 };
   }
-  const parsed = JSON.parse(m[1]) as { status: number; answer: string; ms: number; port: number; tokenFound: boolean };
-  const answer = parsed.tokenFound ? parsed.answer : `${parsed.answer} (no gateway token found on the box)`;
-  return { agent: q.agent, question: q.text, status: parsed.status, answer, ms: parsed.ms };
+  const parsed = JSON.parse(m[1]) as { status: number; answer: string; ms: number; port: number; tried: string; tokenFound: boolean };
+  const notes = [
+    parsed.port ? `gateway port ${parsed.port}` : "no gateway port",
+    parsed.tried ? `probed ${parsed.tried}` : "",
+    parsed.tokenFound ? "" : "no gateway token found on the box",
+  ].filter(Boolean);
+  return { agent: q.agent, question: q.text, status: parsed.status, answer: parsed.answer, ms: parsed.ms, note: notes.join("; ") };
 }
 
 /** Delete the lab box. Only a box carrying the lab stamp; anything else is refused. */
