@@ -97,7 +97,7 @@ export function AgentsView() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{agents.length > 1 ? "My Agents" : "My Agent"}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">My Agent(s)</h1>
           <p className="text-sm text-muted-foreground">{current.name}</p>
         </div>
         {/* Two different acts, so two different controls.

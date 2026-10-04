@@ -24,7 +24,7 @@ import { HeaderCredit } from "@/components/chat/HeaderCredit";
 // Path prefixes to titles, longest first so /dashboard/settings/agent beats /dashboard/settings.
 const TITLES: Array<[string, string]> = [
   ["/dashboard/settings/account", "My Account"],
-  ["/dashboard/settings/agent", "My Agents"],
+  ["/dashboard/settings/agent", "My Agent(s)"],
   ["/dashboard/settings/plan", "Plan"],
   ["/dashboard/settings/billing", "Credits"],
   ["/dashboard/settings/usage", "Usage"],
