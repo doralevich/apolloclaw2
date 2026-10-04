@@ -5,7 +5,6 @@ import { BuiltForYou } from "@/components/home/BuiltForYou";
 import { Proof } from "@/components/home/Proof";
 import { AgentCards } from "@/components/home/AgentCards";
 import { HomeFaq } from "@/components/home/HomeFaq";
-import { LatestPosts } from "@/components/home/LatestPosts";
 import { HOME_FAQS } from "@/config/faqs";
 import { FinalCta } from "@/components/home/FinalCta";
 import { OG_IMAGES } from "@/lib/seo";
@@ -41,13 +40,10 @@ const faqJsonLd = {
   })),
 };
 
-// The Latest Insights section reads the three newest posts from Sanity; refresh hourly like /blog.
-export const revalidate = 3600;
-
 // Section order per David's spec (Sept 27 2026), with his later calls: Hero, Three Steps, Built
-// for You, Specialist Agents (moved up one), Proven Results, Latest Insights (Oct 3 2026), FAQ,
-// Final CTA. The Founder Note came off. Backgrounds alternate: navy, cream, white, cream, navy,
-// cream, white, cream. The sitewide PreFooter is skipped here (RootShell) because FinalCta
+// for You, Specialist Agents (moved up one), Proven Results, FAQ, Final CTA.
+// The Founder Note came off, and Latest Insights (added Oct 3 2026) came off again Oct 4.
+// Backgrounds: navy, cream, white, cream, navy, white, cream. The sitewide PreFooter is skipped here (RootShell) because FinalCta
 // closes the page.
 export default function HomePage() {
   return (
@@ -58,7 +54,6 @@ export default function HomePage() {
       <BuiltForYou />
       <AgentCards />
       <Proof />
-      <LatestPosts />
       <HomeFaq />
       <FinalCta />
     </>

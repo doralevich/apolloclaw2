@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PERSONAL_INJURY_FAQS, faqEntities } from "@/config/faqs";
 import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
@@ -38,12 +39,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/industries/personal-injury-law#faq",
-      mainEntity: [
-        { "@type": "Question", name: "What case management systems does the agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Filevine, CASEpeer, Litify, Clio, MyCase, and most major personal injury practice platforms. Firms running on Outlook and shared drives work too - every engagement is scoped individually." } },
-        { "@type": "Question", name: "Does the AI give legal advice to potential clients?", acceptedAnswer: { "@type": "Answer", text: "No. The agent is an intake specialist and case companion, not a lawyer. It collects the facts of the injury, screens against your case criteria, schedules the consultation, and keeps clients informed - attorneys make every legal judgment." } },
-        { "@type": "Question", name: "How fast does it respond to a new injury inquiry?", acceptedAnswer: { "@type": "Answer", text: "Within minutes, at any hour. Injured people call whoever answers first - the agent responds immediately, collects the incident details, and gets a consultation on the calendar before a competing firm picks up the phone." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing." } },
-      ],
+      mainEntity: faqEntities(PERSONAL_INJURY_FAQS),
     },
   ],
 };

@@ -3,7 +3,7 @@ import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
-import { INSURANCE_FAQS } from "@/config/faqs";
+import { INSURANCE_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo[Claw]" },
@@ -38,13 +38,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/industries/insurance#faq",
-      mainEntity: [
-        { "@type": "Question", name: "What agency management systems does the Insurance Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Applied Epic, Hawksoft, AMS360, EZLynx, and most major AMS platforms. We also work with AgencyZoom and other sales CRMs." } },
-        { "@type": "Question", name: "How does it handle renewal outreach?", acceptedAnswer: { "@type": "Answer", text: "The agent identifies policies approaching renewal, initiates outreach at your configured lead time, and runs a follow-up sequence until the client responds or the renewal closes." } },
-        { "@type": "Question", name: "Will it replace my service team?", acceptedAnswer: { "@type": "Answer", text: "No. It handles the first-touch communication, follow-up sequences, and status updates. Your team handles conversations that require judgment." } },
-        { "@type": "Question", name: "Is client data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We connect using least-privilege API credentials and your data does not pass through servers we do not control." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most agencies are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
-      ],
+      mainEntity: faqEntities(INSURANCE_FAQS),
     },
   ],
 };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
-import { CFO_AGENT_FAQS } from "@/config/faqs";
+import { CFO_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "CFO AI Agent | Financial Intelligence for Finance Leaders | Apollo[Claw]" },
@@ -38,13 +38,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/ai-agents/cfo#faq",
-      mainEntity: [
-        { "@type": "Question", name: "What financial systems does the CFO Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to QuickBooks, NetSuite, Sage, Xero, and most major ERP platforms. We also work with Excel and Google Sheets-based reporting environments." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
-        { "@type": "Question", name: "Will it replace my finance team?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the production work, report generation, data pulls, reconciliation tracking, so your team can focus on analysis and decisions." } },
-        { "@type": "Question", name: "Is our financial data secure?", acceptedAnswer: { "@type": "Answer", text: "Yes. We connect using read-only API credentials wherever possible and use least-privilege access throughout. Your data does not pass through servers we do not control." } },
-        { "@type": "Question", name: "Can it handle multi-entity reporting?", acceptedAnswer: { "@type": "Answer", text: "Yes. Multi-entity consolidation is one of the most common use cases. We configure the agent to handle subsidiaries, intercompany eliminations, and consolidated reporting." } },
-      ],
+      mainEntity: faqEntities(CFO_AGENT_FAQS),
     },
   ],
 };

@@ -3,7 +3,7 @@ import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
-import { REAL_ESTATE_FAQS } from "@/config/faqs";
+import { REAL_ESTATE_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Real Estate AI Agent | AI for Realtors & Property Managers | Apollo[Claw]" },
@@ -38,13 +38,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/industries/real-estate#faq",
-      mainEntity: [
-        { "@type": "Question", name: "What CRM systems does the Real Estate Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Follow Up Boss, kvCORE, BoomTown, HubSpot, Salesforce, and most major real estate CRMs." } },
-        { "@type": "Question", name: "How fast does it follow up with a lead?", acceptedAnswer: { "@type": "Answer", text: "Within two minutes of a lead coming in, regardless of time of day. Speed to lead is one of the highest-leverage improvements most agents see immediately." } },
-        { "@type": "Question", name: "Will it sound like me or like a robot?", acceptedAnswer: { "@type": "Answer", text: "We train the agent on your communication style during onboarding. Most clients tell us their prospects can not tell the difference." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
-        { "@type": "Question", name: "Do I need a technical team to run this?", acceptedAnswer: { "@type": "Answer", text: "No. We handle all technical setup. You interact with your agent through the same tools you already use every day." } },
-      ],
+      mainEntity: faqEntities(REAL_ESTATE_FAQS),
     },
   ],
 };
