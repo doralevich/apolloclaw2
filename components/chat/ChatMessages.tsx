@@ -16,10 +16,19 @@ import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
 // spend all their time. Every reply came from a generic robot outline.
 //
 // The fallback rules live in AgentFace, which the Home greeting draws from too.
-function AgentBadge() {
+//
+// On a box with more than one agent the reply can come from an agent other than the active one
+// (an Atlas tab beside the main Timmy tab), so the face and name can be passed in. Without them
+// it falls back to the active agent, which is every single-agent chat.
+function AgentBadge({ name, avatarUrl }: { name?: string | null; avatarUrl?: string | null }) {
   const { active } = useActiveAgent();
+  const useActive = avatarUrl === undefined && name === undefined;
   return (
-    <AgentFace src={active?.avatar_url} name={active?.name} className="mt-0.5 h-7 w-7 text-xs" />
+    <AgentFace
+      src={useActive ? active?.avatar_url : avatarUrl}
+      name={useActive ? active?.name : name}
+      className="mt-0.5 h-7 w-7 text-xs"
+    />
   );
 }
 
@@ -131,11 +140,18 @@ function AgentSteps({ steps, tools, working }: { steps?: string; tools: ToolEven
 export function ChatMessages({
   messages,
   isStreaming,
+  agentName,
+  agentAvatarUrl,
 }: {
   messages: ChatMessage[];
   isStreaming: boolean;
-  // User's first initial for their message marker.
+  // The agent whose face sits beside each reply. Omit both to use the active agent, which is
+  // every single-agent chat; a per-agent tab passes the agent it is talking to.
+  agentName?: string | null;
+  agentAvatarUrl?: string | null;
 }) {
+  // undefined for both means "use the active agent"; a tab always passes at least a name.
+  const badge = agentName === undefined && agentAvatarUrl === undefined ? {} : { name: agentName, avatarUrl: agentAvatarUrl };
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 px-5 py-6">
       {messages.map((m, i) => {
@@ -168,7 +184,7 @@ export function ChatMessages({
 
         return (
           <div key={m.id} className="flex items-start justify-start gap-2.5">
-            <AgentBadge />
+            <AgentBadge {...badge} />
             <div className="min-w-0 flex-1">
               {/* A quiet "Working · timer" heartbeat while the agent runs (no reasoning shown, it's
                   noise); collapses to an expandable "Steps" line once the reply lands. */}

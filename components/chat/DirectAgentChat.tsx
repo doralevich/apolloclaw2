@@ -137,7 +137,7 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: P
             </div>
           </div>
         ) : (
-          <ChatMessages messages={messages} isStreaming={streaming} />
+          <ChatMessages messages={messages} isStreaming={streaming} agentName={agentName} agentAvatarUrl={avatarUrl ?? null} />
         )}
       </div>
 
