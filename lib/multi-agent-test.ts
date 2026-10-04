@@ -36,8 +36,30 @@ export const SECOND_AGENT = {
   id: "atlas",
   name: "Atlas",
   role: "CFO",
+  persona: "You are the finance specialist on a small team of agents. Answer finance questions directly and briefly.",
   fact: "Cash on hand is $412,000 as of this morning.",
 };
+
+export interface AgentSpec {
+  id: string;
+  name: string;
+  role: string;
+  /** A few sentences on how the agent should act. Loaded into its SOUL.md. */
+  persona: string;
+  /** A planted fact, test-only. Real agents created from intake have none. */
+  fact?: string;
+}
+
+/** An OpenClaw agent id from a display name: lowercase, letters/digits/hyphens, never "main". */
+export function agentIdFromName(name: string): string {
+  const id = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 32)
+    .replace(/-+$/g, "");
+  return id && id !== "main" ? id : "";
+}
 
 export interface SecondAgentVerify {
   /** The config file the box uses. */
@@ -123,7 +145,7 @@ const VERIFY_SH =
   "memorySearch:c.memory&&c.memory.search?{enabled:c.memory.search.enabled!==false,provider:c.memory.search.provider||null,extraPaths:c.memory.search.extraPaths||null}:{enabled:true,provider:null,extraPaths:null}," +
   'sharedBrain:fs.existsSync(root+"/shared/COMPANY.md"),' +
   // Whether the second agent loaded the company brain as context (workspace-<id>/USER.md).
-  'secondBrain:fs.existsSync(root+"/workspace-atlas/USER.md")};' +
+  'secondBrain:(function(){var e=c.agents&&c.agents.entries?Object.keys(c.agents.entries).filter(function(k){return k!=="main";}):[];return e.length>0&&e.every(function(id){return fs.existsSync(root+"/workspace-"+id+"/USER.md");});})()};' +
   'console.log("VERIFY:"+JSON.stringify(out));\'; ' +
   'echo "CLI_START"; echo "openclaw version: $(openclaw --version 2>&1 | head -n 1)"; openclaw agents list --bindings 2>&1 || echo "(openclaw CLI did not run; the gateway may spell these keys differently on this build)"; ' +
   // The Agent37 image runs the gateway on a port of its own (28789 on David's box) behind its
@@ -221,14 +243,14 @@ export async function setupSecondAgent(
     botToken?: string;
     telegramUser?: string;
     mainBotToken?: string;
-    /** Switch on the gateway's OpenAI-compatible chat endpoint, which takes the agent as part
-     *  of the model name ("openclaw/atlas"). The way to reach one agent of several while
-     *  Agent37's chat path names none. */
-    httpChat?: boolean;
+    /** The agent to create, from intake (name, role, persona). When omitted, the Atlas test
+     *  agent is used, which is what the two-agent lab and the original proof run. */
+    agent?: AgentSpec;
   }
 ): Promise<SecondAgentSetupResult> {
+  const second = input.agent ?? SECOND_AGENT;
   const payload = {
-    second: SECOND_AGENT,
+    second,
     botB: input.botToken?.trim() || "",
     // Optional: a native Telegram bot for the FIRST agent too. The app's own chat cannot name
     // an agent (Agent37 sends an unprefixed session key, see the ownership note below), so on
@@ -236,7 +258,6 @@ export async function setupSecondAgent(
     // that still works, and the agent-to-agent test can run through it.
     botA: input.mainBotToken?.trim() || "",
     telegramUser: input.telegramUser?.trim() || "",
-    httpChat: Boolean(input.httpChat),
   };
   const b64 = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
 
@@ -322,7 +343,7 @@ export async function setupSecondAgent(
     // The second agent's persona and the planted fact.
     "fs.mkdirSync(secondWs,{recursive:true});" +
     'fs.writeFileSync(secondWs+"/IDENTITY.md","# Identity\\n\\nYour name is "+o.second.name+". You are the "+o.second.role+" agent.\\n");' +
-    'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\nYou are the finance specialist on a small team of agents. Answer finance questions directly and briefly.\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n");' +
+    'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\n"+(o.second.persona||("You are the "+o.second.role+" on a small team of agents. Answer in your area directly and briefly."))+(o.second.fact?"\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n":"\\n"));' +
     'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n\\nYour USER.md holds the shared company brain: who the company is and who the owner is, the same facts every agent here shares. Treat it as established fact and use it directly; you do not need to search for it.\\n");' +
     // The shared company brain, seeded once. Start it from what the main agent already records
     // about the owner (USER.md) when that file exists, so a second agent knows the company from
@@ -343,7 +364,7 @@ export async function setupSecondAgent(
     'try{fs.writeFileSync(secondWs+"/USER.md",fs.readFileSync(companyFile,"utf8"));}catch(e){}' +
     // The first agent needs to know the second one exists and how to reach it.
     "fs.mkdirSync(mainWs,{recursive:true});" +
-    'const note="\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n- "+o.second.name+" (agent id `"+o.second.id+"`) is the "+o.second.role+" agent. For any finance question, ask "+o.second.name+" with the sessions_send tool (agent id `"+o.second.id+"`), wait for the reply, and relay the answer.\\n<!-- apollo:multi-agent-test:end -->\\n";' +
+    'const note="\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n- "+o.second.name+" (agent id `"+o.second.id+"`) is the "+o.second.role+" agent. For anything in its area, ask "+o.second.name+" with the sessions_send tool (agent id `"+o.second.id+"`), wait for the reply, and relay the answer.\\n<!-- apollo:multi-agent-test:end -->\\n";' +
     'const af=mainWs+"/AGENTS.md";' +
     'let cur=fs.existsSync(af)?fs.readFileSync(af,"utf8"):"";' +
     `cur=cur.replace(${NOTE_RE},"");` +
@@ -387,8 +408,9 @@ export async function revertSecondAgent(agentId: string): Promise<SecondAgentRev
     GUARD +
     'BAK="$CFG.pre-multiagent"; ' +
     '[ -f "$BAK" ] || { echo "NO_BACKUP:$BAK"; exit 0; }; ' +
+    // Remove every non-main agent's workspace, read from the live config before it is restored.
+    'CFG="$CFG" ROOT="$ROOT" node -e \'const fs=require("fs");try{const c=JSON.parse(fs.readFileSync(process.env.CFG,"utf8"));const e=c.agents&&c.agents.entries?Object.keys(c.agents.entries):[];for(const id of e){if(id==="main")continue;try{fs.rmSync(process.env.ROOT+"/workspace-"+id,{recursive:true,force:true});}catch(x){}}}catch(x){}\'; ' +
     'cp "$BAK" "$CFG" && rm -f "$BAK" && echo "RESTORED:$CFG"; ' +
-    `rm -rf "$ROOT/workspace-${SECOND_AGENT.id}"; ` +
     'ROOT="$ROOT" node -e \'const fs=require("fs");const f=process.env.ROOT+"/workspace/AGENTS.md";' +
     `if(fs.existsSync(f)){let s=fs.readFileSync(f,"utf8");s=s.replace(${NOTE_RE},"");fs.writeFileSync(f,s);console.log("NOTE_REMOVED");}'`;
 
