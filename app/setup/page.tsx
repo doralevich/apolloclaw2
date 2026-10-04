@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { suggestBotUsername } from "@/lib/telegram-username";
 const R = "#D72B2B";
 const BG = "#FAFAF7";
@@ -106,9 +106,9 @@ function Disclosure({ title, children }: { title: string; children: React.ReactN
 function Step({ children }: { children: React.ReactNode }) {
   return <li style={{ fontSize: 12, color: TXM, lineHeight: 1.7 }}>{children}</li>;
 }
-// One value the client copies into Telegram, with a Copy button: /newbot, then the username.
-// The same pair the dashboard's channel setup offers (components/channels/pieces.tsx), drawn in
-// this page's own styling.
+// A value the client copies into Telegram, with a Copy button: /newbot, then the username. The
+// same pair the dashboard's channel setup offers (components/channels/pieces.tsx), drawn in this
+// page's own styling.
 function CopyRow({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
@@ -296,6 +296,10 @@ ${name}`;
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Submission failed.");
       setClientEmail(email);
+      // Step 2 opens with a bot username ready, apollo_agent_<name>_<nnn>_bot, already in the
+      // username box (lib/telegram-username.ts). The client sends it to BotFather, and edits the
+      // box only if BotFather asks for another. One they typed themselves is kept.
+      setS2(p => ({ ...p, telegram_bot_username: p.telegram_bot_username || `@${suggestBotUsername(assistant_name, email.trim().toLowerCase())}` }));
       window.scrollTo({ top: 0, behavior: "smooth" });
       setStep(2);
     } catch {
@@ -304,17 +308,13 @@ ${name}`;
       setLoading(false);
     }
   }
-  // The bot username we suggest, from the assistant's name, seeded by the email so it is the same
-  // every render (lib/telegram-username.ts). Used as the username unless they enter another.
-  const botSuggestion = useMemo(
-    () => suggestBotUsername(s1.assistant_name, (clientEmail || s1.email).toLowerCase()),
-    [s1.assistant_name, s1.email, clientEmail]
-  );
   async function submitStep2() {
     setError("");
     const { anthropic_api_key, telegram_bot_token } = s2;
+    // Prefilled with the suggestion at step 1; required either way. A missing leading @ is added
+    // rather than refused.
     const typed = s2.telegram_bot_username.trim().replace(/^@/, "");
-    const telegram_bot_username = `@${typed || botSuggestion}`;
+    const telegram_bot_username = typed ? `@${typed}` : "";
     // The Anthropic key is optional (David, Sept 28 2026); it is checked only when one is given.
     if (!telegram_bot_token || !telegram_bot_username) {
       setError("Please complete all required fields before submitting.");
@@ -551,14 +551,16 @@ ${name}`;
                   </span>
                 </div>
                 <CopyRow label="Send it this" value="/newbot" />
-                <CopyRow label="Then this username" value={botSuggestion} />
+                {s2.telegram_bot_username.trim() && (
+                  <CopyRow label="Then this username" value={s2.telegram_bot_username.trim().replace(/^@/, "")} />
+                )}
               </div>
               <Stack gap={16}>
                 <FF label="Telegram Bot Token" hint="BotFather sends it after you choose the username. It looks like 123456789:ABCdef..." required>
                   <TInput value={s2.telegram_bot_token} onChange={v => updateS2("telegram_bot_token", v)} placeholder="Paste your bot token" />
                 </FF>
-                <FF label="Bot Username" hint={`Leave blank if you used @${botSuggestion}. If BotFather asked for a different one, enter it here.`}>
-                  <TInput value={s2.telegram_bot_username} onChange={v => updateS2("telegram_bot_username", v)} placeholder={`@${botSuggestion}`} />
+                <FF label="Telegram Bot Username" hint="Filled in for you. Change it only if BotFather asked you for a different one." required>
+                  <TInput value={s2.telegram_bot_username} onChange={v => updateS2("telegram_bot_username", v)} placeholder="@YourBotName_bot" />
                 </FF>
               </Stack>
             </Card>
