@@ -59,8 +59,6 @@ export const HOSTING_PLAN = {
 // as they are: the customers on $249 (and the four on the retired $189) are subscribed to those
 // prices, and the seed creates and updates, it never deletes. Nothing here reprices them.
 //
-// Solo is in Stripe but not on sale yet: it runs on the customer's own AI account, which the
-// product cannot set up until own-key support is built (config/agent-plans.ts, `onSale`).
 export const PLAN_SKUS = {
   solo: {
     catalogKey: "apollo_plan_solo",

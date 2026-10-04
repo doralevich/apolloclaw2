@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { SubAgentDialog } from "@/components/SubAgentDialog";
-import { AGENT_UPGRADE_HREF, agentsLabel, dollars, type AgentPlanUsage } from "@/config/agent-plans";
+import { AGENT_UPGRADE_HREF, PLANS_ON_SALE, agentsLabel, dollars, type AgentPlanUsage } from "@/config/agent-plans";
 
 // The workspace's agent plan on the customer's side: how many agents it includes, how many are in
 // use, and the one button that follows from those two numbers. "Add agent" while there is room,
@@ -89,6 +89,7 @@ export function AddAgentOrUpgrade({
   // Full, and the plan sells one more: still "Add agent", with the monthly price on it, and the
   // dialog states the charge before anything is billed.
   const charge = !usage.canAdd && usage.addOnCents !== null ? usage.addOnCents : null;
+  const nextPlan = PLANS_ON_SALE.find((p) => p.agents > usage.tier.agents);
   const chargeNote =
     charge !== null
       ? `Adds ${dollars(charge)} a month to your ${usage.tier.label} plan, charged now for the rest of this month.`
@@ -126,10 +127,11 @@ export function AddAgentOrUpgrade({
           {charge !== null ? `Add agent (+${dollars(charge)}/mo)` : "Add agent"}
         </Button>
       )}
-      {/* Team at 6 agents: Executive holds 10, so say so where the next one is added. */}
-      {usage.suggestUpgrade && variant === "button" && (
+      {/* At the size where the next plan up is the better buy (Solo at 3, Team at 6), say so
+          where the next agent is added. */}
+      {usage.suggestUpgrade && nextPlan && variant === "button" && (
         <Link href={AGENT_UPGRADE_HREF} className="text-xs text-muted-foreground underline-offset-2 hover:underline">
-          Executive includes 10 agents
+          {nextPlan.label} includes {agentsLabel(nextPlan.agents)}
         </Link>
       )}
       {open && (

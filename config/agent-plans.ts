@@ -50,7 +50,7 @@ export interface AgentTier {
   features: readonly string[];
   /** The Stripe subscription this plan sells; null for legacy. */
   sku: PlanSkuId | null;
-  /** On the pricing page and in checkout. Solo waits for own-key support. */
+  /** On the pricing page and in checkout. */
   onSale: boolean;
   /** The card the page highlights. */
   featured?: boolean;
@@ -60,23 +60,25 @@ export const PLANS: readonly AgentTier[] = [
   {
     id: "solo",
     label: "Solo",
-    tagline: "One agent working for you, on your own AI account.",
+    tagline: "One agent working for you, built around your business.",
     agents: 1,
     agentsText: "1 agent",
     monthlyCents: PLAN_SKUS.solo.amountCents,
-    includedCreditCents: 0,
+    // $10 of usage a month, managed like the other plans (David, Oct 4 2026: "remove key support
+    // for solo, keep it like the others"). The brief had Solo on the customer's own AI key with no
+    // credit; it now runs on managed usage instead.
+    includedCreditCents: 1000,
+    // Extra agents share the plan's $10. By the third agent ($97) Team is the better buy.
     addOn: { sku: "solo_addon", monthlyCents: PLAN_SKUS.solo_addon.amountCents, creditCents: 0 },
     maxAgents: null,
-    upgradeAt: null,
+    upgradeAt: 3,
     channels: ["telegram"],
     channelsText: "Telegram",
     supportText: "Email support",
-    usageText: "Uses your own AI account",
+    usageText: "AI usage included",
     features: ["An agent built around your business", "Hosting and updates included", "Connects to your apps"],
     sku: "solo",
-    // Solo runs on the customer's own AI key, which the product cannot set up yet. In Stripe,
-    // off the page and out of checkout until it can (David, Oct 4 2026).
-    onSale: false,
+    onSale: true,
   },
   {
     id: "team",
@@ -156,12 +158,12 @@ export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale)
 /** The entry plan on sale, for "plans start at" lines across the site. */
 const ENTRY_PLAN = PLANS_ON_SALE.reduce((a, b) => ((b.monthlyCents ?? Infinity) < (a.monthlyCents ?? Infinity) ? b : a));
 
-/** "$99": the lowest monthly price on sale. */
+/** "$49": the lowest monthly price on sale. */
 export const STARTING_PRICE = `$${((ENTRY_PLAN.monthlyCents ?? 0) / 100).toLocaleString("en-US")}`;
 
 /** The one answer to "how much does it cost" anywhere outside /pricing: the FAQs, and the
  *  industry and agent pages. Built from the plans so it can never quote a retired price. */
-export const PRICING_FAQ_ANSWER = `Plans start at ${STARTING_PRICE} a month for ${ENTRY_PLAN.agents} agents, with no setup fee and no minimum term, and every agent is set up around your business. Every plan is on our pricing page. For a custom build, book a call.`;
+export const PRICING_FAQ_ANSWER = `Plans start at ${STARTING_PRICE} a month for ${agentsLabel(ENTRY_PLAN.agents)}, with no setup fee and no minimum term, and every agent is set up around your business. Every plan is on our pricing page. For a custom build, book a call.`;
 
 /** Every tier Super Admin can put a workspace on: the plans, and back to legacy. */
 export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS];

@@ -9,8 +9,8 @@ import { OG_IMAGES } from "@/lib/seo";
 //
 // Layout: equal plan cards side by side with Team highlighted, then one wide Enterprise strip with
 // "Contact us", then what every plan includes, how it works, a short comparison, FAQs, and a
-// closing consultation button. Solo is priced but not on sale until own-key support exists, so the
-// cards are whatever PLANS_ON_SALE holds (Team and Executive today) and the grid follows.
+// closing consultation button. The cards are whatever PLANS_ON_SALE holds (Solo, Team and
+// Executive) and the grid follows.
 //
 // KEEP IT SIMPLE. No API keys, tokens, credits, caps, markup or "bring your own key" anywhere on
 // this page: buyers found them confusing. Those rules live in the product and the checkout terms,
