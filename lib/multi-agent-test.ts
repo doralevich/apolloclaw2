@@ -187,17 +187,28 @@ function parseVerify(stdout: string): SecondAgentVerify {
  *  tester's numeric Telegram id, the only account allowed to DM the bot. */
 export async function setupSecondAgent(
   agentId: string,
-  input: { botToken: string; telegramUser: string; mainBotToken?: string }
+  input: {
+    /** The second agent's Telegram bot. Leave empty for a box that is driven over the gateway's
+     *  own chat endpoint instead (the lab), and no Telegram config is touched. */
+    botToken?: string;
+    telegramUser?: string;
+    mainBotToken?: string;
+    /** Switch on the gateway's OpenAI-compatible chat endpoint, which takes the agent as part
+     *  of the model name ("openclaw/atlas"). The way to reach one agent of several while
+     *  Agent37's chat path names none. */
+    httpChat?: boolean;
+  }
 ): Promise<SecondAgentSetupResult> {
   const payload = {
     second: SECOND_AGENT,
-    botB: input.botToken,
+    botB: input.botToken?.trim() || "",
     // Optional: a native Telegram bot for the FIRST agent too. The app's own chat cannot name
     // an agent (Agent37 sends an unprefixed session key, see the ownership note below), so on
     // a gateway release that refuses to guess, Telegram is the one door into the first agent
     // that still works, and the agent-to-agent test can run through it.
     botA: input.mainBotToken?.trim() || "",
-    telegramUser: input.telegramUser,
+    telegramUser: input.telegramUser?.trim() || "",
+    httpChat: Boolean(input.httpChat),
   };
   const b64 = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
 
@@ -237,6 +248,8 @@ export async function setupSecondAgent(
     'set(cfg,["agents","entries",o.second.id,"workspace"],secondWs);' +
     // One bot for the second agent, DMs only from the tester. The first agent keeps whatever
     // Telegram wiring the app already gave it.
+    // Telegram, only when a bot was given. The lab drives the box over HTTP and skips this.
+    "if(o.botB){" +
     'set(cfg,["channels","telegram","enabled"],true);' +
     'const acct=(tok)=>({botToken:tok,dmPolicy:"allowlist",allowFrom:[o.telegramUser]});' +
     'set(cfg,["channels","telegram","accounts",o.second.id],acct(o.botB));' +
@@ -253,6 +266,10 @@ export async function setupSecondAgent(
     'if(o.botA)add.push({agentId:"main",match:{channel:"telegram",accountId:"main"}});' +
     'add.push({agentId:"main",match:{channel:"telegram",accountId:"*"}});' +
     "cfg.bindings=keep.concat(add);" +
+    "}" +
+    // The gateway's own chat endpoint, off by default. Serves on the gateway port, takes the
+    // agent as "openclaw/<id>" in the model field, and authenticates with the gateway token.
+    'if(o.httpChat){set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);}' +
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +
