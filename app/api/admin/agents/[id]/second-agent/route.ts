@@ -5,11 +5,14 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// /api/admin/agents/{id}/second-agent - the two-agents-on-one-box test, run from the Fleet page.
+// /api/admin/agents/{id}/second-agent - a second agent on one box, run from the Fleet page.
 //
-//   POST   { botToken, telegramUser }  add Atlas (second agent + its bot + agent-to-agent), restart
-//   GET                                read back what the box has, including the gateway's own list
-//   DELETE                             restore the pre-test config, remove Atlas, restart
+//   POST   { botToken?, telegramUser?, mainBotToken? }
+//                add Atlas (second agent, agent-to-agent, the gateway's chat endpoint for the
+//                per-agent chat tabs) and restart. Telegram is optional: with a bot token and
+//                a user id, Atlas gets a bot of its own as well.
+//   GET          read back what the box has, including the gateway's own list
+//   DELETE       restore the pre-test config, remove Atlas, restart
 //
 // The on-box steps retry for up to ~90s while a sleeping box wakes, so match the other exec-heavy
 // admin routes rather than the platform default timeout.
@@ -28,8 +31,11 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // A BotFather token is "<numeric bot id>:<35-ish chars>". Checked here so a pasted username or
   // a trailing word never lands in a config file that then has to be reverted.
   const TOKEN = /^\d+:[A-Za-z0-9_-]{20,}$/;
-  if (!TOKEN.test(botToken)) {
+  if (botToken && !TOKEN.test(botToken)) {
     throw new ApiError(400, "invalid_request", "That does not look like a bot token from @BotFather (digits, a colon, then letters).");
+  }
+  if (mainBotToken && !botToken) {
+    throw new ApiError(400, "invalid_request", "A bot for the first agent needs a bot for Atlas as well.");
   }
   if (mainBotToken && !TOKEN.test(mainBotToken)) {
     throw new ApiError(400, "invalid_request", "The first agent's bot token does not look like one from @BotFather.");
@@ -37,17 +43,23 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   if (mainBotToken && mainBotToken === botToken) {
     throw new ApiError(400, "invalid_request", "The two agents need two different bots; Telegram lets one bot talk to one listener.");
   }
-  if (!/^\d+$/.test(telegramUser)) {
+  if (botToken && !/^\d+$/.test(telegramUser)) {
     throw new ApiError(400, "invalid_request", "The Telegram user id is a number (ask @userinfobot or @getmyid_bot).");
   }
 
-  const result = await setupSecondAgent(id, { botToken, telegramUser, mainBotToken: mainBotToken || undefined });
+  const result = await setupSecondAgent(id, {
+    botToken: botToken || undefined,
+    telegramUser: telegramUser || undefined,
+    mainBotToken: mainBotToken || undefined,
+    // The per-agent chat tabs reach each agent over the gateway's own chat endpoint.
+    httpChat: true,
+  });
   // The token stays out of the audit log; the user id is fine, it is what the allow list holds.
   await logAudit({
     actorEmail: user.email,
     action: "agent.second_agent_added",
     target: id,
-    metadata: { ok: result.ok, backedUp: result.backedUp, restarted: result.restarted, telegramUser, mainBot: Boolean(mainBotToken), note: result.note ?? null },
+    metadata: { ok: result.ok, backedUp: result.backedUp, restarted: result.restarted, telegram: Boolean(botToken), telegramUser: telegramUser || null, mainBot: Boolean(mainBotToken), note: result.note ?? null },
     request,
   });
   return json(result);

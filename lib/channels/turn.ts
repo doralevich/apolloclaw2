@@ -1,5 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { askOnBox, gatewayFetch } from "@/lib/gateway-chat";
 import { DEFAULT_CHAT_MODEL_ID, FALLBACK_CHAT_MODEL_ID, looksLikeModelRejection } from "@/config/chat-models";
 
 // Running one turn on the instance, shared by every channel receiver.
@@ -135,6 +136,15 @@ export async function runTurn(
     return { res, text };
   };
 
+  // A session the direct line opened (see runTurnDirect) is not one Agent37 knows: continue it
+  // on the direct line, and only if that fails (the box is back to one agent and its chat
+  // endpoint is off) start over on Agent37's path with a fresh session.
+  if (sessionId?.startsWith("direct:")) {
+    const direct = await runTurnDirect(agentId, input, sessionId);
+    if (direct.status === "completed") return direct;
+    sessionId = null;
+  }
+
   let { res, text } = await attempt(sessionId);
 
   // A reused channel session can WEDGE. If a turn is cut off with a response still running -
@@ -158,10 +168,52 @@ export async function runTurn(
     }
   }
 
+  // A box with more than one agent: Agent37's chat path names no agent and the gateway refuses
+  // to guess ("session key ... has no explicit owner"). The direct line to the gateway names
+  // the main agent and keeps its own session under `user`, so the channel carries on.
+  if (noOwner(text)) return runTurnDirect(agentId, input, sessionId);
+
   if (!res.ok) throw new Error(`agent responded ${res.status}: ${text.slice(0, 200)}`);
   // A non-streaming turn arrives prefixed with the gateway's keep-alive whitespace. Leading
   // whitespace is valid JSON, so this parses unchanged.
   return JSON.parse(text) as TurnResult;
+}
+
+// The gateway's refusal on a multi-agent box, whether it arrives as a 400 or inside a failed
+// 200 turn: "Multiple agents are configured, but session key ... has no explicit owner."
+function noOwner(text: string): boolean {
+  return /no explicit owner/i.test(text) && /agents? (are|is) configured/i.test(text);
+}
+
+/**
+ * One channel turn over the direct line (lib/gateway-chat.ts): the gateway's own chat endpoint,
+ * reached through the edge and streamed whole, or run inside the box when the edge is closed.
+ * The main agent answers, as it did before the box had a second one. The session id handed back
+ * is the `user` the gateway keyed the conversation on, so the receiver's idle and age resets
+ * work unchanged.
+ */
+async function runTurnDirect(agentId: string, input: string, sessionId: string | null): Promise<TurnResult> {
+  const user = sessionId && sessionId.startsWith("direct:") ? sessionId : `direct:${agentId}:${Date.now().toString(36)}`;
+  try {
+    const res = await gatewayFetch(agentId, "/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "openclaw/main", user, messages: [{ role: "user", content: input }] }),
+      signal: AbortSignal.timeout(240_000),
+    });
+    const text = await res.text();
+    if (!res.ok) return { session_id: user, status: "failed", error: { message: `gateway responded ${res.status}: ${text.slice(0, 200)}` } };
+    const j = JSON.parse(text) as { choices?: { message?: { content?: string } }[]; error?: { message?: string } };
+    const content = j.choices?.[0]?.message?.content;
+    if (typeof content === "string" && content.trim()) return { session_id: user, status: "completed", output_text: content };
+    return { session_id: user, status: "failed", error: { message: j.error?.message ?? "no answer text" } };
+  } catch (e) {
+    if ((e as { code?: string }).code !== "no_edge_route") throw e;
+  }
+  const boxed = await askOnBox(agentId, { agent: "main", text: input, user, timeoutMs: 240_000 });
+  if (!boxed) return { session_id: user, status: "failed", error: { message: "the instance did not answer" } };
+  if (boxed.status !== 200) return { session_id: user, status: "failed", error: { message: boxed.answer.slice(0, 200) } };
+  return { session_id: user, status: "completed", output_text: boxed.answer };
 }
 
 /**
