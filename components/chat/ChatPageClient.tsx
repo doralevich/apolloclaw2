@@ -7,9 +7,18 @@ import { AlertTriangle, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ChatView } from "./ChatView";
+import { AgentTabs, useInstanceRoster } from "./AgentTabs";
+import { DirectAgentChat } from "./DirectAgentChat";
 
 export function ChatPageClient() {
   const { active, loading, error, refresh } = useActiveAgent();
+
+  // Which agent on the instance the conversation is with. "main" is the one the app has
+  // always known; the others come from the box's roster. Only shown as tabs when there is
+  // more than one. Reset when the active instance changes.
+  const [selectedAgent, setSelectedAgent] = useState("main");
+  const roster = useInstanceRoster(active?.agent37_id ?? "");
+  const multi = (roster?.length ?? 0) > 1;
 
   // A question sent here from the Guide or Start Here (?q=).
   //
@@ -122,12 +131,38 @@ export function ChatPageClient() {
             </span>
           </div>
         )}
-        <ChatView
-          agentId={active.agent37_id}
-          agentName={active.name}
-          agentAvatarUrl={active.avatar_url}
-          prefill={prefill}
-        />
+        {/* More than one agent on the box: a tab per agent, every one on the direct line to the
+            gateway. The main chat through Agent37 cannot work on such a box (it names no agent
+            and the gateway refuses to guess), so the main tab takes the direct line too until
+            Agent37's chat API can name an agent. One agent: the chat as it has always been. */}
+        {multi && roster && (
+          <AgentTabs
+            agents={roster}
+            mainName={active.name?.trim() || "Main agent"}
+            selected={roster.some((a) => a.id === selectedAgent) ? selectedAgent : "main"}
+            onSelect={setSelectedAgent}
+          />
+        )}
+        {multi && roster ? (
+          <DirectAgentChat
+            key={`${active.agent37_id}:${selectedAgent}`}
+            instanceId={active.agent37_id}
+            agentId={roster.some((a) => a.id === selectedAgent) ? selectedAgent : "main"}
+            agentName={
+              selectedAgent === "main" || !roster.some((a) => a.id === selectedAgent)
+                ? active.name?.trim() || "Main agent"
+                : roster.find((a) => a.id === selectedAgent)?.name || selectedAgent
+            }
+            avatarUrl={selectedAgent === "main" ? active.avatar_url : null}
+          />
+        ) : (
+          <ChatView
+            agentId={active.agent37_id}
+            agentName={active.name}
+            agentAvatarUrl={active.avatar_url}
+            prefill={prefill}
+          />
+        )}
       </div>
     </div>
   );
