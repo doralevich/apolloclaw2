@@ -52,6 +52,12 @@ const NAV = [
   //
   // Chat is the first row now. It is what the product is.
   { href: "/dashboard/chat", label: "Chat", icon: MessageSquare, exact: false },
+  // My Agent(s) on the daily rail - David's call. It was in Settings, which read as a place you
+  // go once; a customer who owns agents and now manages several on one instance comes back to
+  // this page, so it belongs on the main rail. It still lives at /dashboard/settings/agent (the
+  // page did not move), but that path no longer counts as the Settings area (see inSettings), so
+  // the daily rail stays and this tab highlights, the same trade Connections makes.
+  { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
   // "WHAT NEEDS YOU" IS NOT HERE ANY MORE, David's call, and it is off the rail the same way
   // Matters is (see the note below): only the ROW is gone. /dashboard/tasks still renders, its
   // API and table are untouched, and the agent still surfaces the same items - so anything
@@ -117,7 +123,6 @@ const SETTINGS_NAV = [
       // plural spelled out, because a workspace can genuinely hold several since seats and a
       // label that flips between singular and plural reads as a bug.
       { href: "/dashboard/settings", label: "General", icon: SlidersHorizontal, exact: true },
-      { href: "/dashboard/settings/agent", label: "My Agent(s)", icon: LayoutGrid, exact: false },
       // Two money pages, two scopes, both named for what they answer. Plan is the WORKSPACE's
       // subscription - seats, invoices, the card. Credits is one AGENT's wallet; Usage sits
       // directly beneath it (David's call) - where the wallet went, one row down from what's left.
@@ -201,7 +206,7 @@ function SidebarContent({
   // daily rail) shows on it. Connections came back to the daily rail, so /dashboard/integrations is
   // deliberately NOT counted here - it keeps the daily rail and highlights its tab there.
   const inSettings =
-    pathname.startsWith(SETTINGS_ROOT) ||
+    (pathname.startsWith(SETTINGS_ROOT) && !pathname.startsWith("/dashboard/settings/agent")) ||
     pathname.startsWith("/dashboard/guide");
 
   // Home always shows now (David's call): it is a launcher you come back to, not a getting-started
