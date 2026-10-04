@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ENTERPRISE, PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
-import { EnterpriseForm } from "@/components/pricing/EnterpriseForm";
+import { EnterpriseContactButton, EnterpriseForm } from "@/components/pricing/EnterpriseForm";
+import { ClipboardList, Headphones, Layers, Network, Rocket, Users } from "lucide-react";
 import { OG_IMAGES } from "@/lib/seo";
 
 // THE PRICING PAGE (David, Oct 4 2026): the plans, priced in public, with real content under them.
 //
 // Layout: equal plan cards side by side with Team highlighted, then one wide Enterprise strip with
-// "Contact us", then what every plan includes, how it works, a short comparison, FAQs, and a
-// closing consultation button. The cards are whatever PLANS_ON_SALE holds (Solo, Team and
-// Executive) and the grid follows.
+// "Contact us", then what every plan includes, how it works, FAQs, and a closing consultation
+// button. The comparison table went (David's call: the cards already say it). The cards are
+// whatever PLANS_ON_SALE holds (Solo, Team and Executive) and the grid follows.
 //
 // KEEP IT SIMPLE. No API keys, tokens, credits, caps, markup or "bring your own key" anywhere on
 // this page: buyers found them confusing. Those rules live in the product and the checkout terms,
@@ -73,6 +74,15 @@ function Check({ color = RED }: { color?: string }) {
 
 const BTN =
   "font-body inline-flex items-center justify-center whitespace-nowrap rounded-[8px] px-6 py-3 text-[14px] font-bold transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+
+const ENTERPRISE_FEATURES = [
+  { label: "Everything in Executive", Icon: Layers },
+  { label: "Multiple users and roles", Icon: Users },
+  { label: "Shared memory between agents", Icon: Network },
+  { label: "Audit logs", Icon: ClipboardList },
+  { label: "Dedicated support", Icon: Headphones },
+  { label: "Onboarding with your team", Icon: Rocket },
+];
 
 const INCLUDED = [
   { title: "An agent built around your business", body: "Set up from what you tell us about how you work, not a generic bot." },
@@ -139,7 +149,7 @@ export default function PricingPage() {
         <div className={`grid items-stretch gap-6 ${cols}`}>
           {PLANS_ON_SALE.map((plan) => {
             const isFeatured = plan === featured;
-            const lines = [...plan.features, plan.channelsText, plan.supportText, plan.usageText];
+            const lines = [...plan.features, plan.channelsText, plan.supportText];
             return (
               <article
                 key={plan.id}
@@ -171,7 +181,13 @@ export default function PricingPage() {
                     / month
                   </span>
                 </p>
-                <p className="font-body mt-2 text-[15px] font-semibold">{plan.agentsText}</p>
+                {/* The plan at a glance, in its own box: who it is for and that usage is in. */}
+                <div className="mt-6 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: SOFT }}>
+                  <p className="font-body text-[15px] font-semibold">{plan.agentsText}</p>
+                  <p className="font-body text-[14px]" style={{ color: INK_MUTED }}>
+                    {plan.usageText}
+                  </p>
+                </div>
                 <ul className="mt-6 grid flex-1 content-start gap-2.5 border-t pt-6" style={{ borderColor: RULE }}>
                   {lines.map((line) => (
                     <li key={line} className="font-body flex gap-2.5 text-[15px] leading-[1.5]">
@@ -206,42 +222,45 @@ export default function PricingPage() {
         </p>
       </section>
 
-      {/* ── Enterprise ── */}
-      <section id="enterprise" className="mx-auto mt-12 max-w-6xl scroll-mt-24 px-5 md:px-8">
-        <div className="grid gap-10 rounded-2xl p-8 md:grid-cols-[1.1fr_1fr] md:p-12" style={{ background: INK, color: "#FFFFFF" }}>
-          <div>
-            <Eyebrow onDark>{ENTERPRISE.label}</Eyebrow>
-            <h2 className="font-heading text-[clamp(1.6rem,2.6vw,2.25rem)] font-extrabold leading-[1.15]" style={{ textWrap: "balance" }}>
-              {ENTERPRISE.headline}
-            </h2>
-            <ul className="mt-6 grid gap-2.5">
-              {[
-                "Everything in Executive",
-                "Multiple users and roles",
-                "Shared memory between agents",
-                "Audit logs",
-                "Dedicated support and onboarding",
-              ].map((line) => (
-                <li key={line} className="font-body flex gap-2.5 text-[15px] leading-[1.5] text-white/85">
-                  <Check color="#FF8A8B" />
-                  {line}
+      {/* ── Enterprise: a light strip in three columns, under the cards (David, Oct 4 2026: the
+          dark version "gets lost"). Title and line on the left, what it adds in the middle, the
+          two ways in on the right; Contact us opens the form in place. ── */}
+      <section id="enterprise" className="mx-auto mt-10 max-w-6xl scroll-mt-24 px-5 md:px-8">
+        <div className="rounded-2xl border bg-white p-8 md:p-10" style={{ borderColor: RULE, boxShadow: "0 1px 2px rgba(26,26,26,0.04)" }}>
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr_auto] lg:items-start">
+            <div>
+              <h2 className="font-heading text-[1.75rem] font-extrabold leading-tight">{ENTERPRISE.label}</h2>
+              <p className="font-body mt-2 text-[15px] leading-[1.55]" style={{ color: INK_MUTED }}>
+                {ENTERPRISE.headline}
+              </p>
+              <p className="font-body mt-3 text-[13px]" style={{ color: INK_MUTED }}>
+                Custom private servers starting at {ENTERPRISE.privateServersFrom}.
+              </p>
+            </div>
+            <ul className="grid gap-x-8 gap-y-3.5 sm:grid-cols-2">
+              {ENTERPRISE_FEATURES.map(({ label, Icon }) => (
+                <li key={label} className="font-body flex items-center gap-3 text-[15px]">
+                  <Icon className="size-[18px] shrink-0" style={{ color: RED_INK }} aria-hidden />
+                  {label}
                 </li>
               ))}
             </ul>
-            <a
-              href={SCHEDULE_CONSULT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${BTN} mt-8`}
-              style={{ background: RED, color: "#FFFFFF" }}
-            >
-              Book a call
-            </a>
-            <p className="font-body mt-4 text-[15px] text-white/70">
-              Custom private servers starting at {ENTERPRISE.privateServersFrom}.
-            </p>
+            <div className="flex flex-col gap-3 lg:w-52">
+              <a
+                href={SCHEDULE_CONSULT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={BTN}
+                style={{ background: RED, color: "#FFFFFF" }}
+              >
+                Book a call
+              </a>
+              <EnterpriseContactButton />
+            </div>
           </div>
-          <EnterpriseForm />
+          <div id="enterprise-form" hidden className="mt-8 border-t pt-8" style={{ borderColor: RULE }}>
+            <EnterpriseForm />
+          </div>
         </div>
       </section>
 
@@ -283,47 +302,6 @@ export default function PricingPage() {
               </li>
             ))}
           </ol>
-        </div>
-      </section>
-
-      {/* ── Comparison: agents, channels and support only ── */}
-      <section className="mx-auto max-w-4xl px-5 py-20 md:px-8">
-        <Eyebrow>Compare</Eyebrow>
-        <h2 className="font-heading text-[clamp(1.6rem,2.6vw,2.25rem)] font-extrabold leading-[1.15]">The plans side by side</h2>
-        <div className="mt-8 overflow-x-auto rounded-xl border" style={{ borderColor: RULE }}>
-          <table className="font-body w-full min-w-[520px] text-left text-[15px]">
-            <thead>
-              <tr style={{ background: SOFT }}>
-                <th scope="col" className="px-5 py-3 font-semibold" style={{ color: INK_MUTED }}>
-                  <span className="sr-only">Feature</span>
-                </th>
-                {PLANS_ON_SALE.map((p) => (
-                  <th key={p.id} scope="col" className="font-heading px-5 py-3 text-[1rem] font-bold">
-                    {p.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { label: "Price", cell: (p: (typeof PLANS_ON_SALE)[number]) => `${dollars(p.monthlyCents ?? 0)} / month` },
-                { label: "Agents", cell: (p: (typeof PLANS_ON_SALE)[number]) => p.agentsText },
-                { label: "Channels", cell: (p: (typeof PLANS_ON_SALE)[number]) => p.channelsText },
-                { label: "Support", cell: (p: (typeof PLANS_ON_SALE)[number]) => p.supportText },
-              ].map((row) => (
-                <tr key={row.label} className="border-t" style={{ borderColor: RULE }}>
-                  <th scope="row" className="px-5 py-3.5 font-semibold">
-                    {row.label}
-                  </th>
-                  {PLANS_ON_SALE.map((p) => (
-                    <td key={p.id} className="px-5 py-3.5 tabular-nums" style={{ color: INK_MUTED }}>
-                      {row.cell(p)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </section>
 
