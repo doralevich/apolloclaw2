@@ -1,5 +1,6 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { askLab, createLabBox, deleteLabBox, findLabBox, LAB_QUESTIONS } from "@/lib/multi-agent-lab";
+import { probeGateway } from "@/lib/gateway-chat";
 import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
 
@@ -47,6 +48,14 @@ export const POST = route(async (request: Request) => {
       throw e;
     }
   }
+  // Can the app itself reach the box's gateway through an Agent37 signed URL? The question the
+  // per-agent chat tabs depend on; the ask action runs from inside the box and cannot answer it.
+  if (action === "probe") {
+    if (!id) throw new ApiError(400, "invalid_request", "Pass the lab box id.");
+    const result = await probeGateway(id);
+    await logAudit({ actorEmail: user.email, action: "lab.two_agent_probed", target: id, metadata: { ok: result.ok, status: result.status, port: result.port }, request });
+    return json(result);
+  }
   if (action === "delete") {
     if (!id) throw new ApiError(400, "invalid_request", "Pass the lab box id.");
     try {
@@ -58,5 +67,5 @@ export const POST = route(async (request: Request) => {
       throw e;
     }
   }
-  throw new ApiError(400, "invalid_request", "action must be create, ask or delete.");
+  throw new ApiError(400, "invalid_request", "action must be create, ask, probe or delete.");
 });

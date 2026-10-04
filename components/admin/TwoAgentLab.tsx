@@ -25,6 +25,7 @@ import {
 type Box = { id: string; status: string; name: string | null; created: number | null };
 type Question = { key: string; agent: string; text: string; expect: string };
 type Answer = { agent: string; question: string; status: number; answer: string; ms: number; note?: string };
+type Probe = { ok: boolean; status: number; port: number; host: string; models: string[]; note?: string };
 
 export function TwoAgentLabButton() {
   const [open, setOpen] = useState(false);
@@ -45,6 +46,26 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [probe, setProbe] = useState<Probe | null>(null);
+
+  // The reach test: the app, from Vercel, through an Agent37 signed URL, to the box's gateway.
+  // What the per-agent chat tabs need. The questions above run from inside the box and so
+  // cannot answer it.
+  async function runProbe() {
+    if (!box) return;
+    setBusy("probe");
+    try {
+      const r = await apiFetch<Probe>("/api/admin/two-agent-lab", {
+        method: "POST",
+        body: JSON.stringify({ action: "probe", id: box.id }),
+      });
+      setProbe(r);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function load() {
     try {
@@ -160,6 +181,33 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
               </>
             ) : (
               <span className="text-muted-foreground">No lab box right now.</span>
+            )}
+          </div>
+
+          <div className="rounded-md border p-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reach from the app</div>
+                <p className="mt-1 text-sm">
+                  Can the app itself reach the box&apos;s gateway through an Agent37 signed link? The
+                  per-agent chat tabs depend on this.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={runProbe} disabled={busy !== null || !box}>
+                {busy === "probe" ? "Testing..." : "Test"}
+              </Button>
+            </div>
+            {probe && (
+              <div className="mt-2 rounded-md bg-muted/50 p-2 text-sm">
+                <div className="mb-1 text-[11px] text-muted-foreground">
+                  {probe.ok ? "reachable" : `status ${probe.status}`} · port {probe.port || "?"} · {probe.host || "no link"}
+                </div>
+                {probe.ok ? (
+                  <div>Agents the gateway lists: {probe.models.join(", ")}</div>
+                ) : (
+                  <pre className="whitespace-pre-wrap font-sans">{probe.note ?? "no detail"}</pre>
+                )}
+              </div>
             )}
           </div>
 
