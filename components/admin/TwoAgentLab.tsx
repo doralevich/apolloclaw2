@@ -25,7 +25,15 @@ import {
 type Box = { id: string; status: string; name: string | null; created: number | null };
 type Question = { key: string; agent: string; text: string; expect: string };
 type Answer = { agent: string; question: string; status: number; answer: string; ms: number; note?: string };
-type Probe = { ok: boolean; status: number; port: number; host: string; models: string[]; note?: string };
+type Attempt = { way: string; status: number; verdict: "ok" | "gateway" | "edge" | "error"; note: string };
+type Probe = { ok: boolean; status: number; port: number; host: string; models: string[]; via: string; attempts: Attempt[]; note?: string };
+
+const VERDICT: Record<Attempt["verdict"], string> = {
+  ok: "reached the gateway",
+  gateway: "through the edge, gateway refused",
+  edge: "stopped at the edge",
+  error: "not tried",
+};
 
 export function TwoAgentLabButton() {
   const [open, setOpen] = useState(false);
@@ -189,8 +197,9 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reach from the app</div>
                 <p className="mt-1 text-sm">
-                  Can the app itself reach the box&apos;s gateway through an Agent37 signed link? The
-                  per-agent chat tabs depend on this.
+                  Can the app itself reach the box&apos;s gateway through an Agent37 signed link,
+                  and which way through their edge works? Streaming in the per-agent chat tabs
+                  depends on this; without it the tabs still answer, by asking from inside the box.
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={runProbe} disabled={busy !== null || !box}>
@@ -200,12 +209,22 @@ function TwoAgentLabDialog({ open, onOpenChange }: { open: boolean; onOpenChange
             {probe && (
               <div className="mt-2 rounded-md bg-muted/50 p-2 text-sm">
                 <div className="mb-1 text-[11px] text-muted-foreground">
-                  {probe.ok ? "reachable" : `status ${probe.status}`} · port {probe.port || "?"} · {probe.host || "no link"}
+                  {probe.ok ? `reachable via ${probe.via}` : `status ${probe.status}`} · port {probe.port || "?"} · {probe.host || "no link"}
                 </div>
-                {probe.ok ? (
-                  <div>Agents the gateway lists: {probe.models.join(", ")}</div>
-                ) : (
-                  <pre className="whitespace-pre-wrap font-sans">{probe.note ?? "no detail"}</pre>
+                {probe.ok && <div>Agents the gateway lists: {probe.models.join(", ")}</div>}
+                {probe.note && <pre className="whitespace-pre-wrap font-sans">{probe.note}</pre>}
+                {probe.attempts.length > 0 && (
+                  <ul className="mt-2 space-y-1 border-t pt-2 text-xs">
+                    {probe.attempts.map((a, i) => (
+                      <li key={i} className="flex flex-wrap gap-x-2">
+                        <span className="font-mono">{a.way}</span>
+                        <span className={a.verdict === "ok" ? "text-emerald-700" : a.verdict === "edge" ? "text-destructive" : "text-muted-foreground"}>
+                          {a.status || ""} {VERDICT[a.verdict]}
+                        </span>
+                        <span className="w-full break-all text-muted-foreground">{a.note}</span>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
             )}

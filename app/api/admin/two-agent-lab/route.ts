@@ -53,7 +53,7 @@ export const POST = route(async (request: Request) => {
   if (action === "probe") {
     if (!id) throw new ApiError(400, "invalid_request", "Pass the lab box id.");
     const result = await probeGateway(id);
-    await logAudit({ actorEmail: user.email, action: "lab.two_agent_probed", target: id, metadata: { ok: result.ok, status: result.status, port: result.port }, request });
+    await logAudit({ actorEmail: user.email, action: "lab.two_agent_probed", target: id, metadata: { ok: result.ok, status: result.status, port: result.port, via: result.via }, request });
     return json(result);
   }
   if (action === "delete") {
