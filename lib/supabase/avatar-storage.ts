@@ -93,6 +93,21 @@ export async function uploadAgentAvatar(
 }
 
 /**
+ * A sub-agent's avatar, for an agent that lives on an instance alongside the main one.
+ *
+ * Keyed by instance and the on-box agent id. The image lives in the same public bucket the main
+ * agent's avatar does, and its URL is what the box records for the agent; the box stays the
+ * source of truth for the agent itself, the app only holds the picture.
+ */
+export async function uploadSubAgentAvatar(
+  instanceId: string,
+  subAgentId: string,
+  upload: ImageUpload
+): Promise<string | null> {
+  return storeImage(AVATAR_BUCKET, (ext) => `sub/${instanceId}/${subAgentId}-${Date.now()}.${ext}`, upload);
+}
+
+/**
  * The signed-in person's own picture, shown beside their messages in chat.
  *
  * Its own bucket rather than a folder inside agent-avatars: this one belongs to a USER, not to a

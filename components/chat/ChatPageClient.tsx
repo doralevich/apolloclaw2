@@ -153,7 +153,11 @@ export function ChatPageClient() {
                 ? active.name?.trim() || "Main agent"
                 : roster.find((a) => a.id === selectedAgent)?.name || selectedAgent
             }
-            avatarUrl={selectedAgent === "main" ? active.avatar_url : null}
+            avatarUrl={
+              selectedAgent === "main"
+                ? active.avatar_url
+                : roster.find((a) => a.id === selectedAgent)?.avatarUrl ?? null
+            }
           />
         ) : (
           <ChatView
