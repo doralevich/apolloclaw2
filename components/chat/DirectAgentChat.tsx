@@ -9,20 +9,26 @@ import { Button } from "@/components/ui/button";
 import { ChatMessages } from "./ChatMessages";
 import { uid, type ChatMessage } from "./types";
 
-// A plain conversation with one named agent on the instance, over the direct line
-// (/api/agents/{id}/agents/{agentId}/chat). Used by the per-agent tabs when an instance carries
-// more than one agent.
+// A conversation with one named agent on the instance, over the direct line
+// (/api/agents/{id}/agents/{agentId}/chat). Used for every agent when an instance carries more
+// than one, picked in the sidebar.
 //
-// Plain on purpose: no thread rail, no attachments, no model menu. The gateway keeps the
-// conversation's context under a session of its own, so follow-ups work, but this page holds the
-// transcript only while it is open. Those parts return to every tab once Agent37's chat API can
-// name an agent, at which point this component goes away.
+// Each turn is saved to a thread on the server (lib/agent-threads.ts), so the conversation shows
+// in the Chats list with the agent's face and reopens later: `threadId` opens a saved one, null
+// starts fresh. Plain otherwise: no attachments and no model menu, which return once Agent37's
+// chat API can name an agent and this component goes away.
 
 type Props = {
   instanceId: string;
   agentId: string;
   agentName: string;
   avatarUrl?: string | null;
+  /** The saved conversation to open, or null for a fresh one. */
+  threadId: string | null;
+  /** A fresh conversation was saved under this id; its opening line titles it. */
+  onThreadCreated?: (threadId: string, title: string) => void;
+  /** A message went out in a saved conversation, so the list can move it to the top. */
+  onActivity?: (threadId: string) => void;
 };
 
 // The gateway streams OpenAI-style chunks: "data: {...choices[0].delta.content}" lines and a
@@ -54,11 +60,24 @@ async function readOpenAiStream(body: ReadableStream<Uint8Array>, onDelta: (text
   }
 }
 
-export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: Props) {
+export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, threadId, onThreadCreated, onActivity }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // The thread this pane holds. Kept here as well as in the URL because a fresh conversation
+  // learns its id mid-stream: when the URL then catches up to the same id, there is nothing to
+  // reload, and reloading would wipe the answer still arriving.
+  const [shown, setShown] = useState<string | null>(null);
+  const [loadingThread, setLoadingThread] = useState(false);
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Another thread named (a rail click, Back/Forward), or none (a fresh chat): reset the pane in
+  // render, React's "adjust state when a prop changes", and let the effect below fetch it.
+  if (threadId !== shown) {
+    setShown(threadId);
+    setMessages([]);
+    setError(null);
+    setLoadingThread(!!threadId);
+  }
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -71,6 +90,31 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: P
   useEffect(() => {
     inputRef.current?.focus();
   }, [agentId]);
+
+  // Fetch the saved conversation the pane was just pointed at.
+  useEffect(() => {
+    if (!loadingThread || !threadId) return;
+    abortRef.current?.abort();
+    let cancelled = false;
+    fetch(`/api/agents/${instanceId}/threads/${threadId}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await readApiError(res, "Couldn't open that chat."));
+        return (await res.json()) as { messages: { role: "user" | "assistant"; content: string }[] };
+      })
+      .then((res) => {
+        if (cancelled) return;
+        setMessages(res.messages.map((m) => ({ id: uid(m.role === "user" ? "u" : "a"), role: m.role, content: m.content })));
+      })
+      .catch((e) => {
+        if (!cancelled) setError((e as Error).message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingThread(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [threadId, loadingThread, instanceId]);
 
   async function send() {
     const text = draft.trim();
@@ -90,7 +134,7 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: P
       const res = await fetch(`/api/agents/${instanceId}/agents/${encodeURIComponent(agentId)}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: text }),
+        body: JSON.stringify({ input: text, threadId: shown }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
@@ -98,6 +142,15 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: P
         setError(msg);
         setMessages((m) => m.filter((x) => x.id !== assistantId));
         return;
+      }
+      // A fresh conversation is named by the server once it is saved. Adopt the id before the
+      // URL moves to it, so the move does not reload the pane mid-answer.
+      const savedAs = res.headers.get("X-Apollo-Thread-Id");
+      if (savedAs && !shown) {
+        setShown(savedAs);
+        onThreadCreated?.(savedAs, text);
+      } else if (savedAs) {
+        onActivity?.(savedAs);
       }
       await readOpenAiStream(res.body, (delta) => {
         setMessages((m) => m.map((x) => (x.id === assistantId ? { ...x, content: x.content + delta } : x)));
@@ -117,7 +170,7 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: P
     abortRef.current?.abort();
   }
 
-  const empty = messages.length === 0;
+  const empty = messages.length === 0 && !loadingThread;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -131,10 +184,13 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl }: P
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl font-semibold tracking-tight text-foreground">{agentName}</h2>
               <p className="mt-1 text-base text-foreground/75">
-                A direct line to {agentName} on this instance. It remembers this conversation on
-                the server, and the transcript here lasts while the page is open.
+                Ask {agentName} anything in its area. The conversation is saved to your Chats list.
               </p>
             </div>
+          </div>
+        ) : loadingThread ? (
+          <div className="flex h-full items-center justify-center text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         ) : (
           <ChatMessages messages={messages} isStreaming={streaming} agentName={agentName} agentAvatarUrl={avatarUrl ?? null} />

@@ -9,6 +9,7 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { ChatView } from "./ChatView";
 import { useChatContext } from "./ChatProvider";
 import { DirectAgentChat } from "./DirectAgentChat";
+import { threadIdOf, threadSessionId } from "./types";
 
 export function ChatPageClient() {
   const { active, loading, error, refresh } = useActiveAgent();
@@ -16,9 +17,11 @@ export function ChatPageClient() {
   // Which agent on the instance the conversation is with. "main" is the one the app has
   // always known; the others come from the box's roster. Picked in the sidebar, under the
   // agent's name, so the choice is held by the dashboard-level provider rather than here.
-  const { roster, selectedAgentId } = useChatContext();
-  const multi = (roster?.length ?? 0) > 1;
+  const { roster, selectedAgentId, multiAgent: multi, activeSessionId, loadingSessions, onSessionCreated, bumpSession, startNewChat } =
+    useChatContext();
   const selected = roster?.find((a) => a.id === selectedAgentId);
+  // A saved direct-line conversation is open (/dashboard/chat/t-<id>).
+  const openThread = threadIdOf(activeSessionId);
 
   // A question sent here from the Guide or Start Here (?q=).
   //
@@ -131,11 +134,34 @@ export function ChatPageClient() {
             </span>
           </div>
         )}
-        {/* More than one agent on the box: every one on the direct line to the gateway. The
-            main chat through Agent37 cannot work on such a box (it names no agent and the
-            gateway refuses to guess), so the main agent takes the direct line too until
-            Agent37's chat API can name an agent. One agent: the chat as it has always been. */}
-        {multi ? (
+        {/* More than one agent on the box: every one on the direct line to the gateway, each
+            conversation saved to the Chats list. The main chat through Agent37 cannot work on such
+            a box (it names no agent and the gateway refuses to guess), so the main agent takes the
+            direct line too until Agent37's chat API can name an agent. Its older threads, from
+            before the box had a team, still open to read. One agent: the chat as it has always
+            been. */}
+        {openThread && loadingSessions ? (
+          <div className="flex flex-1 items-center justify-center text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        ) : multi && activeSessionId && !openThread ? (
+          <ChatView
+            agentId={active.agent37_id}
+            agentName={active.name}
+            agentAvatarUrl={active.avatar_url}
+            readOnlyNote={
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+                <span>
+                  This conversation is from before {active.name?.trim() || "your agent"} had teammates. Read it
+                  here, and start a chat to carry on.
+                </span>
+                <Button size="sm" className="rounded-full" onClick={startNewChat}>
+                  Start a chat
+                </Button>
+              </div>
+            }
+          />
+        ) : multi || openThread ? (
           <DirectAgentChat
             key={`${active.agent37_id}:${selectedAgentId}`}
             instanceId={active.agent37_id}
@@ -146,6 +172,9 @@ export function ChatPageClient() {
                 : selected?.name || selectedAgentId
             }
             avatarUrl={selectedAgentId === "main" ? active.avatar_url : selected?.avatarUrl ?? null}
+            threadId={openThread}
+            onThreadCreated={(id, title) => onSessionCreated(threadSessionId(id), title, selectedAgentId)}
+            onActivity={(id) => bumpSession(threadSessionId(id))}
           />
         ) : (
           <ChatView

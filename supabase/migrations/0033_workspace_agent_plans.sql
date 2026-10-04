@@ -25,3 +25,5 @@ create table if not exists public.workspace_agent_plans (
 
 alter table public.workspace_agent_plans enable row level security;
 -- No policies: no direct client access, the same posture as agent_tasks and agent_matters.
+
+comment on table public.workspace_agent_plans is 'Which agent plan (config/agent-plans.ts) a workspace is on, plus an optional custom agent limit. Set from Super Admin only. Server-only (RLS on, no policy).';

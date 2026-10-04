@@ -145,6 +145,24 @@ export interface ChatSession {
    * than assumed.
    */
   last_active?: number | null;
+  /**
+   * Set on a direct-line conversation (a saved thread with a named agent on the instance): the
+   * agent it is with. Absent on the main chat's own Agent37 threads.
+   */
+  agent?: string;
+}
+
+// A direct-line thread's id in the Chats list and the URL carries this prefix, so it can never be
+// mistaken for an Agent37 session id: /dashboard/chat/t-<uuid>.
+const THREAD_PREFIX = "t-";
+
+export function threadSessionId(threadId: string): string {
+  return `${THREAD_PREFIX}${threadId}`;
+}
+
+/** The saved thread's id when this rail/URL id names one, else null. */
+export function threadIdOf(sessionId: string | null | undefined): string | null {
+  return sessionId && sessionId.startsWith(THREAD_PREFIX) ? sessionId.slice(THREAD_PREFIX.length) : null;
 }
 
 // One agent on an instance, as the box reports it (/api/agents/{id}/roster). "main" is the

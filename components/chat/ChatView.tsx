@@ -47,6 +47,7 @@ export function ChatView({
   agentName,
   agentAvatarUrl,
   prefill,
+  readOnlyNote,
 }: {
   // Passed in rather than read from context: the provider now lives at the dashboard level,
   // where there may be no agent at all, so its agentId is nullable. This page only renders once
@@ -58,6 +59,8 @@ export function ChatView({
   agentAvatarUrl?: string | null;
   // A question carried in from Shortcuts or Start Here (?q=), dropped into the composer.
   prefill?: string;
+  // Shown in place of the composer when this thread can be read but not continued here.
+  readOnlyNote?: React.ReactNode;
 }) {
   const { userFirstName } = useWorkspace();
   const {
@@ -328,17 +331,21 @@ export function ChatView({
               <p className="mb-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>
             ))}
         </div>
-        <ChatComposer
-          agentId={agentId}
-          isStreaming={isStreaming}
-          att={att}
-          onSend={send}
-          onStop={stop}
-          large={showWelcome}
-          focusToken={composerFocusToken}
-          prefill={picked?.text ?? prefill}
-          prefillToken={picked?.n}
-        />
+        {readOnlyNote ? (
+          <div className={cn("mx-auto w-full", showWelcome ? "max-w-2xl" : "max-w-3xl")}>{readOnlyNote}</div>
+        ) : (
+          <ChatComposer
+            agentId={agentId}
+            isStreaming={isStreaming}
+            att={att}
+            onSend={send}
+            onStop={stop}
+            large={showWelcome}
+            focusToken={composerFocusToken}
+            prefill={picked?.text ?? prefill}
+            prefillToken={picked?.n}
+          />
+        )}
       </div>
 
       {/* Bottom: balances the vertical spacing on the welcome state. */}

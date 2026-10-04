@@ -1,4 +1,7 @@
+import { after } from "next/server";
 import { requireAgentAccess, requireEntitled } from "@/lib/auth";
+import { appendMessage, createThread, getThread } from "@/lib/agent-threads";
+import { recordAnswer } from "@/lib/sse-record";
 import { askOnBox, gatewayFetch } from "@/lib/gateway-chat";
 import { ApiError, readJson, route, upstreamErrorMessage } from "@/lib/http";
 import { runtimeForTemplate } from "@/config/agents";
@@ -8,11 +11,16 @@ type Ctx = { params: Promise<{ id: string; agentId: string }> };
 // POST /api/agents/{id}/agents/{agentId}/chat - one turn with one named agent on the instance,
 // over the gateway's own chat endpoint, returned as the OpenAI-style SSE the gateway emits.
 //
-// This is the direct line the per-agent tabs use. It is deliberately plain: a message in, an
-// answer out, and the gateway keeps the conversation under a session derived from the `user`
-// field (one per person, per agent, per instance), so follow-ups have context even though this
-// route stores nothing. History, files and the thread rail stay with the main chat until
-// Agent37's chat API can name an agent.
+// This is the direct line the sidebar's agents use on an instance with more than one. A message
+// in, an answer out, and each turn saved to a thread (lib/agent-threads.ts) so the conversation
+// shows in the Chats list and reopens later. The gateway keeps the model's context under a session
+// derived from the `user` field (one per person, per agent, per thread), so a reopened thread
+// carries on where it stopped.
+//
+// `threadId` continues a conversation; without one this starts a fresh one, and the id comes back
+// in X-Apollo-Thread-Id. The thread is saved only once the agent has answered, so a first message
+// that fails leaves nothing behind in the list. Saving is best effort throughout: a database that
+// cannot be reached means an unsaved conversation, never a refused one.
 //
 // Two routes to the gateway, same session either way:
 //   edge  through an Agent37 signed URL, streamed token by token
@@ -33,18 +41,37 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(400, "invalid_request", "That is not a valid agent id.");
   }
 
-  const body = await readJson<{ input?: unknown }>(request);
+  const body = await readJson<{ input?: unknown; threadId?: unknown }>(request);
   const input = typeof body.input === "string" ? body.input.trim() : "";
   if (!input) throw new ApiError(400, "invalid_request", "input is required");
 
   const agent = agentId.toLowerCase();
-  const sessionUser = `${id}:${agent}:${user.id}`;
+  // An existing thread must be this person's, on this instance, with this agent.
+  const asked = typeof body.threadId === "string" && body.threadId ? body.threadId : null;
+  if (asked) {
+    const found = await getThread(id, user.id, asked);
+    if (!found || found.agent_key !== agent) throw new ApiError(404, "not_found", "That conversation is not here.");
+  }
+  const threadId = asked ?? crypto.randomUUID();
+  const sessionUser = `${id}:${agent}:${user.id}:${threadId}`;
+
+  // Save the question once the agent is answering: the thread row first for a fresh one, then
+  // the message. True when the thread exists to save into.
+  const saveQuestion = async (): Promise<boolean> => {
+    if (!asked && !(await createThread(threadId, id, user.id, agent, input))) return false;
+    await appendMessage(threadId, "user", input);
+    return true;
+  };
+
+  // Whether this turn landed in a saved thread; the response names the thread only then.
+  let saved = false;
   const sseHeaders = (via: "edge" | "box") => ({
     "Content-Type": "text/event-stream; charset=utf-8",
     "Cache-Control": "no-cache, no-transform",
     "X-Accel-Buffering": "no",
     "X-Apollo-Chat-Via": via,
     Connection: "keep-alive",
+    ...(saved ? { "X-Apollo-Thread-Id": threadId } : {}),
   });
 
   let upstream: Response | null = null;
@@ -68,7 +95,20 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
 
   if (upstream) {
     if (upstream.ok && upstream.body) {
-      return new Response(upstream.body, { status: 200, headers: sseHeaders("edge") });
+      saved = await saveQuestion();
+      if (!saved) return new Response(upstream.body, { status: 200, headers: sseHeaders("edge") });
+      // Keep the function alive until the answer is saved, however the stream ends.
+      let answered!: () => void;
+      const done = new Promise<void>((resolve) => (answered = resolve));
+      after(() => done);
+      const stream = recordAnswer(upstream.body, async (text) => {
+        try {
+          await appendMessage(threadId, "assistant", text);
+        } finally {
+          answered();
+        }
+      });
+      return new Response(stream, { status: 200, headers: sseHeaders("edge") });
     }
     const text = await upstream.text().catch(() => "");
     const message = upstreamErrorMessage(text, upstream.status, "agents/chat", "Chat request failed");
@@ -80,6 +120,8 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   if (answer.status !== 200) {
     throw new ApiError(502, "upstream_error", answer.answer || `The gateway answered ${answer.status}.`);
   }
+  saved = await saveQuestion();
+  if (saved) await appendMessage(threadId, "assistant", answer.answer);
   const chunk = JSON.stringify({ choices: [{ delta: { content: answer.answer }, index: 0 }] });
   return new Response(`data: ${chunk}\n\ndata: [DONE]\n\n`, { status: 200, headers: sseHeaders("box") });
 });

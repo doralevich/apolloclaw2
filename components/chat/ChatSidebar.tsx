@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { Loader2, MessageSquare, Pencil, Pin, PinOff, Plus, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { useChatContext } from "./ChatProvider";
 import { sessionTime } from "./session-time";
 
@@ -24,7 +25,32 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
     startNewChat,
     deleteSession,
     renameSession,
+    roster,
+    multiAgent,
   } = useChatContext();
+  const { active } = useActiveAgent();
+
+  // On an instance with several agents, each row opens with the face of the agent the conversation
+  // is with (David, Oct 4 2026), so the list reads at a glance as who said what. The main chat's
+  // own threads are the main agent's. One agent: the plain chat icon, since every row is the same.
+  function rowFace(agentKey: string | undefined) {
+    const key = agentKey ?? "main";
+    const member = roster?.find((a) => a.id === key);
+    const url = key === "main" ? active?.avatar_url : member?.avatarUrl;
+    const name = key === "main" ? active?.name || "Main agent" : member?.name || key;
+    if (url) {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img src={url} alt={name} title={name} className="size-4 shrink-0 rounded-full object-cover" />;
+    }
+    return (
+      <span
+        title={name}
+        className="flex size-4 shrink-0 items-center justify-center rounded-full bg-secondary text-[9px] font-semibold text-muted-foreground"
+      >
+        {name.slice(0, 1).toUpperCase()}
+      </span>
+    );
+  }
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const pendingDelete = sessions.find((s) => s.session_id === pendingDeleteId) ?? null;
 
@@ -179,6 +205,8 @@ export function ChatSidebar({ onNavigate }: { onNavigate?: () => void }) {
                         >
                           {isPinned ? (
                             <Pin className="h-3.5 w-3.5 shrink-0 fill-current text-primary" />
+                          ) : multiAgent ? (
+                            rowFace(s.agent)
                           ) : (
                             <MessageSquare className="h-3.5 w-3.5 shrink-0" />
                           )}
