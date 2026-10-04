@@ -1,11 +1,17 @@
 import { getAgentType } from "@/config/agent-types";
 import { ApiError, json, readJson, route } from "@/lib/http";
-import { HOSTING_PLAN, resolveLicenseTier } from "@/lib/pricing/catalog";
+import { PLAN_SKUS } from "@/lib/pricing/catalog";
+import { PLANS_ON_SALE, type AgentTier } from "@/config/agent-plans";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
 
 // POST /api/onboard/checkout — the paywall in the /onboard journey.
+//
+// Sells a plan (Team or Executive; config/agent-plans.ts): one monthly subscription line, no
+// setup fee. Extra agents are added later, as a quantity on this same subscription. The license
+// tiers and the $249 hosting line this used to sell stay in Stripe for the customers already on
+// them, and are no longer sold here.
 //
 // Deliberately UNAUTHENTICATED, which is the whole point of the pivot: the buyer has no
 // account yet. They fill in the "Start Here" lead fields, pay, and the account is created
@@ -27,9 +33,9 @@ interface CheckoutBody {
   email?: string;
   personalEmail?: string;
   phone?: string;
-  /** The self-serve paywall only sends "basic" now (Advanced became a call-for-setup path, not a
-   *  bare checkout). Anything missing or unrecognised resolves to Basic — see resolveLicenseTier. */
-  tier?: string;
+  /** The plan picked on /pricing ("team", "executive"). Anything missing, unknown or not on sale
+   *  resolves to the featured plan; the paywall shows which before anyone pays. */
+  plan?: string;
   /** Which role agent this purchase builds (e.g. "realestate" from the branded /build/[type]
    *  funnel). Absent (or not a valid, self-serve role type) provisions the generic license agent -
    *  so the plain /onboard flow is unchanged. Carried on the session metadata and read back by
@@ -61,9 +67,11 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(400, "invalid_request", "A valid business email is required.");
   }
 
-  // The tier is resolved from the catalog, never taken as a price id from the body. A caller
-  // who could name the price could name a $0 one, and this route is deliberately open.
-  const tier = resolveLicenseTier(body.tier);
+  // The plan is resolved from the catalog, never taken as a price id from the body. A caller who
+  // could name the price could name a $0 one, and this route is deliberately open.
+  const plan: AgentTier =
+    PLANS_ON_SALE.find((p) => p.id === body.plan) ?? PLANS_ON_SALE.find((p) => p.featured) ?? PLANS_ON_SALE[0];
+  const planKey = PLAN_SKUS[plan.sku!].catalogKey;
 
   // A role agent to build, if the branded funnel asked for one. Only a real, self-serve role type
   // is honoured (never external like the College Agent, never the no-questionnaire Blank build);
@@ -78,13 +86,9 @@ export const POST = route(async (request: Request) => {
   const returnPath = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : "/onboard";
 
   const stripe = getStripe();
-  const { data: prices } = await stripe.prices.list({
-    lookup_keys: [tier.catalogKey, HOSTING_PLAN.catalogKey],
-    active: true,
-  });
-  const licensePrice = prices.find((p) => p.lookup_key === tier.catalogKey);
-  const hostingPrice = prices.find((p) => p.lookup_key === HOSTING_PLAN.catalogKey);
-  if (!licensePrice || !hostingPrice) {
+  const { data: prices } = await stripe.prices.list({ lookup_keys: [planKey], active: true });
+  const planPrice = prices.find((p) => p.lookup_key === planKey);
+  if (!planPrice) {
     // Reads as a config problem to us and as "try again shortly" to the buyer, which is
     // accurate: the fix is running the catalog sync, not anything they can do.
     throw new ApiError(
@@ -100,13 +104,12 @@ export const POST = route(async (request: Request) => {
   // account. Both the session and the subscription carry it, so later subscription
   // lifecycle events can also be traced back to this purchase.
   //
-  // `flow` stays "onboard_license" for BOTH tiers. The webhook keys on it to decide that this
-  // session creates an account, and both tiers do — they provision identically. `license_tier`
-  // rides alongside as a label, so David can tell from Stripe alone who bought setup calls and
-  // who is self-serving, without it becoming a second code path.
+  // `flow` stays "onboard_license": the webhook keys on it to decide that this session creates an
+  // account. `plan` is what the webhook records against the new workspace (its agents and pooled
+  // usage credit come from it), and it lets David read who bought what from Stripe alone.
   const metadata = {
     flow: "onboard_license",
-    license_tier: tier.id,
+    plan: plan.id,
     lead_email: email,
     first_name: first,
     last_name: last,
@@ -119,14 +122,9 @@ export const POST = route(async (request: Request) => {
 
   const origin = publicSiteOrigin(new URL(request.url).origin);
   const session = await stripe.checkout.sessions.create({
-    // Subscription mode, with the one-time license added alongside the recurring hosting
-    // line. Stripe allows a one-off price in a subscription session; the reverse (a
-    // recurring price in a payment-mode session) it does not.
+    // One monthly line, the plan. No setup fee on the standard plans.
     mode: "subscription",
-    line_items: [
-      { price: licensePrice.id, quantity: 1 },
-      { price: hostingPrice.id, quantity: 1 },
-    ],
+    line_items: [{ price: planPrice.id, quantity: 1 }],
     customer_email: email,
     metadata,
     subscription_data: { metadata },

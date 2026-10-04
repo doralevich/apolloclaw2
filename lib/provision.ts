@@ -1,6 +1,7 @@
 import "server-only";
 import { after } from "next/server";
 import { agent37 } from "@/lib/agent37";
+import { planCapMicros } from "@/lib/plan-billing";
 import { APP_ID, DEFAULT_AGENT, INSTANCE_RESOURCES } from "@/config/agents";
 import type { AgentType } from "@/config/agent-types";
 import {
@@ -923,7 +924,9 @@ export async function provisionTypedAgent(input: ProvisionInput): Promise<Agent>
     user: userId,
     name: instanceName,
     metadata: { app: APP_ID, app_workspace: workspaceId, agent_type: type.id },
-    budget: { monthly_cap_micros: usdToMicros(type.monthlyCapUsd) },
+    // A plan's pooled usage credit ($25 on Team, $60 on Executive, plus each extra agent's
+    // share); a legacy customer's agent keeps the type's allowance, as before.
+    budget: { monthly_cap_micros: (await planCapMicros(workspaceId)) ?? usdToMicros(type.monthlyCapUsd) },
   });
 
   const { error } = await db.from("agents").insert({

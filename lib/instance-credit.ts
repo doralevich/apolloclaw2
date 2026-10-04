@@ -158,3 +158,22 @@ export async function effectiveBudget(agentId: string): Promise<Budget> {
     updated_at: eff.updatedAt,
   } as Budget & { credit_remaining_micros: number };
 }
+
+/**
+ * Change an instance's monthly allowance (its base cap) without disturbing purchased credit: the
+ * plan's pooled usage credit, set at build and again whenever the plan or its agents change
+ * (lib/plan-billing.ts). With a credit ledger the base is updated there and the cap re-derived as
+ * base plus credit remaining; without one the cap simply is the allowance.
+ */
+export async function setBaseCap(agentId: string, baseMicros: number): Promise<void> {
+  const db = createAdminClient();
+  if (await loadRow(db, agentId)) {
+    await db
+      .from("agent_credit")
+      .update({ base_cap_micros: baseMicros, updated_at: new Date().toISOString() })
+      .eq("agent37_id", agentId);
+    await syncInstanceCredit(agentId);
+    return;
+  }
+  await agent37.setMonthlyCap(agentId, baseMicros);
+}

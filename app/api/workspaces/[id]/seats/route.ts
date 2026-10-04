@@ -4,6 +4,7 @@ import { sendMandrillEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/onboardingSections";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { getWorkspaceAgentPlan } from "@/lib/agent-plan";
 import {
   changeHostingSeats,
   discardStagedAgentFee,
@@ -54,6 +55,14 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   const { supabase, user } = await requireUser();
   await requireAdmin(supabase, id, user.id);
   await requireEntitled(supabase);
+
+  // Seats are how a legacy customer adds an agent: a whole instance at $449 plus $249 a month.
+  // A customer on one of the plans adds agents onto their instance instead, billed on the plan
+  // (app/api/agents/[id]/subagents), so this purchase would charge them for the wrong thing.
+  const { tier } = await getWorkspaceAgentPlan(id);
+  if (tier.id !== "legacy") {
+    throw new ApiError(409, "on_plan", `Your ${tier.label} plan adds agents from My Agent(s), not as a separate seat.`);
+  }
 
   const body = await readJson<{
     email?: string;

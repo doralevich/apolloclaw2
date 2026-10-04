@@ -15,13 +15,16 @@ export async function getWorkspaceAgentPlan(workspaceId: string) {
   const db = createAdminClient();
   const { data, error } = await db
     .from("workspace_agent_plans")
-    .select("plan, agent_limit")
+    .select("plan, agent_limit, addon_agents")
     .eq("workspace_id", workspaceId)
     .maybeSingle();
   if (error) console.error("[agent-plan:read-failed]", workspaceId, error.message);
   const tier = agentTier((data?.plan as string | undefined) ?? null);
   const own = typeof data?.agent_limit === "number" && data.agent_limit > 0 ? data.agent_limit : null;
-  return { tier, own };
+  // Read defensively: before migration 0035 the column is not there and the select errors, which
+  // lands in the legacy branch above anyway.
+  const addOns = typeof data?.addon_agents === "number" ? data.addon_agents : 0;
+  return { tier, own, addOns };
 }
 
 /** Every agent the workspace runs: one per instance, plus each additional agent an OpenClaw box
@@ -46,12 +49,28 @@ export async function countWorkspaceAgents(workspaceId: string): Promise<{ agent
 }
 
 export async function getAgentPlanUsage(workspaceId: string): Promise<AgentPlanUsage> {
-  const [{ tier, own }, count] = await Promise.all([getWorkspaceAgentPlan(workspaceId), countWorkspaceAgents(workspaceId)]);
+  const [{ tier, own, addOns }, count] = await Promise.all([
+    getWorkspaceAgentPlan(workspaceId),
+    countWorkspaceAgents(workspaceId),
+  ]);
   // A legacy customer pays per instance, so their limit is the instances they pay for: adding
-  // one more agent is the seat flow they already have, at the price they already pay.
-  const base = tier.id === "legacy" ? Math.max(1, count.instances) : tier.agents;
+  // one more agent is the seat flow they already have, at the price they already pay. A plan's
+  // limit is its included agents plus the extra ones bought on it.
+  const base = tier.id === "legacy" ? Math.max(1, count.instances) : tier.agents + addOns;
   const limit = own ?? base;
-  return { tier, limit, custom: own !== null, used: count.agents, canAdd: count.agents < limit };
+  const used = count.agents;
+  const canAdd = used < limit;
+  // Full: a plan that sells extra agents offers one more, up to its hard cap.
+  const sellsMore = !canAdd && own === null && !!tier.addOn && (tier.maxAgents === null || used < tier.maxAgents);
+  return {
+    tier,
+    limit,
+    custom: own !== null,
+    used,
+    canAdd,
+    addOnCents: sellsMore ? tier.addOn!.monthlyCents : null,
+    suggestUpgrade: tier.upgradeAt !== null && used + 1 >= tier.upgradeAt,
+  };
 }
 
 /** Set a workspace's plan from Super Admin. `agentLimit` null clears a per-workspace number. */

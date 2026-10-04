@@ -1,5 +1,6 @@
 import { requireAgentAccess, requireEntitled } from "@/lib/auth";
 import { removeSubAgent, setupSecondAgent, type AgentSpec } from "@/lib/multi-agent-test";
+import { removeAddOnAgent } from "@/lib/plan-billing";
 import { readInstanceRoster } from "@/lib/instance-roster";
 import { uploadSubAgentAvatar, type ImageUpload } from "@/lib/supabase/avatar-storage";
 import { runtimeForTemplate } from "@/config/agents";
@@ -63,6 +64,8 @@ export const DELETE = route(async (request: Request, { params }: Ctx) => {
   // This agent only: the others on the box stay as they are. Removing the last one takes the
   // box back to its single primary agent, the same restore the admin lab has always used.
   const result = await removeSubAgent(id, subId);
+  // An extra agent bought on a plan comes off the bill with it (credited on the next invoice).
+  if (result.ok) await removeAddOnAgent(row.workspace_id).catch((e) => console.error("[subagent:remove-addon]", id, (e as Error).message));
   await logAudit({ actorEmail: user.email, action: "agent.subagent_removed", target: id, metadata: { subId, ok: result.ok, note: result.note ?? null }, request });
   if (!result.ok) throw new ApiError(502, "remove_failed", result.note || "The instance did not confirm the removal.");
   return json({ ok: true, removed: true, restarted: result.restarted });

@@ -194,5 +194,10 @@ export interface AgentPlanUsage {
   custom: boolean;
   /** Every agent across the workspace's instances, the main ones included. */
   used: number;
+  /** Room on the plan as it stands: adding an agent costs nothing more. */
   canAdd: boolean;
+  /** Full, but the plan sells one more agent at this monthly price (cents); null when it does not. */
+  addOnCents: number | null;
+  /** The plan suggests moving up at this size (Team at 6 agents). */
+  suggestUpgrade: boolean;
 }
