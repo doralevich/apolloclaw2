@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 const TABS = [
   { href: "/admin", label: "Customers" },
   { href: "/admin/agents", label: "Fleet" },
+  // The /setup form's credentials, encrypted, revealed one submission at a time and logged.
+  { href: "/admin/setup-keys", label: "Setup keys" },
 ];
 export function AdminShell({
   email,

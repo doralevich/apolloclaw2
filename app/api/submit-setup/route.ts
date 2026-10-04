@@ -3,6 +3,7 @@ import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { upsertPipelineDeal, findOrCreateCrmEntity } from "@/lib/crm";
 import { encryptAnswerSecrets } from "@/lib/crypto/byo";
 import { sendTelegram } from "@/lib/telegram";
+import { storeSetupSecrets } from "@/lib/setup-secrets";
 import { findAttioDealByEmail, addAttioNote, updateAttioDealStage } from "@/lib/attio";
 import { upsertMailchimpContact, tagMailchimpContact } from "@/lib/mailchimp";
 
@@ -216,12 +217,29 @@ export async function POST(req: NextRequest) {
       }
 
       const F = fields;
+      // The credentials, encrypted, where only Super Admin can read them (Setup keys). When that
+      // works the email says which were given and links there instead of carrying them. When it
+      // cannot (no encryption key on the server, or the write failed) the email carries them as
+      // before, so a key is never lost.
+      const storedId = await storeSetupSecrets({
+        email,
+        clientName: name,
+        context: {
+          assistant_name: F.assistant_name || "",
+          computer_name: F.computer_name || "",
+          timezone: F.timezone || "",
+          telegram_bot_username: F.telegram_bot_username || "",
+        },
+        fields: F,
+      });
       const rowText = (label: string, val: string) =>
         val
           ? `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;width:42%;vertical-align:top;font-size:13px;">${escapeHtml(label)}</td><td style="padding:6px 0;font-size:13px;color:#1a1a1a;">${escapeHtml(val)}</td></tr>`
           : "";
       const rowCred = (label: string, val: string) =>
-        val
+        val && storedId !== null
+          ? `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;width:42%;vertical-align:top;font-size:13px;">${escapeHtml(label)}</td><td style="padding:6px 0;font-size:13px;color:#1a1a1a;">Provided</td></tr>`
+          : val
           ? `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;width:42%;vertical-align:top;font-size:13px;">${escapeHtml(label)}</td><td style="padding:6px 0;font-size:13px;color:#1a1a1a;font-family:'Courier New',monospace;word-break:break-all;">${escapeHtml(val)}</td></tr>`
           : "";
       const sectionHead = (t: string) =>
@@ -249,11 +267,16 @@ export async function POST(req: NextRequest) {
           <table style="width:100%;border-collapse:collapse;">
             ${rowCred("Anthropic API Key", F.anthropic_api_key || "")}
             ${rowCred("Telegram Bot Token", F.telegram_bot_token || "")}
-            ${rowCred("Telegram Bot Username", F.telegram_bot_username || "")}
+            ${rowText("Telegram Bot Username", F.telegram_bot_username || "")}
             ${rowCred("Fireflies API Key", F.fireflies_api_key || "")}
             ${rowCred("Tavily API Key", F.tavily_api_key || "")}
-            ${rowCred("Calendly URL", F.calendly_url || "")}
+            ${rowText("Calendly URL", F.calendly_url || "")}
           </table>
+          ${
+            storedId !== null
+              ? `<p style="font-size:13px;margin:12px 0 0;"><a href="https://apolloclaw.ai/admin/setup-keys?email=${encodeURIComponent(email)}" style="color:#E8342A;font-weight:700;">View the keys in Super Admin</a> <span style="color:#6b7280;">(stored encrypted; each view is logged)</span></p>`
+              : ""
+          }
           ${itBlock}
         </div>
       `;
@@ -273,7 +296,7 @@ export async function POST(req: NextRequest) {
           `<b>Assistant:</b> ${fields.assistant_name || ""}\n` +
           `<b>Computer:</b> ${fields.computer_name || ""}\n` +
           `<b>Timezone:</b> ${fields.timezone || ""}\n` +
-          `<i>Full credentials in inbox.</i>`
+          (storedId !== null ? `<i>Credentials in Super Admin, Setup keys.</i>` : `<i>Full credentials in inbox.</i>`)
       );
 
       // Write credentials to tbbz agent_setup (if client has a dashboard account)
