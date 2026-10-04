@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DoorOpen, ExternalLink, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -8,6 +8,7 @@ import { formatDate, statusVariant, usd } from "@/lib/format";
 import { getAgentType } from "@/config/agent-types";
 import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAgentDetail, Budget } from "@/lib/types";
+import type { RosterAgent } from "@/components/chat/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -120,6 +121,7 @@ export function InstanceList({ detail }: { detail: Detail | undefined }) {
               <td className="px-3 py-2">
                 <div className="font-medium">{a.name || "Untitled agent"}</div>
                 <div className="font-mono text-[11px] text-muted-foreground">{a.agent37_id}</div>
+                {runtimeForTemplate(a.template) === "OpenClaw" && <InstanceTeam agentId={a.agent37_id} />}
               </td>
               <td className="px-3 py-2">
                 <div className="flex items-center gap-1">
@@ -184,6 +186,51 @@ export function InstanceList({ detail }: { detail: Detail | undefined }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+// The other agents living on an instance, under its name. The product row is one agent per
+// instance, so the SEO agent on Timmy Turner was invisible here; this reads the box the same way
+// the customer's My Agent(s) page does. Read once when the customer row is expanded, which is
+// the only time this table renders, and silent when the box cannot be read.
+function InstanceTeam({ agentId }: { agentId: string }) {
+  const [team, setTeam] = useState<RosterAgent[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ ok: boolean; agents: RosterAgent[] }>(`/api/admin/agents/${agentId}/roster`)
+      .then((res) => {
+        if (!cancelled) setTeam(res.ok ? res.agents.filter((x) => x.id !== "main") : []);
+      })
+      .catch(() => {
+        if (!cancelled) setTeam([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId]);
+
+  if (!team || team.length === 0) return null;
+  return (
+    <ul className="mt-1.5 space-y-1 border-l pl-2" aria-label="Other agents on this instance">
+      {team.map((t) => {
+        const label = t.name || t.id;
+        return (
+          <li key={t.id} className="flex items-center gap-1.5">
+            {t.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={t.avatarUrl} alt="" className="size-4 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-secondary text-[9px] font-semibold text-muted-foreground">
+                {label.slice(0, 1).toUpperCase()}
+              </span>
+            )}
+            <span className="font-medium">{label}</span>
+            {t.role && <span className="text-[11px] text-muted-foreground">{t.role}</span>}
+            {t.telegram && <span className="text-[11px] text-muted-foreground/70">· Telegram</span>}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
