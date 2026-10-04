@@ -10,9 +10,10 @@ import { PRICING_FAQ_ANSWER } from "@/config/agent-plans";
 export type Faq = { q: string; a: string };
 
 /** The one answer to "how long does setup take?", everywhere (David, Oct 4 2026: the online
- *  build, custom agent included, takes about 15 minutes). */
+ *  build, custom agent included, takes about 15 minutes; hands-on training is an add-on, or part
+ *  of a custom build, so it is kept out of this answer). */
 export const SETUP_TIME_ANSWER =
-  "About 15 minutes. Answer a short questionnaire and your custom agent is built for you online, running on its own private server. Then 30 days of hands-on training as it learns how you work.";
+  "About 15 minutes. Answer a short questionnaire and your custom agent is built for you online, running on its own private server and ready to connect to Telegram or Slack.";
 
 export const HOME_FAQS: Faq[] = [
   {
@@ -29,7 +30,7 @@ export const HOME_FAQS: Faq[] = [
   },
   {
     q: "What does support look like after launch?",
-    a: "Every build includes 30 days of hands-on training. After that, ongoing support plans keep your agent sharp as your business grows.",
+    a: "Help is a message away: chat with our team on Telegram, or email support. Hands-on onboarding and 30 days of training are available as an add-on, and come with every custom build.",
   },
   {
     q: "Is this a fit for a business my size?",
