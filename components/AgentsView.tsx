@@ -131,8 +131,9 @@ export function AgentsView() {
             <div className="flex flex-wrap items-center justify-end gap-2">
               {plan && home && <AddAgentOrUpgrade usage={plan} instanceId={home.agent37_id} mainName={homeName} />}
               {/* The seat purchase is the legacy way to add an agent ($449 + $249/mo, a whole
-                  instance). A plan customer adds agents onto their plan instead, above. */}
-              {role === "admin" && plan?.tier.id === "legacy" && (
+                  instance). A plan customer adds agents onto their plan instead, above, and so
+                  does a workspace with its own limit set in Super Admin (David, Oct 4 2026). */}
+              {role === "admin" && plan?.tier.id === "legacy" && !plan.custom && (
                 <AddAgentButton
                   trigger={
                     <Button variant="ghost" size="sm">
