@@ -3,7 +3,7 @@ import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
-import { MEDICAL_FAQS } from "@/config/faqs";
+import { MEDICAL_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Medical AI Agent | AI for Medical Practices & Healthcare | Apollo[Claw]" },
@@ -38,13 +38,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/industries/medical-practices#faq",
-      mainEntity: [
-        { "@type": "Question", name: "What EHR and practice management systems does the Medical Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to athenahealth, Epic, DrChrono, Kareo, Jane App, and most major EHR and practice management platforms." } },
-        { "@type": "Question", name: "Is this HIPAA compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We execute a Business Associate Agreement with every healthcare client. All data handling follows HIPAA requirements throughout." } },
-        { "@type": "Question", name: "Will it replace my front desk staff?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the high-volume repetitive work, reminders, intake collection, follow-up sequences, so your staff can focus on patients in the room." } },
-        { "@type": "Question", name: "How does the scheduling integration work?", acceptedAnswer: { "@type": "Answer", text: "We connect to your existing scheduling system. The agent reads availability and books, confirms, and reschedules appointments automatically." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most practices are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
-      ],
+      mainEntity: faqEntities(MEDICAL_FAQS),
     },
   ],
 };

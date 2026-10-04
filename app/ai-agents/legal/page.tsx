@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
-import { LAW_AGENT_FAQS } from "@/config/faqs";
+import { LAW_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Law AI Agent | Contract Drafting & Review for Businesses | Apollo[Claw]" },
@@ -38,13 +38,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/ai-agents/legal#faq",
-      mainEntity: [
-        { "@type": "Question", name: "Is the Law Agent a substitute for a lawyer?", acceptedAnswer: { "@type": "Answer", text: "No. It is a drafting and review tool, not a licensed attorney, and it does not provide legal advice. It removes the production work of drafting and reviewing so your team or your counsel can focus on judgment. A qualified attorney should review anything binding before you sign or file." } },
-        { "@type": "Question", name: "What tools does the Law Agent work with?", acceptedAnswer: { "@type": "Answer", text: "It works where your documents already live: Microsoft Word, Google Docs, DocuSign, common CLM platforms, and your file storage in SharePoint, OneDrive, Google Drive, or Box. Every engagement is scoped individually." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most clients are live within two weeks. We onboard the agent on your templates and standard positions, connect your tools, and configure how it drafts and reviews." } },
-        { "@type": "Question", name: "Is our data confidential?", acceptedAnswer: { "@type": "Answer", text: "Yes. We use least-privilege access throughout and honor the confidentiality rules you set, including keeping privileged material off shared systems. Your data does not pass through servers we do not control." } },
-        { "@type": "Question", name: "Can it draft from our own templates and playbook?", acceptedAnswer: { "@type": "Answer", text: "Yes. That is the point. The agent works from your template library and standard positions, so first drafts and redlines start from your language, not a generic form." } },
-      ],
+      mainEntity: faqEntities(LAW_AGENT_FAQS),
     },
   ],
 };

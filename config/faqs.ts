@@ -2,7 +2,9 @@
 // FAQ question we have on the entire site"). Each page imports its own list from here and /faq
 // renders all of them, so a question edited here changes on both at once.
 //
-// The answers are the pages' own copy, moved here word for word.
+// The answers follow the site's copy rules (positive framing, no em dashes, no "actually" or
+// "new"); rewritten to them Oct 4 2026. Setup time is one answer everywhere: about two weeks,
+// then 30 days of hands-on training.
 
 import { PRICING_FAQ_ANSWER } from "@/config/agent-plans";
 
@@ -38,23 +40,23 @@ export const HOME_FAQS: Faq[] = [
 export const GENERAL_FAQS: Faq[] = [
   {
     q: "What exactly is an AI agent?",
-    a: "An AI agent is a software system that can take actions on your behalf - reading emails, scheduling meetings, updating your CRM, researching topics, and more. Unlike a chatbot, an agent actually does things; it doesn't just answer questions.",
+    a: "An AI agent is software that takes action on your behalf: reading email, scheduling meetings, updating your CRM, researching topics, and more. A chatbot answers questions; an agent gets the work done.",
   },
   {
     q: "Do I need any technical expertise to use this?",
-    a: "No. We handle all the technical setup. You interact with your AI agent through Telegram or WhatsApp, the same way you'd text a team member.",
+    a: "Our team handles all the technical setup. You work with your agent through Telegram, Slack, or email, the same way you'd message a team member.",
   },
   {
     q: "What tools does it connect to?",
-    a: "Gmail, Google Calendar, common CRMs (HubSpot, Salesforce, Pipedrive), Slack, Notion, Google Drive, and dozens of other tools via API integrations. We tailor the integrations to what you actually use.",
+    a: "Gmail, Google Calendar, common CRMs (HubSpot, Salesforce, Pipedrive), Slack, Notion, Google Drive, and hundreds of other tools. We tailor the connections to the tools you use every day.",
   },
   {
     q: "How long does setup take?",
-    a: "Most clients are live within 2-4 weeks. Simple setups can be live in a few days.",
+    a: "Most agents are live within about two weeks, followed by 30 days of hands-on training so it fits the way you work.",
   },
   {
     q: "Is my data secure?",
-    a: "Yes. We build on your infrastructure wherever possible. Your data does not go through third-party servers we don't control. See our Security page for details.",
+    a: "Yes. Every agent is privately deployed for one client, on a dedicated private server or your own Mac Mini, and your data stays in your environment and your accounts. Our Security page has the details.",
   },
   {
     q: "How much does it cost?",
@@ -62,18 +64,18 @@ export const GENERAL_FAQS: Faq[] = [
   },
   {
     q: "What if I want to cancel?",
-    a: "No long-term contracts required. Month-to-month arrangements are available after your initial setup period.",
+    a: "Plans run month to month after your initial setup period, and you can change or cancel your plan from your billing settings at any time.",
   },
   {
     q: "How is Apollo[Claw] different from just using ChatGPT?",
-    a: "ChatGPT is a conversation tool. Apollo[Claw] agents are connected to your actual business systems and take autonomous action. The difference is like having a calculator vs. having a bookkeeper.",
+    a: "ChatGPT is a conversation tool. Apollo[Claw] agents are connected to your business systems and take action on their own. The difference is like having a calculator versus having a bookkeeper.",
   },
 ];
 
 export const CEO_AGENT_FAQS: Faq[] = [
   {
     q: "What exactly is an AI bot?",
-    a: "An AI bot is a software system connected to your actual business tools that takes autonomous action on your behalf. It reads, prioritizes, drafts, tracks, and follows up, without being asked.",
+    a: "An AI bot is software connected to your business tools that takes action on your behalf. It reads, prioritizes, drafts, tracks, and follows up on its own initiative.",
   },
   {
     q: "How is this different from using ChatGPT or a generic AI tool?",
@@ -85,7 +87,7 @@ export const CEO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "Is my data secure?",
-    a: "Yes. We build on your infrastructure wherever possible. All connections use least-privilege access and your data does not pass through servers we do not control.",
+    a: "Yes. We build on your infrastructure wherever possible, every connection uses least-privilege access, and your data stays on servers you or we control.",
   },
   {
     q: "What does it cost?",
@@ -93,7 +95,7 @@ export const CEO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "Do I need a technical team to run this?",
-    a: "No. We handle all technical setup. You interact with your bot through Telegram or email, the same way you would communicate with a team member.",
+    a: "Our team handles all the technical setup. You work with your bot through Telegram, Slack, or email, the same way you would with a team member.",
   },
 ];
 
@@ -108,11 +110,11 @@ export const CFO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "Will it replace my finance team?",
-    a: "No. It removes the production work, report generation, data pulls, reconciliation tracking, so your team can focus on analysis, interpretation, and strategic advice.",
+    a: "It frees them up. It takes on the production work, such as report generation, data pulls, and reconciliation tracking, so your team can focus on analysis, interpretation, and strategic advice.",
   },
   {
     q: "Is our financial data secure?",
-    a: "Yes. We connect using read-only API credentials wherever possible and use least-privilege access throughout. Your data does not pass through servers we do not control.",
+    a: "Yes. We connect with read-only credentials wherever possible and least-privilege access throughout, and your data stays on servers you or we control.",
   },
   {
     q: "What does it cost?",
@@ -127,7 +129,7 @@ export const CFO_AGENT_FAQS: Faq[] = [
 export const LAW_AGENT_FAQS: Faq[] = [
   {
     q: "Is the Law Agent a substitute for a lawyer?",
-    a: "No. It is a drafting and review tool, not a licensed attorney, and it does not provide legal advice. It removes the production work so your team or your counsel can focus on judgment. A qualified attorney should review anything binding before you sign or file, and the agent recommends exactly that.",
+    a: "It supports your lawyers. It is a drafting and review tool that takes on the production work so your team or your counsel can focus on judgment. Legal advice comes from a licensed attorney, and the agent recommends that a qualified attorney review anything binding before you sign or file.",
   },
   {
     q: "What tools does the Law Agent work with?",
@@ -143,7 +145,7 @@ export const LAW_AGENT_FAQS: Faq[] = [
   },
   {
     q: "Is our data confidential?",
-    a: "Yes. We use least-privilege access throughout and honor the confidentiality rules you set, including keeping privileged material off shared systems. Your data does not pass through servers we do not control.",
+    a: "Yes. We use least-privilege access throughout and honor the confidentiality rules you set, including keeping privileged material on systems you approve. Your data stays on servers you or we control.",
   },
   {
     q: "What does it cost?",
@@ -158,15 +160,15 @@ export const INSURANCE_FAQS: Faq[] = [
   },
   {
     q: "How does it handle renewal outreach?",
-    a: "The agent identifies policies approaching renewal, initiates outreach at your configured lead time (typically 90 days), follows up on non-responses, and escalates to your producers when a decision is needed.",
+    a: "The agent identifies policies approaching renewal, starts outreach at your chosen lead time (typically 90 days), follows up until it hears back, and brings in your producers when a decision is needed.",
   },
   {
     q: "Will it replace my service team?",
-    a: "No. It handles the first-touch communication, follow-up sequences, and status updates. Your team handles coverage decisions, complex questions, and relationship conversations.",
+    a: "It works alongside them. The agent handles first-touch communication, follow-up sequences, and status updates, and your team handles coverage decisions, complex questions, and relationship conversations.",
   },
   {
     q: "Is client data secure?",
-    a: "Yes. We connect using least-privilege API credentials and your data does not pass through servers we do not control. All connections are encrypted.",
+    a: "Yes. We connect with least-privilege credentials, every connection is encrypted, and your data stays on servers you or we control.",
   },
   {
     q: "How long does it take to get up and running?",
@@ -189,11 +191,11 @@ export const LAW_FIRMS_FAQS: Faq[] = [
   },
   {
     q: "Is client data secure and ethically compliant?",
-    a: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is reviewed against applicable bar rules in your jurisdiction. We do not store client communications on third-party servers without explicit authorization.",
+    a: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is reviewed against applicable bar rules in your jurisdiction, and client communications stay on your systems unless you authorize otherwise.",
   },
   {
     q: "Will it replace my paralegals?",
-    a: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive legal support instead of coordination.",
+    a: "It gives them time back. It takes on the first-touch admin work, such as intake, scheduling, status updates, and document routing, so your paralegals can focus on substantive legal support.",
   },
   {
     q: "How long does it take to get up and running?",
@@ -212,15 +214,15 @@ export const MEDICAL_FAQS: Faq[] = [
   },
   {
     q: "Is this HIPAA compliant?",
-    a: "Yes. We execute a Business Associate Agreement with every healthcare client. All data handling follows HIPAA requirements and we do not store protected health information on systems outside your approved infrastructure.",
+    a: "Yes. We sign a Business Associate Agreement with every healthcare client, all data handling follows HIPAA requirements, and protected health information stays on infrastructure you approve.",
   },
   {
     q: "Will it replace my front desk staff?",
-    a: "No. It removes the high-volume repetitive work, reminders, intake collection, follow-up sequences, so your staff can focus on the patients in front of them.",
+    a: "It supports them. It takes on the high-volume repetitive work, such as reminders, intake collection, and follow-up sequences, so your staff can focus on the patients in front of them.",
   },
   {
     q: "How does the scheduling integration work?",
-    a: "We connect to your existing scheduling system. The agent reads availability and books, confirms, and reschedules appointments based on rules you define. No double-booking, no overrides.",
+    a: "We connect to the scheduling system you already use. The agent reads availability and books, confirms, and reschedules appointments by the rules you define, so every booking fits your calendar.",
   },
   {
     q: "How long does it take to get up and running?",
@@ -243,7 +245,7 @@ export const REAL_ESTATE_FAQS: Faq[] = [
   },
   {
     q: "Will it sound like me or like a robot?",
-    a: "We train the agent on your communication style during onboarding. Most clients tell us their prospects cannot tell the difference, and some prefer it because it is always prompt and professional.",
+    a: "We train the agent on your communication style during onboarding. Most clients tell us their prospects hear the same voice they know, and many prefer it because every reply is prompt and professional.",
   },
   {
     q: "How long does it take to get up and running?",
@@ -255,25 +257,36 @@ export const REAL_ESTATE_FAQS: Faq[] = [
   },
   {
     q: "Do I need a technical team to run this?",
-    a: "No. We handle all technical setup. You interact with your agent through the same tools you already use: email, text, or your CRM.",
+    a: "Our team handles all the technical setup. You work with your agent through the tools you already use: email, text, or your CRM.",
   },
 ];
 
 export const PERSONAL_INJURY_FAQS: Faq[] = [
   {
     q: "What case management systems does the agent connect to?",
-    a: "We connect to Filevine, CASEpeer, Litify, Clio, MyCase, and most major personal injury practice platforms. Firms running on Outlook and shared drives work too - every engagement is scoped individually.",
+    a: "We connect to Filevine, CASEpeer, Litify, Clio, MyCase, and most major personal injury practice platforms. Firms running on Outlook and shared drives are covered too, and every engagement is scoped individually.",
   },
   {
     q: "Does the AI give legal advice to potential clients?",
-    a: "No. The agent is an intake specialist and case companion, not a lawyer. It collects the facts of the injury, screens against your case criteria, schedules the consultation, and keeps clients informed - attorneys make every legal judgment.",
+    a: "Legal advice stays with your attorneys. The agent is an intake specialist and case companion: it collects the facts of the injury, screens against your case criteria, schedules the consultation, and keeps clients informed, while your attorneys make every legal judgment.",
   },
   {
-    q: "How fast does it respond to a new injury inquiry?",
-    a: "Within minutes, at any hour. Injured people call whoever answers first - the agent responds immediately, collects the incident details, and gets a consultation on the calendar before a competing firm picks up the phone.",
+    q: "How fast does it respond to an injury inquiry?",
+    a: "Within minutes, at any hour. Injured people call whoever answers first, so the agent responds right away, collects the incident details, and books the consultation while the inquiry is fresh.",
   },
   {
     q: "How long does it take to get up and running?",
     a: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
   },
 ];
+
+/** A page's FAQs as schema.org Question entities, so a page's structured data always says what
+ *  its accordion says. Pages used to carry their own copy of every answer as JSON-LD text, which
+ *  drifted the first time an answer here was edited. */
+export function faqEntities(faqs: Faq[]) {
+  return faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  }));
+}

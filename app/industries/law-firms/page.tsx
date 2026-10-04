@@ -3,7 +3,7 @@ import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
-import { LAW_FIRMS_FAQS } from "@/config/faqs";
+import { LAW_FIRMS_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo[Claw]" },
@@ -38,13 +38,7 @@ const jsonLd = {
     {
       "@type": "FAQPage",
       "@id": "https://apolloclaw.ai/industries/law-firms#faq",
-      mainEntity: [
-        { "@type": "Question", name: "What case management systems does the Law Agent connect to?", acceptedAnswer: { "@type": "Answer", text: "We connect to Clio, MyCase, PracticePanther, Filevine, and most major legal practice management platforms." } },
-        { "@type": "Question", name: "How does client intake work?", acceptedAnswer: { "@type": "Answer", text: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects the relevant facts, and schedules consultations with the right attorney." } },
-        { "@type": "Question", name: "Is client data secure and ethically compliant?", acceptedAnswer: { "@type": "Answer", text: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is configured to meet your firm's ethical obligations and bar requirements." } },
-        { "@type": "Question", name: "Will it replace my paralegals?", acceptedAnswer: { "@type": "Answer", text: "No. It removes the first-touch admin work: intake, scheduling, status updates, document routing, so your paralegals focus on substantive case support." } },
-        { "@type": "Question", name: "How long does it take to get up and running?", acceptedAnswer: { "@type": "Answer", text: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training." } },
-      ],
+      mainEntity: faqEntities(LAW_FIRMS_FAQS),
     },
   ],
 };
