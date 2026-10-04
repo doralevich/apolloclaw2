@@ -39,6 +39,7 @@ type Verify = {
   bind?: unknown;
   memorySearch?: { enabled: boolean; provider: string | null; extraPaths: unknown } | null;
   sharedBrain?: boolean;
+  secondBrain?: boolean;
   cli?: string;
 };
 
@@ -64,9 +65,8 @@ function summarize(v?: Verify): string {
     `config: ${v.file ?? "?"}`,
     `agents: ${JSON.stringify(v.agents ?? null)}`,
     `chat endpoint for the tabs: ${v.httpChat ? "on" : "off"}`,
-    `shared company brain: ${v.sharedBrain ? "COMPANY.md present" : "not found"}`,
-    `memory search: ${v.memorySearch ? (v.memorySearch.enabled ? `on (${v.memorySearch.provider ? `${v.memorySearch.provider} embeddings` : "default: semantic with a provider key, keyword without"})` : "off") : "default"}`,
-    `indexed shared paths: ${JSON.stringify(v.memorySearch?.extraPaths ?? null)}`,
+    `shared company brain: ${v.sharedBrain ? "COMPANY.md present" : "not found"}${v.secondBrain ? ", loaded by Atlas" : ", not loaded by Atlas"}`,
+    `memory search: ${v.memorySearch ? (v.memorySearch.enabled ? "on (each agent's own memory; the company brain is loaded context, not search)" : "off") : "default"}`,
     `ownership: ${JSON.stringify(v.ownership ?? null)} | default marker on: ${JSON.stringify(v.defaultMarker ?? [])}`,
     `owners: ${JSON.stringify(v.owners ?? null)}`,
     `telegram accounts: ${JSON.stringify(v.telegramAccounts ?? null)}`,
@@ -177,7 +177,8 @@ export function SecondAgentDialog({
             Adds a second agent named Atlas to this instance, with agent-to-agent messaging
             switched on between the two. Atlas is a CFO who knows one fact: cash on hand is
             $412,000. {agentName} keeps everything it has, and the chat page shows a tab per
-            agent from then on. Both agents share one company brain, so a second agent knows the
+            agent from then on. The shared company brain (shared/COMPANY.md, seeded from what
+            {agentName} knows about the owner) is loaded into Atlas as context, so it knows the
             company while keeping its own role.
           </DialogDescription>
         </DialogHeader>
@@ -258,7 +259,7 @@ export function SecondAgentDialog({
             <li>Press Add Atlas. The instance restarts; wait a minute, then press Check.</li>
             <li>Open the chat page. There is a tab for {agentName} and one for Atlas.</li>
             <li>Ask Atlas: What is our cash on hand? Expect $412,000.</li>
-            <li>Ask Atlas who the company is. It reads the shared company brain, seeded from what {agentName} already knows about the owner.</li>
+            <li>Ask Atlas who the owner is. It knows from the shared company brain loaded into its context, seeded from what {agentName} knows.</li>
             <li>Ask {agentName}: Ask Atlas what our cash on hand is and tell me. The same number back means the two are talking.</li>
             <li>Remove Atlas when done. That restores the config the box had before; the shared company file is kept.</li>
           </ol>
