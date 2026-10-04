@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ENTERPRISE, PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { EnterpriseContactButton, EnterpriseForm } from "@/components/pricing/EnterpriseForm";
-import { ClipboardList, Headphones, Layers, Network, Rocket, Users } from "lucide-react";
+import { Bot, ClipboardList, Headphones, Layers, MessageCircle, Network, Plug, Rocket, Server, Users, type LucideIcon } from "lucide-react";
 import { OG_IMAGES } from "@/lib/seo";
 
 // THE PRICING PAGE (David, Oct 4 2026): the plans, priced in public, with real content under them.
@@ -64,12 +64,17 @@ function Eyebrow({ children, onDark = false }: { children: React.ReactNode; onDa
   );
 }
 
-function Check({ color = RED }: { color?: string }) {
-  return (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden className="mt-[4px] shrink-0">
-      <path d="M3 8.5l3.2 3.2L13 5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+// An icon for each feature line on the plan cards (David, Oct 4 2026: icons rather than check
+// marks, like the Enterprise card). Matched on the line's wording, so a line added in
+// config/agent-plans.ts picks one up without a change here; anything unmatched gets the agent.
+function lineIcon(line: string): LucideIcon {
+  const l = line.toLowerCase();
+  if (l.includes("hand work")) return Network;
+  if (l.includes("hosting")) return Server;
+  if (l.includes("connect") || l.includes("apps")) return Plug;
+  if (l.includes("telegram") || l.includes("slack") || l.includes("whatsapp")) return MessageCircle;
+  if (l.includes("support")) return Headphones;
+  return Bot;
 }
 
 const BTN =
@@ -116,7 +121,7 @@ const FAQS = [
   },
   {
     q: "Do you build custom agents?",
-    a: `Yes. Custom corporate builds start with a call, are scoped with you, and can run on your own private server, starting at ${ENTERPRISE.privateServersFrom}.`,
+    a: "Yes. Custom corporate builds start with a call, are scoped with you, and can run on your own private server.",
   },
   {
     q: "What happens after I sign up?",
@@ -140,7 +145,7 @@ export default function PricingPage() {
           className="font-heading mx-auto max-w-3xl text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-[1.08] tracking-tight"
           style={{ textWrap: "balance" }}
         >
-          AI agents that work for your business, priced by the month
+          AI Agents That Work for Your Business.
         </h1>
         <p className="font-body mx-auto mt-5 max-w-2xl text-[1.125rem] leading-[1.6]" style={{ color: INK_MUTED }}>
           Pick how many agents you want working for you. No setup fee, and you can cancel any time.
@@ -172,36 +177,39 @@ export default function PricingPage() {
                     Most popular
                   </span>
                 )}
-                <h2 className="font-heading text-[1.5rem] font-bold leading-tight">{plan.label}</h2>
-                <p className="font-body mt-1.5 text-[15px] leading-[1.5]" style={{ color: INK_MUTED }}>
+                <h2 className="font-heading text-[1.35rem] font-bold leading-tight">{plan.label}</h2>
+                <p className="font-body mt-1.5 text-[14px] leading-[1.5]" style={{ color: INK_MUTED }}>
                   {plan.tagline}
                 </p>
-                <p className="mt-6 flex items-baseline gap-1.5">
-                  <span className="font-heading text-[2.6rem] font-extrabold leading-none tabular-nums">
+                <p className="mt-5 flex items-baseline gap-1.5">
+                  <span className="font-heading text-[2.3rem] font-extrabold leading-none tabular-nums">
                     {dollars(plan.monthlyCents ?? 0)}
                   </span>
-                  <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
+                  <span className="font-body text-[14px]" style={{ color: INK_MUTED }}>
                     / month
                   </span>
                 </p>
                 {/* The plan at a glance, in its own box: who it is for and that usage is in. */}
-                <div className="mt-6 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: SOFT }}>
-                  <p className="font-body text-[15px] font-semibold">{plan.agentsText}</p>
-                  <p className="font-body text-[14px]" style={{ color: INK_MUTED }}>
+                <div className="mt-5 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: SOFT }}>
+                  <p className="font-body text-[14px] font-semibold">{plan.agentsText}</p>
+                  <p className="font-body text-[13px]" style={{ color: INK_MUTED }}>
                     {plan.usageText}
                   </p>
                 </div>
-                <ul className="mt-6 grid flex-1 content-start gap-2.5 border-t pt-6" style={{ borderColor: RULE }}>
-                  {lines.map((line) => (
-                    <li key={line} className="font-body flex gap-2.5 text-[15px] leading-[1.5]">
-                      <Check />
-                      {line}
-                    </li>
-                  ))}
+                <ul className="mt-5 grid flex-1 content-start gap-2.5 border-t pt-5" style={{ borderColor: RULE }}>
+                  {lines.map((line) => {
+                    const Icon = lineIcon(line);
+                    return (
+                      <li key={line} className="font-body flex items-start gap-2.5 text-[14px] leading-[1.5]">
+                        <Icon className="mt-0.5 size-[17px] shrink-0" style={{ color: RED_INK }} aria-hidden />
+                        {line}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <Link
                   href={`/onboard?plan=${plan.id}`}
-                  className={`${BTN} mt-8 w-full`}
+                  className={`${BTN} mt-7 w-full`}
                   style={
                     isFeatured
                       ? { background: RED, color: "#FFFFFF" }
@@ -222,23 +230,23 @@ export default function PricingPage() {
             style={{ background: SOFT, border: `1px solid ${RULE}`, boxShadow: "0 1px 2px rgba(26,26,26,0.04)" }}
             aria-label="Enterprise"
           >
-            <h2 className="font-heading text-[1.5rem] font-bold leading-tight">{ENTERPRISE.label}</h2>
-            <p className="font-body mt-1.5 text-[15px] leading-[1.5]" style={{ color: INK_MUTED }}>
+            <h2 className="font-heading text-[1.35rem] font-bold leading-tight">{ENTERPRISE.label}</h2>
+            <p className="font-body mt-1.5 text-[14px] leading-[1.5]" style={{ color: INK_MUTED }}>
               {ENTERPRISE.headline}
             </p>
-            <p className="mt-6 flex items-baseline gap-1.5">
-              <span className="font-heading text-[2.6rem] font-extrabold leading-none">Custom</span>
+            <p className="mt-5 flex items-baseline gap-1.5">
+              <span className="font-heading text-[2.3rem] font-extrabold leading-none">Custom</span>
             </p>
-            <div className="mt-6 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: "#FFFFFF" }}>
-              <p className="font-body text-[15px] font-semibold">As many agents as you need, several users</p>
-              <p className="font-body text-[14px]" style={{ color: INK_MUTED }}>
-                Private servers from {ENTERPRISE.privateServersFrom}
+            <div className="mt-5 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: "#FFFFFF" }}>
+              <p className="font-body text-[14px] font-semibold">As many agents as you need</p>
+              <p className="font-body text-[13px]" style={{ color: INK_MUTED }}>
+                Several users, built with your team
               </p>
             </div>
-            <ul className="mt-6 grid flex-1 content-start gap-2.5 border-t pt-6" style={{ borderColor: RULE }}>
+            <ul className="mt-5 grid flex-1 content-start gap-2.5 border-t pt-5" style={{ borderColor: RULE }}>
               {ENTERPRISE_FEATURES.map(({ label, Icon }) => (
-                <li key={label} className="font-body flex items-center gap-2.5 text-[15px] leading-[1.5]">
-                  <Icon className="size-[18px] shrink-0" style={{ color: RED_INK }} aria-hidden />
+                <li key={label} className="font-body flex items-start gap-2.5 text-[14px] leading-[1.5]">
+                  <Icon className="mt-0.5 size-[17px] shrink-0" style={{ color: RED_INK }} aria-hidden />
                   {label}
                 </li>
               ))}
@@ -247,12 +255,11 @@ export default function PricingPage() {
               href={SCHEDULE_CONSULT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${BTN} mt-8 w-full`}
+              className={`${BTN} mt-7 w-full`}
               style={{ background: INK, color: "#FFFFFF" }}
             >
               Book a call
             </a>
-            <EnterpriseContactButton className="mt-3 w-full" />
           </article>
         </div>
 
@@ -267,8 +274,7 @@ export default function PricingPage() {
                 Built upon your request.
               </p>
               <p className="font-body mt-2 text-[15px] leading-[1.55]" style={{ color: INK_MUTED }}>
-                Your own private server, scoped and built with you for a company, a firm or a division, starting at{" "}
-                {ENTERPRISE.privateServersFrom}.
+                Your own private server, scoped and built with you for a company, a firm or a division.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row md:flex-col md:w-52">
