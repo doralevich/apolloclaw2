@@ -95,6 +95,18 @@ export async function createLabBox(): Promise<{ box: LabBox; setup: { ok: boolea
   };
 }
 
+/** Run the two-agent setup again on the lab box and restart it. For a box created before the
+ *  setup learned something (the gateway's bind, Oct 4 2026), without paying for a fresh box. */
+export async function resetupLabBox(id: string): Promise<{ ok: boolean; note?: string }> {
+  const { data } = await agent37.listAgents();
+  const box = data.find((a) => a.id === id);
+  if (!box || !isLab(box)) {
+    throw Object.assign(new Error(`${id} is not a lab box; refusing to change it.`), { code: "not_lab" });
+  }
+  const setup = await setupSecondAgent(id, { httpChat: true });
+  return { ok: setup.ok, note: setup.note };
+}
+
 /** The questions the proof is made of, in the order to ask them. */
 export const LAB_QUESTIONS: { key: string; agent: string; text: string; expect: string }[] = [
   {

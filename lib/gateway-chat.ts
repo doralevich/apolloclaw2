@@ -1,6 +1,7 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
 import { openclawDashboardToken } from "@/lib/openclaw-dashboard";
+import { PORTS } from "@/config/agents";
 
 // The direct line to one agent on an instance: the OpenClaw gateway's own OpenAI-compatible
 // chat endpoint, which names the agent in the model field ("openclaw/atlas").
@@ -25,21 +26,32 @@ import { openclawDashboardToken } from "@/lib/openclaw-dashboard";
 // The gateway's port is read off the box, because the Agent37 image moves it: the default
 // 18789 is taken by their dashboard relay and the gateway runs on 28789.
 
-export interface GatewayAccess {
+/** One port of the box, as the edge exposes it: a signed URL and what the edge handed back. */
+export interface EdgeRoute {
+  port: number;
   /** The signed URL's origin, no path. */
   origin: string;
   /** The signed URL's query string ("?sig=..."), kept on every request; "" when it has none. */
   query: string;
   /** The signed URL as Agent37 returned it. Never logged. */
   signedUrl: string;
+  /** Cookie header assembled from what the signed URL set, when the cookie way is in use. */
+  cookie?: string;
+}
+
+export interface GatewayAccess {
+  /** The gateway's own port on the box, as read off it. */
   port: number;
+  /** The ports to try, gateway first. Agent37's edge could not connect to the gateway's own
+   *  port on the first live run ("container_unreachable", Oct 4 2026: the gateway binds to
+   *  loopback, and the edge connects over the container's network), while the dashboard
+   *  port, served by their relay, is the one the edge reaches every day. */
+  routes: EdgeRoute[];
   /** The gateway's own token. Never logged. */
   token: string;
   expiresAt: number;
-  /** The edge strategy that reached the gateway last time, or "none" when every way failed. */
-  via?: EdgeWay | "none";
-  /** Cookie header assembled from what the signed URL set, when the cookie way is in use. */
-  cookie?: string;
+  /** The route and way that reached the gateway last time, or "none" when every one failed. */
+  via?: { port: number; way: EdgeWay } | "none";
 }
 
 export type EdgeWay = "signed+bearer" | "signed" | "cookie+bearer" | "apikey";
@@ -84,54 +96,58 @@ export async function gatewayAccess(id: string, force = false): Promise<GatewayA
   if (!token) {
     throw Object.assign(new Error("No gateway token found on the instance."), { code: "no_gateway_token" });
   }
-  const signed = await agent37.signedUrl(id, port, 15 * 60);
-  const u = new URL(signed.url);
+  const ports = port === PORTS.dashboard ? [port] : [port, PORTS.dashboard];
+  const signed = await Promise.all(ports.map((p) => agent37.signedUrl(id, p, 15 * 60)));
+  const routes: EdgeRoute[] = signed.map((s, i) => {
+    const u = new URL(s.url);
+    return { port: ports[i], origin: u.origin, query: u.search, signedUrl: s.url };
+  });
   const access: GatewayAccess = {
-    origin: u.origin,
-    query: u.search,
-    signedUrl: signed.url,
     port,
+    routes,
     token,
-    // The signed URL carries its own expiry (seconds); stay well inside it.
-    expiresAt: Math.min(Date.now() + CACHE_MS, signed.expires_at * 1000 - 60_000),
+    // The signed URLs carry their own expiry (seconds); stay well inside it.
+    expiresAt: Math.min(Date.now() + CACHE_MS, ...signed.map((s) => s.expires_at * 1000 - 60_000)),
   };
   cache.set(id, access);
   return access;
 }
 
 // ---------------------------------------------------------------------------------------------
-// The edge: which way through it reaches the gateway?
+// The edge: which port, and which way through it, reaches the gateway?
 
 type WayRequest = { url: string; headers: Record<string, string> };
 
-/** The request shape for one way through the edge. Null when the way does not apply. */
-function shapeFor(way: EdgeWay, access: GatewayAccess, path: string): WayRequest | null {
+/** The request shape for one way through the edge on one route. Null when the way does not apply. */
+function shapeFor(way: EdgeWay, route: EdgeRoute, token: string, path: string): WayRequest | null {
   const apiKey = process.env.AGENT37_API_KEY || "";
   switch (way) {
     case "signed+bearer":
-      return { url: `${access.origin}${path}${access.query}`, headers: { Authorization: `Bearer ${access.token}` } };
+      return { url: `${route.origin}${path}${route.query}`, headers: { Authorization: `Bearer ${token}` } };
     case "signed":
-      return { url: `${access.origin}${path}${access.query}`, headers: {} };
+      return { url: `${route.origin}${path}${route.query}`, headers: {} };
     case "cookie+bearer":
-      if (!access.cookie) return null;
-      return { url: `${access.origin}${path}`, headers: { Authorization: `Bearer ${access.token}`, Cookie: access.cookie } };
+      if (!route.cookie) return null;
+      return { url: `${route.origin}${path}`, headers: { Authorization: `Bearer ${token}`, Cookie: route.cookie } };
     case "apikey":
       if (!apiKey) return null;
-      return { url: `${access.origin}${path}`, headers: { Authorization: `Bearer ${apiKey}` } };
+      return { url: `${route.origin}${path}`, headers: { Authorization: `Bearer ${apiKey}` } };
   }
 }
 
 /** Does this reply come from the gateway (any status) or from Agent37's edge in front of it? */
 function fromGateway(status: number, text: string): boolean {
   if (status === 200) return true;
-  // Agent37's own wording: {"error":"invalid_api_key"...}, "signed URL", "No route for ...".
-  if (/invalid_api_key|signed URL|No route for|agent37/i.test(text)) return false;
-  // Edge 404/502/503 pages are not the gateway either; a 401/403 without Agent37 wording is the
+  // Agent37's own wording: {"error":"invalid_api_key"...}, "signed URL", "No route for ...",
+  // {"error":"container_unreachable"} (the edge got in but could not connect to the port).
+  if (/invalid_api_key|signed URL|No route for|container_unreachable|agent37/i.test(text)) return false;
+  // A 5xx is the edge failing to reach something. A 401/403 without Agent37 wording is the
   // gateway's own refusal of the token, which still proves the request got through the edge.
   return status === 401 || status === 403 || status === 400 || status === 404 || status === 405;
 }
 
 export interface EdgeAttempt {
+  port: number;
   way: EdgeWay | "visit";
   status: number;
   /** "ok" reached the gateway and it answered; "gateway" it refused the token; "edge" Agent37 stopped it. */
@@ -141,27 +157,28 @@ export interface EdgeAttempt {
 
 /**
  * Visit the signed URL once, as a browser would, to learn whether it sets a cookie that later
- * requests ride on. Fills access.cookie when it does. Never records the URL or cookie values.
+ * requests ride on. Fills route.cookie when it does. Never records the URL or cookie values.
  */
-async function visitSignedUrl(access: GatewayAccess): Promise<EdgeAttempt> {
+async function visitSignedUrl(route: EdgeRoute): Promise<EdgeAttempt> {
   try {
-    const res = await fetch(access.signedUrl, { redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(15_000) });
+    const res = await fetch(route.signedUrl, { redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(15_000) });
     const text = await res.text().catch(() => "");
     const setCookies: string[] = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
     const names = setCookies.map((c) => c.split("=")[0].trim()).filter(Boolean);
     if (setCookies.length) {
-      access.cookie = setCookies.map((c) => c.split(";")[0].trim()).join("; ");
+      route.cookie = setCookies.map((c) => c.split(";")[0].trim()).join("; ");
     }
     const location = res.headers.get("location");
     const parts = [
       `status ${res.status}`,
       names.length ? `sets cookie ${names.join(", ")}` : "sets no cookie",
-      location ? `redirects to ${safeLocation(location, access.origin)}` : "",
+      location ? `redirects to ${safeLocation(location, route.origin)}` : "",
       text ? `body: ${text.replace(/\s+/g, " ").slice(0, 120)}` : "",
     ].filter(Boolean);
-    return { way: "visit", status: res.status, verdict: names.length ? "ok" : fromGateway(res.status, text) ? "gateway" : "edge", note: parts.join(" · ") };
+    const verdict: EdgeAttempt["verdict"] = res.status < 400 ? "ok" : fromGateway(res.status, text) ? "gateway" : "edge";
+    return { port: route.port, way: "visit", status: res.status, verdict, note: parts.join(" · ") };
   } catch (e) {
-    return { way: "visit", status: 0, verdict: "error", note: (e as Error).message };
+    return { port: route.port, way: "visit", status: 0, verdict: "error", note: (e as Error).message };
   }
 }
 
@@ -177,44 +194,46 @@ function safeLocation(location: string, origin: string): string {
 
 const WAYS: EdgeWay[] = ["signed+bearer", "signed", "cookie+bearer", "apikey"];
 
+type Found = { via: { port: number; way: EdgeWay } | "none"; models: string[]; attempts: EdgeAttempt[] };
+
 /**
- * Try every way through the edge with GET /v1/models, in order, and remember the first that the
- * gateway answers. Returns every attempt for the readout.
+ * Try every route and every way through the edge with GET /v1/models, in order, and remember
+ * the first that the gateway answers. Returns every attempt for the readout.
  */
-async function findEdgeWay(access: GatewayAccess): Promise<{ via: EdgeWay | "none"; models: string[]; attempts: EdgeAttempt[] }> {
+async function findEdgeWay(access: GatewayAccess): Promise<Found> {
   const attempts: EdgeAttempt[] = [];
-  let models: string[] = [];
-  attempts.push(await visitSignedUrl(access));
-  for (const way of WAYS) {
-    const shape = shapeFor(way, access, "/v1/models");
-    if (!shape) {
-      attempts.push({ way, status: 0, verdict: "error", note: way === "cookie+bearer" ? "skipped: the signed URL set no cookie" : "skipped: no AGENT37_API_KEY on the server" });
-      continue;
-    }
-    try {
-      const res = await fetch(shape.url, { headers: shape.headers, cache: "no-store", signal: AbortSignal.timeout(20_000) });
-      const text = await res.text();
-      let list: string[] = [];
+  for (const route of access.routes) {
+    attempts.push(await visitSignedUrl(route));
+    for (const way of WAYS) {
+      const shape = shapeFor(way, route, access.token, "/v1/models");
+      if (!shape) {
+        attempts.push({ port: route.port, way, status: 0, verdict: "error", note: way === "cookie+bearer" ? "skipped: the signed URL set no cookie" : "skipped: no AGENT37_API_KEY on the server" });
+        continue;
+      }
       try {
-        const j = JSON.parse(text) as { data?: { id?: string }[] };
-        list = Array.isArray(j.data) ? j.data.map((m) => m.id ?? "").filter(Boolean) : [];
-      } catch {
-        // not JSON; the note carries the start of it
+        const res = await fetch(shape.url, { headers: shape.headers, cache: "no-store", signal: AbortSignal.timeout(20_000) });
+        const text = await res.text();
+        let list: string[] = [];
+        try {
+          const j = JSON.parse(text) as { data?: { id?: string }[] };
+          list = Array.isArray(j.data) ? j.data.map((m) => m.id ?? "").filter(Boolean) : [];
+        } catch {
+          // not JSON; the note carries the start of it
+        }
+        const ok = res.status === 200 && list.length > 0;
+        const verdict: EdgeAttempt["verdict"] = ok ? "ok" : fromGateway(res.status, text) ? "gateway" : "edge";
+        attempts.push({ port: route.port, way, status: res.status, verdict, note: ok ? `lists ${list.join(", ")}` : text.replace(/\s+/g, " ").slice(0, 160) });
+        if (ok) {
+          access.via = { port: route.port, way };
+          return { via: access.via, models: list, attempts };
+        }
+      } catch (e) {
+        attempts.push({ port: route.port, way, status: 0, verdict: "error", note: (e as Error).message });
       }
-      const ok = res.status === 200 && list.length > 0;
-      const verdict: EdgeAttempt["verdict"] = ok ? "ok" : fromGateway(res.status, text) ? "gateway" : "edge";
-      attempts.push({ way, status: res.status, verdict, note: ok ? `lists ${list.join(", ")}` : text.replace(/\s+/g, " ").slice(0, 160) });
-      if (ok) {
-        models = list;
-        access.via = way;
-        return { via: way, models, attempts };
-      }
-    } catch (e) {
-      attempts.push({ way, status: 0, verdict: "error", note: (e as Error).message });
     }
   }
   access.via = "none";
-  return { via: "none", models, attempts };
+  return { via: "none", models: [], attempts };
 }
 
 /**
@@ -225,7 +244,8 @@ async function findEdgeWay(access: GatewayAccess): Promise<{ via: EdgeWay | "non
 export async function gatewayFetch(id: string, path: string, init?: RequestInit): Promise<Response> {
   const access = await gatewayAccess(id);
   const via = access.via ?? (await findEdgeWay(access)).via;
-  const shape = via === "none" ? null : shapeFor(via, access, path);
+  const route = via === "none" ? null : access.routes.find((r) => r.port === via.port);
+  const shape = via === "none" || !route ? null : shapeFor(via.way, route, access.token, path);
   if (!shape) {
     throw Object.assign(new Error("No way through the Agent37 edge reached the gateway."), { code: "no_edge_route" });
   }
@@ -239,12 +259,13 @@ export async function gatewayFetch(id: string, path: string, init?: RequestInit)
 export interface GatewayProbe {
   ok: boolean;
   status: number;
+  /** The gateway's own port on the box. */
   port: number;
   host: string;
   /** The agent targets the gateway lists (openclaw/<id>), when it answered. */
   models: string[];
-  /** The way that worked, or "none". */
-  via: EdgeWay | "none";
+  /** The port and way that worked ("28789 signed+bearer"), or "none". */
+  via: string;
   attempts: EdgeAttempt[];
   note?: string;
 }
@@ -257,7 +278,7 @@ export async function probeGateway(id: string): Promise<GatewayProbe> {
   } catch (e) {
     return { ok: false, status: 0, port: 0, host: "", models: [], via: "none", attempts: [], note: (e as Error).message };
   }
-  const host = new URL(access.origin).host;
+  const host = new URL(access.routes[0].origin).host;
   const found = await findEdgeWay(access);
   const winner = found.attempts.find((a) => a.verdict === "ok" && a.way !== "visit");
   const last = found.attempts.filter((a) => a.way !== "visit").pop();
@@ -267,9 +288,9 @@ export async function probeGateway(id: string): Promise<GatewayProbe> {
     port: access.port,
     host,
     models: found.models,
-    via: found.via,
+    via: found.via === "none" ? "none" : `${found.via.port} ${found.via.way}`,
     attempts: found.attempts,
-    ...(found.via === "none" ? { note: "No way through the edge reached the gateway. Chat falls back to running inside the box." } : {}),
+    ...(found.via === "none" ? { note: "No port and way through the edge reached the gateway. Chat falls back to running inside the box." } : {}),
   };
 }
 
