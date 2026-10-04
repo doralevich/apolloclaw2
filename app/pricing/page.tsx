@@ -125,8 +125,11 @@ const FAQS = [
 ];
 
 export default function PricingPage() {
-  const cols = PLANS_ON_SALE.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2";
-  const width = PLANS_ON_SALE.length >= 3 ? "max-w-6xl" : "max-w-4xl";
+  // The plans plus Enterprise as the last card (David, Oct 4 2026: "four across, make the fourth
+  // one the Enterprise"). Two by two on tablets, four across on desktop.
+  const cards = PLANS_ON_SALE.length + 1;
+  const cols = cards >= 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3";
+  const width = cards >= 4 ? "max-w-7xl" : "max-w-6xl";
 
   return (
     <div style={{ background: "#FFFFFF", color: INK }}>
@@ -153,7 +156,7 @@ export default function PricingPage() {
             return (
               <article
                 key={plan.id}
-                className="relative flex flex-col rounded-2xl p-8"
+                className="relative flex flex-col rounded-2xl p-6 md:p-7"
                 style={{
                   background: "#FFFFFF",
                   border: isFeatured ? `2px solid ${RED}` : `1px solid ${RULE}`,
@@ -163,7 +166,7 @@ export default function PricingPage() {
               >
                 {isFeatured && (
                   <span
-                    className="font-mono absolute -top-3 left-8 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white"
+                    className="font-mono absolute -top-3 left-6 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white"
                     style={{ background: RED }}
                   >
                     Most popular
@@ -174,7 +177,7 @@ export default function PricingPage() {
                   {plan.tagline}
                 </p>
                 <p className="mt-6 flex items-baseline gap-1.5">
-                  <span className="font-heading text-[3rem] font-extrabold leading-none tabular-nums">
+                  <span className="font-heading text-[2.6rem] font-extrabold leading-none tabular-nums">
                     {dollars(plan.monthlyCents ?? 0)}
                   </span>
                   <span className="font-body text-[15px]" style={{ color: INK_MUTED }}>
@@ -210,7 +213,75 @@ export default function PricingPage() {
               </article>
             );
           })}
+
+          {/* Enterprise, as the fourth card: the same shape as the plans, with a conversation in
+              place of a price. Contact us opens the form under the grid. */}
+          <article
+            id="enterprise"
+            className="relative flex scroll-mt-24 flex-col rounded-2xl p-6 md:p-7"
+            style={{ background: SOFT, border: `1px solid ${RULE}`, boxShadow: "0 1px 2px rgba(26,26,26,0.04)" }}
+            aria-label="Enterprise"
+          >
+            <h2 className="font-heading text-[1.5rem] font-bold leading-tight">{ENTERPRISE.label}</h2>
+            <p className="font-body mt-1.5 text-[15px] leading-[1.5]" style={{ color: INK_MUTED }}>
+              {ENTERPRISE.headline}
+            </p>
+            <p className="mt-6 flex items-baseline gap-1.5">
+              <span className="font-heading text-[2.6rem] font-extrabold leading-none">Custom</span>
+            </p>
+            <div className="mt-6 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: "#FFFFFF" }}>
+              <p className="font-body text-[15px] font-semibold">As many agents as you need, several users</p>
+              <p className="font-body text-[14px]" style={{ color: INK_MUTED }}>
+                Private servers from {ENTERPRISE.privateServersFrom}
+              </p>
+            </div>
+            <ul className="mt-6 grid flex-1 content-start gap-2.5 border-t pt-6" style={{ borderColor: RULE }}>
+              {ENTERPRISE_FEATURES.map(({ label, Icon }) => (
+                <li key={label} className="font-body flex items-center gap-2.5 text-[15px] leading-[1.5]">
+                  <Icon className="size-[18px] shrink-0" style={{ color: RED_INK }} aria-hidden />
+                  {label}
+                </li>
+              ))}
+            </ul>
+            <a
+              href={SCHEDULE_CONSULT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${BTN} mt-8 w-full`}
+              style={{ background: INK, color: "#FFFFFF" }}
+            >
+              Book a call
+            </a>
+            <EnterpriseContactButton className="mt-3 w-full" />
+          </article>
         </div>
+
+        {/* Custom private servers, under the cards (David, Oct 4 2026: "Custom Private Servers",
+            "Built upon your request."). Contact us, here or on the Enterprise card, opens the form
+            in place. */}
+        <section className="mt-6 rounded-2xl border bg-white p-6 md:p-8" style={{ borderColor: RULE, boxShadow: "0 1px 2px rgba(26,26,26,0.04)" }}>
+          <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <h2 className="font-heading text-[1.5rem] font-extrabold leading-tight">Custom Private Servers</h2>
+              <p className="font-body mt-1.5 text-[1.125rem] font-semibold" style={{ color: INK }}>
+                Built upon your request.
+              </p>
+              <p className="font-body mt-2 text-[15px] leading-[1.55]" style={{ color: INK_MUTED }}>
+                Your own private server, scoped and built with you for a company, a firm or a division, starting at{" "}
+                {ENTERPRISE.privateServersFrom}.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row md:flex-col md:w-52">
+              <a href={SCHEDULE_CONSULT_URL} target="_blank" rel="noopener noreferrer" className={BTN} style={{ background: RED, color: "#FFFFFF" }}>
+                Book a call
+              </a>
+              <EnterpriseContactButton />
+            </div>
+          </div>
+          <div id="enterprise-form" hidden className="mt-8 border-t pt-8" style={{ borderColor: RULE }}>
+            <EnterpriseForm />
+          </div>
+        </section>
 
         {team?.addOn && (
           <p className="font-body mt-6 text-center text-[15px]" style={{ color: INK_MUTED }}>
@@ -235,48 +306,6 @@ export default function PricingPage() {
         <p className="font-body mt-2 text-center text-[13px]" style={{ color: INK_MUTED }}>
           Fair use applies. Heavy usage may need an upgrade or a custom plan.
         </p>
-      </section>
-
-      {/* ── Enterprise: a light strip in three columns, under the cards (David, Oct 4 2026: the
-          dark version "gets lost"). Title and line on the left, what it adds in the middle, the
-          two ways in on the right; Contact us opens the form in place. ── */}
-      <section id="enterprise" className="mx-auto mt-10 max-w-6xl scroll-mt-24 px-5 md:px-8">
-        <div className="rounded-2xl border bg-white p-8 md:p-10" style={{ borderColor: RULE, boxShadow: "0 1px 2px rgba(26,26,26,0.04)" }}>
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr_auto] lg:items-start">
-            <div>
-              <h2 className="font-heading text-[1.75rem] font-extrabold leading-tight">{ENTERPRISE.label}</h2>
-              <p className="font-body mt-2 text-[15px] leading-[1.55]" style={{ color: INK_MUTED }}>
-                {ENTERPRISE.headline}
-              </p>
-              <p className="font-body mt-3 text-[13px]" style={{ color: INK_MUTED }}>
-                Custom private servers starting at {ENTERPRISE.privateServersFrom}.
-              </p>
-            </div>
-            <ul className="grid gap-x-8 gap-y-3.5 sm:grid-cols-2">
-              {ENTERPRISE_FEATURES.map(({ label, Icon }) => (
-                <li key={label} className="font-body flex items-center gap-3 text-[15px]">
-                  <Icon className="size-[18px] shrink-0" style={{ color: RED_INK }} aria-hidden />
-                  {label}
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-col gap-3 lg:w-52">
-              <a
-                href={SCHEDULE_CONSULT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={BTN}
-                style={{ background: RED, color: "#FFFFFF" }}
-              >
-                Book a call
-              </a>
-              <EnterpriseContactButton />
-            </div>
-          </div>
-          <div id="enterprise-form" hidden className="mt-8 border-t pt-8" style={{ borderColor: RULE }}>
-            <EnterpriseForm />
-          </div>
-        </div>
       </section>
 
       {/* ── What every plan includes ── */}
