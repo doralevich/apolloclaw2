@@ -5,9 +5,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useOnAgentsChanged } from "@/components/AgentPlan";
-import { type ChatSession, type RosterAgent } from "./types";
+import { threadIdOf, threadSessionId, type ChatSession, type RosterAgent } from "./types";
 
 export const CHAT_BASE = "/dashboard/chat";
+
+/** A rail row's time in milliseconds, for ordering. The instance may send seconds or
+ *  milliseconds (see session-time.ts); a row with no usable time sorts last. */
+function sortTime(s: ChatSession): number {
+  const v = s.last_active;
+  if (typeof v !== "number" || !Number.isFinite(v) || v <= 0) return -Infinity;
+  return v < 1e12 ? v * 1000 : v;
+}
 
 /** "/dashboard/chat/abc" -> "abc"; the bare chat URL (and any other page) -> null. */
 export function sessionFromPath(pathname: string): string | null {
@@ -27,7 +35,8 @@ interface ChatContextValue {
   loadingSessions: boolean;
   selectSession: (sessionId: string | null) => void;
   startNewChat: () => void;
-  onSessionCreated: (sessionId: string, title: string) => void;
+  /** A conversation just got its id mid-stream. `agent` is set for a direct-line thread. */
+  onSessionCreated: (sessionId: string, title: string, agent?: string) => void;
   deleteSession: (sessionId: string) => Promise<void>;
   // Rename a thread (server-side via PATCH). Optimistic; rolls back + toasts if the build
   // doesn't support titles.
@@ -42,6 +51,8 @@ interface ChatContextValue {
   selectAgent: (agentId: string) => void;
   /** Re-read the roster, after an agent is added, edited, or removed. */
   refreshRoster: () => void;
+  /** More than one agent on the instance: every conversation runs on the direct line. */
+  multiAgent: boolean;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -96,6 +107,10 @@ export function ChatProvider({
     [onChatRoute, router]
   );
   const [sessions, setSessions] = useState<ChatSession[]>([]);
+  // Saved direct-line conversations, every agent's (lib/agent-threads.ts). Kept apart from the
+  // Agent37 threads above because each has its own store to rename and delete in; the list the
+  // rail shows is the two merged (see `merged` below).
+  const [threads, setThreads] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(urlSessionId);
   const [composerFocusToken, setComposerFocusToken] = useState(0);
   // Starts false when there's no agent: nothing will ever load, so "loading..." would be a lie
@@ -120,14 +135,29 @@ export function ChatProvider({
     if (!agentId) return;
     let cancelled = false;
 
-    apiFetch<{ sessions: ChatSession[] }>(`/api/agents/${agentId}/chat/sessions`)
+    const agent37 = apiFetch<{ sessions: ChatSession[] }>(`/api/agents/${agentId}/chat/sessions`)
       .then((res) => {
         if (!cancelled) setSessions(res.sessions);
       })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoadingSessions(false);
-      });
+      .catch(() => {});
+    const direct = apiFetch<{ threads: { id: string; agent_key: string; title: string | null; updated_at: string }[] }>(
+      `/api/agents/${agentId}/threads`
+    )
+      .then((res) => {
+        if (cancelled) return;
+        setThreads(
+          res.threads.map((t) => ({
+            session_id: threadSessionId(t.id),
+            title: t.title,
+            last_active: Date.parse(t.updated_at) || null,
+            agent: t.agent_key,
+          }))
+        );
+      })
+      .catch(() => {});
+    void Promise.allSettled([agent37, direct]).then(() => {
+      if (!cancelled) setLoadingSessions(false);
+    });
 
     return () => {
       cancelled = true;
@@ -172,7 +202,22 @@ export function ChatProvider({
 
   // A pick that has since been removed from the box falls back to the main agent.
   const [pickedAgentId, setPickedAgentId] = useState("main");
-  const selectedAgentId = roster?.some((a) => a.id === pickedAgentId) ? pickedAgentId : "main";
+  // An open saved thread names its own agent; otherwise the pick from the sidebar.
+  const openThreadAgent = threadIdOf(activeSessionId)
+    ? threads.find((t) => t.session_id === activeSessionId)?.agent
+    : undefined;
+  const wanted = openThreadAgent ?? pickedAgentId;
+  const selectedAgentId = roster?.some((a) => a.id === wanted) ? wanted : "main";
+  const multiAgent = (roster?.length ?? 0) > 1;
+
+  // The Chats list. One agent: the main chat's threads, as always. Several: every agent's saved
+  // conversations too (those whose agent is still on the box), merged with the main chat's older
+  // threads, most recent first. A row without a usable time keeps its place at the end.
+  const merged = useMemo(() => {
+    if (!multiAgent) return sessions;
+    const onBox = new Set((roster ?? []).map((a) => a.id));
+    return [...threads.filter((t) => !t.agent || onBox.has(t.agent)), ...sessions].sort((a, b) => sortTime(b) - sortTime(a));
+  }, [multiAgent, roster, sessions, threads]);
 
   const requestComposerFocus = useCallback(() => setComposerFocusToken((n) => n + 1), []);
 
@@ -189,10 +234,14 @@ export function ChatProvider({
 
   const selectSession = useCallback(
     (sessionId: string | null) => {
+      // Opening an agent's saved conversation makes that agent the one being talked to, so the
+      // rail's + button afterwards starts another conversation with the same agent.
+      const thread = sessionId && threadIdOf(sessionId) ? threads.find((t) => t.session_id === sessionId) : null;
+      if (thread?.agent) setPickedAgentId(thread.agent);
       navigateToSession(sessionId);
       requestComposerFocus();
     },
-    [navigateToSession, requestComposerFocus]
+    [navigateToSession, requestComposerFocus, threads]
   );
 
   const startNewChat = useCallback(() => {
@@ -203,11 +252,21 @@ export function ChatProvider({
   // A brand-new conversation just minted its session id mid-stream. We already have its first
   // message (the label), so add the rail row locally and promote it.
   const onSessionCreated = useCallback(
-    (sessionId: string, title: string) => {
+    (sessionId: string, title: string, agent?: string) => {
       // Give the freshly-minted thread its own URL (replace, so Back doesn't return to the blank
       // new-chat URL).
       navigateToSession(sessionId, "replace");
       const label = title.trim().slice(0, 80) || null;
+      // A direct-line thread was saved and titled by the server already; it only needs its row.
+      if (agent) {
+        setPickedAgentId(agent);
+        setThreads((prev) =>
+          prev.some((t) => t.session_id === sessionId)
+            ? prev
+            : [{ session_id: sessionId, title: label, last_active: Date.now(), agent }, ...prev]
+        );
+        return;
+      }
       setSessions((prev) =>
         prev.some((s) => s.session_id === sessionId)
           ? prev
@@ -238,6 +297,21 @@ export function ChatProvider({
   const deleteSession = useCallback(
     async (sessionId: string) => {
       if (!agentId) return;
+      const threadId = threadIdOf(sessionId);
+      if (threadId) {
+        const removedThread = threads.find((x) => x.session_id === sessionId);
+        const wasOpen = activeSessionId === sessionId;
+        setThreads((t) => t.filter((x) => x.session_id !== sessionId));
+        if (wasOpen) navigateToSession(null);
+        try {
+          await apiFetch(`/api/agents/${agentId}/threads/${threadId}`, { method: "DELETE" });
+        } catch (e) {
+          if (removedThread) setThreads((t) => (t.some((x) => x.session_id === sessionId) ? t : [removedThread, ...t]));
+          if (wasOpen) navigateToSession(sessionId);
+          toast.error((e as Error).message || "Couldn't delete that chat.");
+        }
+        return;
+      }
       const removed = sessions.find((x) => x.session_id === sessionId);
       const wasActive = activeSessionId === sessionId;
       setSessions((s) => s.filter((x) => x.session_id !== sessionId)); // optimistic, functional
@@ -253,12 +327,29 @@ export function ChatProvider({
         toast.error((e as Error).message || "Couldn't delete that chat.");
       }
     },
-    [agentId, activeSessionId, sessions, navigateToSession]
+    [agentId, activeSessionId, sessions, threads, navigateToSession]
   );
 
   const renameSession = useCallback(
     async (sessionId: string, title: string) => {
       if (!agentId) return;
+      const threadId = threadIdOf(sessionId);
+      if (threadId) {
+        const nextTitle = title.trim().slice(0, 200);
+        const before = threads.find((t) => t.session_id === sessionId)?.title ?? null;
+        if (!nextTitle || nextTitle === before) return;
+        setThreads((t) => t.map((x) => (x.session_id === sessionId ? { ...x, title: nextTitle } : x)));
+        try {
+          await apiFetch(`/api/agents/${agentId}/threads/${threadId}`, {
+            method: "PATCH",
+            body: JSON.stringify({ title: nextTitle }),
+          });
+        } catch (e) {
+          setThreads((t) => t.map((x) => (x.session_id === sessionId ? { ...x, title: before } : x)));
+          toast.error((e as Error).message || "Couldn't rename that chat.");
+        }
+        return;
+      }
       const next = title.trim().slice(0, 200);
       const prev = sessions.find((s) => s.session_id === sessionId)?.title ?? null;
       if (!next || next === prev) return;
@@ -273,12 +364,21 @@ export function ChatProvider({
         toast.error((e as Error).message || "Couldn't rename that chat.");
       }
     },
-    [agentId, sessions]
+    [agentId, sessions, threads]
   );
 
   // Move a thread to the top of the rail on new activity. Upstream ordering (last_active) only
   // refreshes on reload, so keep the most-recently-used thread first in the meantime.
   const bumpSession = useCallback((sessionId: string) => {
+    if (threadIdOf(sessionId)) {
+      setThreads((prev) => {
+        const idx = prev.findIndex((t) => t.session_id === sessionId);
+        if (idx < 0) return prev;
+        const row = { ...prev[idx], last_active: Date.now() };
+        return [row, ...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      });
+      return;
+    }
     setSessions((prev) => {
       const idx = prev.findIndex((s) => s.session_id === sessionId);
       if (idx <= 0) return prev; // not present, or already at the top
@@ -289,7 +389,7 @@ export function ChatProvider({
   const value = useMemo<ChatContextValue>(
     () => ({
       agentId,
-      sessions,
+      sessions: merged,
       activeSessionId,
       composerFocusToken,
       requestComposerFocus,
@@ -304,8 +404,9 @@ export function ChatProvider({
       selectedAgentId,
       selectAgent,
       refreshRoster,
+      multiAgent,
     }),
-    [agentId, sessions, activeSessionId, composerFocusToken, requestComposerFocus, loadingSessions, selectSession, startNewChat, onSessionCreated, deleteSession, renameSession, bumpSession, roster, selectedAgentId, selectAgent, refreshRoster]
+    [agentId, merged, activeSessionId, composerFocusToken, requestComposerFocus, loadingSessions, selectSession, startNewChat, onSessionCreated, deleteSession, renameSession, bumpSession, roster, selectedAgentId, selectAgent, refreshRoster, multiAgent]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
