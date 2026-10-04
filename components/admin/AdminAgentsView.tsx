@@ -6,6 +6,7 @@ import { timezoneOptions } from "@/config/timezones";
 import { runtimeForTemplate } from "@/config/agents";
 import { openWorkspaceInApolloClaw } from "@/components/admin/workspace-instances";
 import { SecondAgentDialog } from "@/components/admin/SecondAgentDialog";
+import { TwoAgentLabButton } from "@/components/admin/TwoAgentLab";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant } from "@/lib/format";
@@ -331,7 +332,11 @@ export function AdminAgentsView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Fleet</h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">Fleet</h1>
+          {/* The two-agent proof on a throwaway box, kept off every customer's instance. */}
+          <TwoAgentLabButton />
+        </div>
         <p className="text-sm text-muted-foreground">
           Every instance on the Agent37 account, checked against this database. This is where the
           two can drift: a record with no live instance, or a live instance still billing with no
