@@ -10,6 +10,9 @@ import { AgentCard } from "@/components/AgentCard";
 import { AgentVitals } from "@/components/AgentVitals";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { AddAgentButton } from "@/components/AddAgentButton";
+import { AddAgentOrUpgrade, AgentPlanLine, useAgentPlan } from "@/components/AgentPlan";
+import { runtimeForTemplate } from "@/config/agents";
+import { getAgentType } from "@/config/agent-types";
 import { SetupBanner } from "@/components/SetupPrompt";
 
 // My Agent reads the SAME list as the sidebar switcher (ActiveAgentProvider), so
@@ -19,7 +22,15 @@ type RosterOwner = { first_name: string; last_name: string; email: string } | nu
 
 export function AgentsView() {
   const { current, isPlatformAdmin } = useWorkspace();
-  const { agents, role, loading, error, refresh } = useActiveAgent();
+  const { agents, active, role, loading, error, refresh } = useActiveAgent();
+  const plan = useAgentPlan();
+  // Where an added agent lives: the instance the customer is working in, else their first one
+  // that can carry more than one agent (OpenClaw).
+  const home =
+    (active && runtimeForTemplate(active.template) === "OpenClaw" ? active : null) ??
+    agents.find((a) => runtimeForTemplate(a.template) === "OpenClaw") ??
+    null;
+  const homeName = home ? home.name?.trim() || (home.agent_type ? getAgentType(home.agent_type)?.label : undefined) || "Your agent" : "";
 
   // Whose agent is whose, folded INTO the cards. The roster used to be a separate table
   // underneath, repeating every card's facts one screen lower with one extra column; the
@@ -108,10 +119,31 @@ export function AgentsView() {
         {/* Rebuild is open to any member at zero agents; ADDING is an admin act - it charges
             the workspace's card, and the API refuses members anyway. Showing a member the
             button just moves the refusal from the page to a 403 toast. */}
+        {/* With agents: the plan, and the button that follows from it. "Add agent" puts one more
+            agent on the instance while the plan has room (every agent counts, the main ones
+            included); "Upgrade for more agents" once it is full. "Add a seat", a whole instance of
+            its own (for a colleague, usually), stays beside it until the hosting plans replace
+            per-instance seats. */}
         {agents.length === 0 ? (
           <CreateAgentModal triggerSize="sm" />
-        ) : role === "admin" ? (
-          <AddAgentButton />
+        ) : role === "admin" || isPlatformAdmin ? (
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {plan && home && <AddAgentOrUpgrade usage={plan} instanceId={home.agent37_id} mainName={homeName} />}
+              {role === "admin" && (
+                <AddAgentButton
+                  trigger={
+                    <Button variant="ghost" size="sm">
+                      Add a seat
+                    </Button>
+                  }
+                />
+              )}
+            </div>
+            {plan && <AgentPlanLine usage={plan} />}
+          </div>
+        ) : plan ? (
+          <AgentPlanLine usage={plan} />
         ) : null}
       </div>
 

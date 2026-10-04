@@ -1,5 +1,5 @@
 import { requireAgentAccess, requireEntitled } from "@/lib/auth";
-import { setupSecondAgent, revertSecondAgent, type AgentSpec } from "@/lib/multi-agent-test";
+import { removeSubAgent, setupSecondAgent, type AgentSpec } from "@/lib/multi-agent-test";
 import { readInstanceRoster } from "@/lib/instance-roster";
 import { uploadSubAgentAvatar, type ImageUpload } from "@/lib/supabase/avatar-storage";
 import { runtimeForTemplate } from "@/config/agents";
@@ -10,8 +10,8 @@ type Ctx = { params: Promise<{ id: string; subId: string }> };
 
 // One agent on an instance, managed from the My Agent page.
 //
-//   PATCH  { role?, persona?, avatar? }  change the agent's role, persona, or image and restart
-//   DELETE                               remove the agent and restart
+//   PATCH  { name?, role?, persona?, avatar? }  change the agent's name, role, persona, or image
+//   DELETE                                     remove this agent, keep the others, and restart
 //
 // The name and id stay; editing rewrites the agent's workspace from the merged spec. "main" is
 // the primary agent and is never managed here.
@@ -60,11 +60,10 @@ export const DELETE = route(async (request: Request, { params }: Ctx) => {
   }
   await requireSubAgent(id, subId);
 
-  // One additional agent per instance today, so removing it restores the box to the primary
-  // agent. Revert takes the config back to its pre-multiagent state and drops the agent's
-  // workspace. When several agents at once lands, this becomes a per-agent removal.
-  const result = await revertSecondAgent(id);
-  await logAudit({ actorEmail: user.email, action: "agent.subagent_removed", target: id, metadata: { subId, ok: result.ok, restored: result.restored, note: result.note ?? null }, request });
-  if (!result.ok) throw new ApiError(502, "revert_failed", result.note || "The instance did not confirm the removal.");
-  return json({ ok: true, removed: result.restored, restarted: result.restarted });
+  // This agent only: the others on the box stay as they are. Removing the last one takes the
+  // box back to its single primary agent, the same restore the admin lab has always used.
+  const result = await removeSubAgent(id, subId);
+  await logAudit({ actorEmail: user.email, action: "agent.subagent_removed", target: id, metadata: { subId, ok: result.ok, note: result.note ?? null }, request });
+  if (!result.ok) throw new ApiError(502, "remove_failed", result.note || "The instance did not confirm the removal.");
+  return json({ ok: true, removed: true, restarted: result.restarted });
 });

@@ -9,6 +9,7 @@ import { getAgentType } from "@/config/agent-types";
 import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAgentDetail, Budget } from "@/lib/types";
 import type { RosterAgent } from "@/components/chat/types";
+import { AGENT_TIERS, agentsLabel, type AgentPlanUsage } from "@/config/agent-plans";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -185,6 +186,88 @@ export function InstanceList({ detail }: { detail: Detail | undefined }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// A workspace's agent plan, set here and nowhere else (config/agent-plans.ts has the tiers). The
+// tier sets the count; a custom number wins over it for a deal that does not fit a tier. Shows
+// how much is in use, every agent counted, so the call is made with the numbers in view.
+export function AgentPlanControl({ workspaceId }: { workspaceId: string }) {
+  const [usage, setUsage] = useState<AgentPlanUsage | null>(null);
+  const [plan, setPlan] = useState("");
+  const [custom, setCustom] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<AgentPlanUsage>(`/api/admin/workspaces/${workspaceId}/agent-plan`)
+      .then((u) => {
+        if (cancelled) return;
+        setUsage(u);
+        setPlan(u.tier.id);
+        setCustom(u.custom ? String(u.limit) : "");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId]);
+
+  async function save() {
+    setBusy(true);
+    try {
+      const u = await apiFetch<AgentPlanUsage>(`/api/admin/workspaces/${workspaceId}/agent-plan`, {
+        method: "PUT",
+        body: JSON.stringify({ plan, agentLimit: custom.trim() ? Number(custom) : null }),
+      });
+      setUsage(u);
+      setCustom(u.custom ? String(u.limit) : "");
+      toast.success(`Plan set: ${u.tier.label}, ${agentsLabel(u.limit)}.`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!usage) return null;
+  const dirty = plan !== usage.tier.id || custom.trim() !== (usage.custom ? String(usage.limit) : "");
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-muted-foreground">Agent plan</span>
+      <select
+        value={plan}
+        onChange={(e) => setPlan(e.target.value)}
+        disabled={busy}
+        aria-label="Agent plan"
+        className="h-8 rounded-md border bg-background px-2 text-xs"
+      >
+        {AGENT_TIERS.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.label} ({agentsLabel(t.agents)})
+          </option>
+        ))}
+      </select>
+      <input
+        type="number"
+        min={1}
+        max={100}
+        value={custom}
+        onChange={(e) => setCustom(e.target.value)}
+        disabled={busy}
+        placeholder="Custom"
+        aria-label="Custom agent limit"
+        title="A number of this workspace's own, which wins over the plan's. Leave empty to use the plan."
+        className="h-8 w-20 rounded-md border bg-background px-2 text-xs"
+      />
+      <Button variant="outline" size="sm" onClick={save} disabled={busy || !dirty}>
+        {busy ? "Saving..." : "Save"}
+      </Button>
+      <span className={usage.canAdd ? "text-muted-foreground" : "font-medium text-amber-700 dark:text-amber-400"}>
+        {usage.used} of {usage.limit} in use
+      </span>
     </div>
   );
 }

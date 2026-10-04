@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Blocks, Briefcase, MessageSquare, Pencil, Plus, Send, Trash2, UserRound, Users } from "lucide-react";
+import { Blocks, Briefcase, MessageSquare, Pencil, Send, Trash2, UserRound, Users } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { statusVariant } from "@/lib/format";
@@ -13,6 +13,7 @@ import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { SubAgentDialog, type EditingAgent } from "@/components/SubAgentDialog";
 import { useChatContext } from "@/components/chat/ChatProvider";
 import type { RosterAgent } from "@/components/chat/types";
+import { AddAgentOrUpgrade, notifyAgentsChanged, useAgentPlan, useOnAgentsChanged } from "@/components/AgentPlan";
 
 // The other agents living on an instance, each as a card of its own beside the primary one.
 //
@@ -20,8 +21,7 @@ import type { RosterAgent } from "@/components/chat/types";
 // reads the box's own roster and gives every other agent the same card the primary gets: face,
 // name, status, what it shares with the instance, and its own Chat button (David, Oct 4 2026:
 // "SEO should be just as big as Timmy Turner, with the same details"). The instance admin adds,
-// edits and removes them here. One additional agent per instance for now; the Add card hides
-// once one exists, until the plan tiers set the limit.
+// edits and removes them here, as many as the workspace's agent plan allows (config/agent-plans.ts).
 
 export function AgentTeam({
   agentId,
@@ -47,7 +47,7 @@ export function AgentTeam({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<EditingAgent | null>(null);
   const [removing, setRemoving] = useState<RosterAgent | null>(null);
-  const { agentId: sidebarInstance, refreshRoster, selectAgent } = useChatContext();
+  const { agentId: sidebarInstance, selectAgent } = useChatContext();
   const { setActiveId } = useActiveAgent();
 
   const load = useCallback(() => {
@@ -68,12 +68,11 @@ export function AgentTeam({
 
   useEffect(() => load(), [load]);
 
-  // The sidebar lists the same agents under the active instance's name. After a change here it
-  // reads the box again, so it never shows an agent that is gone or a name that changed.
-  const changed = useCallback(() => {
-    load();
-    if (sidebarInstance === agentId) refreshRoster();
-  }, [load, sidebarInstance, agentId, refreshRoster]);
+  // Every surface that lists these agents (this page, the sidebar, the plan count) reloads on the
+  // same signal, so a change made here or from the sidebar shows everywhere at once.
+  useOnAgentsChanged(load);
+  const changed = notifyAgentsChanged;
+  const usage = useAgentPlan();
 
   const subAgents = (agents ?? []).filter((a) => a.id !== "main");
   if (!agents || !supported) return null;
@@ -223,10 +222,7 @@ export function AgentTeam({
               business through the same company brain.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => { setEditing(null); setDialogOpen(true); }}>
-            <Plus className="size-4" />
-            Add an agent to {mainName}
-          </Button>
+          {usage && <AddAgentOrUpgrade usage={usage} instanceId={agentId} mainName={mainName} />}
         </div>
       )}
 

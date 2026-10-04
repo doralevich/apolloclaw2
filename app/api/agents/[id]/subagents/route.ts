@@ -4,6 +4,8 @@ import { readInstanceRoster } from "@/lib/instance-roster";
 import { uploadSubAgentAvatar, type ImageUpload } from "@/lib/supabase/avatar-storage";
 import { runtimeForTemplate } from "@/config/agents";
 import { logAudit } from "@/lib/audit";
+import { getAgentPlanUsage } from "@/lib/agent-plan";
+import { agentsLabel } from "@/config/agent-plans";
 import { ApiError, json, readJson, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -12,8 +14,8 @@ type Ctx = { params: Promise<{ id: string }> };
 //
 //   POST { name, role, persona?, avatar? }  add an agent to this instance and restart
 //
-// One additional agent per instance for now; several at once is the next build. Editing and
-// removing one are on /api/agents/{id}/subagents/{subId}. Admin of the instance only, and the
+// As many as the workspace's agent plan allows (config/agent-plans.ts), every agent counted.
+// Editing and removing one are on /api/agents/{id}/subagents/{subId}. Admin of the instance only, and the
 // instance has to be entitled (a turn drives model usage billed to it) and OpenClaw (only an
 // OpenClaw box can carry more than one agent).
 export const maxDuration = 300;
@@ -37,14 +39,18 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(400, "invalid_request", 'Give the agent a name with some letters or digits, not just symbols, and not "main".');
   }
 
-  // One additional agent per instance for now.
-  const roster = await readInstanceRoster(id);
-  const others = roster.agents.filter((a) => a.id !== "main");
-  if (others.length > 0) {
-    throw new ApiError(409, "limit_reached", "This instance already has an additional agent. Edit or remove it before adding another. Several agents at once is coming.");
+  // The plan's limit, counting every agent across the workspace, the main ones included.
+  const plan = await getAgentPlanUsage(row.workspace_id);
+  if (!plan.canAdd) {
+    throw new ApiError(
+      409,
+      "plan_limit",
+      `Your ${plan.tier.label} plan includes ${agentsLabel(plan.limit)}, and all of them are in use. Upgrade for more agents.`
+    );
   }
-  if (agentId === "main" || others.some((a) => a.id === agentId)) {
-    throw new ApiError(409, "limit_reached", "An agent with that name is already here.");
+  const roster = await readInstanceRoster(id);
+  if (roster.agents.some((a) => a.id === agentId)) {
+    throw new ApiError(409, "name_taken", "An agent with that name is already here. Pick another name.");
   }
 
   const avatarUrl = body.avatar ? (await uploadSubAgentAvatar(id, agentId, body.avatar)) ?? undefined : undefined;

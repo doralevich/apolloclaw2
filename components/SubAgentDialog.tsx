@@ -94,7 +94,7 @@ export function SubAgentDialog({
         <DialogHeader>
           <DialogTitle>{isEdit ? `Edit ${editing?.name}` : "Add an agent"}</DialogTitle>
           <DialogDescription>
-            A second agent on this instance with its own name, role, and face. It shares the
+            Another agent on this instance with its own name, role, and face. It shares the
             company brain {mainName} has, so it knows the business while keeping its own job. It
             shows up in the sidebar under {mainName}.
           </DialogDescription>

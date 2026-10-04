@@ -15,7 +15,7 @@ import { agent37 } from "@/lib/agent37";
 //   channels.telegram.accounts.atlas -> its own bot, DMs allow-listed to the tester
 //   bindings              -> the atlas bot routed to the atlas agent, every other Telegram
 //                            account to main (other bindings kept)
-//   tools.agentToAgent    -> enabled, allow: [main, atlas]
+//   tools.agentToAgent    -> enabled, allow: main plus every other agent in the config
 //   the shared company brain -> shared/COMPANY.md (seeded once from the main agent's USER.md),
 //                            copied into each second agent's workspace USER.md so every agent
 //                            reads it as loaded context. Not wired into memory.search: changing
@@ -25,6 +25,10 @@ import { agent37 } from "@/lib/agent37";
 // The test is then: DM Atlas "what is our cash on hand" and expect $412,000, then ask the first
 // agent "ask Atlas what our cash on hand is" and see whether the same number comes back, which it
 // can only get by messaging the other agent.
+//
+// Setup is additive: each run adds (or rewrites) one agent and leaves every other one in place,
+// and the agent-to-agent allow list and the main agent's note are rebuilt from the whole roster.
+// removeSubAgent takes one agent off and keeps the rest; removing the last one reverts.
 //
 // Setup backs the config up once (openclaw.json.pre-multiagent) before the first write, and
 // revert restores that backup, removes the atlas workspace and the note setup appended to the
@@ -121,6 +125,25 @@ const GUARD =
  *  node script uses to strip an earlier copy. Kept here so setup and revert agree. */
 // Exactly the two newlines setup adds in front of the note, so the file's own trailing newline survives a revert.
 const NOTE_RE = "/\\n{0,2}<!-- apollo:multi-agent-test:start -->[\\s\\S]*?<!-- apollo:multi-agent-test:end -->\\n?/";
+
+// The team, as the config has it, written where it matters: agent-to-agent allowed between every
+// agent on the box, and the main agent's AGENTS.md listing each of the others with its role and
+// how to reach it. Run by setup and by single-agent removal, so the list is always rebuilt from
+// the live config rather than patched, and adding a third agent never drops the second.
+// Expects fs, cfg, root and set in scope. Single quotes avoided: it rides inside node -e '...'.
+const TEAM_JS =
+  'const teamIds=Object.keys((cfg.agents&&cfg.agents.entries)||{}).filter(k=>k!=="main");' +
+  'set(cfg,["tools","agentToAgent","enabled"],true);' +
+  'set(cfg,["tools","agentToAgent","allow"],["main"].concat(teamIds));' +
+  'const teamLines=teamIds.map(k=>{let role="";try{role=JSON.parse(fs.readFileSync(root+"/workspace-"+k+"/.apollo-agent.json","utf8")).role||"";}catch(e){}' +
+  'const nm=(cfg.agents.entries[k]&&cfg.agents.entries[k].name)||k;' +
+  'return "- "+nm+" (agent id `"+k+"`)"+(role?" is the "+(/agent$/i.test(role)?role:role+" agent"):"")+". For anything in its area, ask "+nm+" with the sessions_send tool (agent id `"+k+"`), wait for the reply, and relay the answer.";});' +
+  'const teamNote=teamLines.length?"\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n"+teamLines.join("\\n")+"\\n<!-- apollo:multi-agent-test:end -->\\n":"";' +
+  'fs.mkdirSync(root+"/workspace",{recursive:true});' +
+  'const teamAf=root+"/workspace/AGENTS.md";' +
+  'let teamCur=fs.existsSync(teamAf)?fs.readFileSync(teamAf,"utf8"):"";' +
+  `teamCur=teamCur.replace(${NOTE_RE},"");` +
+  "fs.writeFileSync(teamAf,teamCur+teamNote);";
 
 // Reads the config and prints the keys the test depends on, then asks the gateway itself.
 // Printed between markers so the route can hand the readout back as JSON.
@@ -328,9 +351,6 @@ export async function setupSecondAgent(
     // alone; a "lan" bind an earlier run wrote is taken back.
     'set(cfg,["gateway","http","endpoints","chatCompletions","enabled"],true);' +
     'if(cfg.gateway&&cfg.gateway.bind==="lan")delete cfg.gateway.bind;' +
-    // Agent-to-agent: on, and only between these two.
-    'set(cfg,["tools","agentToAgent","enabled"],true);' +
-    'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +
     // Memory search left at its default (on). We do NOT add the shared folder to
     // memory.search.extraPaths: changing the indexed sources makes OpenClaw pause its vector
     // index until a manual rebuild, which showed up as a second agent answering "memory search
@@ -342,15 +362,16 @@ export async function setupSecondAgent(
     "if(cfg.memory&&cfg.memory.search&&Array.isArray(cfg.memory.search.extraPaths)){" +
     "cfg.memory.search.extraPaths=cfg.memory.search.extraPaths.filter(e=>!(e===sharedDir||(e&&e.path===sharedDir)));" +
     "if(cfg.memory.search.extraPaths.length===0)delete cfg.memory.search.extraPaths;}" +
-    "fs.writeFileSync(file,JSON.stringify(cfg,null,2));" +
     // The second agent's persona and the planted fact.
     "fs.mkdirSync(secondWs,{recursive:true});" +
     // The app-facing metadata for this agent, beside its workspace: the role, persona, and the
     // avatar image URL the app uploaded. The roster reads it so the agent shows its own face and
     // role; the box stays the source of truth for the agent itself.
     'fs.writeFileSync(secondWs+"/.apollo-agent.json",JSON.stringify({role:o.second.role||"",persona:o.second.persona||"",avatarUrl:o.second.avatarUrl||""}));' +
-    'fs.writeFileSync(secondWs+"/IDENTITY.md","# Identity\\n\\nYour name is "+o.second.name+". You are the "+o.second.role+" agent.\\n");' +
-    'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\n"+(o.second.persona||("You are the "+o.second.role+" on a small team of agents. Answer in your area directly and briefly."))+(o.second.fact?"\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n":"\\n"));' +
+    // A role typed as "SEO Agent" reads as itself, not "SEO Agent agent".
+    'const roleLabel=/agent$/i.test(o.second.role||"")?o.second.role:o.second.role+" agent";' +
+    'fs.writeFileSync(secondWs+"/IDENTITY.md","# Identity\\n\\nYour name is "+o.second.name+". You are the "+roleLabel+".\\n");' +
+    'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+roleLabel+"\\n\\n"+(o.second.persona||("You are the "+o.second.role+" on a small team of agents. Answer in your area directly and briefly."))+(o.second.fact?"\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n":"\\n"));' +
     'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n\\nYour USER.md holds the shared company brain: who the company is and who the owner is, the same facts every agent here shares. Treat it as established fact and use it directly; you do not need to search for it.\\n");' +
     // The shared company brain, seeded once. Start it from what the main agent already records
     // about the owner (USER.md) when that file exists, so a second agent knows the company from
@@ -369,13 +390,11 @@ export async function setupSecondAgent(
     // the owner from the first message, with no search involved. Rewritten on every setup from
     // the current COMPANY.md, so an edit to the master flows to the agent on the next run.
     'try{fs.writeFileSync(secondWs+"/USER.md",fs.readFileSync(companyFile,"utf8"));}catch(e){}' +
-    // The first agent needs to know the second one exists and how to reach it.
-    "fs.mkdirSync(mainWs,{recursive:true});" +
-    'const note="\\n\\n<!-- apollo:multi-agent-test:start -->\\n## Other agents on this gateway\\n\\n- "+o.second.name+" (agent id `"+o.second.id+"`) is the "+o.second.role+" agent. For anything in its area, ask "+o.second.name+" with the sessions_send tool (agent id `"+o.second.id+"`), wait for the reply, and relay the answer.\\n<!-- apollo:multi-agent-test:end -->\\n";' +
-    'const af=mainWs+"/AGENTS.md";' +
-    'let cur=fs.existsSync(af)?fs.readFileSync(af,"utf8"):"";' +
-    `cur=cur.replace(${NOTE_RE},"");` +
-    "fs.writeFileSync(af,cur+note);" +
+    // Every agent on the box may message every other, and the first agent learns each one that
+    // exists and how to reach it. Rebuilt from the whole roster, so this agent joins the others
+    // rather than replacing them. The config is written last, once the allow list is complete.
+    TEAM_JS +
+    "fs.writeFileSync(file,JSON.stringify(cfg,null,2));" +
     'console.log("WROTE:"+file);';
 
   const cmd =
@@ -431,6 +450,57 @@ export async function revertSecondAgent(agentId: string): Promise<SecondAgentRev
   console.log("[multi-agent-test:reverted]", agentId);
   const restarted = await restartQuietly(agentId);
   return { ok: true, restored: true, restarted };
+}
+
+export interface SubAgentRemoveResult {
+  ok: boolean;
+  restarted: boolean;
+  /** "not-found" when the box has no such agent, "reverted" when it was the last one and the
+   *  whole multi-agent setup was taken back instead, or a failure note. */
+  note?: string;
+}
+
+/** Take one agent off the box and leave the others as they are: its config entry, its Telegram
+ *  account and binding, and its workspace go; the allow list and the main agent's note are
+ *  rebuilt from who remains. Removing the last one reverts the box to a single agent, through
+ *  the same restore the admin lab has always used. */
+export async function removeSubAgent(agentId: string, subId: string): Promise<SubAgentRemoveResult> {
+  if (subId === "main" || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(subId)) {
+    return { ok: false, restarted: false, note: "not-found" };
+  }
+  const script =
+    'const fs=require("fs");' +
+    "const file=process.env.CFG;const root=process.env.ROOT;const id=process.env.SUB;" +
+    'let cfg;try{cfg=JSON.parse(fs.readFileSync(file,"utf8"));}catch(e){console.log("CONFIG_PARSE_FAIL");process.exit(0);}' +
+    'const set=(obj,keys,val)=>{let c=obj;for(let i=0;i<keys.length-1;i++){if(typeof c[keys[i]]!=="object"||c[keys[i]]===null)c[keys[i]]={};c=c[keys[i]];}c[keys[keys.length-1]]=val;};' +
+    'const entries=(cfg.agents&&cfg.agents.entries)||{};' +
+    'if(!entries[id]){console.log("NOT_FOUND");process.exit(0);}' +
+    'if(Object.keys(entries).filter(k=>k!=="main"&&k!==id).length===0){console.log("LAST");process.exit(0);}' +
+    "delete entries[id];" +
+    "const tg=cfg.channels&&cfg.channels.telegram;" +
+    "if(tg&&tg.accounts&&tg.accounts[id])delete tg.accounts[id];" +
+    "if(Array.isArray(cfg.bindings))cfg.bindings=cfg.bindings.filter(b=>!(b&&b.agentId===id));" +
+    'try{fs.rmSync(root+"/workspace-"+id,{recursive:true,force:true});}catch(e){}' +
+    TEAM_JS +
+    "fs.writeFileSync(file,JSON.stringify(cfg,null,2));" +
+    'console.log("REMOVED:"+id);';
+  const cmd = GUARD + `CFG="$CFG" ROOT="$ROOT" SUB="${subId}" node -e '${script}'`;
+
+  const res = await runWithRetries(agentId, cmd);
+  if (res.note) return { ok: false, restarted: false, note: res.note };
+  if (/CONFIG_PARSE_FAIL/.test(res.stdout)) return { ok: false, restarted: false, note: "config-parse-fail" };
+  if (/NOT_FOUND/.test(res.stdout)) return { ok: false, restarted: false, note: "not-found" };
+  if (/LAST/.test(res.stdout)) {
+    const reverted = await revertSecondAgent(agentId);
+    return { ok: reverted.ok, restarted: reverted.restarted, note: reverted.ok ? "reverted" : reverted.note };
+  }
+  if (!/REMOVED:/.test(res.stdout)) {
+    console.error("[multi-agent-test:remove-failed]", agentId, subId, res.stdout.slice(0, 500));
+    return { ok: false, restarted: false, note: "no-confirmation" };
+  }
+  console.log("[multi-agent-test:removed]", agentId, subId);
+  const restarted = await restartQuietly(agentId);
+  return { ok: true, restarted };
 }
 
 /** Run one guarded command against a box, retrying while it wakes. Same cadence as
