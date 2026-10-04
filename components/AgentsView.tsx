@@ -130,7 +130,9 @@ export function AgentsView() {
           <div className="flex flex-col items-end gap-1.5">
             <div className="flex flex-wrap items-center justify-end gap-2">
               {plan && home && <AddAgentOrUpgrade usage={plan} instanceId={home.agent37_id} mainName={homeName} />}
-              {role === "admin" && (
+              {/* The seat purchase is the legacy way to add an agent ($449 + $249/mo, a whole
+                  instance). A plan customer adds agents onto their plan instead, above. */}
+              {role === "admin" && plan?.tier.id === "legacy" && (
                 <AddAgentButton
                   trigger={
                     <Button variant="ghost" size="sm">

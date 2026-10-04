@@ -188,3 +188,9 @@ export async function syncPlanFromSubscription(sub: Stripe.Subscription): Promis
   if (error) throw new Error(`plan sync failed: ${error.message}`);
   await syncPlanCap(workspaceId);
 }
+
+/** The Stripe customer a plan workspace is billed as, for the billing portal. Null for legacy
+ *  workspaces, which are found through their hosting seat instead (lib/hosting-seats.ts). */
+export async function planCustomerId(workspaceId: string): Promise<string | null> {
+  return (await loadRow(workspaceId))?.stripe_customer_id ?? null;
+}

@@ -1,5 +1,20 @@
 import type { Metadata } from "next";
 import LegalPage, { type LegalSection } from "@/components/LegalPage";
+import { PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
+
+// The prices in these terms are read from the plans (config/agent-plans.ts), the same source as
+// /pricing and checkout, so the terms can never name a price the till no longer charges.
+const PLAN_LIST = PLANS_ON_SALE.map(
+  (p) =>
+    `${p.label} at ${dollars(p.monthlyCents ?? 0)} a month for ${agentsLabel(p.agents)}${
+      p.includedCreditCents ? ` with ${dollars(p.includedCreditCents)} of usage included` : ""
+    }${p.addOn ? `, plus ${dollars(p.addOn.monthlyCents)} a month for each extra agent` : ""}`
+).join("; ");
+
+const PLAN_TERMS = `Current prices are shown at checkout and are what binds. At the time of writing the plans are: ${PLAN_LIST}. Plans are month to month with no setup fee and no minimum commitment. Customers who subscribed before these plans keep the price and terms they signed up on.`;
+
+const USAGE_TERMS =
+  "Your plan includes a monthly usage allowance, shared across its agents. If your agents use all of it, they pause until the allowance renews at the start of the next month, or until you add credit in the dashboard, so you are never billed for usage you did not choose to buy.";
 
 export const metadata: Metadata = {
   title: { absolute: "Terms of Service | Apollo[Claw]" },
@@ -11,7 +26,7 @@ export const metadata: Metadata = {
 // WRITTEN AGAINST WHAT THIS PRODUCT ACTUALLY DOES, not a template. Every number and every
 // timescale below is read out of the code, so it can be checked rather than trusted:
 //
-//   $449 or $3,500 setup / $249 a month / $150 of API usage   lib/pricing/catalog.ts
+//   Plans, prices, included usage                         config/agent-plans.ts
 //   Credit packs, no markup                              lib/pricing/catalog.ts (CREDIT_PACKS)
 //   10-day grace window after cancellation               lib/entitlement.ts (GRACE_PERIOD_DAYS)
 //   30-day retention before an agent is purged           lib/agent-lifecycle.ts (RETENTION_DAYS)
@@ -49,19 +64,19 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "An Apollo[Claw] agent is three things bought together, and it is worth being precise about which is which:",
+        text: "An Apollo[Claw] plan is a monthly subscription, and it is worth being precise about what it covers:",
       },
       {
         kind: "bullets",
         items: [
-          "A licence, paid once. This covers building your agent: the questionnaire, the configuration, and the setup work that turns your answers into a working assistant.",
-          "Hosting, paid monthly. Your agent runs on a server we manage, keep patched, and keep running. This is the recurring cost and it does not stop being incurred when you are not using it.",
-          "Usage. Every conversation your agent has costs money in AI model tokens. Your hosting includes an allowance each month; beyond that you buy credit as you need it.",
+          "Setup. Building your agents from your questionnaire, the configuration, and the work that turns your answers into working assistants. There is no setup fee on the standard plans; custom builds are quoted separately.",
+          "Hosting. Your agents run on a server we manage, keep patched, and keep running.",
+          "Usage. Every conversation your agents have costs money in AI model usage. Your plan includes a monthly allowance shared across its agents.",
         ],
       },
       {
         kind: "prose",
-        text: "Current prices are shown at checkout and are what binds. At the time of writing there are two tiers, both at $249 a month with no minimum commitment: Set It and Forget It at $449 setup, which is the questionnaire build with no custom work through self-serve checkout, and Custom Build at $3,500 setup, which adds a custom-scoped build and 30 days of onboarding, arranged through our white-glove intake rather than a bare checkout. The $249 covers hosting, monitoring, updates and up to $150 in API usage each month; sustained usage above that is reviewed with you and billed at cost.",
+        text: PLAN_TERMS,
       },
       {
         kind: "prose",
@@ -76,8 +91,8 @@ const SECTIONS: LegalSection[] = [
         kind: "bullets",
         items: [
           "Payments are processed by Stripe. We never see or store your full card details.",
-          "The licence fee is charged once, at purchase. Hosting is charged monthly in advance and renews automatically until you cancel.",
-          "You can cancel hosting at any time. Cancellation stops the next renewal; it does not refund the month you are in.",
+          "Your plan is charged monthly in advance and renews automatically until you cancel. An extra agent added mid-month is charged for the rest of that month.",
+          "You can cancel your plan at any time. Cancellation stops the next renewal; it does not refund the month you are in.",
           "After cancellation you keep dashboard access for 10 days, so you can export what you need. After that the account is closed to sign-in.",
           "If a payment fails we may suspend the agent until it is settled. We will tell you before we do.",
           "Taxes are yours where they apply, and are added at checkout where we are required to collect them.",
@@ -94,7 +109,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: "prose",
-        text: "Your monthly subscription includes up to $150 in API usage. If your agent works harder than that, sustained usage above the allowance is reviewed with you and billed at cost, and you can also buy additional credit in the dashboard rather than being cut off mid-month.",
+        text: USAGE_TERMS,
       },
       {
         kind: "bullets",

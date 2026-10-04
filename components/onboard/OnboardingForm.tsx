@@ -834,7 +834,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = f
                   the Create button that is now waiting on Welcome for any workspace with zero
                   agents. The route existed; the sign did not. */}
               <p style={{ margin: "0 0 12px" }}>
-                There is nothing to buy here - the license is already yours. Log in and your
+                There is nothing to buy here - your account is already set up. Log in and your
                 dashboard picks up where you left off, and if there is no agent on it yet you can
                 build one from the Welcome page.
               </p>

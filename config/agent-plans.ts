@@ -153,6 +153,16 @@ export const LEGACY_TIER: AgentTier = {
 /** The plans a customer can buy today, in page order. */
 export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale);
 
+/** The entry plan on sale, for "plans start at" lines across the site. */
+const ENTRY_PLAN = PLANS_ON_SALE.reduce((a, b) => ((b.monthlyCents ?? Infinity) < (a.monthlyCents ?? Infinity) ? b : a));
+
+/** "$99": the lowest monthly price on sale. */
+export const STARTING_PRICE = `$${((ENTRY_PLAN.monthlyCents ?? 0) / 100).toLocaleString("en-US")}`;
+
+/** The one answer to "how much does it cost" anywhere outside /pricing: the FAQs, and the
+ *  industry and agent pages. Built from the plans so it can never quote a retired price. */
+export const PRICING_FAQ_ANSWER = `Plans start at ${STARTING_PRICE} a month for ${ENTRY_PLAN.agents} agents, with no setup fee and no minimum term, and every agent is set up around your business. Every plan is on our pricing page. For a custom build, book a call.`;
+
 /** Every tier Super Admin can put a workspace on: the plans, and back to legacy. */
 export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS];
 

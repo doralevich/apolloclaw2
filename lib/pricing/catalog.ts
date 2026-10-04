@@ -221,8 +221,10 @@ export function resolveLicenseTier(id: string | undefined | null): LicenseTier {
   return licenseTierFor(id) ?? licenseTierFor(DEFAULT_LICENSE_TIER)!;
 }
 
-/** Human display of the bundle where no tier has been chosen yet. */
-export const BUNDLE_PRICE_LABEL = "From $449 setup + $249/mo";
+// What the dashboard's create-agent picker says beside an agent type. Building one there costs
+// nothing beyond what the customer already pays, so it names no price (the plans did away with the
+// "$449 setup + $249/mo" this used to print).
+export const BUNDLE_PRICE_LABEL = "Included in your plan";
 
 /**
  * What the $249 covers, in David's exact words. Do not paraphrase this on a surface: he wrote
