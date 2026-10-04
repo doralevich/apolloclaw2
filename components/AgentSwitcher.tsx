@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { Bot, Check, ChevronsUpDown } from "lucide-react";
 import { useActiveAgent } from "@/components/ActiveAgentProvider";
 import { CHAT_BASE, useChatContext } from "@/components/chat/ChatProvider";
+import { useWorkspace } from "@/components/WorkspaceProvider";
+import { AddAgentOrUpgrade, useAgentPlan } from "@/components/AgentPlan";
 import { isTransitional } from "@/lib/format";
 import type { MergedAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -79,6 +81,8 @@ export function AgentSwitcher({ onNavigate }: { onNavigate?: () => void }) {
   const { agents, active, setActiveId, loading } = useActiveAgent();
   const { roster, selectedAgentId, selectAgent } = useChatContext();
   const pathname = usePathname();
+  const { current, isPlatformAdmin } = useWorkspace();
+  const plan = useAgentPlan();
 
   // No agents at all: nothing to name. Welcome handles that state with a build button.
   if (!agents.length || !active) return null;
@@ -87,6 +91,20 @@ export function AgentSwitcher({ onNavigate }: { onNavigate?: () => void }) {
   const team = (roster ?? []).filter((a) => a.id !== "main");
   // The pick is only worth marking where it shows: on Chat. Elsewhere every row reads plain.
   const onChat = pathname.startsWith(CHAT_BASE);
+  // Add agent, or Upgrade once the plan is full, right under the agents it adds to. For whoever
+  // may add one (the workspace admin), and only on a box that can carry more than one agent: the
+  // roster is empty for any other kind.
+  const canManage = current?.role === "admin" || isPlatformAdmin;
+  const addRow =
+    canManage && plan && (roster?.length ?? 0) > 0 ? (
+      <AddAgentOrUpgrade
+        usage={plan}
+        instanceId={active.agent37_id}
+        mainName={agentLabel(active)}
+        variant="rail"
+        onNavigate={onNavigate}
+      />
+    ) : null;
   const pick = (id: string) => {
     selectAgent(id);
     onNavigate?.();
@@ -175,33 +193,36 @@ export function AgentSwitcher({ onNavigate }: { onNavigate?: () => void }) {
             );
           })}
         </ul>
+        {addRow && <div className="ml-6 mt-0.5 pl-2">{addRow}</div>}
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-1">
-      {many ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              disabled={loading}
-              className="flex min-w-0 flex-1 items-center gap-1 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/60"
-            >
-              {identity(active)}
-              <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-            </button>
-          </DropdownMenuTrigger>
-          {switcherMenu}
-        </DropdownMenu>
-      ) : (
-        // Not a button. With one agent there is nothing to switch to, and a row that highlights
-        // on hover and then does nothing when pressed is worse than a row that never invited the
-        // press.
-        <div className="flex min-w-0 flex-1 items-center px-2 py-1.5">{identity(active)}</div>
-      )}
-
+    <div>
+      <div className="flex items-center gap-1">
+        {many ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                disabled={loading}
+                className="flex min-w-0 flex-1 items-center gap-1 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/60"
+              >
+                {identity(active)}
+                <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+              </button>
+            </DropdownMenuTrigger>
+            {switcherMenu}
+          </DropdownMenu>
+        ) : (
+          // Not a button. With one agent there is nothing to switch to, and a row that highlights
+          // on hover and then does nothing when pressed is worse than a row that never invited the
+          // press.
+          <div className="flex min-w-0 flex-1 items-center px-2 py-1.5">{identity(active)}</div>
+        )}
+      </div>
+      {addRow && <div className="mt-0.5">{addRow}</div>}
     </div>
   );
 }

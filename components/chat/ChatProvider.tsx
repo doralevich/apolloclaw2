@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useOnAgentsChanged } from "@/components/AgentPlan";
 import { type ChatSession, type RosterAgent } from "./types";
 
 export const CHAT_BASE = "/dashboard/chat";
@@ -151,6 +152,8 @@ export function ChatProvider({
   const [roster, setRoster] = useState<RosterAgent[] | null>(null);
   const [rosterVersion, setRosterVersion] = useState(0);
   const refreshRoster = useCallback(() => setRosterVersion((n) => n + 1), []);
+  // An agent added, renamed or removed anywhere on the page (My Agent(s), the sidebar's Add agent).
+  useOnAgentsChanged(refreshRoster);
   useEffect(() => {
     if (!agentId) return;
     let cancelled = false;

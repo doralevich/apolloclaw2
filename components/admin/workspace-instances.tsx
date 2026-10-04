@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DoorOpen, ExternalLink, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -8,6 +8,8 @@ import { formatDate, statusVariant, usd } from "@/lib/format";
 import { getAgentType } from "@/config/agent-types";
 import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAgentDetail, Budget } from "@/lib/types";
+import type { RosterAgent } from "@/components/chat/types";
+import { AGENT_TIERS, agentsLabel, type AgentPlanUsage } from "@/config/agent-plans";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -120,6 +122,7 @@ export function InstanceList({ detail }: { detail: Detail | undefined }) {
               <td className="px-3 py-2">
                 <div className="font-medium">{a.name || "Untitled agent"}</div>
                 <div className="font-mono text-[11px] text-muted-foreground">{a.agent37_id}</div>
+                {runtimeForTemplate(a.template) === "OpenClaw" && <InstanceTeam agentId={a.agent37_id} />}
               </td>
               <td className="px-3 py-2">
                 <div className="flex items-center gap-1">
@@ -184,6 +187,133 @@ export function InstanceList({ detail }: { detail: Detail | undefined }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+// A workspace's agent plan, set here and nowhere else (config/agent-plans.ts has the tiers). The
+// tier sets the count; a custom number wins over it for a deal that does not fit a tier. Shows
+// how much is in use, every agent counted, so the call is made with the numbers in view.
+export function AgentPlanControl({ workspaceId }: { workspaceId: string }) {
+  const [usage, setUsage] = useState<AgentPlanUsage | null>(null);
+  const [plan, setPlan] = useState("");
+  const [custom, setCustom] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<AgentPlanUsage>(`/api/admin/workspaces/${workspaceId}/agent-plan`)
+      .then((u) => {
+        if (cancelled) return;
+        setUsage(u);
+        setPlan(u.tier.id);
+        setCustom(u.custom ? String(u.limit) : "");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId]);
+
+  async function save() {
+    setBusy(true);
+    try {
+      const u = await apiFetch<AgentPlanUsage>(`/api/admin/workspaces/${workspaceId}/agent-plan`, {
+        method: "PUT",
+        body: JSON.stringify({ plan, agentLimit: custom.trim() ? Number(custom) : null }),
+      });
+      setUsage(u);
+      setCustom(u.custom ? String(u.limit) : "");
+      toast.success(`Plan set: ${u.tier.label}, ${agentsLabel(u.limit)}.`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!usage) return null;
+  const dirty = plan !== usage.tier.id || custom.trim() !== (usage.custom ? String(usage.limit) : "");
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-muted-foreground">Agent plan</span>
+      <select
+        value={plan}
+        onChange={(e) => setPlan(e.target.value)}
+        disabled={busy}
+        aria-label="Agent plan"
+        className="h-8 rounded-md border bg-background px-2 text-xs"
+      >
+        {AGENT_TIERS.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.label} ({agentsLabel(t.agents)})
+          </option>
+        ))}
+      </select>
+      <input
+        type="number"
+        min={1}
+        max={100}
+        value={custom}
+        onChange={(e) => setCustom(e.target.value)}
+        disabled={busy}
+        placeholder="Custom"
+        aria-label="Custom agent limit"
+        title="A number of this workspace's own, which wins over the plan's. Leave empty to use the plan."
+        className="h-8 w-20 rounded-md border bg-background px-2 text-xs"
+      />
+      <Button variant="outline" size="sm" onClick={save} disabled={busy || !dirty}>
+        {busy ? "Saving..." : "Save"}
+      </Button>
+      <span className={usage.canAdd ? "text-muted-foreground" : "font-medium text-amber-700 dark:text-amber-400"}>
+        {usage.used} of {usage.limit} in use
+      </span>
+    </div>
+  );
+}
+
+// The other agents living on an instance, under its name. The product row is one agent per
+// instance, so the SEO agent on Timmy Turner was invisible here; this reads the box the same way
+// the customer's My Agent(s) page does. Read once when the customer row is expanded, which is
+// the only time this table renders, and silent when the box cannot be read.
+function InstanceTeam({ agentId }: { agentId: string }) {
+  const [team, setTeam] = useState<RosterAgent[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ ok: boolean; agents: RosterAgent[] }>(`/api/admin/agents/${agentId}/roster`)
+      .then((res) => {
+        if (!cancelled) setTeam(res.ok ? res.agents.filter((x) => x.id !== "main") : []);
+      })
+      .catch(() => {
+        if (!cancelled) setTeam([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId]);
+
+  if (!team || team.length === 0) return null;
+  return (
+    <ul className="mt-1.5 space-y-1 border-l pl-2" aria-label="Other agents on this instance">
+      {team.map((t) => {
+        const label = t.name || t.id;
+        return (
+          <li key={t.id} className="flex items-center gap-1.5">
+            {t.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={t.avatarUrl} alt="" className="size-4 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-secondary text-[9px] font-semibold text-muted-foreground">
+                {label.slice(0, 1).toUpperCase()}
+              </span>
+            )}
+            <span className="font-medium">{label}</span>
+            {t.role && <span className="text-[11px] text-muted-foreground">{t.role}</span>}
+            {t.telegram && <span className="text-[11px] text-muted-foreground/70">· Telegram</span>}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

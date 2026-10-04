@@ -101,126 +101,132 @@ export function AgentCard({
   const creditDollars = creditMicros && creditMicros > 0 ? creditMicros / 1_000_000 : 0;
 
   return (
-    <div className="rounded-xl border bg-card p-6">
-      <div className="flex flex-wrap items-start gap-4">
-        <AgentAvatarPicker
-          agentId={agent.agent37_id}
-          currentUrl={agent.avatar_url}
-          agentName={name}
-        />
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <AgentNameCell agent={agent} canEdit={role === "admin"} onRenamed={onChanged} />
-            <Badge variant={statusVariant(agent.live_status)}>
-              {agent.live_status ?? "unknown"}
-            </Badge>
-            {agent.past_due && <Badge variant="warning">past due</Badge>}
-          </div>
-
-          {agent.status_reason && (
-            <p className="mt-1.5 text-xs text-destructive">{agent.status_reason.message}</p>
-          )}
-
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-            {/* SetupCell renders bare text ("Complete", "Applying…", or a Finish setup link),
-                which was unambiguous as a table cell under a "Setup" header and is not on a
-                line beside the app count. The icon carries the header's job. */}
-            <span className="inline-flex items-center gap-1.5">
-              <ClipboardCheck className="size-3.5" />
-              <SetupCell agent={agent} />
-            </span>
-            {connected !== null && (
-              <Link
-                href="/dashboard/integrations"
-                className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-              >
-                <Blocks className="size-3.5" />
-                {connected === 0
-                  ? "No apps connected yet"
-                  : `${connected} app${connected === 1 ? "" : "s"} connected`}
-              </Link>
-            )}
-            {/* The roster's one useful column, where the rest of the facts already were: whose
-                agent this is, by name. Admin-only by construction - the roster endpoint that
-                resolves names refuses members. */}
-            {owner && (
-              <span className="inline-flex items-center gap-1.5">
-                <UserRound className="size-3.5" />
-                {[owner.first_name, owner.last_name].filter(Boolean).join(" ") || owner.email}
-                {owner.email && <span className="text-muted-subtle">· {owner.email}</span>}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Button asChild size="sm">
-            <Link href="/dashboard/chat">
-              <MessageSquare className="size-4" />
-              Chat
-            </Link>
-          </Button>
-          <AgentActionsMenu
-            agent={agent}
-            role={role}
-            isPlatformAdmin={isPlatformAdmin}
-            onChanged={onChanged}
+    <>
+      <div className="rounded-xl border bg-card p-6">
+        <div className="flex flex-wrap items-start gap-4">
+          <AgentAvatarPicker
+            agentId={agent.agent37_id}
+            currentUrl={agent.avatar_url}
+            agentName={name}
           />
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <AgentNameCell agent={agent} canEdit={role === "admin"} onRenamed={onChanged} />
+              <Badge variant={statusVariant(agent.live_status)}>
+                {agent.live_status ?? "unknown"}
+              </Badge>
+              {agent.past_due && <Badge variant="warning">past due</Badge>}
+            </div>
+
+            {agent.status_reason && (
+              <p className="mt-1.5 text-xs text-destructive">{agent.status_reason.message}</p>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+              {/* SetupCell renders bare text ("Complete", "Applying…", or a Finish setup link),
+                  which was unambiguous as a table cell under a "Setup" header and is not on a
+                  line beside the app count. The icon carries the header's job. */}
+              <span className="inline-flex items-center gap-1.5">
+                <ClipboardCheck className="size-3.5" />
+                <SetupCell agent={agent} />
+              </span>
+              {connected !== null && (
+                <Link
+                  href="/dashboard/integrations"
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                >
+                  <Blocks className="size-3.5" />
+                  {connected === 0
+                    ? "No apps connected yet"
+                    : `${connected} app${connected === 1 ? "" : "s"} connected`}
+                </Link>
+              )}
+              {/* The roster's one useful column, where the rest of the facts already were: whose
+                  agent this is, by name. Admin-only by construction - the roster endpoint that
+                  resolves names refuses members. */}
+              {owner && (
+                <span className="inline-flex items-center gap-1.5">
+                  <UserRound className="size-3.5" />
+                  {[owner.first_name, owner.last_name].filter(Boolean).join(" ") || owner.email}
+                  {owner.email && <span className="text-muted-subtle">· {owner.email}</span>}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <Button asChild size="sm">
+              <Link href="/dashboard/chat">
+                <MessageSquare className="size-4" />
+                Chat
+              </Link>
+            </Button>
+            <AgentActionsMenu
+              agent={agent}
+              role={role}
+              isPlatformAdmin={isPlatformAdmin}
+              onChanged={onChanged}
+            />
+          </div>
         </div>
+
+        {/* Delete, ON the card it deletes - stage 2 of the settings rework. The old
+            DeleteAgentSection sat on Settings > General and deleted whichever agent the hidden
+            sidebar switcher happened to have active, which in a two-agent workspace was a
+            roulette wheel. Here there is no ambiguity to have: the card names the agent, the
+            confirm names it again, and the seat-credit behavior is stated before the button. */}
+        {role === "admin" && (
+          <>
+            <div className="mt-4 flex justify-end border-t pt-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 className="size-3.5" />
+                Delete {name}
+              </Button>
+            </div>
+            <ConfirmDialog
+              open={confirmDelete}
+              onOpenChange={setConfirmDelete}
+              title={`Delete ${name}?`}
+              description={
+                (creditDollars > 0
+                  ? `Heads up: ${name} still has $${creditDollars.toFixed(2)} in purchased credit, which is lost once it's finally deleted. `
+                  : "") +
+                `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. If this workspace still has another agent afterwards, the $249/month hosting seat is credited back automatically.`
+              }
+              confirmText={`Delete ${name}`}
+              destructive
+              onConfirm={removeAgent}
+            />
+          </>
+        )}
+
+        {/* The machine, for us. A customer cannot act on vCPU/RAM/disk and should not have to
+            read it; we need it constantly when something is misbehaving. */}
+        {isPlatformAdmin && (
+          <div className="mt-4 border-t pt-3 text-xs text-muted-subtle">
+            {typeLabel ?? agent.template ?? "unknown type"} · {agent.cpu} vCPU · {agent.memory} GB ·{" "}
+            {agent.disk} GB · <span className="font-mono">{agent.agent37_id}</span>
+          </div>
+        )}
       </div>
 
-      {/* Every agent the instance itself reports, when there is more than the one this card is
-          for. Reads the box, so an agent added on the server shows here the same day. */}
+      {/* Every other agent the instance itself reports, each as a card of its own under this one,
+          the same size and with the same details. Reads the box, so an agent added on the server
+          shows here the same day. */}
       <AgentTeam
         agentId={agent.agent37_id}
         mainName={name}
+        liveStatus={agent.live_status}
+        connected={connected}
+        owner={owner}
         canManage={role === "admin" || isPlatformAdmin}
       />
-
-      {/* Delete, ON the card it deletes - stage 2 of the settings rework. The old
-          DeleteAgentSection sat on Settings > General and deleted whichever agent the hidden
-          sidebar switcher happened to have active, which in a two-agent workspace was a
-          roulette wheel. Here there is no ambiguity to have: the card names the agent, the
-          confirm names it again, and the seat-credit behavior is stated before the button. */}
-      {role === "admin" && (
-        <>
-          <div className="mt-4 flex justify-end border-t pt-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => setConfirmDelete(true)}
-            >
-              <Trash2 className="size-3.5" />
-              Delete {name}
-            </Button>
-          </div>
-          <ConfirmDialog
-            open={confirmDelete}
-            onOpenChange={setConfirmDelete}
-            title={`Delete ${name}?`}
-            description={
-              (creditDollars > 0
-                ? `Heads up: ${name} still has $${creditDollars.toFixed(2)} in purchased credit, which is lost once it's finally deleted. `
-                : "") +
-              `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. If this workspace still has another agent afterwards, the $249/month hosting seat is credited back automatically.`
-            }
-            confirmText={`Delete ${name}`}
-            destructive
-            onConfirm={removeAgent}
-          />
-        </>
-      )}
-
-      {/* The machine, for us. A customer cannot act on vCPU/RAM/disk and should not have to
-          read it; we need it constantly when something is misbehaving. */}
-      {isPlatformAdmin && (
-        <div className="mt-4 border-t pt-3 text-xs text-muted-subtle">
-          {typeLabel ?? agent.template ?? "unknown type"} · {agent.cpu} vCPU · {agent.memory} GB ·{" "}
-          {agent.disk} GB · <span className="font-mono">{agent.agent37_id}</span>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

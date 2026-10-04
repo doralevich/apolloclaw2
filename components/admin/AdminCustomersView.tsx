@@ -31,6 +31,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
+  AgentPlanControl,
   InstanceList,
   LeaveWorkspaceButton,
   OpenWorkspaceButton,
@@ -553,6 +554,7 @@ export function AdminCustomersView() {
                                 />
                               </div>
                             </div>
+                            <AgentPlanControl workspaceId={w.id} />
                             <InstanceList detail={details[w.id]} />
                           </div>
                         );
