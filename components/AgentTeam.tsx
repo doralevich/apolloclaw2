@@ -17,17 +17,15 @@ import { SubAgentDialog, type EditingAgent } from "@/components/SubAgentDialog";
 // or remove it, each in place. One additional agent per instance for now; several at once is the
 // next build, at which point the Add button stops hiding once one exists.
 
-type RosterAgent = { id: string; name: string | null; role: string | null; avatarUrl: string | null; telegram: boolean };
+type RosterAgent = { id: string; name: string | null; role: string | null; persona: string | null; avatarUrl: string | null; telegram: boolean };
 
 export function AgentTeam({
   agentId,
   mainName,
-  mainAvatarUrl,
   canManage = false,
 }: {
   agentId: string;
   mainName: string;
-  mainAvatarUrl?: string | null;
   /** The instance admin may add, edit and remove agents. Members see the list only. */
   canManage?: boolean;
 }) {
@@ -57,10 +55,12 @@ export function AgentTeam({
   useEffect(() => load(), [load]);
 
   const subAgents = (agents ?? []).filter((a) => a.id !== "main");
-  // The panel shows for an admin even with no second agent yet, so there is a place to add one.
-  // For a member it stays hidden until a second agent exists, as before.
+  // The panel manages the OTHER agents, not the primary one: the primary is the card header
+  // above, so repeating it here read as duplicative (David, Oct 4 2026). An admin sees the
+  // panel even with no second agent yet, so there is a place to add one; a member sees it only
+  // once a second agent exists.
   if (!agents || !supported) return null;
-  if (!canManage && agents.length < 2) return null;
+  if (!canManage && subAgents.length === 0) return null;
 
   // ConfirmDialog awaits this, closes on success, and stays open if it throws.
   async function remove() {
@@ -70,17 +70,12 @@ export function AgentTeam({
     load();
   }
 
-  const rows: RosterAgent[] = [
-    { id: "main", name: mainName, role: null, avatarUrl: mainAvatarUrl ?? null, telegram: false },
-    ...subAgents,
-  ];
-
   return (
     <div className="mt-4 border-t pt-4">
       <div className="mb-2 flex items-center justify-between">
         <div className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Users className="size-3.5" />
-          {rows.length > 1 ? `${rows.length} agents on this instance` : "Agents on this instance"}
+          Other agents on this instance
         </div>
         {canManage && subAgents.length === 0 && (
           <Button variant="outline" size="sm" onClick={() => { setEditing(null); setDialogOpen(true); }}>
@@ -90,62 +85,64 @@ export function AgentTeam({
         )}
       </div>
 
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {rows.map((a) => {
-          const label = a.id === "main" ? mainName : a.name || a.id;
-          const sub = a.id === "main" ? "Primary" : a.role || a.id;
-          return (
-            <li key={a.id} className="flex items-center gap-3 rounded-lg border bg-background px-3 py-2">
-              {a.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={a.avatarUrl} alt="" className="size-8 shrink-0 rounded-full border object-cover" />
-              ) : (
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-muted text-sm font-semibold text-muted-foreground">
-                  {label.slice(0, 1).toUpperCase()}
-                </span>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{label}</div>
-                <div className="truncate text-[11px] text-muted-foreground">{sub}</div>
-              </div>
-              {a.id === "main" ? (
-                <Badge variant="secondary">Primary</Badge>
-              ) : (
-                <>
-                  {a.telegram && (
-                    <Badge variant="outline" className="gap-1">
-                      <Send className="size-3" />
-                      Telegram
-                    </Badge>
-                  )}
-                  {canManage && (
-                    <div className="flex items-center gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        aria-label={`Edit ${label}`}
-                        onClick={() => { setEditing({ id: a.id, name: a.name || a.id, role: a.role, avatarUrl: a.avatarUrl }); setDialogOpen(true); }}
-                      >
-                        <Pencil className="size-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 text-destructive hover:text-destructive"
-                        aria-label={`Remove ${label}`}
-                        onClick={() => setRemoving(a)}
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {subAgents.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          {mainName} is the only agent here. Add one to give it a teammate with its own role.
+        </p>
+      ) : (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {subAgents.map((a) => {
+            const label = a.name || a.id;
+            return (
+              <li key={a.id} className="flex items-start gap-3 rounded-lg border bg-background p-3">
+                {a.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={a.avatarUrl} alt="" className="size-10 shrink-0 rounded-full border object-cover" />
+                ) : (
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full border bg-muted text-base font-semibold text-muted-foreground">
+                    {label.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-medium">{label}</span>
+                    {a.telegram && (
+                      <Badge variant="outline" className="gap-1 px-1.5 py-0">
+                        <Send className="size-2.5" />
+                        Telegram
+                      </Badge>
+                    )}
+                  </div>
+                  {a.role && <div className="truncate text-xs text-muted-foreground">{a.role}</div>}
+                  {a.persona && <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground/90">{a.persona}</p>}
+                </div>
+                {canManage && (
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      aria-label={`Edit ${label}`}
+                      onClick={() => { setEditing({ id: a.id, name: a.name || a.id, role: a.role, avatarUrl: a.avatarUrl }); setDialogOpen(true); }}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7 text-destructive hover:text-destructive"
+                      aria-label={`Remove ${label}`}
+                      onClick={() => setRemoving(a)}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       {dialogOpen && (
         <SubAgentDialog

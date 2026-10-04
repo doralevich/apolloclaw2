@@ -14,6 +14,8 @@ export interface InstanceRosterAgent {
   name: string | null;
   /** The agent's role, from the app metadata beside its workspace. */
   role: string | null;
+  /** The agent's persona, from the app metadata. */
+  persona: string | null;
   /** The agent's avatar image URL, from the app metadata. The app names main's avatar itself. */
   avatarUrl: string | null;
   /** True when a Telegram account is bound to this agent, so it has a bot of its own. */
@@ -42,7 +44,7 @@ const SCRIPT =
   'const bound=new Set((Array.isArray(c.bindings)?c.bindings:[]).filter(b=>b&&b.match&&b.match.channel==="telegram"&&typeof b.agentId==="string").map(b=>b.agentId));' +
   // The app metadata beside each non-main agent's workspace: role and avatar URL.
   'const meta=function(id){if(id==="main")return{};try{return JSON.parse(fs.readFileSync(root+"/workspace-"+id+"/.apollo-agent.json","utf8"))||{};}catch(e){return{};}};' +
-  'const agents=[...ids].map(id=>{const e=entries[id]||list.find(a=>a&&a.id===id)||{};const m=meta(id);return {id,name:typeof e.name==="string"?e.name:null,role:typeof m.role==="string"&&m.role?m.role:null,avatarUrl:typeof m.avatarUrl==="string"&&m.avatarUrl?m.avatarUrl:null,telegram:bound.has(id)};});' +
+  'const agents=[...ids].map(id=>{const e=entries[id]||list.find(a=>a&&a.id===id)||{};const m=meta(id);return {id,name:typeof e.name==="string"?e.name:null,role:typeof m.role==="string"&&m.role?m.role:null,persona:typeof m.persona==="string"&&m.persona?m.persona:null,avatarUrl:typeof m.avatarUrl==="string"&&m.avatarUrl?m.avatarUrl:null,telegram:bound.has(id)};});' +
   'console.log("ROSTER:"+JSON.stringify({agents}));';
 
 const CMD =
