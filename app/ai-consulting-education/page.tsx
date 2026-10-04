@@ -70,22 +70,21 @@ const data: SeoLandingData = {
       heading: "Built for the Way Institutions",
       headingAccent: "Operate",
       paragraphs: [
-        "Higher education runs on trust with students, families, and regulators. Apollo Claw is FERPA-aware and will execute a data-processing agreement for institutional clients, the same standard we hold across every education engagement.",
+        "Higher education runs on trust with students, families, and regulators. Apollo Claw is built for that standard: institutional data stays on infrastructure the institution approves, and a data-processing agreement is available for institutional clients, the same standard we hold across every education engagement.",
       ],
     },
     {
       type: "bullets",
-      kicker: "Security & Compliance",
+      kicker: "Security",
       heading: "Every Protection We",
       headingAccent: "Apply",
       bullets: [
         "Encrypted in transit and at rest, TLS 1.3 with AES-256",
         "Least-privilege access, multi-factor authentication enforced on every administrative account",
         "No data resale, ever, institutional data belongs to the institution",
-        "SOC 2 Type I compliant, Type II on track for completion by the end of September 2026",
-        "GDPR compliant, with consent-based analytics and deletion on request",
-        "FERPA-aware for education clients, completed HECVAT responses, and a data-processing agreement on execution",
-        "Full detail, infrastructure, governance, and documentation for IT and procurement, on our security and compliance page",
+        "Consent-based analytics, and deletion of your data on request",
+        "A data-processing agreement for institutional clients, on request",
+        "Full detail, infrastructure, governance, and documentation for IT and procurement, on our security page",
       ],
     },
     {

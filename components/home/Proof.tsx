@@ -12,7 +12,7 @@ const CASES = [
   {
     title: "Clinical Operations Agent",
     story:
-      "A concierge medical practice wanted to expand its capacity while protecting patient privacy. Apollo Claw deployed a HIPAA-aware agent to handle scheduling support, patient communication routing, and operational tasks behind the scenes.",
+      "A concierge medical practice wanted to expand its capacity while protecting patient privacy. Apollo Claw deployed a privacy-first agent to handle scheduling support, patient communication routing, and operational tasks behind the scenes.",
     result: "Immediate capacity for patient care and practice growth.",
   },
   {

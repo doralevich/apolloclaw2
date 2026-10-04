@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     images: agentOgImages("medical"),
     title: "AI for Medical & Dental Practices | Appointment Reminders & Patient Intake",
     description:
-      "The Medical Agent automates appointment reminders, patient intake, and follow-up for medical and dental practices. HIPAA-aware. Reduce no-shows within 30 days.",
+      "The Medical Agent automates appointment reminders, patient intake, and follow-up for medical and dental practices, on your own private infrastructure.",
     url: "https://apolloclaw.ai/industries/medical-practices",
     type: "website",
   },
@@ -29,7 +29,7 @@ const jsonLd = {
       "@type": "Service",
       "@id": "https://apolloclaw.ai/industries/medical-practices#service",
       name: "The Medical Agent: AI for Healthcare Practices",
-      description: "HIPAA-compliant AI assistant for medical practices that automates scheduling, patient follow-up, intake, and documentation prep.",
+      description: "Privacy-first AI assistant for medical practices that automates scheduling, patient follow-up, intake, and documentation prep.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://apolloclaw.ai/industries/medical-practices",
       serviceType: "AI Automation for Medical Practices",
@@ -227,7 +227,7 @@ export default function HealthcarePage() {
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7 1L8.5 5H13L9.5 7.5L11 11.5L7 9L3 11.5L4.5 7.5L1 5H5.5L7 1Z" fill={NAVY} opacity="0.6"/>
             </svg>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: NAVY, opacity: 0.7 }}>HIPAA Compliant</span>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest" style={{ color: NAVY, opacity: 0.7 }}>Private by Design</span>
           </div>
           <a href="https://cal.com/therealdaveo/dbdo-consultation" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
             Schedule Your Consultation

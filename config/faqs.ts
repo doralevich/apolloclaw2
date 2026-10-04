@@ -3,12 +3,17 @@
 // renders all of them, so a question edited here changes on both at once.
 //
 // The answers follow the site's copy rules (positive framing, no em dashes, no "actually" or
-// "new"); rewritten to them Oct 4 2026. Setup time is one answer everywhere: about two weeks,
-// then 30 days of hands-on training.
+// "new"); rewritten to them Oct 4 2026. Setup time is one answer everywhere: SETUP_TIME_ANSWER.
 
 import { PRICING_FAQ_ANSWER } from "@/config/agent-plans";
 
 export type Faq = { q: string; a: string };
+
+/** The one answer to "how long does setup take?", everywhere (David, Oct 4 2026: the online
+ *  build, custom agent included, takes about 15 minutes; hands-on training is an add-on, or part
+ *  of a custom build, so it is kept out of this answer). */
+export const SETUP_TIME_ANSWER =
+  "About 15 minutes. Answer a short questionnaire and your custom agent is built for you online, running on its own private server and ready to connect to Telegram or Slack.";
 
 export const HOME_FAQS: Faq[] = [
   {
@@ -17,7 +22,7 @@ export const HOME_FAQS: Faq[] = [
   },
   {
     q: "How quickly will my agent be up and running?",
-    a: "Most agents are live within about two weeks, followed by 30 days of hands-on training so it fits the way you work.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "Which tools does it work with?",
@@ -25,7 +30,7 @@ export const HOME_FAQS: Faq[] = [
   },
   {
     q: "What does support look like after launch?",
-    a: "Every build includes 30 days of hands-on training. After that, ongoing support plans keep your agent sharp as your business grows.",
+    a: "Help is a message away: chat with our team on Telegram, or email support. Hands-on onboarding and 30 days of training are available as an add-on, and come with every custom build.",
   },
   {
     q: "Is this a fit for a business my size?",
@@ -52,7 +57,7 @@ export const GENERAL_FAQS: Faq[] = [
   },
   {
     q: "How long does setup take?",
-    a: "Most agents are live within about two weeks, followed by 30 days of hands-on training so it fits the way you work.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "Is my data secure?",
@@ -83,7 +88,7 @@ export const CEO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and training.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "Is my data secure?",
@@ -106,7 +111,7 @@ export const CFO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "Will it replace my finance team?",
@@ -137,7 +142,7 @@ export const LAW_AGENT_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. We onboard the agent on your templates and standard positions, connect your tools, and configure how it drafts, reviews, and escalates.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "Can it draft from our own templates and playbook?",
@@ -172,7 +177,7 @@ export const INSURANCE_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most agencies are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "What does it cost?",
@@ -190,8 +195,8 @@ export const LAW_FIRMS_FAQS: Faq[] = [
     a: "The agent receives inquiries through your intake form, website, or email. It pre-screens for your practice areas, collects key facts, and routes qualified prospects to the right attorney with a summary already written.",
   },
   {
-    q: "Is client data secure and ethically compliant?",
-    a: "Yes. We build on your infrastructure and use least-privilege access throughout. All data handling is reviewed against applicable bar rules in your jurisdiction, and client communications stay on your systems unless you authorize otherwise.",
+    q: "Is client data secure?",
+    a: "Yes. We build on your infrastructure and use least-privilege access throughout, and client communications stay on your systems unless you authorize otherwise.",
   },
   {
     q: "Will it replace my paralegals?",
@@ -199,7 +204,7 @@ export const LAW_FIRMS_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "What does it cost?",
@@ -213,8 +218,8 @@ export const MEDICAL_FAQS: Faq[] = [
     a: "We connect to athenahealth, Epic, DrChrono, Kareo, Jane App, and most major EHR and practice management platforms. Every engagement is scoped individually.",
   },
   {
-    q: "Is this HIPAA compliant?",
-    a: "Yes. We sign a Business Associate Agreement with every healthcare client, all data handling follows HIPAA requirements, and protected health information stays on infrastructure you approve.",
+    q: "How is patient information handled?",
+    a: "Patient information stays on infrastructure you approve, a dedicated private server or your own Mac Mini, with least-privilege access to the systems you connect. Before launch we agree what the agent may see and where it may write, and your practice keeps control of both.",
   },
   {
     q: "Will it replace my front desk staff?",
@@ -226,7 +231,7 @@ export const MEDICAL_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most practices are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "What does it cost?",
@@ -249,7 +254,7 @@ export const REAL_ESTATE_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most clients are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: SETUP_TIME_ANSWER,
   },
   {
     q: "What does it cost?",
@@ -276,7 +281,7 @@ export const PERSONAL_INJURY_FAQS: Faq[] = [
   },
   {
     q: "How long does it take to get up and running?",
-    a: "Most firms are live within two weeks. The first session is a 90-minute onboarding call. We handle all configuration, integration, and testing.",
+    a: SETUP_TIME_ANSWER,
   },
 ];
 

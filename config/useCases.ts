@@ -117,7 +117,7 @@ export const USE_CASES: UseCase[] = [
     Icon: PhoneCall,
     summary: "Calls answered, messages routed, appointments booked.",
     title: "An AI Front Desk",
-    subtitle: "That Never Misses a Call",
+    subtitle: "That Answers Every Call",
     description:
       "Your agent answers the questions a front desk answers all day, takes messages, routes what needs a person to the right person, and books appointments straight into your calendar - after hours and at the busiest times included.",
     challenges: [

@@ -134,6 +134,52 @@ export default function CompanyPage() {
         </div>
       </section>
 
+      {/* WHAT WE MAKE - white. David's statement of the product type, from the Category Design
+          document (Oct 4 2026), written to the site's copy rules. The home page carries the short
+          form (components/home/WhatWeDo.tsx). */}
+      <section style={{ background: "#FFFFFF", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl">
+          <ScrollReveal>
+            <div className="mx-auto max-w-3xl">
+              <span
+                className="inline-block font-mono uppercase mb-5"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+              >
+                [ What We Make ]
+              </span>
+              <h2
+                className="font-display leading-[1.05] tracking-tight"
+                style={{ fontSize: "clamp(32px, 4.4vw, 56px)", fontWeight: 800, color: "#1A1A1A", margin: "0 0 22px" }}
+              >
+                Customized, Private, <span style={{ color: "#D72B2B" }}>Persistent Agents</span>
+              </h2>
+              <div
+                className="font-body"
+                style={{ fontSize: "clamp(15px, 1.1vw, 17px)", lineHeight: 1.7, color: "#555555" }}
+              >
+                <p style={{ marginBottom: 18 }}>
+                  Apollo[Claw] creates customized, private, persistent agents: a category of product that
+                  first became usable with us. Each agent is built for one person, one division, or a whole
+                  company or firm on a customized, controlled plan. It holds a compounding memory of that
+                  person&apos;s or team&apos;s context and preferences, acts on its own across the tools they
+                  already use, and runs on a private server built to hold real business data. It is a
+                  different thing from a chat tool, an automation platform or an assistant service staffed by
+                  people. It is software that knows who you are, acts before you ask, and works inside a
+                  private environment that can handle your real business data.
+                </p>
+                <p>
+                  Anyone looking for this before would have wanted one thing, already configured, that holds
+                  their context permanently, runs overnight unsupervised, works inside their actual stack, and
+                  keeps their data where their industry needs it kept. Chat tools reset. Automation platforms
+                  leave the logic to you. Assistant services scale with headcount. Apollo[Claw] is the first
+                  usable version of this product type.
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* LETS FIND OUT - cream */}
       <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
         <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl text-center">

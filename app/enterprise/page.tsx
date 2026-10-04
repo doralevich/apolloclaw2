@@ -90,10 +90,7 @@ const READINESS = [
   "Encryption in transit and at rest",
   "MFA on every admin and infrastructure account",
   "Data export and deletion on request",
-  "Runtime infrastructure certified to ISO 27001",
-  "SOC 2 Type I report for our runtime infrastructure, on request",
-  "HECVAT responses, pre-filled and ready to submit",
-  "FERPA data-processing agreement for education clients",
+  "Data-processing agreement for institutional clients, on request",
 ];
 
 const AUDIENCES: { Icon: LucideIcon; title: string; body: string; to: string }[] = [
@@ -112,7 +109,7 @@ const AUDIENCES: { Icon: LucideIcon; title: string; body: string; to: string }[]
   {
     Icon: GraduationCap,
     title: "Universities and Colleges",
-    body: "Admissions, student services, and campus operations, with FERPA and HECVAT covered.",
+    body: "Admissions, student services, and campus operations, with institutional data handling agreed up front.",
     to: "/ai-consulting-education",
   },
   {

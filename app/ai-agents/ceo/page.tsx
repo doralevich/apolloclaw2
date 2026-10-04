@@ -69,7 +69,7 @@ const process = [
   {
     phase: "Day 1",
     title: "We Configure Your Bot",
-    desc: "We map your workflows, connect your tools, and train the bot on your communication style. No IT team required. You show up to a 90-minute onboarding session.",
+    desc: "Answer a short questionnaire and your custom bot is built online in about 15 minutes. We connect your tools and train it on your communication style, with every technical step handled for you.",
   },
   {
     phase: "Week 1",
