@@ -217,6 +217,21 @@ export default function PricingPage() {
             Need one more? Add agents to {team.label} for {dollars(team.addOn.monthlyCents)} a month each.
           </p>
         )}
+        {/* Hands-on setup for any plan, quoted on a call (the old Custom Build's 30 days of
+            onboarding lives here now). One line under all the cards, not on each, so the cards
+            stay simple. */}
+        <p className="font-body mt-2 text-center text-[15px]" style={{ color: INK_MUTED }}>
+          Custom onboarding available on request.{" "}
+          <a
+            href={SCHEDULE_CONSULT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline underline-offset-4"
+            style={{ color: RED_INK }}
+          >
+            Book a call
+          </a>
+        </p>
         <p className="font-body mt-2 text-center text-[13px]" style={{ color: INK_MUTED }}>
           Fair use applies. Heavy usage may need an upgrade or a custom plan.
         </p>
