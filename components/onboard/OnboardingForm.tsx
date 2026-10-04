@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import CompanyRepeater, { emptyCompany, emptyPortfolio, type Company, type PortfolioMeta } from "@/components/onboard/CompanyRepeater";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 import AgentWordmark from "@/components/AgentWordmark";
@@ -1108,11 +1108,24 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
   const [picked] = useState<string | null>(() =>
     typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("plan")
   );
-  const leading = PLANS_ON_SALE.find((p) => p.id === picked)?.id ?? PLANS_ON_SALE.find((p) => p.featured)?.id;
+  // A choice already made goes straight to checkout rather than being asked again (David, Oct 4
+  // 2026): the plan picked on /pricing, or, in a branded agent funnel (/build/<slug>, which builds
+  // one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans.
+  const preset =
+    PLANS_ON_SALE.find((p) => p.id === picked) ??
+    (agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID ? PLANS_ON_SALE.find((p) => p.id === "solo") : undefined);
+  const [showPicker, setShowPicker] = useState(!preset);
+  const leading = preset?.id ?? PLANS_ON_SALE.find((p) => p.featured)?.id;
+
+  // Set when the buyer backs out of the hand-off while its checkout request is still in
+  // flight, so the reply, when it lands, is dropped instead of navigating them away from the
+  // plans they just asked to see.
+  const cancelled = useRef(false);
 
   const go = async (planId: PlanId) => {
     setErr("");
     setBuying(planId);
+    cancelled.current = false;
     try {
       const res = await fetch("/api/onboard/checkout", {
         method: "POST",
@@ -1131,6 +1144,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
         }),
       });
       const body = await res.json().catch(() => ({}));
+      if (cancelled.current) return;
       if (!res.ok || !body?.url) {
         throw new Error(body?.error?.message || "We could not start checkout. Please try again.");
       }
@@ -1140,10 +1154,58 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
       // inside the tier map rather than from one hardcoded button.
       window.location.assign(body.url as string);
     } catch (e) {
+      if (cancelled.current) return;
       setErr(e instanceof Error ? e.message : "We could not start checkout. Please try again.");
       setBuying(null);
+      // A failed hand-off falls back to the plans, with the error above them, so the buyer is
+      // never stuck on a screen that only says it is taking them somewhere.
+      setShowPicker(true);
     }
   };
+
+  // Hand off on arrival when the plan is already known. Deferred a tick so the state writes in
+  // go() happen after this render. The guard is set when the timer fires, not when it is
+  // scheduled: React's double-invoked dev effects run the cleanup between the two runs, which
+  // clears the first timer, so a guard set on scheduling would block the second run and no
+  // checkout would ever start.
+  const handedOff = useRef(false);
+  useEffect(() => {
+    if (!preset || showPicker || handedOff.current) return;
+    const t = setTimeout(() => {
+      if (handedOff.current) return;
+      handedOff.current = true;
+      void go(preset.id as PlanId);
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, showPicker]);
+
+  if (preset && !showPicker) {
+    return (
+      <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+        <div style={{ width: "100%", maxWidth: 480, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px)", textAlign: "center" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: a, margin: "0 0 12px" }}>Your plan</p>
+          <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.02em", margin: 0, color: TX }}>{preset.label}</h1>
+          <p style={{ margin: "8px 0 0", fontSize: 15, color: TXM }}>
+            {dollars(preset.monthlyCents ?? 0)} / month · {preset.agentsText}
+          </p>
+          <p style={{ margin: "22px 0 0", fontSize: 14, color: TXD, lineHeight: 1.6 }}>
+            Taking you to secure checkout…
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              cancelled.current = true;
+              setBuying(null);
+              setShowPicker(true);
+            }}
+            style={{ marginTop: 18, background: "transparent", border: "none", color: TXM, fontFamily: "inherit", fontSize: 13, fontWeight: 600, textDecoration: "underline", cursor: "pointer" }}>
+            Pick a different plan
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
