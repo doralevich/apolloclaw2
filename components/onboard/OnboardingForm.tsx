@@ -205,12 +205,7 @@ const ROLE_INTAKES: Record<
 // noun - "Real Estate Agent" is the product, "Real Estate" is the word that goes in the mark.
 // Derived rather than a tenth field per entry, since every roleName ends the same way.
 const wordmarkName = (roleName: string) => roleName.replace(/\s+Agent$/, "");
-import {
-  LICENSE_TIERS,
-  MONTHLY_API_ALLOWANCE_LABEL,
-  type LicenseTierId,
-} from "@/lib/pricing/catalog";
-import { SCHEDULE_CONSULT_CTA, SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import { agentTier, dollars, PLANS_ON_SALE, type PlanId } from "@/config/agent-plans";
 import { apiFetch } from "@/lib/api";
 
 // The single business-onboarding questionnaire, shared by three entry points:
@@ -839,7 +834,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = f
                   the Create button that is now waiting on Welcome for any workspace with zero
                   agents. The route existed; the sign did not. */}
               <p style={{ margin: "0 0 12px" }}>
-                There is nothing to buy here - the license is already yours. Log in and your
+                There is nothing to buy here - your account is already set up. Log in and your
                 dashboard picks up where you left off, and if there is no agent on it yet you can
                 build one from the Welcome page.
               </p>
@@ -1105,13 +1100,19 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
   // WHICH tier is checking out, not just whether something is. Both cards buy now, and a bare
   // boolean put "Taking you to checkout…" on both buttons at once, which reads as though the
   // wrong one was pressed.
-  const [buying, setBuying] = useState<LicenseTierId | null>(null);
+  const [buying, setBuying] = useState<PlanId | null>(null);
   const [err, setErr] = useState("");
   const loading = buying !== null;
+  // The plan picked on /pricing (?plan=team) is the one this page leads with. The paywall only
+  // mounts after the lead step in the browser, so reading the URL here never meets the server.
+  const [picked] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("plan")
+  );
+  const leading = PLANS_ON_SALE.find((p) => p.id === picked)?.id ?? PLANS_ON_SALE.find((p) => p.featured)?.id;
 
-  const go = async (tierId: LicenseTierId) => {
+  const go = async (planId: PlanId) => {
     setErr("");
-    setBuying(tierId);
+    setBuying(planId);
     try {
       const res = await fetch("/api/onboard/checkout", {
         method: "POST",
@@ -1121,7 +1122,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           last: gate.last,
           email: gate.email,
           phone: gate.phone,
-          tier: tierId,
+          plan: planId,
           // A branded role funnel (e.g. /build/real-estate) sends its type + its own path so the
           // purchase builds that agent and Stripe returns to the right questionnaire. Plain
           // /onboard sends neither and provisions the generic license agent, unchanged.
@@ -1160,25 +1161,13 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
         <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${a},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
-          {/* SET IT AND FORGET IT BUYS HERE; CUSTOM BUILD IS CALL-ONLY HERE. Custom Build's
-              whole pitch is scoped to your business, built WITH you - routing it through the
-              same checkout-then-automated-questionnaire pipeline as Set It and Forget It never
-              actually scoped anything, and this is the paywall in the middle of that pipeline,
-              so it carries no path into it for this tier at all: just Book a Discovery Call.
-              (/pricing and /create-an-agent still also link to /white-glove-onboarding for
-              Custom Build - the same questionnaire, no paywall, no automated build at the end -
-              this page only omits it here.)
-
-              Both cards are still rendered from LICENSE_TIERS rather than one derived and one
-              hand-written, which is how this card once came to carry its own stale copy of the
-              includes list and the words "Contact us for setup" after the pricing changed
-              underneath it.
-
-              Wraps to one column under ~600px, where two side by side would each be too narrow
-              to read the includes list in. */}
+          {/* The plans on sale, the one picked on /pricing leading (Team when none was). Rendered
+              from config/agent-plans.ts, the same source as /pricing, so the two can never quote
+              different numbers. One column under ~600px. */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
-            {LICENSE_TIERS.map((t) => {
-              const recommended = Boolean(t.recommended);
+            {PLANS_ON_SALE.map((t) => {
+              const lead = t.id === leading;
+              const planId = t.id as PlanId;
               return (
                 <div
                   key={t.id}
@@ -1187,63 +1176,43 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                     display: "flex",
                     flexDirection: "column",
                     textAlign: "left",
-                    background: recommended ? `rgba(${rgb},0.04)` : "transparent",
-                    border: `1px solid ${recommended ? a : BDR}`,
+                    background: lead ? `rgba(${rgb},0.04)` : "transparent",
+                    border: `1px solid ${lead ? a : BDR}`,
                     borderRadius: 10,
                     padding: "20px 18px",
                   }}
                 >
                   <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: TX }}>{t.label}</p>
                   <p style={{ margin: "3px 0 0", fontSize: 13, color: TXD, lineHeight: 1.5 }}>{t.tagline}</p>
-                  <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>{t.priceLabel}</p>
+                  <p style={{ margin: "14px 0 0", fontWeight: 800, fontSize: 20, color: TX }}>
+                    {dollars(t.monthlyCents ?? 0)}
+                    <span style={{ fontSize: 13, fontWeight: 600, color: TXD }}> / month</span>
+                  </p>
+                  <p style={{ margin: "4px 0 0", fontSize: 13, color: TXM }}>{t.agentsText}</p>
                   <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 7, flex: 1 }}>
-                    {t.includes.map((line) => (
+                    {[...t.features, t.channelsText, t.supportText, t.usageText].map((line) => (
                       <li key={line} style={{ display: "flex", gap: 8, fontSize: 13, color: TXM, lineHeight: 1.5 }}>
                         <span aria-hidden style={{ color: a, fontWeight: 800, flexShrink: 0 }}>✓</span>
                         {line}
                       </li>
                     ))}
                   </ul>
-                  {/* CUSTOM BUILD IS CALL-ONLY HERE, David's call, specific to this page: "The
-                      onboard page the Custom Build should not have the 'Get Started', only the
-                      Book a Discovery Call." /pricing and /create-an-agent still carry both (a
-                      link to the white-glove intake, plus the call) - this is deep inside a
-                      flow someone entered meaning to self-serve, and Custom Build was never
-                      really that, so the one card here that is not a self-serve buy shows the
-                      one action that fits. */}
-                  {recommended ? (
-                    <a
-                      href={SCHEDULE_CONSULT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ marginTop: 16, width: "100%", boxSizing: "border-box", display: "block", textAlign: "center", background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, textDecoration: "none" }}
-                    >
-                      {SCHEDULE_CONSULT_CTA}
-                    </a>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => go(t.id)}
-                      disabled={loading}
-                      style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: a, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: "none", cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
-                    >
-                      {buying === t.id ? "Taking you to checkout\u2026" : "Get Started"}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => go(planId)}
+                    disabled={loading}
+                    style={{ marginTop: 16, width: "100%", boxSizing: "border-box", background: lead ? a : "transparent", color: lead ? "#fff" : a, fontFamily: "inherit", fontWeight: 800, fontSize: 14, padding: "12px 16px", borderRadius: 6, border: `1px solid ${a}`, cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1 }}
+                  >
+                    {buying === t.id ? "Taking you to checkout…" : `Get started with ${t.label}`}
+                  </button>
                 </div>
               );
             })}
           </div>
 
-          {/* Said once, under both, because it is identical on both. Repeating it inside each
-              card would read as a difference between them. */}
           <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "18px 0 0" }}>
-            {MONTHLY_API_ALLOWANCE_LABEL} Same on either tier, and you can cancel whenever you
-            like with no minimum commitment.
-          </p>
-          <p style={{ fontSize: 13, color: TXD, lineHeight: 1.6, margin: "10px 0 0" }}>
-            Billed securely through Stripe. Your account is created the moment payment clears,
-            and we will email you a link to set your password.
+            Billed monthly through Stripe. No setup fee, and you can cancel whenever you like. Your
+            account is created the moment payment clears.
           </p>
 
           {err && <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 6, background: `rgba(${rgb},0.1)`, border: `1px solid rgba(${rgb},0.3)`, fontSize: 13, color: "#dc2626" }}>{err}</div>}
@@ -1253,9 +1222,8 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           </button>
 
           <p style={{ textAlign: "center", fontSize: 12, color: TXD, marginTop: 14, lineHeight: 1.6 }}>
-            Running it on your own hardware instead, or need something bespoke?{" "}
-            <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us first</a> - that
-            is a different conversation and we will set it up for you.
+            Need more agents, several users, or your own private server?{" "}
+            <a href="/pricing#enterprise" style={{ color: TXM, fontWeight: 600 }}>Talk to us about a custom build</a>.
           </p>
         </div>
       </div>
@@ -1266,7 +1234,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
 // ════════════════════════════════════════════════════════════
 // CONFIRMATION (lead mode, back from Stripe)
 // ════════════════════════════════════════════════════════════
-// Someone has just spent $449 or $2,500. Dropping them straight into a form with no acknowledgement
+// Someone has just bought a plan. Dropping them straight into a form with no acknowledgement
 // reads as though the payment went nowhere, so this marks the moment before the
 // questionnaire starts.
 //
@@ -1276,7 +1244,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
 // — Stripe emails that — and the copy says so.
 function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: string; email?: string; onContinue: () => void }) {
   const { a, rgb } = useAccent();
-  const [detail, setDetail] = useState<{ amountTotal: number | null; currency: string | null; email: string | null } | null>(null);
+  const [detail, setDetail] = useState<{ amountTotal: number | null; currency: string | null; email: string | null; plan: string | null } | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -1284,7 +1252,7 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
     fetch(`/api/onboard/session?id=${encodeURIComponent(sessionId)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (!cancelled && d) setDetail({ amountTotal: d.amountTotal ?? null, currency: d.currency ?? null, email: d.email ?? null });
+        if (!cancelled && d) setDetail({ amountTotal: d.amountTotal ?? null, currency: d.currency ?? null, email: d.email ?? null, plan: d.plan ?? null });
       })
       .catch(() => {
         // The payment happened either way. Failing to read it back must not strand anyone
@@ -1298,6 +1266,7 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
       ? `$${(detail.amountTotal / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
       : null;
   const shownEmail = detail?.email || email || "";
+  const boughtPlan = detail?.plan ? agentTier(detail.plan) : null;
 
   return (
     <div style={{ minHeight: "100vh", background: BG, color: TX, fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display: "flex", flexDirection: "column" }}>
@@ -1316,14 +1285,14 @@ function PaymentConfirmation({ sessionId, email, onContinue }: { sessionId?: str
         </h1>
 
         <div style={{ width: "100%", maxWidth: 460, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "22px 26px", margin: "18px 0 28px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "8px 0", fontSize: 14 }}>
-            <span style={{ color: TXD }}>Agent License</span>
-            <span style={{ fontWeight: 700 }}>one time</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "8px 0", fontSize: 14, borderBottom: total ? `1px solid ${BDR}` : "none" }}>
-            <span style={{ color: TXD }}>Managed Hosting</span>
-            <span style={{ fontWeight: 700 }}>$249 / month</span>
-          </div>
+          {/* The plan bought, read back with the payment. Nothing when it can't be read: the
+              charged total below is the line that matters. */}
+          {boughtPlan && boughtPlan.monthlyCents !== null && (
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "8px 0", fontSize: 14, borderBottom: total ? `1px solid ${BDR}` : "none" }}>
+              <span style={{ color: TXD }}>{boughtPlan.label} plan, {boughtPlan.agentsText}</span>
+              <span style={{ fontWeight: 700 }}>{dollars(boughtPlan.monthlyCents)} / month</span>
+            </div>
+          )}
           {total && (
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "14px 0 4px", fontSize: 15 }}>
               <span style={{ fontWeight: 700 }}>Charged today</span>

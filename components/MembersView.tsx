@@ -1,5 +1,6 @@
 "use client";
 
+import { useAgentPlan } from "@/components/AgentPlan";
 import { useCallback, useEffect, useState } from "react";
 import { Copy, Trash2, UserPlus, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ const ROLE_CHOICES: { value: Role; label: string; description: string }[] = [
 ];
 
 export function MembersView() {
+  const plan = useAgentPlan();
   const { current } = useWorkspace();
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -204,6 +206,10 @@ export function MembersView() {
                 </p>
               </div>
 
+              {/* Legacy billing only: a plan customer adds agents onto their plan from My Agent(s),
+                  and a seat here would charge them for the wrong thing (the seats route refuses). */}
+              {plan?.tier.id === "legacy" && (
+              <>
               {/* An agent of their own, and what it costs, on the screen where the decision is
                   made. This is the one control in the dashboard that both charges the card and
                   creates a VPS, so the price is stated next to the checkbox rather than
@@ -233,6 +239,8 @@ export function MembersView() {
                   </span>
                 </span>
               </label>
+              </>
+              )}
 
               {withAgent && (
                 <div className="space-y-1.5">

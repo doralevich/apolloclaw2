@@ -16,6 +16,7 @@ import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentAvatarPicker } from "@/components/AgentAvatarPicker";
 import { AgentNameCell } from "@/components/AgentNameCell";
 import { AgentTeam } from "@/components/AgentTeam";
+import { useAgentPlan } from "@/components/AgentPlan";
 import { SetupCell } from "@/components/SetupPrompt";
 
 // One agent, as a card rather than a row.
@@ -46,6 +47,7 @@ export function AgentCard({
   owner?: { first_name: string; last_name: string; email: string } | null;
 }) {
   const { active, setActiveId } = useActiveAgent();
+  const plan = useAgentPlan();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function removeAgent() {
@@ -197,7 +199,12 @@ export function AgentCard({
                 (creditDollars > 0
                   ? `Heads up: ${name} still has $${creditDollars.toFixed(2)} in purchased credit, which is lost once it's finally deleted. `
                   : "") +
-                `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. If this workspace still has another agent afterwards, the $249/month hosting seat is credited back automatically.`
+                `This stops ${name} and moves it to the trash. We keep it for 30 days, so you can ask us to bring it back with its memory of the business, its app connections and its chat history intact - after that it's deleted for good. ` +
+              // The seat credit is how legacy billing works; a plan's price does not change when
+              // an instance goes, so a plan customer is pointed at the plan instead.
+              (plan && plan.tier.id !== "legacy"
+                ? `Your ${plan.tier.label} plan carries on as it is; change or cancel it on the Plan page.`
+                : `If this workspace still has another agent afterwards, its monthly hosting seat is credited back automatically.`)
               }
               confirmText={`Delete ${name}`}
               destructive

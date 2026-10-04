@@ -15,6 +15,8 @@ import { sendTelegram } from "@/lib/telegram";
 import { NOTIFY_EMAIL, sendMandrillEmail } from "@/lib/email";
 import { syncMailchimpRegistration } from "@/lib/mailchimp";
 import { escapeHtml } from "@/lib/onboardingSections";
+import { recordPlanPurchase, syncPlanFromSubscription } from "@/lib/plan-billing";
+import { isPlanId } from "@/config/agent-plans";
 
 // Stripe webhook — the provisioning side of the storefront.
 //
@@ -84,6 +86,11 @@ export const POST = async (request: Request) => {
         break;
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object);
+        break;
+      // A plan switch in the billing portal, or an extra agent's quantity change: the workspace's
+      // plan, agent limit and pooled credit follow. Ignores any subscription it never recorded.
+      case "customer.subscription.updated":
+        await syncPlanFromSubscription(event.data.object);
         break;
       default:
         break;
@@ -331,6 +338,27 @@ async function handleLicensePurchase(session: Stripe.Checkout.Session): Promise<
       .from("workspaces")
       .insert({ name: owner ? `${owner}'s Workspace` : email, owner_id: userId });
     if (wsErr) throw new Error(`workspace creation failed: ${wsErr.message}`);
+  }
+
+  // A plan purchase: record which plan the workspace is on, and the subscription paying for it.
+  // That row is what makes this customer a plan customer rather than a legacy one: their agent
+  // limit, extra agents and pooled usage credit all come from it. Their own workspace first, else
+  // the one they belong to.
+  if (isPlanId(meta.plan)) {
+    const { data: owned } = await db
+      .from("workspaces")
+      .select("id")
+      .eq("owner_id", userId)
+      .order("created_at", { ascending: true })
+      .limit(1);
+    let workspaceId = (owned?.[0] as { id: string } | undefined)?.id ?? null;
+    if (!workspaceId) {
+      const { data: member } = await db.from("memberships").select("workspace_id").eq("user_id", userId).limit(1);
+      workspaceId = (member?.[0] as { workspace_id: string } | undefined)?.workspace_id ?? null;
+    }
+    if (!workspaceId) throw new Error(`no workspace to record the ${meta.plan} plan on for ${email}`);
+    const ref = (v: string | { id: string } | null) => (typeof v === "string" ? v : v?.id ?? null);
+    await recordPlanPurchase(workspaceId, meta.plan, ref(session.subscription), ref(session.customer));
   }
 
   // Paid customers are entitled customers. The signup trigger already inserted a row with

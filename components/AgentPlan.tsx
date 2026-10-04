@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { SubAgentDialog } from "@/components/SubAgentDialog";
-import { AGENT_UPGRADE_HREF, agentsLabel, type AgentPlanUsage } from "@/config/agent-plans";
+import { AGENT_UPGRADE_HREF, agentsLabel, dollars, type AgentPlanUsage } from "@/config/agent-plans";
 
 // The workspace's agent plan on the customer's side: how many agents it includes, how many are in
 // use, and the one button that follows from those two numbers. "Add agent" while there is room,
@@ -60,7 +60,8 @@ export function useAgentPlan(): AgentPlanUsage | null {
 export function AgentPlanLine({ usage, className }: { usage: AgentPlanUsage; className?: string }) {
   return (
     <span className={cn("text-xs text-muted-foreground", className)}>
-      {usage.custom ? "Your plan" : `${usage.tier.label} plan`} · {usage.used} of {agentsLabel(usage.limit)}
+      {usage.custom || usage.tier.id === "legacy" ? "Your plan" : `${usage.tier.label} plan`} · {usage.used} of{" "}
+      {agentsLabel(usage.limit)}
     </span>
   );
 }
@@ -85,7 +86,15 @@ export function AddAgentOrUpgrade({
   const rail =
     "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-  if (!usage.canAdd) {
+  // Full, and the plan sells one more: still "Add agent", with the monthly price on it, and the
+  // dialog states the charge before anything is billed.
+  const charge = !usage.canAdd && usage.addOnCents !== null ? usage.addOnCents : null;
+  const chargeNote =
+    charge !== null
+      ? `Adds ${dollars(charge)} a month to your ${usage.tier.label} plan, charged now for the rest of this month.`
+      : undefined;
+
+  if (!usage.canAdd && charge === null) {
     return variant === "rail" ? (
       <Link href={AGENT_UPGRADE_HREF} onClick={onNavigate} className={rail}>
         <ArrowUpRight className="size-3.5 shrink-0" />
@@ -108,14 +117,20 @@ export function AddAgentOrUpgrade({
           <Plus className="size-3.5 shrink-0" />
           Add agent
           <span className="ml-auto tabular-nums">
-            {usage.used}/{usage.limit}
+            {charge !== null ? `+${dollars(charge)}/mo` : `${usage.used}/${usage.limit}`}
           </span>
         </button>
       ) : (
         <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
           <Plus className="size-4" />
-          Add agent
+          {charge !== null ? `Add agent (+${dollars(charge)}/mo)` : "Add agent"}
         </Button>
+      )}
+      {/* Team at 6 agents: Executive holds 10, so say so where the next one is added. */}
+      {usage.suggestUpgrade && variant === "button" && (
+        <Link href={AGENT_UPGRADE_HREF} className="text-xs text-muted-foreground underline-offset-2 hover:underline">
+          Executive includes 10 agents
+        </Link>
       )}
       {open && (
         <SubAgentDialog
@@ -125,6 +140,7 @@ export function AddAgentOrUpgrade({
           open={open}
           onOpenChange={setOpen}
           onDone={notifyAgentsChanged}
+          chargeNote={chargeNote}
         />
       )}
     </>

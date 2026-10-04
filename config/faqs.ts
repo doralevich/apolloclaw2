@@ -4,6 +4,8 @@
 //
 // The answers are the pages' own copy, moved here word for word.
 
+import { PRICING_FAQ_ANSWER } from "@/config/agent-plans";
+
 export type Faq = { q: string; a: string };
 
 export const HOME_FAQS: Faq[] = [
@@ -56,7 +58,7 @@ export const GENERAL_FAQS: Faq[] = [
   },
   {
     q: "How much does it cost?",
-    a: "Pricing depends on your setup and the tier you need. We don't publish rates publicly because every engagement is scoped differently. Schedule a consultation and we'll give you a precise number.",
+    a: PRICING_FAQ_ANSWER,
   },
   {
     q: "What if I want to cancel?",
@@ -87,7 +89,7 @@ export const CEO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped. Pricing is discussed during your consultation. Book a call and we will give you a precise number.",
+    a: PRICING_FAQ_ANSWER,
   },
   {
     q: "Do I need a technical team to run this?",
@@ -114,7 +116,7 @@ export const CFO_AGENT_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your systems, reporting cadence, and team size. Pricing is discussed during your consultation.",
+    a: PRICING_FAQ_ANSWER,
   },
   {
     q: "Can it handle multi-entity reporting?",
@@ -145,7 +147,7 @@ export const LAW_AGENT_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your document volume, your systems, and how much you want the agent to own. Pricing is discussed during your consultation.",
+    a: PRICING_FAQ_ANSWER,
   },
 ];
 
@@ -172,7 +174,7 @@ export const INSURANCE_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your book of business, AMS, and workflow. Pricing is discussed during your consultation.",
+    a: PRICING_FAQ_ANSWER,
   },
 ];
 
@@ -199,7 +201,7 @@ export const LAW_FIRMS_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your practice size, case types, and systems. Pricing is discussed during your consultation.",
+    a: PRICING_FAQ_ANSWER,
   },
 ];
 
@@ -226,7 +228,7 @@ export const MEDICAL_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your practice size, patient volume, and systems. Pricing is discussed during your consultation.",
+    a: PRICING_FAQ_ANSWER,
   },
 ];
 
@@ -249,7 +251,7 @@ export const REAL_ESTATE_FAQS: Faq[] = [
   },
   {
     q: "What does it cost?",
-    a: "Every engagement is custom-scoped based on your lead volume, CRM, and workflow. Pricing is discussed during your consultation.",
+    a: PRICING_FAQ_ANSWER,
   },
   {
     q: "Do I need a technical team to run this?",

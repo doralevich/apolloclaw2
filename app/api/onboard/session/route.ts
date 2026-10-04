@@ -44,5 +44,8 @@ export const GET = route(async (request: Request) => {
     amountTotal: session.amount_total,
     currency: session.currency,
     email: session.customer_details?.email ?? session.metadata?.lead_email ?? null,
+    // The plan bought (config/agent-plans.ts id), for the confirmation screen. Absent on a
+    // purchase from before the plans.
+    plan: session.metadata?.plan ?? null,
   });
 });

@@ -1,5 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { planCapMicros, syncPlanCap } from "@/lib/plan-billing";
 import { CONTEXT_FILENAME, GENERATED_FILES } from "@/config/agent-workspace";
 import { buildOwnerContext } from "@/lib/enrichment";
 import {
@@ -340,8 +341,15 @@ export async function repairAgentMemory(instanceIds?: string[]): Promise<RepairR
       // keeps the old number — Nova and Ember were capped at $5 while hosting was sold as
       // including $25. Repair is the natural place to reconcile an instance with what its
       // type is currently sold as. Purchased credit is preserved by setMonthlyCap.
+      //
+      // A plan customer's allowance is the plan's pooled credit instead (lib/plan-billing.ts), and
+      // repair must not put a $60 Executive box back to the type's $25.
       let capNote = "";
-      if (type) {
+      const planCap = await planCapMicros(row.workspace_id);
+      if (planCap !== null) {
+        await syncPlanCap(row.workspace_id);
+        capNote = `, monthly cap kept at the plan's $${planCap / 1_000_000}`;
+      } else if (type) {
         try {
           const changed = await agent37.setMonthlyCap(id, usdToMicros(type.monthlyCapUsd));
           capNote = changed ? `, monthly cap set to $${type.monthlyCapUsd}` : "";

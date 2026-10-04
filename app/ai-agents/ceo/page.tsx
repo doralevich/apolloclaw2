@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CEO_AGENT_FAQS } from "@/config/faqs";
@@ -274,7 +275,8 @@ export default function CeoPage() {
             Built for Executives Who Value Their Time
           </h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every CEO Bot deployment is custom-scoped to your organization. Pricing is discussed during your consultation based on your workflows, integrations, and team size.
+            Every CEO Bot deployment is set up around your organization. Plans start at {STARTING_PRICE} a month with no setup fee.{" "}
+            <a href="/pricing" style={{ color: RED, fontWeight: 700 }}>See every plan</a>, or book a consultation for a custom build.
           </p>
           <a
             href="https://cal.com/therealdaveo/dbdo-consultation"

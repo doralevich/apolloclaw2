@@ -8,25 +8,29 @@ import { agentTier, type AgentPlanUsage } from "@/config/agent-plans";
 // tiers and supabase/migrations/0033_workspace_agent_plans.sql for why the plan sits in a table
 // only the server can touch.
 
-/** The plan a workspace is on. Any read failure, including the table not existing yet, reads as
- *  the default tier: a missing plan must never stop someone from using the agents they have. */
+/** The plan a workspace is on. No row means a customer from before the plans (the legacy tier),
+ *  and so does any read failure: a missing plan must never reprice anyone or stop them using the
+ *  agents they have. `own` is a per-workspace number set from Super Admin, when there is one. */
 export async function getWorkspaceAgentPlan(workspaceId: string) {
   const db = createAdminClient();
   const { data, error } = await db
     .from("workspace_agent_plans")
-    .select("plan, agent_limit")
+    .select("plan, agent_limit, addon_agents")
     .eq("workspace_id", workspaceId)
     .maybeSingle();
   if (error) console.error("[agent-plan:read-failed]", workspaceId, error.message);
   const tier = agentTier((data?.plan as string | undefined) ?? null);
   const own = typeof data?.agent_limit === "number" && data.agent_limit > 0 ? data.agent_limit : null;
-  return { tier, limit: own ?? tier.agents, custom: own !== null };
+  // Read defensively: before migration 0035 the column is not there and the select errors, which
+  // lands in the legacy branch above anyway.
+  const addOns = typeof data?.addon_agents === "number" ? data.addon_agents : 0;
+  return { tier, own, addOns };
 }
 
 /** Every agent the workspace runs: one per instance, plus each additional agent an OpenClaw box
  *  reports. A box that cannot be read right now counts as its one main agent, which errs toward
  *  letting the customer add rather than blocking them on a sleeping container. */
-export async function countWorkspaceAgents(workspaceId: string): Promise<number> {
+export async function countWorkspaceAgents(workspaceId: string): Promise<{ agents: number; instances: number }> {
   const db = createAdminClient();
   const { data, error } = await db
     .from("agents")
@@ -41,12 +45,32 @@ export async function countWorkspaceAgents(workspaceId: string): Promise<number>
       return roster?.ok && roster.agents.length > 0 ? roster.agents.length : 1;
     })
   );
-  return counts.reduce((a, b) => a + b, 0);
+  return { agents: counts.reduce((a, b) => a + b, 0), instances: counts.length };
 }
 
 export async function getAgentPlanUsage(workspaceId: string): Promise<AgentPlanUsage> {
-  const [plan, used] = await Promise.all([getWorkspaceAgentPlan(workspaceId), countWorkspaceAgents(workspaceId)]);
-  return { ...plan, used, canAdd: used < plan.limit };
+  const [{ tier, own, addOns }, count] = await Promise.all([
+    getWorkspaceAgentPlan(workspaceId),
+    countWorkspaceAgents(workspaceId),
+  ]);
+  // A legacy customer pays per instance, so their limit is the instances they pay for: adding
+  // one more agent is the seat flow they already have, at the price they already pay. A plan's
+  // limit is its included agents plus the extra ones bought on it.
+  const base = tier.id === "legacy" ? Math.max(1, count.instances) : tier.agents + addOns;
+  const limit = own ?? base;
+  const used = count.agents;
+  const canAdd = used < limit;
+  // Full: a plan that sells extra agents offers one more, up to its hard cap.
+  const sellsMore = !canAdd && own === null && !!tier.addOn && (tier.maxAgents === null || used < tier.maxAgents);
+  return {
+    tier,
+    limit,
+    custom: own !== null,
+    used,
+    canAdd,
+    addOnCents: sellsMore ? tier.addOn!.monthlyCents : null,
+    suggestUpgrade: tier.upgradeAt !== null && used + 1 >= tier.upgradeAt,
+  };
 }
 
 /** Set a workspace's plan from Super Admin. `agentLimit` null clears a per-workspace number. */

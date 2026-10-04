@@ -43,6 +43,7 @@ export function SubAgentDialog({
   open,
   onOpenChange,
   onDone,
+  chargeNote,
 }: {
   instanceId: string;
   mainName: string;
@@ -51,6 +52,9 @@ export function SubAgentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDone: () => void;
+  /** Set when adding this agent is billed (an extra agent on a full plan): shown above the
+   *  button, and the request then accepts the charge. */
+  chargeNote?: string;
 }) {
   const isEdit = !!editing;
   const [name, setName] = useState(editing?.name ?? "");
@@ -75,7 +79,13 @@ export function SubAgentDialog({
       } else {
         await apiFetch(`/api/agents/${instanceId}/subagents`, {
           method: "POST",
-          body: JSON.stringify({ name: name.trim(), role: role.trim(), persona: persona.trim(), ...avatarField }),
+          body: JSON.stringify({
+            name: name.trim(),
+            role: role.trim(),
+            persona: persona.trim(),
+            ...avatarField,
+            ...(chargeNote ? { acceptCharge: true } : {}),
+          }),
         });
         toast.success(`${name.trim()} added. The instance is restarting; give it a minute, then pick it in the sidebar.`);
       }
@@ -172,12 +182,16 @@ export function SubAgentDialog({
           </div>
         </div>
 
+        {!isEdit && chargeNote && (
+          <p className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">{chargeNote}</p>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
             Cancel
           </Button>
           <Button onClick={save} disabled={busy || !canSave}>
-            {busy ? "Saving..." : isEdit ? "Save changes" : "Add agent"}
+            {busy ? "Saving..." : isEdit ? "Save changes" : chargeNote ? "Add and pay" : "Add agent"}
           </Button>
         </DialogFooter>
       </DialogContent>

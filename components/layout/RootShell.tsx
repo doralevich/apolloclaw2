@@ -67,8 +67,9 @@ export default function RootShell({
           the shorter utility bar left behind. Raising that bar used the slack up. */}
       <main className="pt-[89px] md:pt-[127px]">{children}</main>
       {/* Standing discovery-call band, identical on every marketing page except the home page,
-          which closes on its own call to action (components/home/FinalCta.tsx). */}
-      {pathname !== '/' && <PreFooter />}
+          which closes on its own call to action (components/home/FinalCta.tsx), and /pricing,
+          which closes on its own consultation button. */}
+      {pathname !== '/' && pathname !== '/pricing' && <PreFooter />}
       <Footer />
       {showChat && <ChatWidget token={chatToken} />}
     </>

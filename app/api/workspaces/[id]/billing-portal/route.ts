@@ -1,5 +1,6 @@
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { findStripeCustomerId } from "@/lib/hosting-seats";
+import { planCustomerId } from "@/lib/plan-billing";
 import { ApiError, json, route } from "@/lib/http";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
@@ -20,7 +21,9 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   const { supabase, user } = await requireUser();
   await requireAdmin(supabase, id, user.id);
 
-  const customerId = await findStripeCustomerId(id);
+  // A plan customer's Stripe customer is recorded at checkout; a legacy one is found through the
+  // hosting seat on their subscription.
+  const customerId = (await planCustomerId(id)) ?? (await findStripeCustomerId(id));
   if (!customerId) {
     // White-glove: no subscription in Stripe to manage. A named refusal beats a broken portal.
     throw new ApiError(

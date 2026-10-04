@@ -6,6 +6,11 @@ import { sendTelegram } from "@/lib/telegram";
 import { findAttioDealByEmail, addAttioNote, updateAttioDealStage } from "@/lib/attio";
 import { upsertMailchimpContact, tagMailchimpContact } from "@/lib/mailchimp";
 
+/** "provided" or "" for a secret field: enough for a note to say it was given, nothing more. */
+function given(value: string | undefined): string {
+  return value && value.trim() ? "provided (not copied here)" : "";
+}
+
 const MANDRILL_KEY = process.env.MANDRILL_API_KEY || "";
 const TO_EMAIL = "david@apolloclaw.ai";
 
@@ -189,8 +194,9 @@ export async function POST(req: NextRequest) {
             `Assistant Name: ${fields.assistant_name || ""}`,
             `Timezone: ${fields.timezone || ""}`,
             `Computer Name: ${fields.computer_name || ""}`,
-            `Anthropic API Key: ${fields.anthropic_api_key || ""}`,
-            `Telegram Bot Token: ${fields.telegram_bot_token || ""}`,
+            // Secrets never go into CRM notes: say whether each was given, not what it is.
+            `Anthropic API Key: ${given(fields.anthropic_api_key)}`,
+            `Telegram Bot Token: ${given(fields.telegram_bot_token)}`,
             `Telegram Bot Username: ${fields.telegram_bot_username || ""}`,
           ].join("\n"),
           next_action: "Deploy assistant to client Mac Mini",
@@ -314,14 +320,15 @@ export async function POST(req: NextRequest) {
             `Timezone: ${fields.timezone || ""}`,
             `Computer Name: ${fields.computer_name || ""}`,
             `Meeting Recorder: ${fields.meeting_recorder || "fathom"}`,
-            `Anthropic API Key: ${fields.anthropic_api_key || ""}`,
-            `Telegram Bot Token: ${fields.telegram_bot_token || ""}`,
+            // Attio is a third-party CRM: secrets are noted as given or not, never copied in.
+            `Anthropic API Key: ${given(fields.anthropic_api_key)}`,
+            `Telegram Bot Token: ${given(fields.telegram_bot_token)}`,
             `Telegram Bot Username: ${fields.telegram_bot_username || ""}`,
-            `Fireflies API Key: ${fields.fireflies_api_key || ""}`,
-            `Tavily API Key: ${fields.tavily_api_key || ""}`,
+            `Fireflies API Key: ${given(fields.fireflies_api_key)}`,
+            `Tavily API Key: ${given(fields.tavily_api_key)}`,
             `Calendly URL: ${fields.calendly_url || ""}`,
           ].filter(l => !l.endsWith(": ")).join("\n");
-          await addAttioNote(dealId, "Technical Setup - Credentials", noteLines);
+          await addAttioNote(dealId, "Technical Setup", noteLines);
           await updateAttioDealStage(dealId, "Setup Complete", "deployment_ready");
         }
       } catch (attioErr) {

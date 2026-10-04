@@ -1,6 +1,6 @@
 import "server-only";
 import type Stripe from "stripe";
-import { AGENT_PLANS, CREDIT_PACKS, CURRENCY, HOSTING_PLAN, LICENSE_TIERS } from "@/lib/pricing/catalog";
+import { AGENT_PLANS, CREDIT_PACKS, CURRENCY, HOSTING_PLAN, LICENSE_TIERS, PLAN_SKUS } from "@/lib/pricing/catalog";
 
 // Idempotent Stripe catalog sync — safe to run any number of times, against test or live.
 //
@@ -38,6 +38,9 @@ function entries(): SeedEntry[] {
       amountCents: HOSTING_PLAN.amountCents,
       interval: HOSTING_PLAN.interval,
     },
+    // The plans and their add-on agents, all monthly. The legacy license and hosting prices
+    // above stay in the sync so existing subscriptions keep a managed price to point at.
+    ...Object.values(PLAN_SKUS).map(({ catalogKey, name, amountCents, interval }) => ({ catalogKey, name, amountCents, interval })),
     // AGENT_PLANS is empty now that the per-agent SKUs are retired, so this spread
     // contributes nothing. It stays because restoring one of those plans should be a single
     // line in the catalog, with the seed picking it up without being edited too.

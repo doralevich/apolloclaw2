@@ -53,11 +53,14 @@ function loadCatalog() {
   const keyRe = /catalogKey:\s*"([^"]+)"/g;
   let m;
   while ((m = keyRe.exec(src))) {
-    const rest = src.slice(m.index);
+    // Read only up to the next entry, so one entry can never pick up a neighbour's fields.
+    const after = src.slice(m.index + m[0].length);
+    const next = after.search(/catalogKey:\s*"/);
+    const rest = next >= 0 ? after.slice(0, next) : after;
     const name = /name:\s*"([^"]+)"/.exec(rest);
     const amount = /amountCents:\s*(\d+)/.exec(rest);
     if (!name || !amount) continue;
-    const interval = /interval:\s*"(month)"/.exec(rest.slice(0, amount.index + 200));
+    const interval = /interval:\s*"(month)"/.exec(rest);
     entries.push({
       catalogKey: m[1],
       name: name[1],
@@ -80,9 +83,20 @@ function loadCatalog() {
     console.error(`Bad amounts parsed: ${bad.map((b) => `${b.catalogKey}=${b.amountCents}`).join(", ")}`);
     process.exit(1);
   }
-  const subs = entries.filter((e) => e.interval);
-  if (subs.length !== 1) {
-    console.error(`Expected exactly one recurring price, parsed ${subs.length}. Refusing to sync.`);
+  // Every recurring price the catalog sells: the legacy hosting line plus the plans and their
+  // add-on agents. A missing one means the parse went wrong, so stop rather than half-sync.
+  const RECURRING = [
+    "apollo_hosting",
+    "apollo_plan_solo",
+    "apollo_plan_team",
+    "apollo_plan_executive",
+    "apollo_addon_agent_solo",
+    "apollo_addon_agent_team",
+  ];
+  const subs = new Set(entries.filter((e) => e.interval).map((e) => e.catalogKey));
+  const missing = RECURRING.filter((k) => !subs.has(k));
+  if (missing.length || subs.size !== RECURRING.length) {
+    console.error(`Recurring prices parsed: ${[...subs].join(", ")}; expected ${RECURRING.join(", ")}. Refusing to sync.`);
     process.exit(1);
   }
   return entries;

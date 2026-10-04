@@ -2,29 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
-import { SCHEDULE_CONSULT_CTA, SCHEDULE_CONSULT_URL } from "@/config/scheduling";
-import {
-  BASIC_TIER_LIMIT,
-  HOSTING_PLAN,
-  MONTHLY_API_ALLOWANCE_LABEL,
-  licenseTierFor,
-} from "@/lib/pricing/catalog";
+import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import { PLANS_ON_SALE, dollars } from "@/config/agent-plans";
 
-// THE TIER CONTENT IS READ, NOT RETYPED. This page used to carry its own SELF_SERVE_INCLUDES and
-// WHITE_GLOVE_INCLUDES arrays and its own price strings, which is how it came to be advertising
-// $189/mo hosting with $25 of token usage after the pricing moved to a flat $249. The catalog is
-// what the Stripe seed reads, so deriving from it is the only way this page cannot quote a price
-// the till does not charge.
-const TIER_1 = licenseTierFor("basic")!;
-const TIER_2 = licenseTierFor("advanced")!;
-const MONTHLY = `$${(HOSTING_PLAN.amountCents / 100).toLocaleString("en-US")}`;
-const setupFee = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
 
 // The "Create an Agent" landing page — the destination for the mailer. It walks a prospect
 // through what an ApolloClaw agent is, how getting one works, what it can do, and the details
 // worth knowing, then converts on a HYBRID CTA: book a call (primary) or start setup yourself
-// (secondary). Pricing is two boxes, both carrying their number, with /pricing as the fuller
-// page behind them.
+// (secondary). Pricing is the plans on sale, each carrying its number, with /pricing as the
+// fuller page behind them.
 //
 // Full nav/footer chrome is added automatically by RootShell (this route is not standalone).
 // Styling mirrors app/what-we-do/page.tsx: PageHero, ScrollReveal, bauhaus-card, the semantic
@@ -94,7 +80,7 @@ const DETAILS = [
   },
   {
     title: "Built on a private server",
-    desc: `Your agent runs on its own instance. ${MONTHLY}/month covers hosting, monitoring, updates and up to $150 in API usage, and there is no minimum commitment.`,
+    desc: "Your agents run on their own server. Hosting, monitoring and updates are part of every plan, and there is no minimum commitment.",
   },
   {
     title: "Wired into your real stack",
@@ -113,10 +99,6 @@ const DETAILS = [
     desc: "Use it in the dashboard, or connect it to Telegram, Slack, or WhatsApp and message it like a teammate.",
   },
 ];
-
-// Both lists come off the tiers themselves now. See the note at the top of this file.
-const SELF_SERVE_INCLUDES = TIER_1.includes;
-const WHITE_GLOVE_INCLUDES = TIER_2.includes;
 
 function Check() {
   return (
@@ -260,128 +242,70 @@ export default function CreateAnAgentPage() {
 
       <div className="section-divider" />
 
-      {/* PRICING — two boxes: priced self-serve, contact-us white-glove */}
+      {/* PRICING: the plans on sale, read from config/agent-plans.ts like /pricing and the
+          checkout, so this page cannot quote a price the till does not charge. */}
       <section className="bg-background py-16">
         <div className="container mx-auto px-4 md:px-8 max-w-6xl">
           <ScrollReveal>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-8 h-[3px] bg-primary rounded-full" />
-              <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold">Two ways to start</span>
+              <span className="font-mono text-xs uppercase tracking-widest text-primary font-bold">Plans</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl text-foreground mb-3 max-w-2xl" style={{ textWrap: "balance" }}>
-              Set it up yourself, or have us do it with you.
+              Pick how many agents you want working for you.
             </h2>
             <p className="font-body text-sm text-muted-foreground mb-10 max-w-2xl leading-relaxed">
-              Same agent, same infrastructure either way. The difference is how much of the setup you want off your plate.
+              Billed monthly, with no setup fee and no minimum term.
             </p>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            {/* Self-Serve */}
-            <ScrollReveal>
-              <div className="bauhaus-card p-9 h-full flex flex-col">
-                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">{TIER_1.label}</span>
-                <p className="font-display text-2xl text-foreground mt-3">{TIER_1.tagline}</p>
-                <div className="mt-6">
-                  <span className="font-display text-4xl font-extrabold text-foreground">{setupFee(TIER_1.amountCents)}</span>
-                  <span className="font-body text-base text-muted-foreground"> setup</span>
-                  <span className="font-body text-base text-muted-foreground"> + {MONTHLY}/mo, all in</span>
+          <div className={`grid grid-cols-1 gap-6 items-stretch ${PLANS_ON_SALE.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+            {PLANS_ON_SALE.map((plan, i) => (
+              <ScrollReveal key={plan.id} delay={i * 100}>
+                <div
+                  className="bauhaus-card p-9 h-full flex flex-col relative"
+                  style={plan.featured ? { borderColor: "#D72B2B", borderWidth: 2 } : undefined}
+                >
+                  {plan.featured && (
+                    <span
+                      className="absolute -top-3 left-9 font-mono text-[10px] uppercase tracking-widest font-bold"
+                      style={{ background: "#D72B2B", color: "#fff", padding: "4px 10px", borderRadius: 4 }}
+                    >
+                      Most popular
+                    </span>
+                  )}
+                  <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">{plan.label}</span>
+                  <p className="font-display text-2xl text-foreground mt-3">{plan.tagline}</p>
+                  <div className="mt-6">
+                    <span className="font-display text-4xl font-extrabold text-foreground">{dollars(plan.monthlyCents ?? 0)}</span>
+                    <span className="font-body text-base text-muted-foreground"> / month</span>
+                  </div>
+                  <p className="font-body text-sm font-semibold text-foreground mt-1">{plan.agentsText}</p>
+                  <ul className="mt-7 flex flex-col gap-3 flex-1">
+                    {[...plan.features, plan.channelsText, plan.supportText, plan.usageText].map((item) => (
+                      <li key={item} className="flex gap-3 font-body text-sm text-foreground/90">
+                        <Check /> <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={`/onboard?plan=${plan.id}`}
+                    className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                    style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
+                  >
+                    Get started
+                  </Link>
                 </div>
-                <p className="font-body text-xs text-muted-foreground mt-1">{BASIC_TIER_LIMIT}</p>
-                <ul className="mt-7 flex flex-col gap-3 flex-1">
-                  {SELF_SERVE_INCLUDES.map((item) => (
-                    <li key={item} className="flex gap-3 font-body text-sm text-foreground/90">
-                      <Check /> <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/onboard"
-                  className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-                  style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
-                >
-                  Start now
-                </Link>
-                {/* An invisible twin of the other card's second button, so the two Start now
-                    buttons sit on one line. Same reasoning as /pricing: this tier has nothing
-                    to scope on a call, but the space still has to be reserved or the taller
-                    card's first button rides up.
-
-                    It carries the LABEL TOO, not just the padding. A bare padded box came out
-                    20px short, because the real button's height is its padding plus a line of
-                    13px text; measuring the two cards is what caught that. Same markup hidden
-                    is the version with nothing left to get wrong. */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none invisible mt-3 flex w-full items-center justify-center font-bold uppercase"
-                  style={{ fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, border: "1px solid transparent" }}
-                >
-                  {SCHEDULE_CONSULT_CTA}
-                </span>
-              </div>
-            </ScrollReveal>
-
-            {/* White-Glove — recommended: white-glove intake, or schedule a call first */}
-            <ScrollReveal delay={100}>
-              <div className="bauhaus-card p-9 h-full flex flex-col relative" style={{ borderColor: "#D72B2B", borderWidth: 2 }}>
-                <span
-                  className="absolute -top-3 left-9 font-mono text-[10px] uppercase tracking-widest font-bold"
-                  style={{ background: "#D72B2B", color: "#fff", padding: "4px 10px", borderRadius: 4 }}
-                >
-                  Recommended
-                </span>
-                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">{TIER_2.label}</span>
-                <p className="font-display text-2xl text-foreground mt-3">{TIER_2.tagline}</p>
-                {/* No number here again, David's call, reversing the change noted below: it
-                    used to read "Contact us for custom setup" on the old $2,500 call-for-setup
-                    path, then got its figure published when the pricing went public. It is
-                    call-only sitewide again now (this page's own button below goes to the
-                    white-glove intake, not a checkout that charges TIER_2.amountCents), so
-                    printing a dollar figure here would read as a fixed price for something
-                    actually scoped and quoted on the call. Same treatment as /pricing and the
-                    /onboard paywall - see lib/pricing/catalog.ts's priceLabel for this tier. */}
-                <div className="mt-6">
-                  <span className="font-display text-4xl font-extrabold text-foreground">Custom pricing</span>
-                </div>
-                <p className="font-body text-xs text-muted-foreground mt-1">Includes 30 days of hands-on onboarding and co-training.</p>
-                <ul className="mt-7 flex flex-col gap-3 flex-1">
-                  {WHITE_GLOVE_INCLUDES.map((item) => (
-                    <li key={item} className="flex gap-3 font-body text-sm text-foreground/90">
-                      <Check /> <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                {/* GOES TO THE WHITE-GLOVE INTAKE, David's call: "Custom build goes to white
-                    glove service page so we get the files instead of building." Not /onboard
-                    - that pipeline is checkout, then the same automated questionnaire-driven
-                    build Set It and Forget It uses, and Custom Build's whole pitch (scoped to
-                    your business, built WITH you) never had a step where anyone actually
-                    scopes it. This is that step: same questionnaire, no paywall, no automated
-                    build at the end - David reviews what comes in and builds it himself. */}
-                <Link
-                  href="/white-glove-onboarding"
-                  className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-                  style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
-                >
-                  Start now
-                </Link>
-                <a
-                  href={SCHEDULE_CONSULT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 flex w-full items-center justify-center font-bold uppercase transition-all hover:bg-foreground/5"
-                  style={{ background: "transparent", color: "#1A1A1A", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", border: "1px solid rgba(26,26,26,0.25)" }}
-                >
-                  {SCHEDULE_CONSULT_CTA}
-                </a>
-              </div>
-            </ScrollReveal>
+              </ScrollReveal>
+            ))}
           </div>
 
-          {/* The allowance sentence, verbatim from the catalog, and a way through to the page
-              that carries the support plans. Both tiers get the same wording by construction. */}
           <p className="font-body text-sm text-muted-foreground mt-8 mx-auto max-w-3xl text-center leading-relaxed">
-            {MONTHLY_API_ALLOWANCE_LABEL}
+            Need more agents, several users, or your own private server?{" "}
+            <a href={SCHEDULE_CONSULT_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-foreground underline underline-offset-4">
+              Book a call about a custom build
+            </a>
+            .
           </p>
           <p className="font-body text-sm text-muted-foreground mt-3 text-center">
             <Link href="/pricing" className="font-bold text-foreground underline underline-offset-4">

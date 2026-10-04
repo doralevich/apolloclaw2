@@ -1,6 +1,8 @@
 import { requireAgentAccess } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { channelDef, isChannelId } from "@/config/channels";
+import { PLANS_ON_SALE } from "@/config/agent-plans";
+import { getWorkspaceAgentPlan } from "@/lib/agent-plan";
 import {
   connectSlack,
   connectTelegram,
@@ -21,9 +23,21 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   if (!isChannelId(channel)) {
     throw new ApiError(404, "not_found", "Unknown channel");
   }
-  await requireAgentAccess(id, "member");
+  const { row } = await requireAgentAccess(id, "member");
 
   const def = channelDef(channel)!;
+
+  // The plan decides which channels it connects (config/agent-plans.ts): Team has Telegram and
+  // Slack, Executive every channel. Legacy customers keep every channel they had.
+  const { tier } = await getWorkspaceAgentPlan(row.workspace_id);
+  if (tier.id !== "legacy" && !tier.channels.includes(channel)) {
+    const needs = PLANS_ON_SALE.find((p) => p.channels.includes(channel));
+    throw new ApiError(
+      403,
+      "plan_channel",
+      `${def.name} is not part of your ${tier.label} plan${needs ? `. It comes with ${needs.label}.` : "."}`
+    );
+  }
   const body = await readJson<{ credentials?: Record<string, unknown> }>(request);
   const supplied = body.credentials ?? {};
 
