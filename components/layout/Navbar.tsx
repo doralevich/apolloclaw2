@@ -223,8 +223,8 @@ export default function Navbar() {
   }, [pathname]);
 
   // Top-level order per David's call (Sept 27 2026): Agents, Integrations, Security, Enterprise,
-  // Case Studies, Connect. Company lives in the footer; Pricing is off the nav and is reached
-  // from the home page's closing call to action.
+  // Case Studies, Connect. Company lives in the footer. Pricing joined before Connect once the
+  // plans were priced in public (David, Oct 4 2026).
   const navEntries: NavEntry[] = [
     {
       kind: "group",
@@ -265,6 +265,12 @@ export default function Navbar() {
       label: "Case Studies",
       to: "/use-cases",
       active: (p) => p.startsWith("/use-cases"),
+    },
+    {
+      kind: "link",
+      label: "Pricing",
+      to: "/pricing",
+      active: (p) => p.startsWith("/pricing"),
     },
     {
       kind: "link",

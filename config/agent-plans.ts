@@ -121,7 +121,6 @@ export const PLANS: readonly AgentTier[] = [
     features: [
       "Ten agents built around your business",
       "Agents that hand work to each other",
-      "Every supported channel",
       "Hosting and updates included",
       "Connects to your apps",
     ],
