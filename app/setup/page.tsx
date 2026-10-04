@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { suggestBotUsername } from "@/lib/telegram-username";
 const R = "#D72B2B";
 const BG = "#FAFAF7";
 const SRF = "#F2F1ED";
@@ -104,6 +105,32 @@ function Disclosure({ title, children }: { title: string; children: React.ReactN
 }
 function Step({ children }: { children: React.ReactNode }) {
   return <li style={{ fontSize: 12, color: TXM, lineHeight: 1.7 }}>{children}</li>;
+}
+// One value the client copies into Telegram, with a Copy button: /newbot, then the username.
+// The same pair the dashboard's channel setup offers (components/channels/pieces.tsx), drawn in
+// this page's own styling.
+function CopyRow({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(value).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      },
+      () => setCopied(false)
+    );
+  };
+  return (
+    <div>
+      <p style={{ fontSize: 12, color: TXM, marginBottom: 6 }}>{label}</p>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <code style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: SRF2, border: `1px solid ${BDR}`, borderRadius: 6, padding: "10px 14px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13, color: TX }}>{value}</code>
+        <button type="button" onClick={copy} aria-label={`Copy ${value}`} style={{ flexShrink: 0, background: "#fff", border: `1px solid ${BDR}`, borderRadius: 6, padding: "10px 16px", fontFamily: "inherit", fontSize: 13, fontWeight: 600, color: TX, cursor: "pointer" }}>
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+    </div>
+  );
 }
 function Code({ children }: { children: React.ReactNode }) {
   return <code style={{ background: SRF2, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", fontSize: 11, color: TX }}>{children}</code>;
@@ -277,9 +304,17 @@ ${name}`;
       setLoading(false);
     }
   }
+  // The bot username we suggest, from the assistant's name, seeded by the email so it is the same
+  // every render (lib/telegram-username.ts). Used as the username unless they enter another.
+  const botSuggestion = useMemo(
+    () => suggestBotUsername(s1.assistant_name, (clientEmail || s1.email).toLowerCase()),
+    [s1.assistant_name, s1.email, clientEmail]
+  );
   async function submitStep2() {
     setError("");
-    const { anthropic_api_key, telegram_bot_token, telegram_bot_username } = s2;
+    const { anthropic_api_key, telegram_bot_token } = s2;
+    const typed = s2.telegram_bot_username.trim().replace(/^@/, "");
+    const telegram_bot_username = `@${typed || botSuggestion}`;
     // The Anthropic key is optional (David, Sept 28 2026); it is checked only when one is given.
     if (!telegram_bot_token || !telegram_bot_username) {
       setError("Please complete all required fields before submitting.");
@@ -289,8 +324,8 @@ ${name}`;
       setError("Your Anthropic API key should start with sk-ant-... Please double-check it.");
       return;
     }
-    if (!telegram_bot_username.startsWith("@")) {
-      setError("Your Telegram bot username should start with @ (e.g. @NovaAssistant_bot).");
+    if (!/^@[A-Za-z0-9_]{2,29}bot$/i.test(telegram_bot_username)) {
+      setError("Please check the bot username: Telegram usernames use letters, numbers and underscores, and end in bot.");
       return;
     }
     setLoading(true);
@@ -298,7 +333,7 @@ ${name}`;
       const res = await fetch(SETUP_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "apollo_setup_2", email: clientEmail, fields: { ...s1, ...s2 } }),
+        body: JSON.stringify({ source: "apollo_setup_2", email: clientEmail, fields: { ...s1, ...s2, telegram_bot_username } }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Submission failed.");
@@ -497,20 +532,33 @@ ${name}`;
             </Card>
             <Card>
               <SectionHeader number="02" label="Telegram Bot" />
-              <Disclosure title="How to create your Telegram bot">
-                <Step>Open Telegram and search for <strong>@BotFather</strong>, the official blue-check bot.</Step>
-                <Step>Start a chat and send the command <Code>/newbot</Code>.</Step>
-                <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>); this is what users see.</Step>
-                <Step>Then it asks for a <strong>username</strong>: must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
-                <Step>BotFather gives you a <strong>Token</strong>, a long string like <Code>123456789:ABCdef...</Code>; copy it.</Step>
-                <Step>Paste both the Token and the Username (@) into the fields below.</Step>
-              </Disclosure>
+              <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: "0 0 16px" }}>Your assistant&apos;s own private bot. Follow these in Telegram, then bring the token back here.</p>
+              <ol style={{ listStyle: "decimal", paddingLeft: 22, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 8, fontSize: 14, color: TX, lineHeight: 1.6 }}>
+                <li>Open BotFather and send it <Code>/newbot</Code>.</li>
+                <li>Name your bot anything, then send it the username below.</li>
+                <li>Paste the token it sends back.</li>
+              </ol>
+              <div style={{ background: "#fff", border: `1px solid ${BDR}`, borderRadius: 10, padding: 18, display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px 14px" }}>
+                  {/* ?start= opens the BotFather chat itself; a bare t.me/BotFather often lands on a
+                      chat list or a landing page instead. */}
+                  <a href="https://t.me/BotFather?start=newbot" target="_blank" rel="noopener noreferrer" style={{ background: TX, color: "#fff", borderRadius: 999, padding: "10px 16px", fontSize: 14, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
+                    Open BotFather in Telegram
+                  </a>
+                  <span style={{ fontSize: 13, color: TXM }}>
+                    No Telegram yet?{" "}
+                    <a href="https://telegram.org/dl" target="_blank" rel="noopener noreferrer" style={{ color: TX, fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 2 }}>Get it here</a>
+                  </span>
+                </div>
+                <CopyRow label="Send it this" value="/newbot" />
+                <CopyRow label="Then this username" value={botSuggestion} />
+              </div>
               <Stack gap={16}>
-                <FF label="Telegram Bot Token" hint="Format: 123456789:ABCdef..." required>
-                  <TInput value={s2.telegram_bot_token} onChange={v => updateS2("telegram_bot_token", v)} placeholder="123456789:ABCdef..." />
+                <FF label="Telegram Bot Token" hint="BotFather sends it after you choose the username. It looks like 123456789:ABCdef..." required>
+                  <TInput value={s2.telegram_bot_token} onChange={v => updateS2("telegram_bot_token", v)} placeholder="Paste your bot token" />
                 </FF>
-                <FF label="Telegram Bot Username" hint="Starts with @ and ends in bot (e.g. @NovaAssistant_bot)" required>
-                  <TInput value={s2.telegram_bot_username} onChange={v => updateS2("telegram_bot_username", v)} placeholder="@YourBotName_bot" />
+                <FF label="Bot Username" hint={`Leave blank if you used @${botSuggestion}. If BotFather asked for a different one, enter it here.`}>
+                  <TInput value={s2.telegram_bot_username} onChange={v => updateS2("telegram_bot_username", v)} placeholder={`@${botSuggestion}`} />
                 </FF>
               </Stack>
             </Card>
