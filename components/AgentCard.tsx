@@ -175,7 +175,6 @@ export function AgentCard({
       <AgentTeam
         agentId={agent.agent37_id}
         mainName={name}
-        mainAvatarUrl={agent.avatar_url}
         canManage={role === "admin" || isPlatformAdmin}
       />
 

@@ -60,7 +60,7 @@ export function SubAgentDialog({
   const [preview, setPreview] = useState<string | null>(editing?.avatarUrl ?? null);
   const [busy, setBusy] = useState(false);
 
-  const canSave = (isEdit || name.trim().length > 0) && role.trim().length > 0;
+  const canSave = name.trim().length > 0 && role.trim().length > 0;
 
   async function save() {
     setBusy(true);
@@ -69,9 +69,9 @@ export function SubAgentDialog({
       if (isEdit && editing) {
         await apiFetch(`/api/agents/${instanceId}/subagents/${encodeURIComponent(editing.id)}`, {
           method: "PATCH",
-          body: JSON.stringify({ role: role.trim(), persona: persona.trim(), ...avatarField }),
+          body: JSON.stringify({ name: name.trim(), role: role.trim(), persona: persona.trim(), ...avatarField }),
         });
-        toast.success(`${editing.name} updated. The instance is restarting; give it a minute.`);
+        toast.success(`${name.trim() || editing.name} updated. The instance is restarting; give it a minute.`);
       } else {
         await apiFetch(`/api/agents/${instanceId}/subagents`, {
           method: "POST",
@@ -108,9 +108,9 @@ export function SubAgentDialog({
               placeholder="Dispatch, Atlas, Nova..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={busy || isEdit}
+              disabled={busy}
             />
-            {isEdit && <p className="text-xs text-muted-foreground">The name is set when the agent is created and stays put.</p>}
+            {isEdit && <p className="text-xs text-muted-foreground">Changing the name is fine; the agent keeps its history and image.</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sub-role">Role</Label>
