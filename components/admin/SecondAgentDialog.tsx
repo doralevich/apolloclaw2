@@ -15,15 +15,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// The two-agents-on-one-box test, from the Fleet page. Adds a second agent ("Atlas", a CFO who
-// knows one planted fact) to an instance that already has one, with its own Telegram bot and
-// agent-to-agent messaging switched on between the two. Then the test is done in Telegram: ask
-// Atlas for the cash on hand, then ask the first agent to ask Atlas. "Check" reads back what the
-// gateway loaded; "Remove Atlas" restores the config the box had before.
+// A second agent on one box, from the Fleet page. Adds "Atlas", a CFO who knows one planted
+// fact, to an instance that already has one agent, with agent-to-agent messaging switched on
+// between the two and the gateway's chat endpoint on for the per-agent chat tabs. From then on
+// the instance's chat page shows a tab per agent. "Check" reads back what the gateway loaded;
+// "Remove Atlas" restores the config the box had before.
 //
-// This is the proof for the Command Center plan (several agents per server that can talk to each
-// other) before any product code depends on it. It is a test tool, so it lives on the admin page
-// and asks for the two Telegram values directly rather than storing them anywhere.
+// Telegram is optional: with a bot token from @BotFather and the tester's Telegram id, Atlas
+// gets a bot of its own on the server as well. The proof for the Command Center plan (several
+// agents per server that can talk to each other) ran on the two-agent lab; this is the same
+// setup on a real instance.
 
 type Verify = {
   file?: string;
@@ -34,6 +35,8 @@ type Verify = {
   telegramAccounts?: string[] | null;
   bindings?: unknown;
   agentToAgent?: unknown;
+  httpChat?: boolean;
+  bind?: unknown;
   cli?: string;
 };
 
@@ -42,7 +45,7 @@ type VerifyResult = { ok: boolean; verify?: Verify; note?: string };
 type RevertResult = { ok: boolean; restored: boolean; restarted: boolean; note?: string };
 
 const NOTES: Record<string, string> = {
-  "not-openclaw": "This is a Hermes box, and the test only works on OpenClaw.",
+  "not-openclaw": "This is a Hermes box, and a second agent only works on OpenClaw.",
   "no-node-on-box": "The box has no node binary, so the config merge could not run.",
   "config-parse-fail": "The box's openclaw.json would not parse. Nothing was changed.",
   "no-confirmation": "The box did not answer after several tries. It may still be waking up; try again in a minute.",
@@ -58,6 +61,7 @@ function summarize(v?: Verify): string {
   const lines = [
     `config: ${v.file ?? "?"}`,
     `agents: ${JSON.stringify(v.agents ?? null)}`,
+    `chat endpoint for the tabs: ${v.httpChat ? "on" : "off"}`,
     `ownership: ${JSON.stringify(v.ownership ?? null)} | default marker on: ${JSON.stringify(v.defaultMarker ?? [])}`,
     `owners: ${JSON.stringify(v.owners ?? null)}`,
     `telegram accounts: ${JSON.stringify(v.telegramAccounts ?? null)}`,
@@ -81,6 +85,7 @@ export function SecondAgentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [withTelegram, setWithTelegram] = useState(false);
   const [botToken, setBotToken] = useState("");
   const [mainBotToken, setMainBotToken] = useState("");
   const [telegramUser, setTelegramUser] = useState("");
@@ -94,11 +99,15 @@ export function SecondAgentDialog({
     try {
       const r = await apiFetch<SetupResult>(base, {
         method: "POST",
-        body: JSON.stringify({
-          botToken: botToken.trim(),
-          telegramUser: telegramUser.trim(),
-          ...(mainBotToken.trim() ? { mainBotToken: mainBotToken.trim() } : {}),
-        }),
+        body: JSON.stringify(
+          withTelegram
+            ? {
+                botToken: botToken.trim(),
+                telegramUser: telegramUser.trim(),
+                ...(mainBotToken.trim() ? { mainBotToken: mainBotToken.trim() } : {}),
+              }
+            : {}
+        ),
       });
       if (r.ok) {
         toast.success(
@@ -151,75 +160,99 @@ export function SecondAgentDialog({
 
   const TOKEN = /^\d+:[A-Za-z0-9_-]{20,}$/;
   const mainOk = !mainBotToken.trim() || (TOKEN.test(mainBotToken.trim()) && mainBotToken.trim() !== botToken.trim());
-  const canAdd = TOKEN.test(botToken.trim()) && /^\d+$/.test(telegramUser.trim()) && mainOk;
+  const telegramOk = TOKEN.test(botToken.trim()) && /^\d+$/.test(telegramUser.trim()) && mainOk;
+  const canAdd = !withTelegram || telegramOk;
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (busy === null) onOpenChange(o); }}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Second agent test on {agentName}</DialogTitle>
+          <DialogTitle>Second agent on {agentName}</DialogTitle>
           <DialogDescription>
-            Adds a second agent named Atlas to this instance, with its own Telegram bot and
-            agent-to-agent messaging switched on between the two. Atlas is a CFO who knows one
-            fact: cash on hand is $412,000. The existing agent keeps everything it has.
+            Adds a second agent named Atlas to this instance, with agent-to-agent messaging
+            switched on between the two. Atlas is a CFO who knows one fact: cash on hand is
+            $412,000. {agentName} keeps everything it has, and the chat page shows a tab per
+            agent from then on.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="sa-token">Atlas bot token</Label>
-            <Input
-              id="sa-token"
-              type="password"
-              autoComplete="off"
-              placeholder="123456789:AAH..."
-              value={botToken}
-              onChange={(e) => setBotToken(e.target.value)}
-              disabled={busy !== null}
-            />
-            <p className="text-xs text-muted-foreground">
-              From @BotFather in Telegram: send /newbot, name it Atlas, pick a username ending in
-              &quot;bot&quot;, and paste the token it replies with.
-            </p>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="sa-user">Your Telegram user id</Label>
-            <Input
-              id="sa-user"
-              inputMode="numeric"
-              placeholder="987654321"
-              value={telegramUser}
-              onChange={(e) => setTelegramUser(e.target.value)}
-              disabled={busy !== null}
-            />
-            <p className="text-xs text-muted-foreground">
-              A number. Ask @getmyid_bot or @userinfobot in Telegram. Only this account may message
-              the Atlas bot.
-            </p>
+          <div className="rounded-md border bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            While Atlas is on this instance, the chat page and the Telegram, Slack and WhatsApp
+            connections talk to the agents over a direct line to the box, since Agent37&apos;s
+            chat API cannot name an agent on a two-agent box. The chat tabs are plain: no thread
+            list, files or model menu until that API can. Remove Atlas and everything is as before.
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="sa-main-token">{agentName}&apos;s own bot token (optional)</Label>
-            <Input
-              id="sa-main-token"
-              type="password"
-              autoComplete="off"
-              placeholder="A second bot from @BotFather, different from Atlas"
-              value={mainBotToken}
-              onChange={(e) => setMainBotToken(e.target.value)}
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={withTelegram}
+              onChange={(e) => setWithTelegram(e.target.checked)}
               disabled={busy !== null}
+              className="h-4 w-4"
             />
-            <p className="text-xs text-muted-foreground">
-              Gives {agentName} a Telegram bot of its own on the server, so the agent-to-agent test
-              can run in Telegram even while the app&apos;s chat cannot pick an agent. A different
-              bot from Atlas, and from any bot on the Connections page.
-            </p>
-          </div>
+            Also give Atlas a Telegram bot of its own
+          </label>
+
+          {withTelegram && (
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="sa-token">Atlas bot token</Label>
+                <Input
+                  id="sa-token"
+                  type="password"
+                  autoComplete="off"
+                  placeholder="123456789:AAH..."
+                  value={botToken}
+                  onChange={(e) => setBotToken(e.target.value)}
+                  disabled={busy !== null}
+                />
+                <p className="text-xs text-muted-foreground">
+                  From @BotFather in Telegram: send /newbot, name it Atlas, pick a username ending in
+                  &quot;bot&quot;, and paste the token it replies with.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="sa-user">Your Telegram user id</Label>
+                <Input
+                  id="sa-user"
+                  inputMode="numeric"
+                  placeholder="987654321"
+                  value={telegramUser}
+                  onChange={(e) => setTelegramUser(e.target.value)}
+                  disabled={busy !== null}
+                />
+                <p className="text-xs text-muted-foreground">
+                  A number. Ask @getmyid_bot or @userinfobot in Telegram. Only this account may message
+                  the Atlas bot.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="sa-main-token">{agentName}&apos;s own bot token (optional)</Label>
+                <Input
+                  id="sa-main-token"
+                  type="password"
+                  autoComplete="off"
+                  placeholder="A second bot from @BotFather, different from Atlas"
+                  value={mainBotToken}
+                  onChange={(e) => setMainBotToken(e.target.value)}
+                  disabled={busy !== null}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Gives {agentName} a Telegram bot of its own on the server. A different bot from
+                  Atlas, and from any bot on the Connections page.
+                </p>
+              </div>
+            </>
+          )}
 
           <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
             <li>Press Add Atlas. The instance restarts; wait a minute, then press Check.</li>
-            <li>In Telegram, open the Atlas bot and send: What is our cash on hand? Expect $412,000.</li>
-            <li>Ask {agentName}, in the app or in its own Telegram bot: Ask Atlas what our cash on hand is and tell me. The same number back means the two agents are talking.</li>
+            <li>Open the chat page. There is a tab for {agentName} and one for Atlas.</li>
+            <li>Ask Atlas: What is our cash on hand? Expect $412,000.</li>
+            <li>Ask {agentName}: Ask Atlas what our cash on hand is and tell me. The same number back means the two are talking.</li>
             <li>Remove Atlas when done. That restores the config the box had before.</li>
           </ol>
 
