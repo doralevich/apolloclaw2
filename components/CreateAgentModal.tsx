@@ -237,7 +237,12 @@ export function CreateAgentModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant={triggerVariant} size={triggerSize}>
+        {/* Brand red unless a caller asks for another look (David, Oct 4 2026). */}
+        <Button
+          variant={triggerVariant}
+          size={triggerSize}
+          className={triggerVariant ? undefined : "bg-brand-red text-white hover:bg-brand-red/90 focus-visible:ring-brand-red/40"}
+        >
           <Plus className="h-4 w-4" />
           Create Agent
         </Button>

@@ -122,7 +122,8 @@ export function AddAgentOrUpgrade({
           </span>
         </button>
       ) : (
-        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        // Brand red: the one action this page exists for (David, Oct 4 2026).
+        <Button size="sm" onClick={() => setOpen(true)} className="bg-brand-red text-white hover:bg-brand-red/90 focus-visible:ring-brand-red/40">
           <Plus className="size-4" />
           {charge !== null ? `Add agent (+${dollars(charge)}/mo)` : "Add agent"}
         </Button>
