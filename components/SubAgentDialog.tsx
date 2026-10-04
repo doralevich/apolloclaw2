@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/dialog";
 
 // Add or edit one agent on an instance, from the My Agent page. An agent has a name, a role, a
-// persona, and an image. The name is set once (it is the agent's id on the box); editing changes
-// the role, persona, or image.
+// persona, and an image. Its id on the box is set once, from the first name; editing can change
+// the name, role, persona, or image.
 
 type ImageUpload = { name: string; type: string; size: number; dataBase64: string };
 
@@ -77,7 +77,7 @@ export function SubAgentDialog({
           method: "POST",
           body: JSON.stringify({ name: name.trim(), role: role.trim(), persona: persona.trim(), ...avatarField }),
         });
-        toast.success(`${name.trim()} added. The instance is restarting; give it a minute, then open its tab.`);
+        toast.success(`${name.trim()} added. The instance is restarting; give it a minute, then pick it in the sidebar.`);
       }
       onOpenChange(false);
       onDone();
@@ -96,7 +96,7 @@ export function SubAgentDialog({
           <DialogDescription>
             A second agent on this instance with its own name, role, and face. It shares the
             company brain {mainName} has, so it knows the business while keeping its own job. It
-            shows up as a tab in chat.
+            shows up in the sidebar under {mainName}.
           </DialogDescription>
         </DialogHeader>
 

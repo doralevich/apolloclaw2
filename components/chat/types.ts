@@ -146,3 +146,14 @@ export interface ChatSession {
    */
   last_active?: number | null;
 }
+
+// One agent on an instance, as the box reports it (/api/agents/{id}/roster). "main" is the
+// agent the app has always known; the others are the ones added from My Agent(s).
+export interface RosterAgent {
+  id: string;
+  name: string | null;
+  role: string | null;
+  persona: string | null;
+  avatarUrl: string | null;
+  telegram: boolean;
+}
