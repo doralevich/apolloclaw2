@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-// The demo used to play inside the small 9:16 slot in the WhatWeDo section, where the chat text
-// was far too small to read (David's call). It now opens in a full-page lightbox instead: the
-// inline box is only a poster with a play button, and the demo itself gets the viewport.
-export default function DayWithJohnEmbed() {
+// The home page demo: Harvey's morning briefing from Donna on Telegram, a 46-second phone
+// recording (David, Oct 4 2026; it replaced the "A Day with John" slide demo). The inline box is
+// only a poster with a play button, and the video opens in a full-page lightbox so the chat is
+// big enough to read. public/video/ holds it re-encoded from David's original for the web: an
+// H.264 MP4 (faststart, so it plays before it finishes downloading) and a VP9 WebM, no audio.
+export default function DonnaBriefingVideo() {
   // Only ever rendered after a click, so document.body is guaranteed to exist by then
   // and no mounted-guard is needed. The portal is required because Section wraps its content
   // in `relative z-10`, which traps a fixed overlay below the z-50 nav.
@@ -30,7 +32,7 @@ export default function DayWithJohnEmbed() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Play the Apollo[Claw] demo conversation: A Day with John"
+        aria-label="Play the video: Donna's morning briefing for Harvey"
         style={{
           position: "absolute",
           inset: 0,
@@ -48,14 +50,12 @@ export default function DayWithJohnEmbed() {
           fontFamily: "inherit",
         }}
       >
-        {/* Static poster instead of a live iframe, per David's call now that the real demo
-            opens in a lightbox. Captured from public/demo.html itself (the phone frame, cropped
-            out of its 1920x1080 slide) so it always matches what the popup actually plays.
+        {/* A frame from the video itself, mid-briefing, so the poster always matches what plays.
             eslint-disable: next/image would need a loader config for no benefit on a single
             local asset that is never resized. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/day-with-john-poster.png"
+          src="/video/donna-briefing-poster.jpg"
           alt=""
           aria-hidden="true"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
@@ -107,7 +107,7 @@ export default function DayWithJohnEmbed() {
               color: "#ffffff",
             }}
           >
-            A day with <span style={{ color: "#D72B2B" }}>John.</span>
+            Meet <span style={{ color: "#D72B2B" }}>Donna.</span>
           </p>
           <p
             style={{
@@ -119,7 +119,7 @@ export default function DayWithJohnEmbed() {
               marginTop: 10,
             }}
           >
-            Watch the agent in action
+            Watch the morning briefing
           </p>
         </div>
       </button>
@@ -128,12 +128,12 @@ export default function DayWithJohnEmbed() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Apollo[Claw] demo conversation"
+          aria-label="Donna's morning briefing"
           onClick={() => setOpen(false)}
           style={{
             position: "fixed",
             inset: 0,
-            zIndex: 100,
+            zIndex: 10000, // above the chat widget (ChatWidget.tsx, 9999)
             background: "rgba(4,9,18,0.92)",
             display: "flex",
             alignItems: "center",
@@ -144,7 +144,7 @@ export default function DayWithJohnEmbed() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Close demo"
+            aria-label="Close video"
             style={{
               position: "absolute",
               top: "clamp(12px, 2vw, 28px)",
@@ -166,31 +166,33 @@ export default function DayWithJohnEmbed() {
             &times;
           </button>
 
-          {/* Clicks inside the frame must not close the lightbox.
-              public/demo.html is a 1920x1080 slide (section.slide is hard-coded to those
-              dimensions) containing a 580x1040 phone mockup centred in it, so the frame has to
-              be 16:9 to show the slide undistorted. It was previously a 520px portrait box,
-              which squeezed the whole landscape slide into roughly a quarter of its intended
-              width and made the chat text unreadable. Width is capped by whichever runs out
-              first, the viewport width or the height a 16:9 box needs. */}
+          {/* Clicks inside the frame must not close the lightbox. The frame is the video's own
+              9:16, as tall as the viewport allows, narrower on a phone held upright. */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: "min(96vw, calc(90vh * 16 / 9))",
-              aspectRatio: "16 / 9",
-              maxHeight: "90vh",
-              borderRadius: 10,
+              height: "min(90vh, calc(92vw * 16 / 9))",
+              aspectRatio: "9 / 16",
+              borderRadius: 14,
               overflow: "hidden",
               background: "#0B1729",
               boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
             }}
           >
-            <iframe
-              src="/demo.html#1"
-              title="Apollo[Claw] Demo Conversation: A Day with John"
-              style={{ width: "100%", height: "100%", border: "none", background: "#0B1729" }}
-              allowFullScreen
-            />
+            {/* MP4 first (Safari, Chrome, Edge); the WebM copy is for browsers without an H.264
+                decoder, such as some Linux and Chromium builds. */}
+            <video
+              poster="/video/donna-briefing-poster.jpg"
+              autoPlay
+              muted
+              playsInline
+              controls
+              aria-label="Donna, an Apollo[Claw] agent, gives Harvey his morning briefing on Telegram"
+              style={{ width: "100%", height: "100%", display: "block", objectFit: "contain", background: "#0B1729" }}
+            >
+              <source src="/video/donna-briefing.mp4" type="video/mp4" />
+              <source src="/video/donna-briefing.webm" type="video/webm" />
+            </video>
           </div>
         </div>,
         document.body,

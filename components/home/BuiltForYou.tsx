@@ -1,4 +1,4 @@
-import DayWithJohnEmbed from "@/components/DayWithJohnEmbed";
+import DonnaBriefingVideo from "@/components/DonnaBriefingVideo";
 import { BracketLabel, BodyLarge, H2, RED, Section, SoftLink, TAN_INK, TAN_INK_MUTED } from "@/components/home/ui";
 
 const TILES = [
@@ -9,7 +9,7 @@ const TILES = [
 ];
 
 // Section 3 of the home page (David's spec, Sept 27 2026): copy and the four tiles on the left,
-// the "A Day with John" demo on the right. The demo used to live in its own "Your AI Assistant"
+// the Donna briefing video on the right. The demo used to live in its own "Your AI Assistant"
 // section, which is gone; on phones it drops below the tiles.
 //
 // Background is the light grid texture David sent, rebuilt in CSS rather than shipped as an
@@ -86,8 +86,8 @@ export function BuiltForYou() {
               </div>
             </div>
 
-            {/* "A Day with John" (components/DayWithJohnEmbed.tsx): a poster that opens the demo
-                full screen. Phone-shaped box, so the poster fills it edge to edge. */}
+            {/* Donna's morning briefing (components/DonnaBriefingVideo.tsx): a poster that opens the
+                video full screen. Phone-shaped box, so the poster fills it edge to edge. */}
             <div className="mx-auto w-full max-w-[320px] lg:mr-0">
               <div
                 className="relative overflow-hidden rounded-2xl border"
@@ -98,7 +98,7 @@ export function BuiltForYou() {
                   boxShadow: "0 24px 60px rgba(26,26,26,0.10)",
                 }}
               >
-                <DayWithJohnEmbed />
+                <DonnaBriefingVideo />
               </div>
             </div>
           </div>
