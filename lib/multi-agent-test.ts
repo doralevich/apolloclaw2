@@ -151,8 +151,8 @@ const VERIFY_SH =
   // accepts an agentId, so what matters is whether the wrapper can be told to pass one. These
   // are the lines of its bundle that mention the session key, the agent id, or chat.send.
   'echo; echo "agent37 wrapper, lines about session keys and agent selection:"; ' +
-  'for f in /usr/local/lib/agent37-gateway/dist/server/server/index.js $(ls /usr/local/lib/agent37-gateway/dist/server/*.js /usr/local/lib/agent37-gateway/dist/server/server/*.js 2>/dev/null | head -n 20); do [ -f "$f" ] || continue; ' +
-  'grep -n -o -E ".{0,120}(openresponses-user|chat\\.send|agentId|agent_id|x-openclaw-agent|openclaw/[a-z]).{0,120}" "$f" 2>/dev/null | grep -v -i "token\\|secret\\|password" | head -n 40 | sed "s#^#  $(basename $f): #"; done; ' +
+  'for f in $(timeout 20 grep -rl -E "openresponses-user|chat\\.send" /usr/local/lib/agent37-gateway/dist 2>/dev/null | grep -v node_modules | head -n 8); do ' +
+  'grep -o -E ".{0,160}(openresponses-user|chat\\.send|agentId|agent_id|x-openclaw-agent|openclaw/[a-z]).{0,160}" "$f" 2>/dev/null | grep -v -i "token\\|secret\\|password" | head -n 40 | sed "s#^#  ${f#/usr/local/lib/agent37-gateway/}: #"; done; ' +
   'echo; echo "openclaw.json files on the box:"; timeout 20 find /home /root /opt /app /srv /etc /var /data -maxdepth 6 -name openclaw.json -not -path "*/node_modules/*" 2>/dev/null | head -n 10 | sed "s/^/  /"; ' +
   'echo; echo "state dir listing:"; ls -la "$ROOT" 2>&1 | head -n 40 | sed "s/^/  /"; ' +
   'echo "CLI_END"';
@@ -187,11 +187,16 @@ function parseVerify(stdout: string): SecondAgentVerify {
  *  tester's numeric Telegram id, the only account allowed to DM the bot. */
 export async function setupSecondAgent(
   agentId: string,
-  input: { botToken: string; telegramUser: string }
+  input: { botToken: string; telegramUser: string; mainBotToken?: string }
 ): Promise<SecondAgentSetupResult> {
   const payload = {
     second: SECOND_AGENT,
     botB: input.botToken,
+    // Optional: a native Telegram bot for the FIRST agent too. The app's own chat cannot name
+    // an agent (Agent37 sends an unprefixed session key, see the ownership note below), so on
+    // a gateway release that refuses to guess, Telegram is the one door into the first agent
+    // that still works, and the agent-to-agent test can run through it.
+    botA: input.mainBotToken?.trim() || "",
     telegramUser: input.telegramUser,
   };
   const b64 = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
@@ -233,13 +238,21 @@ export async function setupSecondAgent(
     // One bot for the second agent, DMs only from the tester. The first agent keeps whatever
     // Telegram wiring the app already gave it.
     'set(cfg,["channels","telegram","enabled"],true);' +
-    'set(cfg,["channels","telegram","accounts",o.second.id],{botToken:o.botB,dmPolicy:"allowlist",allowFrom:[o.telegramUser]});' +
-    // Route the bot to its agent, and every other Telegram account (the first agent's existing
-    // one included) to the first agent. Most-specific binding wins, so the account match beats
-    // the "*" fallback. Replace the two we wrote before; keep every other binding.
-    'const ours=(b)=>b&&b.match&&b.match.channel==="telegram"&&(b.match.accountId===o.second.id||(b.match.accountId==="*"&&b.agentId==="main"));' +
+    'const acct=(tok)=>({botToken:tok,dmPolicy:"allowlist",allowFrom:[o.telegramUser]});' +
+    'set(cfg,["channels","telegram","accounts",o.second.id],acct(o.botB));' +
+    // The first agent's own bot, when one was given; without one, an account we wrote on an
+    // earlier run is removed so the box does not keep a bot nobody asked for.
+    'if(o.botA){set(cfg,["channels","telegram","accounts","main"],acct(o.botA));}' +
+    'else if(cfg.channels.telegram.accounts&&cfg.channels.telegram.accounts.main&&cfg.channels.telegram.accounts.main.dmPolicy==="allowlist"){delete cfg.channels.telegram.accounts.main;}' +
+    // Route each bot to its agent, and every other Telegram account to the first agent.
+    // Most-specific binding wins, so an account match beats the "*" fallback. Replace the ones
+    // we wrote before; keep every other binding.
+    'const ours=(b)=>b&&b.match&&b.match.channel==="telegram"&&(b.match.accountId===o.second.id||(b.agentId==="main"&&(b.match.accountId==="*"||b.match.accountId==="main")));' +
     'const keep=(Array.isArray(cfg.bindings)?cfg.bindings:[]).filter(b=>!ours(b));' +
-    "cfg.bindings=keep.concat([{agentId:o.second.id,match:{channel:\"telegram\",accountId:o.second.id}},{agentId:\"main\",match:{channel:\"telegram\",accountId:\"*\"}}]);" +
+    'const add=[{agentId:o.second.id,match:{channel:"telegram",accountId:o.second.id}}];' +
+    'if(o.botA)add.push({agentId:"main",match:{channel:"telegram",accountId:"main"}});' +
+    'add.push({agentId:"main",match:{channel:"telegram",accountId:"*"}});' +
+    "cfg.bindings=keep.concat(add);" +
     // Agent-to-agent: on, and only between these two.
     'set(cfg,["tools","agentToAgent","enabled"],true);' +
     'set(cfg,["tools","agentToAgent","allow"],["main",o.second.id]);' +
