@@ -172,7 +172,7 @@ export function AgentCard({
 
       {/* Every agent the instance itself reports, when there is more than the one this card is
           for. Reads the box, so an agent added on the server shows here the same day. */}
-      <AgentTeam agentId={agent.agent37_id} mainName={name} />
+      <AgentTeam agentId={agent.agent37_id} mainName={name} mainAvatarUrl={agent.avatar_url} />
 
       {/* Delete, ON the card it deletes - stage 2 of the settings rework. The old
           DeleteAgentSection sat on Settings > General and deleted whichever agent the hidden

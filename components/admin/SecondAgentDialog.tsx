@@ -43,6 +43,22 @@ type Verify = {
   cli?: string;
 };
 
+// Same base64 upload shape the onboarding form uses, matched to the server's ImageUpload.
+type ImageUpload = { name: string; type: string; size: number; dataBase64: string };
+
+function readImage(file: File): Promise<ImageUpload> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read the image."));
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const comma = result.indexOf(",");
+      resolve({ name: file.name, type: file.type, size: file.size, dataBase64: comma >= 0 ? result.slice(comma + 1) : result });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 type SetupResult = { ok: boolean; backedUp: boolean; restarted: boolean; verify?: Verify; note?: string };
 type VerifyResult = { ok: boolean; verify?: Verify; note?: string };
 type RevertResult = { ok: boolean; restored: boolean; restarted: boolean; note?: string };
@@ -95,6 +111,8 @@ export function SecondAgentDialog({
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [persona, setPersona] = useState("");
+  const [avatar, setAvatar] = useState<ImageUpload | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [withTelegram, setWithTelegram] = useState(false);
   const [botToken, setBotToken] = useState("");
   const [mainBotToken, setMainBotToken] = useState("");
@@ -111,7 +129,7 @@ export function SecondAgentDialog({
       const r = await apiFetch<SetupResult>(base, {
         method: "POST",
         body: JSON.stringify({
-          ...(name.trim() ? { name: name.trim(), role: role.trim(), persona: persona.trim() } : {}),
+          ...(name.trim() ? { name: name.trim(), role: role.trim(), persona: persona.trim(), ...(avatar ? { avatar } : {}) } : {}),
           ...(withTelegram
             ? {
                 botToken: botToken.trim(),
@@ -223,6 +241,41 @@ export function SecondAgentDialog({
               onChange={(e) => setRole(e.target.value)}
               disabled={busy !== null || !name.trim()}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="sa-avatar">Image</Label>
+            <div className="flex items-center gap-3">
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="" className="size-12 rounded-full border object-cover" />
+              ) : (
+                <span className="flex size-12 items-center justify-center rounded-full border bg-muted text-base font-semibold text-muted-foreground">
+                  {(name.trim() || "A").slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <input
+                id="sa-avatar"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                disabled={busy !== null || !name.trim()}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 3 * 1024 * 1024) {
+                    toast.error("Image is over 3 MB. Pick a smaller one.");
+                    return;
+                  }
+                  try {
+                    setAvatar(await readImage(file));
+                    setAvatarPreview(URL.createObjectURL(file));
+                  } catch (err) {
+                    toast.error((err as Error).message);
+                  }
+                }}
+                className="text-xs file:mr-2 file:rounded-md file:border file:bg-secondary file:px-2 file:py-1 file:text-xs"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">PNG, JPG or WebP, up to 3 MB. Optional; the agent shows its initial without one.</p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sa-persona">Persona</Label>

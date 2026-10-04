@@ -11,7 +11,7 @@ import { apiFetch } from "@/lib/api";
 // The roster is read from the box (/api/agents/{id}/roster), the same source the My Agent(s)
 // card uses, so an agent added on the server appears here without a database row.
 
-export type RosterAgent = { id: string; name: string | null; telegram: boolean };
+export type RosterAgent = { id: string; name: string | null; role: string | null; avatarUrl: string | null; telegram: boolean };
 
 export function useInstanceRoster(instanceId: string): RosterAgent[] | null {
   // Keyed by instance so a switch of agent reads as "unknown" until the new roster lands,

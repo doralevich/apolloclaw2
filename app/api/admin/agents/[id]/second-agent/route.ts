@@ -1,5 +1,6 @@
 import { assertNotOtherApp, requirePlatformAdmin } from "@/lib/admin";
 import { agentIdFromName, revertSecondAgent, setupSecondAgent, verifySecondAgent, type AgentSpec } from "@/lib/multi-agent-test";
+import { uploadSubAgentAvatar, type ImageUpload } from "@/lib/supabase/avatar-storage";
 import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
 
@@ -28,6 +29,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     name?: unknown;
     role?: unknown;
     persona?: unknown;
+    avatar?: ImageUpload;
     botToken?: unknown;
     telegramUser?: unknown;
     mainBotToken?: unknown;
@@ -48,7 +50,10 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
       throw new ApiError(400, "invalid_request", "Give the agent a name with some letters or digits, not just symbols, and not \"main\".");
     }
     if (!role) throw new ApiError(400, "invalid_request", "Give the agent a role, such as CFO or Scheduler.");
-    agent = { id: agentId, name, role, persona };
+    // Upload the avatar image to the shared avatar bucket; the box records its URL. A bad image
+    // never blocks the add, it just leaves the agent with its initial.
+    const avatarUrl = body.avatar ? (await uploadSubAgentAvatar(id, agentId, body.avatar)) ?? undefined : undefined;
+    agent = { id: agentId, name, role, persona, avatarUrl };
   }
   // A BotFather token is "<numeric bot id>:<35-ish chars>". Checked here so a pasted username or
   // a trailing word never lands in a config file that then has to be reverted.

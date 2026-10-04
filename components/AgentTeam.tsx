@@ -13,9 +13,9 @@ import { Badge } from "@/components/ui/badge";
 // page and the server agree on who is there. Renders nothing while the instance reports a single
 // agent, which is every customer today.
 
-type RosterAgent = { id: string; name: string | null; telegram: boolean };
+type RosterAgent = { id: string; name: string | null; role: string | null; avatarUrl: string | null; telegram: boolean };
 
-export function AgentTeam({ agentId, mainName }: { agentId: string; mainName: string }) {
+export function AgentTeam({ agentId, mainName, mainAvatarUrl }: { agentId: string; mainName: string; mainAvatarUrl?: string | null }) {
   const [agents, setAgents] = useState<RosterAgent[] | null>(null);
 
   useEffect(() => {
@@ -43,14 +43,22 @@ export function AgentTeam({ agentId, mainName }: { agentId: string; mainName: st
       <ul className="grid gap-2 sm:grid-cols-2">
         {agents.map((a) => {
           const label = a.id === "main" ? mainName : a.name || a.id;
+          const avatar = a.id === "main" ? mainAvatarUrl : a.avatarUrl;
+          // The secondary line is the agent's role when it has one, otherwise its id.
+          const sub = a.id === "main" ? "main" : a.role || a.id;
           return (
             <li key={a.id} className="flex items-center gap-3 rounded-lg border bg-background px-3 py-2">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-muted text-sm font-semibold text-muted-foreground">
-                {label.slice(0, 1).toUpperCase()}
-              </span>
+              {avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatar} alt="" className="size-8 shrink-0 rounded-full border object-cover" />
+              ) : (
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-muted text-sm font-semibold text-muted-foreground">
+                  {label.slice(0, 1).toUpperCase()}
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{label}</div>
-                <div className="truncate font-mono text-[11px] text-muted-subtle">{a.id}</div>
+                <div className="truncate text-[11px] text-muted-foreground">{sub}</div>
               </div>
               {a.id === "main" && <Badge variant="secondary">Primary</Badge>}
               {a.telegram && (

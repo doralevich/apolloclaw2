@@ -46,6 +46,9 @@ export interface AgentSpec {
   role: string;
   /** A few sentences on how the agent should act. Loaded into its SOUL.md. */
   persona: string;
+  /** Public URL of the agent's avatar image, when one was uploaded. Recorded on the box so the
+   *  roster and the chat tabs can show the agent's own face. */
+  avatarUrl?: string;
   /** A planted fact, test-only. Real agents created from intake have none. */
   fact?: string;
 }
@@ -342,6 +345,10 @@ export async function setupSecondAgent(
     "fs.writeFileSync(file,JSON.stringify(cfg,null,2));" +
     // The second agent's persona and the planted fact.
     "fs.mkdirSync(secondWs,{recursive:true});" +
+    // The app-facing metadata for this agent, beside its workspace: the role, persona, and the
+    // avatar image URL the app uploaded. The roster reads it so the agent shows its own face and
+    // role; the box stays the source of truth for the agent itself.
+    'fs.writeFileSync(secondWs+"/.apollo-agent.json",JSON.stringify({role:o.second.role||"",persona:o.second.persona||"",avatarUrl:o.second.avatarUrl||""}));' +
     'fs.writeFileSync(secondWs+"/IDENTITY.md","# Identity\\n\\nYour name is "+o.second.name+". You are the "+o.second.role+" agent.\\n");' +
     'fs.writeFileSync(secondWs+"/SOUL.md","# "+o.second.name+", "+o.second.role+" agent\\n\\n"+(o.second.persona||("You are the "+o.second.role+" on a small team of agents. Answer in your area directly and briefly."))+(o.second.fact?"\\n\\n## Facts you hold\\n\\n- "+o.second.fact+"\\n":"\\n"));' +
     'fs.writeFileSync(secondWs+"/AGENTS.md","# Working notes\\n\\nOther agents on this gateway may message you with sessions_send. Answer them the same way you would answer the owner.\\n\\nYour USER.md holds the shared company brain: who the company is and who the owner is, the same facts every agent here shares. Treat it as established fact and use it directly; you do not need to search for it.\\n");' +
