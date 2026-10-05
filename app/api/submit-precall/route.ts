@@ -96,7 +96,9 @@ async function generatePrecallPdf(data: Record<string, unknown>, name: string): 
   const browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    // puppeteer 24.43 dropped the networkidle options from setContent. The markup above is
+    // self-contained (inline styles, system fonts, no images), so "load" is the same wait.
+    await page.setContent(html, { waitUntil: "load" });
     const pdfBuffer = await page.pdf({
       format: "Letter",
       printBackground: true,
