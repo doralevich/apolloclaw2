@@ -261,7 +261,13 @@ content type and posts in Sanity first, which is Donna's lane.
   came back to close it, which is the usual way a stale open item survives.
 - **Retire the hetzner-4 copies** of the CFO and CEO sites, so nobody edits an orphaned
   file. Step 8 of the runbook; the real estate copy is already retired.
-- **Privacy and terms are placeholders on all three sites.** They say so honestly rather
-  than inventing policy text, but they need real text before the sites take real traffic.
+- **Privacy and terms: resolved, closed Oct 5, 2026.** Every agent site (all ten, not
+  three) got real policy text on Sep 6 to 8, 2026, written against what each site does:
+  no forms, no accounts, outbound CTAs to Apollo Claw and cal.com, Vercel server logs, and
+  Google Analytics 4 behind a consent banner on nine sites (Marketing runs no analytics
+  and its policy says "collects nothing" instead). Terms cover the website only and point
+  at the Apollo Claw agreement for the product, with a per-site "not professional advice"
+  section. Neither page has been reviewed by a lawyer; each file says so in its comment.
+  Audited Oct 5: every site's analytics and consent setup matches its policy text.
 - **The blog.** See the site structure section above: it needs a Sanity content type
   before there is anything to wire up.
