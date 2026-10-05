@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { ArrowUp, Loader2, Sparkles, Square } from "lucide-react";
-import { DEFAULT_CHAT_MODEL_LABEL } from "@/config/chat-models";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { ArrowUp, Loader2, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AttachButton, AttachmentTray } from "./Attachments";
 import { EffortMenu } from "./EffortMenu";
-import { ModelMenu } from "./ModelMenu";
+import { ModelControl } from "./ModelControl";
 import type { ChatAttachments } from "./useChatAttachments";
-import { useChatModels } from "./useChatModels";
-import { findModel, prettyModelLabel, type ChatSettings } from "./types";
+import type { ChatSettings } from "./types";
 import type { SendSettings } from "./useChat";
 
 interface Props {
@@ -48,8 +46,6 @@ export function ChatComposer({
   const [settings, setSettings] = useState<ChatSettings>({ model: null, provider: null, reasoningEffort: null });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { groups, defaultModel, loading } = useChatModels(agentId);
-
   useEffect(() => {
     if (focusToken === 0) return;
     const frame = requestAnimationFrame(() => textareaRef.current?.focus());
@@ -83,20 +79,6 @@ export function ChatComposer({
     });
     return () => cancelAnimationFrame(frame);
   }, [prefill]);
-
-  // The model switcher is a persistent control, shown once the instance reports at least one model
-  // (the older metered gateway exposes a single "default"; current builds expose the full catalog).
-  // It stays hidden until the list resolves. If the call returns nothing (fetch failed, or an
-  // instance that reports no models) the menu is replaced by a static pill naming the product
-  // default, so the customer can always see which model they are on. This used to hide the pill
-  // outright, and read "Default" when the instance's default matched nothing, both of which left
-  // the customer with no way to see the model at all (David, Oct 5 2026). Memoized so the
-  // controlled textarea's per-keystroke re-renders don't re-scan the model groups.
-  const totalModels = useMemo(() => groups.reduce((n, g) => n + g.models.length, 0), [groups]);
-  const defaultLabel = useMemo(() => {
-    const def = findModel(groups, defaultModel);
-    return def ? prettyModelLabel(def.label) : loading ? "Loading…" : DEFAULT_CHAT_MODEL_LABEL;
-  }, [groups, defaultModel, loading]);
 
   const canSend = (text.trim().length > 0 || att.hasFiles) && !att.blocksSend && !isStreaming;
 
@@ -167,26 +149,14 @@ export function ChatComposer({
       <div className="flex items-center gap-2 px-3 pb-3">
         <div className="flex min-w-0 items-center gap-1.5">
           <AttachButton onFiles={att.addFiles} disabled={isStreaming} />
-          {totalModels >= 1 ? (
-            <ModelMenu
-              groups={groups}
-              model={settings.model}
-              defaultModel={defaultModel}
-              defaultLabel={defaultLabel}
-              disabled={isStreaming}
-              onChange={(model, provider) => setSettings((s) => ({ ...s, model, provider }))}
-            />
-          ) : (
-            !loading && (
-              <span
-                title={`Model: ${DEFAULT_CHAT_MODEL_LABEL}. This agent's model list could not be loaded, so the product default is shown and there is nothing to switch to right now.`}
-                className="inline-flex h-8 max-w-[12rem] items-center gap-1.5 rounded-full bg-secondary/70 px-3 text-xs font-medium text-muted-foreground"
-              >
-                <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{DEFAULT_CHAT_MODEL_LABEL}</span>
-              </span>
-            )
-          )}
+          {/* The model pill (ModelControl) is shared with the direct-line composer, so a box
+              with several agents shows the same menu as a box with one. */}
+          <ModelControl
+            agentId={agentId}
+            model={settings.model}
+            disabled={isStreaming}
+            onChange={(model, provider) => setSettings((s) => ({ ...s, model, provider }))}
+          />
           <EffortMenu
             value={settings.reasoningEffort}
             disabled={isStreaming}
