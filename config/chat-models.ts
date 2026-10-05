@@ -55,8 +55,14 @@ interface ApprovedModel {
   /** What the customer reads. Stable regardless of how the gateway spells the id. */
   label: string;
   /** Vendor grouping in the menu. */
-  displayProvider: "anthropic" | "openai";
+  displayProvider: DisplayProvider;
+  /** One line under the name, so a business owner knows what the model is for. */
+  hint: string;
+  /** Spends the included monthly usage noticeably faster than the default. Shown as a tag. */
+  heavy?: boolean;
 }
+
+export type DisplayProvider = "anthropic" | "openai" | "google" | "xai";
 
 // Order matters: this is the order of the menu, and the first entry is the default.
 const APPROVED_MODELS: ApprovedModel[] = [
@@ -64,26 +70,83 @@ const APPROVED_MODELS: ApprovedModel[] = [
     ids: [DEFAULT_CHAT_MODEL_ID, "anthropic/claude-sonnet-5-5", "claude-sonnet-5-5"],
     label: "Claude Sonnet 5.5",
     displayProvider: "anthropic",
+    hint: "Recommended. The best balance of quality, speed and usage for everyday work.",
   },
   {
     ids: [FALLBACK_CHAT_MODEL_ID, "claude-sonnet-5"],
     label: "Claude Sonnet 5",
     displayProvider: "anthropic",
+    hint: "The previous Sonnet. Same character, a step behind on hard reasoning.",
   },
   {
     ids: ["anthropic/claude-opus-5", "claude-opus-5"],
     label: "Claude Opus 5",
     displayProvider: "anthropic",
+    hint: "The strongest Claude, for the hardest analysis and long, careful drafts.",
+    heavy: true,
   },
   {
     ids: ["anthropic/claude-haiku-4.5", "claude-haiku-4-5", "claude-haiku-4-5-20251001"],
     label: "Claude Haiku 4.5",
     displayProvider: "anthropic",
+    hint: "Fast and economical. Good for quick, routine turns.",
   },
-  { ids: ["openai/gpt-5.6-sol", "gpt-5.6-sol"], label: "GPT-5.6 Sol", displayProvider: "openai" },
-  { ids: ["openai/gpt-5.6-terra", "gpt-5.6-terra"], label: "GPT-5.6 Terra", displayProvider: "openai" },
-  { ids: ["openai/gpt-5.6-luna", "gpt-5.6-luna"], label: "GPT-5.6 Luna", displayProvider: "openai" },
+  { ids: ["openai/gpt-5.6-sol", "gpt-5.6-sol"], label: "GPT-5.6 Sol", displayProvider: "openai", hint: "OpenAI's flagship. Strong all-rounder.", heavy: true },
+  { ids: ["openai/gpt-5.6-terra", "gpt-5.6-terra"], label: "GPT-5.6 Terra", displayProvider: "openai", hint: "OpenAI's mid-size model. Quick and capable." },
+  { ids: ["openai/gpt-5.6-luna", "gpt-5.6-luna"], label: "GPT-5.6 Luna", displayProvider: "openai", hint: "OpenAI's small model. Fastest and lightest." },
 ];
+
+// VENDOR FAMILIES, matched by pattern rather than by exact id.
+//
+// David's call (Oct 5, 2026): offer Google Gemini and xAI Grok alongside Anthropic and OpenAI.
+// Those two vendors rename their models often, and no instance could be queried from the
+// sandbox the day this shipped, so their ids are not pinned here. Instead, any id the instance
+// reports that looks like a Gemini or Grok chat model is offered, labelled from its id
+// ("google/gemini-2.5-pro" reads "Gemini 2.5 Pro"). The `exclude` pattern drops the variants
+// that are not a chat model or not worth a business owner's menu: previews and experiments,
+// image, audio, video and embedding models, and the "lite"/"nano" tiers. Once a real list has
+// been seen, pin the good ones as APPROVED_MODELS entries above and this becomes the safety net.
+//
+// Why the two are still exact-list-first: Anthropic and OpenAI ids are known and the menu
+// order and the default depend on them. Families are appended after, in this order.
+interface ApprovedFamily {
+  match: RegExp;
+  exclude: RegExp;
+  displayProvider: DisplayProvider;
+  hint: (id: string) => string;
+  heavy: (id: string) => boolean;
+}
+
+const APPROVED_FAMILIES: ApprovedFamily[] = [
+  {
+    match: /^(google\/|gemini\/)?gemini-/i,
+    exclude: /preview|exp\b|experimental|image|imagen|audio|tts|video|veo|embed|live|lite|nano|robotics|computer-use|-\d{3,}$/i,
+    displayProvider: "google",
+    hint: (id) => (/pro/i.test(id) ? "Google's strongest. Excellent with very long documents and spreadsheets." : "Google's fast model. Quick and economical."),
+    heavy: (id) => /pro|ultra/i.test(id),
+  },
+  {
+    match: /^(xai\/|x-ai\/)?grok-/i,
+    exclude: /preview|beta|image|imagen|vision|audio|tts|video|embed|mini|nano|-\d{3,}$/i,
+    displayProvider: "xai",
+    hint: (id) => (/fast/i.test(id) ? "xAI's fast model. Quick answers with live web knowledge." : "xAI's flagship. Strong reasoning and up-to-the-minute knowledge."),
+    heavy: (id) => !/fast/i.test(id),
+  },
+];
+
+/** "google/gemini-2.5-pro" -> "Gemini 2.5 Pro"; "grok-4-fast-reasoning" -> "Grok 4 Fast Reasoning". */
+function labelFromId(id: string): string {
+  const bare = id.replace(/^[^/]+\//, "");
+  return bare
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((w) => (/^\d/.test(w) ? w : w[0].toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
+function familyFor(id: string): ApprovedFamily | undefined {
+  return APPROVED_FAMILIES.find((f) => f.match.test(id) && !f.exclude.test(id));
+}
 
 const APPROVED_IDS = new Set(APPROVED_MODELS.flatMap((m) => m.ids));
 
@@ -95,7 +158,7 @@ export const DEFAULT_CHAT_MODEL_LABEL = APPROVED_MODELS[0].label;
 /** Is this an id we're willing to run? Used to reject a model id posted by a client that
  *  didn't get it from the curated list. */
 export function isApprovedChatModelId(id: string): boolean {
-  return APPROVED_IDS.has(id);
+  return APPROVED_IDS.has(id) || familyFor(id) !== undefined;
 }
 
 /**
@@ -122,9 +185,29 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
         label: approved.label,
         display_provider: approved.displayProvider,
         is_default: index === 0,
+        hint: approved.hint,
+        heavy: approved.heavy ?? false,
       },
     ];
   });
+
+  // Then the pattern-matched vendor families, in family order, each vendor's models in the order
+  // the instance listed them. An id already placed by the exact list above is not repeated.
+  const placed = new Set(data.map((m) => m.id));
+  for (const family of APPROVED_FAMILIES) {
+    for (const upstream of response.data ?? []) {
+      if (placed.has(upstream.id) || familyFor(upstream.id) !== family) continue;
+      placed.add(upstream.id);
+      data.push({
+        ...upstream,
+        label: labelFromId(upstream.id),
+        display_provider: family.displayProvider,
+        is_default: false,
+        hint: family.hint(upstream.id),
+        heavy: family.heavy(upstream.id),
+      });
+    }
+  }
 
   if (data.length === 0) {
     // Router aliases, not models. An instance whose gateway has no vendor models configured
@@ -160,6 +243,8 @@ export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
         owned_by: m.displayProvider,
         display_provider: m.displayProvider,
         is_default: index === 0,
+        hint: m.hint,
+        heavy: m.heavy ?? false,
       }));
       return {
         default_model: synthesized[0]?.id ?? response.default_model,

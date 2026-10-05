@@ -48,7 +48,7 @@ export function ModelMenu({ groups, model, defaultModel, defaultLabel, disabled,
           <ChevronDown className="h-3.5 w-3.5 shrink-0" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-80 w-60 overflow-y-auto">
+      <DropdownMenuContent align="start" className="max-h-96 w-80 overflow-y-auto">
         {groups.map((g, gi) => {
           const labelId = `model-provider-${gi}`;
           return (
@@ -56,14 +56,26 @@ export function ModelMenu({ groups, model, defaultModel, defaultLabel, disabled,
               {gi > 0 && <DropdownMenuSeparator />}
               <DropdownMenuLabel id={labelId}>{prettyProvider(g.provider)}</DropdownMenuLabel>
               {g.models.map((m, mi) => (
-                <DropdownMenuItem key={`${g.provider}:${m.id}:${mi}`} onSelect={() => onChange(m.id, m.provider)}>
-                  <Check className={cn("h-4 w-4", m.id === activeId ? "opacity-100" : "opacity-0")} />
-                  <span className="flex-1 truncate">{prettyModelLabel(m.label)}</span>
-                  {m.id === defaultModel && (
-                    <span className="ml-2 shrink-0 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                      Default
+                <DropdownMenuItem key={`${g.provider}:${m.id}:${mi}`} onSelect={() => onChange(m.id, m.provider)} className="items-start">
+                  <Check className={cn("mt-0.5 h-4 w-4 shrink-0", m.id === activeId ? "opacity-100" : "opacity-0")} />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate">{prettyModelLabel(m.label)}</span>
+                      {m.id === defaultModel && (
+                        <span className="shrink-0 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          Default
+                        </span>
+                      )}
+                      {/* The tag is the honest part of offering a heavy model: a customer who
+                          picks one should know it spends the included usage faster. */}
+                      {m.heavy && (
+                        <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400" title="Spends your included monthly usage faster than the default">
+                          More usage
+                        </span>
+                      )}
                     </span>
-                  )}
+                    {m.hint && <span className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{m.hint}</span>}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>

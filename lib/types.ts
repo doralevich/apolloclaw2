@@ -140,6 +140,10 @@ export interface AgentModel {
   // sent back on requests — so the display grouping needs its own field rather than
   // overwriting one the API round-trips.
   display_provider?: string;
+  /** One line under the name in the switcher, from our curation. */
+  hint?: string;
+  /** Spends the included monthly usage noticeably faster than the default; shown as a tag. */
+  heavy?: boolean;
 }
 
 export interface ModelsResponse {

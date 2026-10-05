@@ -36,6 +36,8 @@ export interface ModelOption {
   id: string;
   label: string;
   provider: string;
+  hint?: string;
+  heavy?: boolean;
 }
 
 export interface ModelGroup {

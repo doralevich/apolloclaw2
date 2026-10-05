@@ -36,7 +36,7 @@ export function useChatModels(agentId: string): ChatModelsState {
           // the provider the instance is asked to route through.
           const provider = m.owned_by ?? m.provider ?? "model";
           const arr = byProvider.get(group) ?? [];
-          arr.push({ id: m.id, label: m.label, provider });
+          arr.push({ id: m.id, label: m.label, provider, hint: m.hint, heavy: m.heavy });
           byProvider.set(group, arr);
         }
         // Prefer the explicit default; fall back to whichever model is flagged is_default.
