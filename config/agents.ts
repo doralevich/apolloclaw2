@@ -30,7 +30,32 @@ export function instanceAppId(metadata: Record<string, unknown> | null | undefin
   return typeof v === "string" && v.trim() ? v.trim() : null;
 }
 
-export const INSTANCE_RESOURCES = { cpu: 2, memory: 4, disk: 6 } as const;
+// The sizes a box can be. "standard" is what every new instance gets; the others exist for the
+// Super Admin resize control (components/admin/AdminAgentsView.tsx -> /api/admin/agents/[id]/
+// resize). Units are Agent37's: vCPU count, memory in GB, disk in GB. Resizing is a Super Admin
+// act with no price attached (David, Oct 5 2026): the first use is his own instance, to find
+// out whether a bigger box is faster enough to be worth selling on the pricing page.
+export const INSTANCE_SIZES = {
+  standard: { label: "Standard", cpu: 2, memory: 4, disk: 6 },
+  plus: { label: "Plus", cpu: 4, memory: 8, disk: 20 },
+  pro: { label: "Pro", cpu: 8, memory: 16, disk: 40 },
+} as const;
+export type InstanceSizeId = keyof typeof INSTANCE_SIZES;
+
+/** The preset a live box matches, or null when it was sized by hand. */
+export function instanceSizeId(r: { cpu: number; memory: number; disk: number } | null | undefined): InstanceSizeId | null {
+  if (!r) return null;
+  for (const [id, size] of Object.entries(INSTANCE_SIZES)) {
+    if (size.cpu === r.cpu && size.memory === r.memory && size.disk === r.disk) return id as InstanceSizeId;
+  }
+  return null;
+}
+
+export const INSTANCE_RESOURCES = {
+  cpu: INSTANCE_SIZES.standard.cpu,
+  memory: INSTANCE_SIZES.standard.memory,
+  disk: INSTANCE_SIZES.standard.disk,
+} as const;
 
 // $25/mo to match the paid Apollo agent (config/agent-types.ts PAID_AGENT) and the hosting we
 // sell as including "$25/mo of token usage". The live provisioning cap already comes from the

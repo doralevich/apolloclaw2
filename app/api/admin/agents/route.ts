@@ -50,7 +50,7 @@ export const GET = route(async () => {
   const [agentsRes, wsRes, setupRes, live] = await Promise.all([
     // Soft-deleted rows ARE included here (no deleted_at filter): the overview is where an admin
     // sees the trash and restores or purges from it. deleted_at/purge_after drive that UI.
-    db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, avatar_url, owner_id, created_at, deleted_at, purge_after"),
+    db.from("agents").select("agent37_id, workspace_id, name, status, agent_type, avatar_url, owner_id, created_at, deleted_at, purge_after, cpu, memory, disk"),
     db.from("workspaces").select("id, name, owner_id"),
     // Just the timezone out of each setup blob, so the overview can show which agents still have
     // none. Selecting the whole `answers` column would drag every customer's full questionnaire
@@ -94,6 +94,11 @@ export const GET = route(async () => {
       presence: live === null ? "unknown" : instance ? "ok" : "ghost",
       live_status: instance?.status ?? null,
       db_status: (a.status as string | null) ?? null,
+      resources:
+        instance?.resources ??
+        (typeof a.cpu === "number" && typeof a.memory === "number" && typeof a.disk === "number"
+          ? { cpu: a.cpu, memory: a.memory, disk: a.disk }
+          : null),
       workspace_id: a.workspace_id as string,
       workspace_name: ws?.name ?? a.workspace_id,
       owner_email: emails.get(a.owner_id as string) ?? null,
@@ -136,6 +141,7 @@ export const GET = route(async () => {
         presence: external ? "external" : app === APP_ID ? "orphan" : "unattributed",
         live_status: instance.status,
         db_status: null,
+        resources: instance.resources ?? null,
         workspace_id: null,
         workspace_name: null,
         owner_email: null,
