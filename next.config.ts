@@ -54,8 +54,14 @@ const CSP_DIRECTIVES = [
   // cdn.sanity.io: blog imagery. logos.composio.dev: the integration globe and marquee.
   // mcusercontent.com is Mailchimp's image CDN: the /create-an-agent landing page (the mailer's
   // destination) shows an illustration hosted there, the same CDN the mailer itself uses.
-  "img-src 'self' data: blob: https://cdn.sanity.io https://logos.composio.dev https://mcusercontent.com https://www.googletagmanager.com https://www.google-analytics.com",
-  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com`,
+  // SUPABASE_ORIGIN: agent and sub-agent avatars are public objects in Supabase storage and are
+  // rendered with plain <img> tags in the dashboard and admin views. cdn.simpleicons.org: the tool
+  // logos on /what-we-do. Both were found by audit before this policy was enforced (Oct 5, 2026);
+  // the report-only run never had a dashboard session to catch the avatars.
+  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https://cdn.sanity.io https://logos.composio.dev https://mcusercontent.com https://cdn.simpleicons.org https://www.googletagmanager.com https://www.google-analytics.com`,
+  // analytics.google.com: gtag's collect endpoint can land there as well as on the two
+  // google-analytics.com hosts, depending on the visitor's region and GA's routing.
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com`,
   // 'self' covers the /demo.html lightbox. The YouTube domains are allowed so /karan.html can
   // embed the intro video (sent to Karan at Composio) inline via the YouTube player; scheduling
   // stays a link-out to cal.com, so no cal frame is needed here.
@@ -66,11 +72,18 @@ const CSP_DIRECTIVES = [
   // 'self' to match X-Frame-Options above, so the demo lightbox keeps working when this
   // policy is promoted from report-only to enforced.
   "frame-ancestors 'self'",
-  // NOTE: `upgrade-insecure-requests` is deliberately absent. Browsers ignore it in a
-  // report-only policy and log a warning saying so on every page load, which is exactly the
-  // console noise that makes a real violation easy to miss while we are watching for them.
-  // ADD IT BACK when this is promoted to an enforced Content-Security-Policy.
+  // Restored with enforcement (it was left out of the report-only policy because browsers
+  // ignore it there and log a warning on every page load).
+  "upgrade-insecure-requests",
 ].join("; ");
+
+// The self-contained demo pages under public/ that need blob: (see headers() below).
+const DEMO_PAGES = ["demo\\.html", "day-with-john\\.html"];
+
+const DEMO_CSP_DIRECTIVES = CSP_DIRECTIVES
+  .replace("script-src 'self'", "script-src 'self' blob:")
+  .replace("font-src 'self'", "font-src 'self' blob:")
+  .replace("connect-src 'self'", "connect-src 'self' blob:");
 
 const securityHeaders = [
   // Two years, with preload, matching the playbook. Only meaningful over HTTPS, which Vercel
@@ -88,19 +101,33 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
-  // REPORT-ONLY on purpose. This logs violations to the browser console without blocking
-  // anything, so a real deployment can be watched for false positives before the policy is
-  // enforced. Promoting it means renaming this key to "Content-Security-Policy" — do that only
-  // after a preview deploy has been clicked through with the console open.
-  { key: "Content-Security-Policy-Report-Only", value: CSP_DIRECTIVES },
+  // ENFORCED since Oct 5, 2026, after a report-only run and a crawl of every public route with
+  // the console open. Anything the page loads that is not on the allow-list above is blocked,
+  // so a new third-party script, image host or API has to be added here in the same commit.
+  { key: "Content-Security-Policy", value: CSP_DIRECTIVES },
 ];
+
+const demoPageHeaders = securityHeaders.map((h) =>
+  h.key === "Content-Security-Policy" ? { ...h, value: DEMO_CSP_DIRECTIVES } : h
+);
 
 const nextConfig: NextConfig = {
   // Keep large native dependencies out of the serverless bundle;
   // they’re available in /var/task/node_modules at runtime on Vercel.
   serverExternalPackages: ['puppeteer', 'puppeteer-core', '@sparticuz/chromium'],
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      // Every route except the two self-contained demo pages gets the strict policy.
+      { source: `/:path((?!${DEMO_PAGES.join("|")}).*)`, headers: securityHeaders },
+      // public/demo.html and public/day-with-john.html are single-file exports (1.8 MB each)
+      // that unpack their own fonts, worker scripts and data through blob: URLs, which the
+      // strict policy blocks (found by the Oct 5, 2026 crawl; nothing in the app links to them
+      // any more, but the URLs may still be in old emails). They get the same policy with
+      // blob: allowed for scripts, fonts and connections, and nothing else loosened. Two rules
+      // with disjoint sources, because Next.js will not let a later rule replace a header key
+      // an earlier catch-all already set.
+      { source: `/:path(${DEMO_PAGES.join("|")})`, headers: demoPageHeaders },
+    ];
   },
   images: {
     remotePatterns: [

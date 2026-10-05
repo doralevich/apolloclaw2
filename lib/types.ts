@@ -236,6 +236,11 @@ export interface AdminAgentOverview {
    * never set.
    */
   timezone: string | null;
+  /**
+   * The box's size: live from Agent37 when it answered, else what our row recorded at provision
+   * or last resize, else null (a ghost with no size on record). Units: vCPU, GB, GB.
+   */
+  resources: { cpu: number; memory: number; disk: number } | null;
 }
 
 // One row in the all-workspaces table. Counts are computed server-side across every

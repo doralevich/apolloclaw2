@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Clock, CornerDownRight, DoorOpen, ExternalLink, Link2, RotateCcw, Sparkles, Trash2, Users, Wrench } from "lucide-react";
+import { Clock, CornerDownRight, DoorOpen, ExternalLink, Gauge, Link2, RotateCcw, Sparkles, Trash2, Users, Wrench } from "lucide-react";
 import { timezoneOptions } from "@/config/timezones";
-import { runtimeForTemplate } from "@/config/agents";
+import { INSTANCE_SIZES, instanceSizeId, runtimeForTemplate, type InstanceSizeId } from "@/config/agents";
 import { openWorkspaceInApolloClaw } from "@/components/admin/workspace-instances";
 import { SecondAgentDialog } from "@/components/admin/SecondAgentDialog";
 import { TwoAgentLabButton } from "@/components/admin/TwoAgentLab";
@@ -117,6 +117,9 @@ export function AdminAgentsView() {
   const [applyingId, setApplyingId] = useState<string | null>(null);
   const [revertingId, setRevertingId] = useState<string | null>(null);
   const [tzBusyId, setTzBusyId] = useState<string | null>(null);
+  const [resizingId, setResizingId] = useState<string | null>(null);
+  // A resize waits on a confirm: it restarts a customer's box, and a select fires on one click.
+  const [pendingResize, setPendingResize] = useState<{ agent: AdminAgentOverview; size: InstanceSizeId } | null>(null);
   const [filter, setFilter] = useState<FleetFilter>("all");
 
   const load = useCallback(async () => {
@@ -192,6 +195,32 @@ export function AdminAgentsView() {
       toast.error((e as Error).message);
     } finally {
       setApplyingId(null);
+    }
+  }
+
+  // Move a box to one of the preset sizes (config/agents.ts). Super Admin only, no price change:
+  // the first use is David's own instance, to learn whether a bigger box is worth selling.
+  // Reloads afterwards because the resize restarts the instance, so its status moved too.
+  async function resize(agent: AdminAgentOverview, size: InstanceSizeId) {
+    setResizingId(agent.agent37_id);
+    try {
+      const r = await apiFetch<{
+        label: string;
+        before: { cpu: number; memory: number; disk: number } | null;
+        after: { cpu: number; memory: number; disk: number };
+        status: string;
+      }>(`/api/admin/agents/${agent.agent37_id}/resize`, {
+        method: "POST",
+        body: JSON.stringify({ size }),
+      });
+      toast.success(
+        `Resized to ${r.label}: ${r.after.cpu} vCPU, ${r.after.memory} GB memory, ${r.after.disk} GB disk. Instance ${r.status}.`
+      );
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setResizingId(null);
     }
   }
 
@@ -386,12 +415,36 @@ export function AdminAgentsView() {
           ) : (
             <div className="space-y-3">
               {visible.map((a) => (
-                <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} onSetTimezone={tz => setTimezone(a, tz)} settingTimezone={tzBusyId === a.agent37_id} />
+                <AgentCard key={a.agent37_id} agent={a} onDelete={() => setDeleting(a)} onRestore={() => restore(a)} onAdopt={() => openAdopt(a)} onApplyDefaults={() => applyDefaults(a)} applying={applyingId === a.agent37_id} onRevertDefaults={() => revertDefaults(a)} reverting={revertingId === a.agent37_id} onSetTimezone={tz => setTimezone(a, tz)} settingTimezone={tzBusyId === a.agent37_id} onResize={(size) => setPendingResize({ agent: a, size })} resizing={resizingId === a.agent37_id} />
               ))}
             </div>
           )}
         </>
       )}
+
+      {pendingResize && (() => {
+        const { agent, size } = pendingResize;
+        const target = INSTANCE_SIZES[size];
+        const cur = agent.resources;
+        return (
+          <ConfirmDialog
+            open
+            onOpenChange={(open) => {
+              if (!open) setPendingResize(null);
+            }}
+            title={`Resize ${agent.name || agent.agent37_id} to ${target.label}?`}
+            description={
+              `${cur ? `${cur.cpu} vCPU, ${cur.memory} GB memory, ${cur.disk} GB disk` : "Current size unknown"}` +
+              ` becomes ${target.cpu} vCPU, ${target.memory} GB memory, ${target.disk} GB disk. The instance restarts, so the agent is away for a minute or two. Disk can grow but cannot shrink.`
+            }
+            confirmText={`Resize to ${target.label}`}
+            onConfirm={async () => {
+              setPendingResize(null);
+              await resize(agent, size);
+            }}
+          />
+        );
+      })()}
 
       {deleting && (() => {
         // Three outcomes: an already-trashed agent purges for good (skips the wait); an orphan
@@ -516,6 +569,8 @@ function AgentCard({
   onRevertDefaults,
   onSetTimezone,
   settingTimezone,
+  onResize,
+  resizing = false,
   reverting = false,
 }: {
   agent: AdminAgentOverview;
@@ -528,8 +583,11 @@ function AgentCard({
   onRevertDefaults: () => void;
   onSetTimezone: (timezone: string) => void;
   settingTimezone?: boolean;
+  onResize: (size: InstanceSizeId) => void;
+  resizing?: boolean;
   reverting?: boolean;
 }) {
+  const sizeId = instanceSizeId(agent.resources);
   const presence = PRESENCE[agent.presence];
   // The College Agent owns this box. We list it so the fleet view is complete, and "Instance"
   // stays available because read-only support access is the whole point - it is the only door
@@ -621,6 +679,12 @@ function AgentCard({
           <span className="font-mono">{agent.agent37_id}</span>
           {agent.agent_type && <span>{getAgentType(agent.agent_type)?.label ?? agent.agent_type}</span>}
           {agent.template && <span className="font-mono">{agent.template}</span>}
+          {agent.resources && (
+            <span title={sizeId ? `${INSTANCE_SIZES[sizeId].label} size` : "Sized by hand; matches no preset"}>
+              {agent.resources.cpu} vCPU · {agent.resources.memory} GB · {agent.resources.disk} GB disk
+              {sizeId ? ` (${INSTANCE_SIZES[sizeId].label})` : ""}
+            </span>
+          )}
           {agent.owner_email && <span>{agent.owner_email}</span>}
           {agent.workspace_name && <span>{agent.workspace_name}</span>}
           {agent.created_at && <span>Created {formatDate(agent.created_at)}</span>}
@@ -688,6 +752,41 @@ function AgentCard({
                   {t.label}
                 </option>
               ))}
+            </select>
+          </div>
+        )}
+        {/* The box's size, as a select of the presets in config/agents.ts. Picking one opens a
+            confirm (the instance restarts) and then calls the Super Admin resize route. The
+            current preset is selected; a hand-sized box shows "Custom" and can still be moved
+            to a preset. Disk only grows, which the route enforces with a plain message. */}
+        {agent.presence !== "ghost" && !trashed && !readOnly && (
+          <div className="inline-flex items-center gap-1.5">
+            <Gauge className="h-4 w-4 text-muted-foreground" />
+            <select
+              className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+              value={sizeId ?? ""}
+              disabled={resizing}
+              title={
+                agent.resources
+                  ? `Size: ${agent.resources.cpu} vCPU, ${agent.resources.memory} GB memory, ${agent.resources.disk} GB disk. Changing it restarts the instance.`
+                  : "Size unknown until Agent37 answers."
+              }
+              onChange={(e) => {
+                const next = e.target.value as InstanceSizeId | "";
+                // The select reports every change, including back to the current value; only a
+                // move to a different preset is an action.
+                if (next && next !== sizeId) onResize(next);
+              }}
+            >
+              {!sizeId && <option value="">{resizing ? "Resizing…" : "Custom size"}</option>}
+              {(Object.keys(INSTANCE_SIZES) as InstanceSizeId[]).map((id) => {
+                const sz = INSTANCE_SIZES[id];
+                return (
+                  <option key={id} value={id}>
+                    {resizing && id === sizeId ? "Resizing…" : `${sz.label} · ${sz.cpu} vCPU / ${sz.memory} GB`}
+                  </option>
+                );
+              })}
             </select>
           </div>
         )}
