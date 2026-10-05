@@ -102,12 +102,11 @@ export default function CompanyPage() {
             <p style={{ marginBottom: 18 }}>
               Most businesses are using AI like a search engine. Apollo[Claw] builds something
               different: custom AI agents tailored to your operation, connected to your existing
-              tools, and handling the work that&apos;s costing you time and money. Running 24/7,
-              without a salary.
+              tools, and handling the work that&apos;s costing you time and money. Running around
+              the clock, at a flat monthly rate.
             </p>
             <p style={{ marginBottom: 18 }}>
-              Most clients recover 10–20 hours a week within the first month; that translates into
-              strategy, revenue, and growth.
+              The hours your agent hands back go to strategy, revenue, and growth.
             </p>
             <p>Built by an operator. Designed for real results.</p>
           </div>

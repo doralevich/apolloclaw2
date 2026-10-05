@@ -62,8 +62,8 @@ const data: SeoLandingData = {
       headingAccent: "Agent",
       steps: [
         { title: "Discovery & Audit", desc: "We map your workflows and find where an agent has the clearest, fastest impact on your day." },
-        { title: "Build & Integrate", desc: "We configure the agent for your business and connect it to the tools you already use. No technical background required." },
-        { title: "Deploy & Train", desc: "Your team works alongside the agent from day one, with a persona and boundaries set to how you run." },
+        { title: "Build & Integrate", desc: "Your agent is built on its own private server, in about 15 minutes online or as a custom build for your organization, and connected to the tools you already use. Every technical step is handled for you." },
+        { title: "Deploy & Train", desc: "Your team works alongside the agent from day one, with a persona and boundaries set to how you run. Hands-on training is there when you want it." },
         { title: "Support & Expand", desc: "We tune it as it proves out and extend it to other tasks and teams once it is earning its keep." },
       ],
     },

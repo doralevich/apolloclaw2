@@ -67,9 +67,9 @@ const features = [
 
 const process = [
   {
-    phase: "Day 1",
-    title: "We Configure Your Bot",
-    desc: "Answer a short questionnaire and your custom bot is built online in about 15 minutes. We connect your tools and train it on your communication style, with every technical step handled for you.",
+    phase: "First 15 Minutes",
+    title: "Your Bot Is Built",
+    desc: "Answer a short questionnaire and your custom bot is built online in about 15 minutes, on its own private server. Connect your inbox and calendar and it learns your communication style, with every technical step handled for you.",
   },
   {
     phase: "Week 1",
@@ -79,7 +79,7 @@ const process = [
   {
     phase: "Month 1+",
     title: "It Gets Smarter Over Time",
-    desc: "It learns your priorities, your preferences, and your blind spots. Most clients report getting back 8-12 hours per week within the first month.",
+    desc: "It learns your priorities, your preferences, and your blind spots, and the hours it hands back grow month over month.",
   },
 ];
 
@@ -199,7 +199,7 @@ export default function CeoPage() {
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>
-              From Consultation to Running in 2 Weeks
+              From Questionnaire to Running in About 15 Minutes
             </h2>
           </div>
           <div className="flex flex-col gap-0">
