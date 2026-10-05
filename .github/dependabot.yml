@@ -23,3 +23,11 @@ updates:
           - "patch"
     labels:
       - "dependencies"
+    # Major versions are deliberate work, not a Monday morning PR. The first run opened four of
+    # them at once (TypeScript 5 to 7, Stripe 22 to 23, tailwind-merge 2 to 3, chromium 149 to
+    # 153), and the TypeScript one broke the build on Vercel within the minute. Minor and patch
+    # bumps still arrive weekly in one grouped PR; a major is picked up by hand when wanted.
+    # Security alerts are a separate feed and are not affected by this.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
