@@ -72,15 +72,13 @@ const APPROVED_MODELS: ApprovedModel[] = [
     displayProvider: "anthropic",
     hint: "Recommended. The best balance of quality, speed and usage for everyday work.",
   },
+  // Sonnet 5 is off the menu (David, Oct 5 2026): it stays FALLBACK_CHAT_MODEL_ID for a turn an
+  // instance refuses Sonnet 5.5 on, which is a retry, not a choice. Opus 5 is replaced by 5.5
+  // the same day; the id spellings follow Sonnet 5.5's, and the gateway's exact one is
+  // unconfirmed until a live list has been read.
   {
-    ids: [FALLBACK_CHAT_MODEL_ID, "claude-sonnet-5"],
-    label: "Claude Sonnet 5",
-    displayProvider: "anthropic",
-    hint: "The previous Sonnet. Same character, a step behind on hard reasoning.",
-  },
-  {
-    ids: ["anthropic/claude-opus-5", "claude-opus-5"],
-    label: "Claude Opus 5",
+    ids: ["anthropic/claude-opus-5.5", "anthropic/claude-opus-5-5", "claude-opus-5-5"],
+    label: "Claude Opus 5.5",
     displayProvider: "anthropic",
     hint: "The strongest Claude, for the hardest analysis and long, careful drafts.",
     heavy: true,
@@ -118,6 +116,20 @@ interface ApprovedFamily {
 }
 
 const APPROVED_FAMILIES: ApprovedFamily[] = [
+  {
+    // OpenAI too (Oct 5, 2026): David's instance lists Anthropic and no OpenAI at all, so the
+    // three GPT-5.6 ids pinned above are not how its gateway spells them. Until the live list has
+    // been read, any OpenAI chat model the gateway reports is offered, minus the variants a
+    // business owner's menu is better without: previews, mini/nano tiers, the realtime, audio,
+    // image, search, transcription and embedding models, codex, and dated snapshots.
+    // GPT-5 and later only: a gateway that still lists the 4-series would otherwise double the
+    // menu with models nobody should be picking in late 2026.
+    match: /^(openai\/)?gpt-([5-9]|\d{2})/i,
+    exclude: /preview|mini|nano|realtime|audio|tts|transcribe|image|embed|search|codex|computer-use|chat-latest|instruct|-\d{4}-\d{2}-\d{2}$|-\d{4}$/i,
+    displayProvider: "openai",
+    hint: (id) => (/pro/i.test(id) ? "OpenAI's heaviest model, for the hardest problems." : "OpenAI's flagship. Strong all-rounder."),
+    heavy: (id) => /pro/i.test(id),
+  },
   {
     match: /^(google\/|gemini\/)?gemini-/i,
     exclude: /preview|exp\b|experimental|image|imagen|audio|tts|video|veo|embed|live|lite|nano|robotics|computer-use|-\d{3,}$/i,
