@@ -7,6 +7,7 @@ import { readApiError } from "@/lib/api";
 import { AgentFace } from "@/components/AgentFace";
 import { Button } from "@/components/ui/button";
 import { ChatMessages } from "./ChatMessages";
+import { ModelControl } from "./ModelControl";
 import { uid, type ChatMessage } from "./types";
 
 // A conversation with one named agent on the instance, over the direct line
@@ -15,8 +16,14 @@ import { uid, type ChatMessage } from "./types";
 //
 // Each turn is saved to a thread on the server (lib/agent-threads.ts), so the conversation shows
 // in the Chats list with the agent's face and reopens later: `threadId` opens a saved one, null
-// starts fresh. Plain otherwise: no attachments and no model menu, which return once Agent37's
-// chat API can name an agent and this component goes away.
+// starts fresh. No attachments yet, which return once Agent37's chat API can name an agent and
+// this component goes away.
+//
+// The model menu is here too (Oct 5, 2026). It was only in the main composer, and a box with
+// several agents never shows that one, so on David's own box the pill flashed for the instant
+// before the roster loaded and was gone once it did. The choice rides along on the turn, and
+// the gateway's own answer to the switch is shown above the box, so what the gateway did is
+// visible rather than assumed.
 
 type Props = {
   instanceId: string;
@@ -32,8 +39,13 @@ type Props = {
 };
 
 // The gateway streams OpenAI-style chunks: "data: {...choices[0].delta.content}" lines and a
-// final "data: [DONE]".
-async function readOpenAiStream(body: ReadableStream<Uint8Array>, onDelta: (text: string) => void) {
+// final "data: [DONE]". Our route may put one chunk of its own in front, {"apollo":{...}}, which
+// carries the gateway's reply to a model switch; it has no `choices` so it is never answer text.
+async function readOpenAiStream(
+  body: ReadableStream<Uint8Array>,
+  onDelta: (text: string) => void,
+  onNotice?: (notice: string) => void
+) {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buf = "";
@@ -49,7 +61,12 @@ async function readOpenAiStream(body: ReadableStream<Uint8Array>, onDelta: (text
       const data = line.slice(5).trim();
       if (!data || data === "[DONE]") continue;
       try {
-        const j = JSON.parse(data) as { choices?: { delta?: { content?: string } }[]; error?: { message?: string } };
+        const j = JSON.parse(data) as {
+          choices?: { delta?: { content?: string } }[];
+          error?: { message?: string };
+          apollo?: { notice?: string };
+        };
+        if (typeof j.apollo?.notice === "string") onNotice?.(j.apollo.notice);
         if (j.error?.message) onDelta(`\n\n${j.error.message}`);
         const delta = j.choices?.[0]?.delta?.content;
         if (typeof delta === "string" && delta) onDelta(delta);
@@ -70,12 +87,22 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, thr
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The model picked in the pill (null rides the agent's default), and the one this thread's
+  // gateway session was last told about. The turn names the model only when the two differ, so
+  // a switch costs one extra gateway call and the turns after it cost nothing more.
+  const [model, setModel] = useState<string | null>(null);
+  const [applied, setApplied] = useState<string | null>(null);
+  // The gateway's own words about the last switch, shown above the box.
+  const [notice, setNotice] = useState<string | null>(null);
   // Another thread named (a rail click, Back/Forward), or none (a fresh chat): reset the pane in
-  // render, React's "adjust state when a prop changes", and let the effect below fetch it.
+  // render, React's "adjust state when a prop changes", and let the effect below fetch it. The
+  // model choice stays; what the new thread's session was told is unknown, so it is told again.
   if (threadId !== shown) {
     setShown(threadId);
     setMessages([]);
     setError(null);
+    setNotice(null);
+    setApplied(null);
     setLoadingThread(!!threadId);
   }
   const abortRef = useRef<AbortController | null>(null);
@@ -130,11 +157,12 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, thr
     setStreaming(true);
     const controller = new AbortController();
     abortRef.current = controller;
+    const switchTo = model && model !== applied ? model : null;
     try {
       const res = await fetch(`/api/agents/${instanceId}/agents/${encodeURIComponent(agentId)}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: text, threadId: shown }),
+        body: JSON.stringify({ input: text, threadId: shown, ...(switchTo ? { model: switchTo } : {}) }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
@@ -143,6 +171,7 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, thr
         setMessages((m) => m.filter((x) => x.id !== assistantId));
         return;
       }
+      if (switchTo) setApplied(switchTo);
       // A fresh conversation is named by the server once it is saved. Adopt the id before the
       // URL moves to it, so the move does not reload the pane mid-answer.
       const savedAs = res.headers.get("X-Apollo-Thread-Id");
@@ -152,9 +181,13 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, thr
       } else if (savedAs) {
         onActivity?.(savedAs);
       }
-      await readOpenAiStream(res.body, (delta) => {
-        setMessages((m) => m.map((x) => (x.id === assistantId ? { ...x, content: x.content + delta } : x)));
-      });
+      await readOpenAiStream(
+        res.body,
+        (delta) => {
+          setMessages((m) => m.map((x) => (x.id === assistantId ? { ...x, content: x.content + delta } : x)));
+        },
+        (said) => setNotice(said)
+      );
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         setError((e as Error).message);
@@ -200,8 +233,13 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, thr
       <div className="relative bg-background px-6 py-3 md:px-10 sm:py-4">
         <div className="mx-auto w-full max-w-3xl" aria-live="polite">
           {error && <p className="mb-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+          {notice && !error && (
+            <p className="mb-2 rounded-md bg-secondary/70 px-3 py-2 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Model switch:</span> {notice}
+            </p>
+          )}
           <form
-            className="flex items-end gap-2 rounded-2xl border bg-card p-2 shadow-sm"
+            className="rounded-2xl border bg-card shadow-sm"
             onSubmit={(e) => {
               e.preventDefault();
               void send();
@@ -219,17 +257,33 @@ export function DirectAgentChat({ instanceId, agentId, agentName, avatarUrl, thr
               }}
               rows={1}
               placeholder={`Message ${agentName}`}
-              className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+              // 16px on phones so iOS Safari does not zoom the page when the box is focused.
+              className="max-h-40 min-h-[44px] w-full resize-none bg-transparent px-4 pb-1 pt-3 text-base outline-none placeholder:text-muted-foreground sm:text-sm"
             />
-            {streaming ? (
-              <Button type="button" size="icon" variant="outline" onClick={stop} aria-label="Stop">
-                <Square className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button type="submit" size="icon" disabled={!draft.trim()} aria-label="Send">
-                {streaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendHorizontal className="h-4 w-4" />}
-              </Button>
-            )}
+            <div className="flex items-center gap-2 px-2 pb-2">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <ModelControl
+                  agentId={instanceId}
+                  model={model}
+                  disabled={streaming}
+                  onChange={(next) => {
+                    setModel(next);
+                    setNotice(null);
+                  }}
+                />
+              </div>
+              <div className="ml-auto flex shrink-0 items-center">
+                {streaming ? (
+                  <Button type="button" size="icon" variant="outline" onClick={stop} aria-label="Stop">
+                    <Square className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button type="submit" size="icon" disabled={!draft.trim()} aria-label="Send">
+                    <SendHorizontal className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </form>
         </div>
       </div>

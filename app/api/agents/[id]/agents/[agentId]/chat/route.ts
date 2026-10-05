@@ -5,6 +5,7 @@ import { recordAnswer } from "@/lib/sse-record";
 import { askOnBox, gatewayFetch } from "@/lib/gateway-chat";
 import { ApiError, readJson, route, upstreamErrorMessage } from "@/lib/http";
 import { runtimeForTemplate } from "@/config/agents";
+import { isApprovedChatModelId } from "@/config/chat-models";
 
 type Ctx = { params: Promise<{ id: string; agentId: string }> };
 
@@ -27,6 +28,14 @@ type Ctx = { params: Promise<{ id: string; agentId: string }> };
 //   box   a script run inside the box (docker exec), whole answer at once, when no way through
 //         the edge reaches the gateway. Sent as one SSE chunk so the page reads both the same.
 // The X-Apollo-Chat-Via header says which one answered.
+//
+// `model` (optional, one of the curated ids) switches the model this thread's gateway session
+// runs on, before the turn. The gateway's chat endpoint names the AGENT in its model field
+// ("openclaw/atlas"), so the LLM is set the way a person in a channel sets it: the gateway's
+// own `/model <id>` command, sent on the same session. The gateway's answer to that command is
+// put in front of the stream as {"apollo":{"model","notice"}} for the pane to show, so whether
+// the switch took is read off the gateway rather than assumed (Oct 5, 2026; no box could be
+// reached from where this was written, so the first run on David's box is the proof).
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { id, agentId } = await params;
   const { supabase, user, row } = await requireAgentAccess(id, "member");
@@ -41,9 +50,13 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     throw new ApiError(400, "invalid_request", "That is not a valid agent id.");
   }
 
-  const body = await readJson<{ input?: unknown; threadId?: unknown }>(request);
+  const body = await readJson<{ input?: unknown; threadId?: unknown; model?: unknown }>(request);
   const input = typeof body.input === "string" ? body.input.trim() : "";
   if (!input) throw new ApiError(400, "invalid_request", "input is required");
+  const model = typeof body.model === "string" && body.model ? body.model : null;
+  if (model && !isApprovedChatModelId(model)) {
+    throw new ApiError(400, "invalid_request", "That model is not one this agent offers.");
+  }
 
   const agent = agentId.toLowerCase();
   // An existing thread must be this person's, on this instance, with this agent.
@@ -62,6 +75,11 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     await appendMessage(threadId, "user", input);
     return true;
   };
+
+  // The model switch, first, on the same session the turn is about to use. Whatever the gateway
+  // says back is carried to the pane; nothing is saved to the thread for it.
+  const notice = model ? await switchModel(id, agent, sessionUser, model) : null;
+  const prefix = notice === null ? "" : `data: ${JSON.stringify({ apollo: { model, notice } })}\n\n`;
 
   // Whether this turn landed in a saved thread; the response names the thread only then.
   let saved = false;
@@ -96,7 +114,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   if (upstream) {
     if (upstream.ok && upstream.body) {
       saved = await saveQuestion();
-      if (!saved) return new Response(upstream.body, { status: 200, headers: sseHeaders("edge") });
+      if (!saved) return new Response(withPrefix(prefix, upstream.body), { status: 200, headers: sseHeaders("edge") });
       // Keep the function alive until the answer is saved, however the stream ends.
       let answered!: () => void;
       const done = new Promise<void>((resolve) => (answered = resolve));
@@ -108,7 +126,7 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
           answered();
         }
       });
-      return new Response(stream, { status: 200, headers: sseHeaders("edge") });
+      return new Response(withPrefix(prefix, stream), { status: 200, headers: sseHeaders("edge") });
     }
     const text = await upstream.text().catch(() => "");
     const message = upstreamErrorMessage(text, upstream.status, "agents/chat", "Chat request failed");
@@ -123,8 +141,73 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   saved = await saveQuestion();
   if (saved) await appendMessage(threadId, "assistant", answer.answer);
   const chunk = JSON.stringify({ choices: [{ delta: { content: answer.answer }, index: 0 }] });
-  return new Response(`data: ${chunk}\n\ndata: [DONE]\n\n`, { status: 200, headers: sseHeaders("box") });
+  return new Response(`${prefix}data: ${chunk}\n\ndata: [DONE]\n\n`, { status: 200, headers: sseHeaders("box") });
 });
+
+/**
+ * Tell the gateway which model this session runs on, with its own `/model` command, and return
+ * what it said. Through the edge when a way is open, inside the box otherwise, the same two
+ * paths the turn takes. Never throws: a switch that could not be made is reported in words and
+ * the turn still goes out.
+ */
+async function switchModel(id: string, agent: string, sessionUser: string, model: string): Promise<string> {
+  const text = `/model ${model}`;
+  try {
+    const res = await gatewayFetch(id, "/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: `openclaw/${agent}`, user: sessionUser, messages: [{ role: "user", content: text }] }),
+      signal: AbortSignal.timeout(60_000),
+    });
+    const raw = await res.text().catch(() => "");
+    if (!res.ok) return `The gateway answered ${res.status}: ${raw.slice(0, 200)}`;
+    return replyText(raw);
+  } catch (e) {
+    if ((e as { code?: string }).code !== "no_edge_route") return (e as Error).message;
+  }
+  const boxed = await askOnBox(id, { agent, text, user: sessionUser, timeoutMs: 60_000 });
+  if (!boxed) return "The instance did not answer.";
+  return boxed.answer || `The gateway answered ${boxed.status}.`;
+}
+
+/** The answer text of one non-streamed chat completion, or the error it carried. */
+function replyText(raw: string): string {
+  try {
+    const j = JSON.parse(raw) as { choices?: { message?: { content?: string } }[]; error?: { message?: string } };
+    const content = j.choices?.[0]?.message?.content;
+    if (typeof content === "string" && content.trim()) return content.trim();
+    if (j.error?.message) return j.error.message;
+  } catch {
+    // not JSON; the raw start of it is the answer
+  }
+  return raw.replace(/\s+/g, " ").trim().slice(0, 400) || "(no reply)";
+}
+
+/** `prefix` first, then everything from `body`, as one stream. Cancelling cancels the body. */
+function withPrefix(prefix: string, body: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  if (!prefix) return body;
+  const head = new TextEncoder().encode(prefix);
+  const reader = body.getReader();
+  let sent = false;
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      if (!sent) {
+        sent = true;
+        controller.enqueue(head);
+        return;
+      }
+      const { value, done } = await reader.read();
+      if (done) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(value);
+    },
+    async cancel(reason) {
+      await reader.cancel(reason).catch(() => {});
+    },
+  });
+}
 
 // A turn with tool use can run for a while.
 export const maxDuration = 300;
