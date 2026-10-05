@@ -250,11 +250,15 @@ content type and posts in Sanity first, which is Donna's lane.
 
 ## Open items
 
-- **CEO lead capture is broken.** `app/api/lead/route.ts` in `theceoagent-site` shells out
-  to the `mail` binary with `execSync`. That binary existed on hetzner-4 and does not
-  exist on Vercel, so every submission fails silently. It also interpolates the visitor's
-  name into a shell command unescaped. Needs a real transport (Resend, the ApolloClaw API,
-  or Attio) — the choice is open.
+- **CEO lead capture: resolved, closed Oct 5, 2026.** The broken `app/api/lead/route.ts`
+  in `theceoagent-site` (shelled out to `mail`, which Vercel lacks) was moved to Resend,
+  then Mandrill, then dropped altogether on Sep 6, 2026 (commit 870c3af there: "the sites
+  sell and hand off; ApolloClaw does the capturing"). The agent sites now have no form and
+  no server code. Every CTA goes to `apolloclaw.ai/build/<slug>` (contact step, then
+  straight to Stripe checkout) or to the cal.com consultation, and the contact pages list
+  hello@apolloclaw.ai and the phone number. Every satellite's build slug resolves in
+  `lib/buildFunnel.ts`. This entry stayed open for a month after the fix because nobody
+  came back to close it, which is the usual way a stale open item survives.
 - **Retire the hetzner-4 copies** of the CFO and CEO sites, so nobody edits an orphaned
   file. Step 8 of the runbook; the real estate copy is already retired.
 - **Privacy and terms are placeholders on all three sites.** They say so honestly rather
