@@ -87,6 +87,11 @@ const APPROVED_MODELS: ApprovedModel[] = [
 
 const APPROVED_IDS = new Set(APPROVED_MODELS.flatMap((m) => m.ids));
 
+/** What the customer reads for the product default: the first approved model's label. The
+ *  composer shows this when an instance's model list cannot be loaded, so the pill always names
+ *  a model rather than vanishing or reading "Default". */
+export const DEFAULT_CHAT_MODEL_LABEL = APPROVED_MODELS[0].label;
+
 /** Is this an id we're willing to run? Used to reject a model id posted by a client that
  *  didn't get it from the curated list. */
 export function isApprovedChatModelId(id: string): boolean {
