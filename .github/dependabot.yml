@@ -1,0 +1,25 @@
+# Dependabot version updates (security playbook, Item 9).
+#
+# This file turns on PRs for outdated dependencies. It is separate from Dependabot ALERTS
+# (vulnerability notices), secret scanning and push protection, which are repository settings
+# under Settings > Code security and analysis, not something a file in the repo can switch on.
+#
+# One grouped PR a week keeps the noise down: minor and patch bumps land together, and a
+# major bump still gets its own PR so a breaking change is reviewed on its own.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    labels:
+      - "dependencies"
