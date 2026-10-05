@@ -54,9 +54,9 @@ const features = [
 
 const process = [
   {
-    phase: "Day 1",
-    title: "We Configure Your Agent",
-    desc: "We map your scheduling workflow, connect your EHR and communication tools, and configure the agent for your practice type. No IT team required.",
+    phase: "First 15 Minutes",
+    title: "Your Agent Is Built",
+    desc: "Answer a short questionnaire and your custom agent is built online in about 15 minutes, on its own private server. Connect your EHR and communication tools and it is set for your practice type and your scheduling workflow. Every technical step is handled for you.",
   },
   {
     phase: "Week 1",
@@ -66,7 +66,7 @@ const process = [
   {
     phase: "Month 1+",
     title: "It Gets Smarter Over Time",
-    desc: "The agent learns your scheduling patterns, your patient communication preferences, and your recall criteria. Most practices see measurable reduction in no-shows within the first month.",
+    desc: "The agent learns your scheduling patterns, your patient communication preferences, and your recall criteria, and it keeps getting better at keeping the calendar full.",
   },
 ];
 
@@ -170,7 +170,7 @@ export default function HealthcarePage() {
         <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-14">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>The Process</p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>From Consultation to Running in 2 Weeks</h2>
+            <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: NAVY }}>From Questionnaire to Running in About 15 Minutes</h2>
           </div>
           <div className="flex flex-col gap-0">
             {process.map((p, i) => (
