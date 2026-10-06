@@ -10,11 +10,13 @@ import { OG_IMAGES } from "@/lib/seo";
 
 // The GA4 property the site actually reports into.
 //
-// It was G-4ZR38XGEME, which is why "I don't see a connection to Google Analytics" was true and
-// the code looked fine at the same time: the tag was firing correctly the whole time, into a
-// property nobody was looking at. One constant now, used by both the loader and the config call,
-// because those two drifting apart is the failure that looks exactly like working.
-const GA_MEASUREMENT_ID = "G-54RFVNJSSN";
+// G-4ZR38XGEME is the apolloclaw.ai web stream in the "Apollo Claw" property (534279936),
+// read off GA Admin > Data streams by David on Oct 6, 2026. The constant had been G-54RFVNJSSN
+// since before Sep 4, with a note here claiming the opposite history, so the tag was firing
+// correctly the whole time into a property nobody was looking at. That is the failure that
+// looks exactly like working, which is why there is one constant for both the loader and the
+// config call, and why the id is confirmed against the stream page rather than remembered.
+const GA_MEASUREMENT_ID = "G-4ZR38XGEME";
 
 const inter = Inter({
   subsets: ["latin"],
