@@ -127,6 +127,38 @@ export function AdminCustomersView() {
     return m;
   }, [workspaces]);
 
+  // How many agents live on each OpenClaw box, read off the box once the list is up. The
+  // accounts route counts database rows, one per instance, and the agents a customer adds to a
+  // box are in the box's config, not in a table: David's own instance carries three and the row
+  // read "1" (Oct 6, 2026). Every box is read in parallel and the number updates as each
+  // answers; a box that cannot be read keeps counting as its one main agent. The expanded row
+  // lists the same agents by name (InstanceTeam).
+  const [rosterCounts, setRosterCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!accounts) return;
+    let cancelled = false;
+    const ids = new Set<string>();
+    for (const a of accounts) {
+      for (const w of a.workspaces) {
+        for (const i of w.instances) if (i.openclaw) ids.add(i.agent37_id);
+      }
+    }
+    for (const id of ids) {
+      apiFetch<{ ok: boolean; agents: unknown[] }>(`/api/admin/agents/${id}/roster`)
+        .then((res) => {
+          if (!cancelled && res.ok && res.agents.length > 0) {
+            setRosterCounts((c) => ({ ...c, [id]: res.agents.length }));
+          }
+        })
+        .catch(() => {
+          // Unreadable right now: the instance count stands.
+        });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [accounts]);
+
   const supportCount = (workspaces ?? []).filter((w) => w.you_are_member && !w.you_own).length;
 
   const loadDetail = useCallback(async (workspaceId: string) => {
@@ -425,8 +457,16 @@ export function AdminCustomersView() {
             const isOpen = expanded.has(a.id);
             const name = [a.first_name, a.last_name].filter(Boolean).join(" ");
             const members = a.workspaces.reduce((n, w) => n + w.member_count, 0);
-            const agentCount = a.workspaces.reduce((n, w) => n + w.agent_count, 0);
+            const instances = a.workspaces.flatMap((w) => w.instances);
+            // Agents, not boxes: each box counts its roster once read, and one until then.
+            const agentCount = instances.reduce((n, i) => n + (rosterCounts[i.agent37_id] ?? 1), 0);
             const running = a.workspaces.reduce((n, w) => n + (wsMap.get(w.id)?.running_count ?? 0), 0);
+            const agentsValue =
+              agentCount === 0
+                ? "0"
+                : agentCount > instances.length
+                  ? `${agentCount} on ${instances.length} ${instances.length === 1 ? "instance" : "instances"}${running ? `, ${running} running` : ""}`
+                  : `${agentCount}${running ? ` (${running} running)` : ""}`;
             const lic = licenseBadge(a);
             return (
               <div key={a.id} className="rounded-xl border bg-card">
@@ -464,11 +504,7 @@ export function AdminCustomersView() {
                       {lic ? <Badge variant={lic.variant}>{lic.label}</Badge> : <span className="text-sm text-muted-foreground">-</span>}
                     </div>
                     <Stat label="Members" value={String(members)} className="w-14" />
-                    <Stat
-                      label="Agents"
-                      value={agentCount === 0 ? "0" : `${agentCount}${running ? ` (${running} running)` : ""}`}
-                      className="w-28"
-                    />
+                    <Stat label="Agents" value={agentsValue} className="w-40" />
                     <Stat label="Last seen" value={a.last_sign_in_at ? formatDate(a.last_sign_in_at) : "Never"} className="w-24" />
                   </div>
 

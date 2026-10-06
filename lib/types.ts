@@ -200,7 +200,16 @@ export interface AdminAccount {
   entitlement: string | null;
   /** When set and in the future, the account is in its post-cancellation grace window. */
   grace_until: string | null;
-  workspaces: { id: string; name: string; role: string; member_count: number; agent_count: number }[];
+  workspaces: {
+    id: string;
+    name: string;
+    role: string;
+    member_count: number;
+    /** Instances (database rows) in the workspace. The agents living ON a box are not rows; the
+     *  Customers tab reads each OpenClaw box's roster to count them. */
+    agent_count: number;
+    instances: { agent37_id: string; openclaw: boolean }[];
+  }[];
   agents_owned: { agent37_id: string; name: string | null }[];
 }
 

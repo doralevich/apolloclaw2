@@ -3,6 +3,7 @@ import { isAdminEmail } from "@/config/admins";
 import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { runtimeForTemplate } from "@/config/agents";
 import type { AdminAccount } from "@/lib/types";
 
 const MIN_PASSWORD = 8;
@@ -64,7 +65,7 @@ export const GET = route(async () => {
     listAllUsers(db),
     db.from("memberships").select("workspace_id, user_id, role"),
     db.from("workspaces").select("id, name"),
-    db.from("agents").select("agent37_id, workspace_id, name, owner_id").is("deleted_at", null),
+    db.from("agents").select("agent37_id, workspace_id, name, owner_id, template").is("deleted_at", null),
     db.from("entitlements").select("email, user_id, status, grace_until"),
   ]);
   for (const res of [memsRes, wsRes, agentsRes, entsRes]) {
@@ -76,9 +77,15 @@ export const GET = route(async () => {
   for (const m of memsRes.data ?? []) {
     wsMembers.set(m.workspace_id, (wsMembers.get(m.workspace_id) ?? 0) + 1);
   }
-  const wsAgents = new Map<string, number>();
+  // Instances per workspace. A row is a box, and a box can carry several agents (David's own has
+  // three, Oct 6 2026), which are in the box's config and not in any table. The ids go out so
+  // the Customers tab can read each OpenClaw box's roster for the real count; doing that read
+  // here would hold the whole list behind one exec per box.
+  const wsInstances = new Map<string, { agent37_id: string; openclaw: boolean }[]>();
   for (const a of agentsRes.data ?? []) {
-    wsAgents.set(a.workspace_id, (wsAgents.get(a.workspace_id) ?? 0) + 1);
+    const list = wsInstances.get(a.workspace_id) ?? [];
+    list.push({ agent37_id: a.agent37_id as string, openclaw: runtimeForTemplate(a.template as string | null) === "OpenClaw" });
+    wsInstances.set(a.workspace_id, list);
   }
 
   const accounts: AdminAccount[] = users.map((u) => {
@@ -99,7 +106,8 @@ export const GET = route(async () => {
         name: wsName.get(m.workspace_id) ?? m.workspace_id,
         role: m.role as string,
         member_count: wsMembers.get(m.workspace_id) ?? 0,
-        agent_count: wsAgents.get(m.workspace_id) ?? 0,
+        agent_count: wsInstances.get(m.workspace_id)?.length ?? 0,
+        instances: wsInstances.get(m.workspace_id) ?? [],
       })),
       agents_owned: (agentsRes.data ?? [])
         .filter((a) => a.owner_id === u.id)
