@@ -42,7 +42,12 @@ export const ROLE_TOOL_FIELDS: Record<string, RoleToolField[]> = {
   ],
   marketingDetails: [{ key: "marketing_tools", label: "Marketing tools" }],
   salesDetails: [{ key: "crm", label: "CRM" }],
-  recruitingDetails: [{ key: "ats", label: "ATS and hiring system" }],
+  // `ats` is the hiring path's answer, `tracking_system` the sports agency's; a questionnaire
+  // holds one or the other (lib/recruitingIntake.ts).
+  recruitingDetails: [
+    { key: "ats", label: "ATS and hiring system" },
+    { key: "tracking_system", label: "Prospect tracking system" },
+  ],
   medicalDetails: [{ key: "ehr", label: "EHR and practice management" }],
   insuranceDetails: [{ key: "agency_systems", label: "Agency systems" }],
   propertyManagementDetails: [{ key: "management_systems", label: "Management systems" }],

@@ -248,6 +248,35 @@ stylesheet, so the same components render on all three sites.
 dataset `production`, with a fallback posts file). Adding `/blog` to an agent site needs a
 content type and posts in Sanity first, which is Donna's lane.
 
+## Sports recruiting rides on the Recruiting Agent
+
+WIN Sports Group (Ira Stahlberger, partner; football players, coaches and professional
+golfers) is the first customer whose "recruiting agent" recruits athletes and coaches to
+represent, not employees. The Recruiting Agent's questionnaire was built for hiring: job
+titles, interview stages, an ATS, EEO. Decided Oct 8, 2026:
+
+- **One agent type, two paths.** The first question of the recruiting deep-dive asks what
+  kind of recruiting this is, and every question after it is gated on that answer
+  (`lib/recruitingIntake.ts`, `showIf`). The sports path asks about sports, who they sign,
+  where prospects come from, who is in the room when a prospect decides, the steps to a
+  signed representation agreement, the rules that shape outreach (players association
+  certification, NCAA and NIL, state athlete-agent laws, league contact rules), and what
+  the agent may do with a prospect on its own. No second agent type, no second funnel:
+  the blob, the USER.md section and the three keys the form reads by name are shared.
+- **The persona follows the path.** `personaForAgentType` reads the answers, and a sports
+  path gets the sports persona (`config/personas.ts`, `recruitingSports`), whose hard
+  lines are the sports rules rather than EEO.
+- **A second type in a workspace starts from the first type's business answers.**
+  `/onboard/<type>` seeds the form from the workspace's newest questionnaire when this
+  type has none, so WIN's August answers (company, team, tools, voice) carry into the
+  Recruiting Agent's questionnaire and only the deep-dive is typed fresh.
+- **How WIN gets theirs:** David, as a platform admin with support access to the
+  workspace, opens `/onboard/recruiting?ws=<WIN workspace id>` and fills the
+  questionnaire with Ira; submitting it provisions the Recruiting Agent (the admin
+  form-first path in `/api/agent-setup`). Lloyd, the generic agent from August, is retired
+  once the Recruiting Agent is running. The admin flow was already in place; nothing here
+  changes billing.
+
 ## Open items
 
 - **CEO lead capture: resolved, closed Oct 5, 2026.** The broken `app/api/lead/route.ts`
