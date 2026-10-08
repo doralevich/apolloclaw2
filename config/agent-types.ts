@@ -278,7 +278,7 @@ export const AGENT_TYPES: AgentType[] = [
     id: "recruiting",
     label: "The Recruiting Agent",
     description:
-      "A recruiting agent: resume screening against role requirements, candidate outreach and follow-up, interview scheduling and coordination, hiring-manager updates, and an ATS kept current - set up for one team, white-glove.",
+      "A recruiting agent: resume screening against role requirements, candidate outreach and follow-up, interview scheduling and coordination, hiring-manager updates, and an ATS kept current - set up for one team, white-glove. For a sports agency, the same agent recruits athletes and coaches instead: prospect research, the recruiting board, outreach to prospects and families, and the pitch.",
     template: "agent37-openclaw",
     templateAliases: ["apollo-agent", "college-agent"],
     ...PAID_AGENT,

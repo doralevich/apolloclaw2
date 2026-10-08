@@ -96,6 +96,22 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
       if (answers && Object.keys(answers).length > 0) {
         initialAnswers = answers;
         initialAgentName = (setup?.agent_name as string | null) ?? undefined;
+      } else {
+        // A SECOND TYPE in a workspace that already answered once. The business questions are the
+        // same whichever agent is being built (company, team, tools, voice), and a workspace that
+        // filled them in for one agent should not type them again for the next: WIN Sports Group's
+        // generic agent answered them in August, and their Recruiting Agent (Oct 8, 2026) starts
+        // from those. The newest row of any type seeds the form; its name and avatar stay with
+        // the agent they belong to, and this type's own deep-dive starts empty.
+        const { data: seed } = await db
+          .from("agent_setup")
+          .select("answers")
+          .eq("workspace_id", workspaceId)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const seedAnswers = seed?.answers as Record<string, unknown> | null | undefined;
+        if (seedAnswers && Object.keys(seedAnswers).length > 0) initialAnswers = seedAnswers;
       }
     }
   }

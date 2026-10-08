@@ -677,7 +677,18 @@ async function injectAfterProvision(
   // Written FIRST, before the profile and the pointer, because ensureUserMdPointer merges a
   // fenced block into this same file — and writing the whole file afterwards would take the
   // pointer back out with it.
-  const persona = personaForAgentType(type.id);
+  //
+  // The setup row is read here, ahead of the persona, because one type's persona depends on the
+  // questionnaire: a Recruiting Agent built for a sports agency gets the sports persona
+  // (config/personas.ts, Oct 8 2026). Everything below that reads `setup` is unchanged.
+  const db = createAdminClient();
+  const { data: setup } = await db
+    .from("agent_setup")
+    .select("answers, agent_name, avatar_url")
+    .eq("workspace_id", workspaceId)
+    .eq("agent_type", type.id)
+    .maybeSingle();
+  const persona = personaForAgentType(type.id, (setup?.answers as Record<string, unknown> | null | undefined) ?? null);
   if (persona) await injectAgentFile(agentId, "SOUL.md", persona);
 
   // Alongside the persona, and for the same reason: both are ours, neither depends on the
@@ -705,14 +716,6 @@ async function injectAfterProvision(
   if (hasMatters(type.id)) {
     await injectAgentFile(agentId, MATTERS_FILENAME, buildMattersMd([]));
   }
-
-  const db = createAdminClient();
-  const { data: setup } = await db
-    .from("agent_setup")
-    .select("answers, agent_name, avatar_url")
-    .eq("workspace_id", workspaceId)
-    .eq("agent_type", type.id)
-    .maybeSingle();
 
   // The capability defaults every box should come up with: local memory embeddings (so searchable
   // memory works with no OpenAI key), Tavily web search (fleet key from TAVILY_API_KEY), and the
