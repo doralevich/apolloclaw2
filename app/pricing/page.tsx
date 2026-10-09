@@ -41,12 +41,12 @@ const lowest = Math.min(...PLANS_ON_SALE.map((p) => p.monthlyCents ?? Infinity))
 const summary = PLANS_ON_SALE.map((p) => `${p.label} ${dollars(p.monthlyCents ?? 0)}/month for ${agentsLabel(p.agents)}`).join(", ");
 
 export const metadata: Metadata = {
-  title: { absolute: "Pricing | Apollo[Claw]" },
-  description: `Apollo[Claw] plans: ${summary}. No setup fee. Custom corporate builds on a call.`,
+  title: { absolute: "Pricing | Apollo Claw" },
+  description: `Apollo Claw plans: ${summary}. No setup fee. Custom corporate builds on a call.`,
   alternates: { canonical: "https://apolloclaw.ai/pricing" },
   openGraph: {
     images: OG_IMAGES,
-    title: "Pricing | Apollo[Claw]",
+    title: "Pricing | Apollo Claw",
     description: `AI agents built around your business, from ${dollars(lowest)} a month. No setup fee.`,
     url: "https://apolloclaw.ai/pricing",
     type: "website",

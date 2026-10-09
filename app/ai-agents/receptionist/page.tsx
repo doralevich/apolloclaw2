@@ -3,7 +3,7 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Receptionist & Intake Agent | Calls, Appointments & Front Desk Coverage | Apollo[Claw]" },
+  title: { absolute: "AI Receptionist & Intake Agent | Calls, Appointments & Front Desk Coverage | Apollo Claw" },
   description:
     "AI receptionist and intake agent for businesses. Answers calls, screens inquiries, books appointments, and routes messages 24/7 without adding headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/receptionist" },

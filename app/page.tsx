@@ -10,10 +10,12 @@ import { HOME_FAQS } from "@/config/faqs";
 import { FinalCta } from "@/components/home/FinalCta";
 import { OG_IMAGES } from "@/lib/seo";
 
-// Title and description match the hero (David, Sept 27 2026): Apollo Claw as your AI Chief of Staff.
-const TITLE = "Apollo Claw | Your AI Chief of Staff";
+// The SEO brief's title and description (Donna, Oct 9 2026; David said yes): the local phrase
+// the site is trying to rank for, with the chief-of-staff line kept in the description. This
+// replaces "Apollo Claw | Your AI Chief of Staff", the hero-matching title from Sept 27.
+const TITLE = "Apollo Claw | AI Consulting for NYC & Long Island Businesses";
 const DESCRIPTION =
-  "A custom AI agent built around how you work. It keeps everything moving and gives you back your time. Book a discovery call.";
+  "Apollo Claw builds private AI agents for owners and executives: a chief of staff that handles email, calendar, follow-ups and reports. Book a discovery call.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },

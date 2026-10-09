@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const type = buildFunnelType(slug);
   if (!type) return { title: "Not found", robots: { index: false, follow: false } };
   return {
-    title: `Build your ${inlineAgentLabel(type.label)} | ApolloClaw`,
+    title: `Build your ${inlineAgentLabel(type.label)}`,
     robots: { index: false, follow: false },
   };
 }

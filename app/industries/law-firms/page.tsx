@@ -6,7 +6,7 @@ import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { LAW_FIRMS_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo[Claw]" },
+  title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo Claw" },
   description:
     "The Law Agent automates client intake, case follow-ups, and legal communications. Built for attorneys and law firms.",
   alternates: {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     images: agentOgImages("legal"),
-    title: "AI for Law Firms | Client Intake & Case Follow-Up Automation | Apollo[Claw]",
+    title: "AI for Law Firms | Client Intake & Case Follow-Up Automation | Apollo Claw",
     description:
       "The Law Agent automates client intake, deadline tracking, document summaries, and billing follow-up so your attorneys focus on billable work, not admin.",
     url: "https://apolloclaw.ai/industries/law-firms",

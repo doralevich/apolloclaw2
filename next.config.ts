@@ -167,8 +167,10 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        // Retired URL. It went to /contact; the SEO brief (Donna, Oct 9 2026) found it still
+        // getting traffic, and David sent it to the agents index instead.
         source: "/agents",
-        destination: "/contact",
+        destination: "/ai-agents",
         permanent: true,
       },
       // /create-an-agent is LIVE again — it now serves the "Create an Agent" landing page

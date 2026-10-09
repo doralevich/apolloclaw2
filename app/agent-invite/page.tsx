@@ -32,7 +32,7 @@ import { NAVY, NAVY_ELEVATED, PAPER, PAPER_MUTED, RED, Section, TextureBackgroun
 // too would mean typing the passcode twice for no security gained, since the real gate is the one
 // the request actually needs to get past.
 export const metadata: Metadata = {
-  title: "Agent Invites | ApolloClaw",
+  title: "Agent Invites",
   robots: { index: false, follow: false },
 };
 

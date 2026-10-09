@@ -24,12 +24,12 @@ import {
 const HERO_LOGOS =["gmail", "googlecalendar", "outlook", "salesforce", "hubspot", "notion", "zoom"];
 
 export const metadata: Metadata = {
-  title: { absolute: "Integrations | Apollo[Claw]" },
-  description: "Apps your Apollo[Claw] agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Salesforce, Stripe, and more.",
+  title: { absolute: "Integrations | Apollo Claw" },
+  description: "Apps your Apollo Claw agent can connect to and act in - Gmail, Google Workspace, Microsoft 365, Salesforce, Stripe, and more.",
   alternates: { canonical: "https://apolloclaw.ai/integrations" },
   openGraph: {
     images: OG_IMAGES,
-    title: "Integrations | Apollo[Claw]",
+    title: "Integrations | Apollo Claw",
     description: "Apps your agent can connect to and act in, across mail, files, calendars, CRM, and more.",
     url: "https://apolloclaw.ai/integrations",
     type: "website",
