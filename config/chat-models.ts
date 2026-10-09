@@ -90,9 +90,12 @@ const APPROVED_MODELS: ApprovedModel[] = [
     hint: "The strongest Claude, for the hardest analysis and long, careful drafts.",
     heavy: true,
   },
+  // Haiku 5.5 replaced 4.5 the day it shipped (David, Oct 9 2026). Only ids the instance reports
+  // are offered, so the Haiku line is absent from the menu until the managed gateway lists the
+  // 5.5 id; 4.5 is deliberately not kept as a stand-in under the 5.5 label.
   {
-    ids: ["agent37/anthropic/claude-haiku-4.5", "anthropic/claude-haiku-4.5", "claude-haiku-4-5", "claude-haiku-4-5-20251001"],
-    label: "Claude Haiku 4.5",
+    ids: ["agent37/anthropic/claude-haiku-5.5", "anthropic/claude-haiku-5.5", "anthropic/claude-haiku-5-5", "claude-haiku-5-5"],
+    label: "Claude Haiku 5.5",
     displayProvider: "anthropic",
     hint: "Fast and economical. Good for quick, routine turns.",
   },

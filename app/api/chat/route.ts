@@ -166,8 +166,12 @@ export async function POST(req: NextRequest) {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5",
-        max_tokens: 300,
+        // Haiku 5.5 (Oct 9, 2026), from 4.5. It thinks by default, and thinking counts against
+        // max_tokens, so the cap leaves room for it and effort is kept low: this is a two-sentence
+        // chat, the cheapest and fastest level is the right one.
+        model: "claude-haiku-5-5",
+        max_tokens: 1024,
+        output_config: { effort: "low" },
         system: SYSTEM_PROMPT,
         messages: messages.slice(-12),
       }),
@@ -179,8 +183,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unable to process your message right now." }, { status: 500 });
     }
 
-    const data = await response.json();
-    let content = data.content?.[0]?.text ?? "Sorry, I couldn't generate a response.";
+    const data = (await response.json()) as {
+      content?: { type: string; text?: string }[];
+      stop_reason?: string;
+    };
+    // By type, not by position: a reply can open with a thinking block, so content[0] is no
+    // longer the text. A safety refusal is a normal 200 with no text; Donna answers it the way
+    // her guardrails answer anything off-topic.
+    const textBlock = (data.content ?? []).find((b) => b.type === "text");
+    let content =
+      textBlock?.text ??
+      (data.stop_reason === "refusal"
+        ? "I'm focused on helping you explore AI for your business. Want to book a quick call with David to discuss that directly?"
+        : "Sorry, I couldn't generate a response.");
     
     // Server-side: append lead capture token if it's the right moment and Claude didn't already include it
     if (shouldCapture && !content.includes("##CAPTURE_LEAD##")) {
