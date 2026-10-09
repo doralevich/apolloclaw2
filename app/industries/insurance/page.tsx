@@ -6,7 +6,7 @@ import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { INSURANCE_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo[Claw]" },
+  title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo Claw" },
   description:
     "An AI agent for insurance agencies. Handles renewals, client follow-ups, and policy communications automatically.",
   alternates: {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     images: agentOgImages("insurance"),
     title: "AI Agent for Insurance Agencies | Renewals, Quotes & Claims Automation",
     description:
-      "Apollo[Claw] builds AI agents for insurance agencies and brokers. Automate policy renewal outreach, quote follow-up, and claims status so your team focuses on closing, not chasing.",
+      "Apollo Claw builds AI agents for insurance agencies and brokers. Automate policy renewal outreach, quote follow-up, and claims status so your team focuses on closing, not chasing.",
     url: "https://apolloclaw.ai/industries/insurance",
     type: "website",
   },

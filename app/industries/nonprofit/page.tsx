@@ -3,7 +3,7 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Nonprofits | Donor Outreach, Grant Research & Volunteer Coordination | Apollo[Claw]" },
+  title: { absolute: "AI for Nonprofits | Donor Outreach, Grant Research & Volunteer Coordination | Apollo Claw" },
   description:
     "AI agents for nonprofits. Automate donor communication, grant research, volunteer coordination, and board reporting so your team focuses on the mission, not the admin.",
   alternates: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     images: OG_IMAGES,
     title: "AI for Nonprofits | Donor Outreach, Grant Research & Volunteer Coordination",
     description:
-      "Apollo[Claw] AI agents for nonprofits. Automate donor outreach, grant research, volunteer coordination, and board reporting so your team focuses on the mission.",
+      "Apollo Claw AI agents for nonprofits. Automate donor outreach, grant research, volunteer coordination, and board reporting so your team focuses on the mission.",
     url: "https://apolloclaw.ai/industries/nonprofit",
     type: "website",
   },

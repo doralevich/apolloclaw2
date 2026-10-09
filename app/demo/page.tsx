@@ -19,7 +19,7 @@ import { DonnaChat } from "@/components/donna/DonnaChat";
 export const metadata: Metadata = {
   title: "Try our AI assistant",
   description:
-    "Talk to Donna, the AI assistant Apollo[Claw] built for itself. Ask what an AI agent could do for your business, what it costs to run, and where to start.",
+    "Talk to Donna, the AI assistant Apollo Claw built for itself. Ask what an AI agent could do for your business, what it costs to run, and where to start.",
   alternates: { canonical: "https://apolloclaw.ai/demo" },
 };
 

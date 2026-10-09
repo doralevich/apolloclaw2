@@ -4,15 +4,17 @@ import { OG_IMAGES } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Consulting on Long Island | Apollo Claw" },
+  // The SEO brief's copy (Donna, Oct 9 2026). This page is the canonical target for the
+  // Long Island query; the blog post that competed with it gets a different intent in Sanity.
+  title: { absolute: "AI Consulting for Long Island Businesses | Apollo Claw" },
   description:
-    "Apollo Claw is Long Island's AI consulting firm. We install custom AI agents into local businesses, no tech background required. Based in Roslyn Heights, NY.",
+    "Long Island AI consulting for owner-led businesses. We set up a private AI agent on your own hardware, train your team and support you after launch.",
   alternates: { canonical: "https://apolloclaw.ai/ai-consulting-long-island" },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI Consulting on Long Island | Apollo Claw",
+    title: "AI Consulting for Long Island Businesses | Apollo Claw",
     description:
-      "Custom AI agents installed into Long Island businesses. Local, accountable, results-driven. Based in Roslyn Heights, NY.",
+      "Long Island AI consulting for owner-led businesses. We set up a private AI agent on your own hardware, train your team and support you after launch.",
     url: "https://apolloclaw.ai/ai-consulting-long-island",
     type: "website",
   },

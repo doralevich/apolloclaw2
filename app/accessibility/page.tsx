@@ -5,7 +5,8 @@ import PageHero from "@/components/PageHero";
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/accessibility" },
   title: "Accessibility Statement",
-  description: "Apollo[Claw] accessibility statement and our commitment to inclusive design.",
+  description:
+    "How Apollo Claw keeps its website usable for everyone: the standards we build to, what we have checked, known gaps, and how to reach us if something is in your way.",
 };
 
 export default function AccessibilityPage() {

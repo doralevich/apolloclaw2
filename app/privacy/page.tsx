@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import LegalPage, { type LegalSection } from "@/components/LegalPage";
 
 export const metadata: Metadata = {
-  title: { absolute: "Privacy Policy | Apollo[Claw]" },
+  title: { absolute: "Privacy Policy | Apollo Claw" },
   description:
-    "How Apollo[Claw] collects, uses, shares, and retains personal information, the third-party processors involved, and how to exercise your privacy rights.",
+    "How Apollo Claw collects, uses, shares, and retains personal information, the third-party processors involved, and how to exercise your privacy rights.",
   alternates: { canonical: "https://apolloclaw.ai/privacy" },
 };
 

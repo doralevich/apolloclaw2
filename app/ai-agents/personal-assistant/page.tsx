@@ -3,7 +3,7 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { agentOgImages } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation | Apollo[Claw]" },
+  title: { absolute: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation | Apollo Claw" },
   description:
     "AI personal assistant for executives and business owners. Manages your inbox, calendar, research, and tasks so you stay focused on the work only you can do.",
   alternates: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     images: agentOgImages("personal"),
     title: "AI Personal Assistant for Executives | Inbox, Calendar & Task Automation",
     description:
-      "Apollo[Claw] AI personal assistant for executives and business owners. Inbox, calendar, research, and task management so you focus on what matters.",
+      "Apollo Claw AI personal assistant for executives and business owners. Inbox, calendar, research, and task management so you focus on what matters.",
     url: "https://apolloclaw.ai/ai-agents/personal-assistant",
     type: "website",
   },

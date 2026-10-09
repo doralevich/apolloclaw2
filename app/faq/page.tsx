@@ -17,7 +17,7 @@ import {
 } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "FAQ | AI Consulting Questions Answered | Apollo[Claw]" },
+  title: { absolute: "FAQ | AI Consulting Questions Answered | Apollo Claw" },
   description:
     "Every question we answer across the site, in one place: what agents do, how they connect to your tools, setup timelines, security, and each specialist agent.",
   alternates: {

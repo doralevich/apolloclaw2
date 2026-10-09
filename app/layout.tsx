@@ -36,12 +36,17 @@ const bricolage = Bricolage_Grotesque({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://apolloclaw.ai"),
+  // The SEO brief's rules (Donna, Oct 9 2026; David said yes): a title is 50 to 60 characters,
+  // one primary phrase, the brand once at the end, spelled "Apollo Claw" rather than the
+  // bracketed wordmark, which reads as noise in a search result. A description is 140 to 160
+  // characters with a reason to click. The suffix was "| Apollo Claw AI Consulting", which on a
+  // blog post whose own title already ended in the brand put it there twice.
   title: {
-    default: "Apollo Claw | AI Consulting Firm for Business, Enterprise & Universities",
-    template: "%s | Apollo Claw AI Consulting",
+    default: "Apollo Claw | AI Consulting for NYC & Long Island Businesses",
+    template: "%s | Apollo Claw",
   },
   description:
-    "Apollo Claw is a leading AI consulting firm serving small businesses, mid-market companies, enterprise organizations, and universities. Strategy, implementation, and AI agents built to perform.",
+    "Apollo Claw builds private AI agents for owners and executives: a chief of staff that handles email, calendar, follow-ups and reports. Book a discovery call.",
   keywords: [
     "AI consulting firm",
     "AI consulting company",
@@ -70,7 +75,7 @@ export const metadata: Metadata = {
     "fractional Chief AI Officer",
   ],
   openGraph: {
-    siteName: "Apollo[Claw]",
+    siteName: "Apollo Claw",
     type: "website",
     locale: "en_US",
     url: "https://apolloclaw.ai",

@@ -3,13 +3,13 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for PE-Backed Portfolio Companies | Apollo[Claw]" },
+  title: { absolute: "AI for PE-Backed Portfolio Companies | Apollo Claw" },
   description:
-    "Apollo[Claw] deploys AI agents across portfolio companies to standardize reporting and cut back-office cost, without adding headcount at each company.",
+    "Apollo Claw deploys AI agents across portfolio companies to standardize reporting and cut back-office cost, without adding headcount at each company.",
   alternates: { canonical: "https://apolloclaw.ai/industries/private-equity" },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI for PE-Backed Portfolio Companies | Apollo[Claw]",
+    title: "AI for PE-Backed Portfolio Companies | Apollo Claw",
     description:
       "AI agents deployed across portfolio companies to standardize reporting and cut back-office cost.",
     url: "https://apolloclaw.ai/industries/private-equity",

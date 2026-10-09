@@ -38,17 +38,17 @@ import {
 // separation ever blurs, this is the page to retire again - it is the newest of the three and
 // the only one that is a directory rather than an argument.
 export const metadata: Metadata = {
-  title: { absolute: "Our Fleet of AI Agents | Apollo[Claw]" },
+  title: { absolute: "Our Fleet of AI Agents | Apollo Claw" },
   description:
-    "Every agent Apollo[Claw] builds, in one place. The CEO, CFO, Sales, Recruiting, Law, Insurance, Medical, Real Estate, Personal, and College Agents, each scoped to a job and connected to your tools.",
+    "Every agent Apollo Claw builds, in one place. The CEO, CFO, Sales, Recruiting, Law, Insurance, Medical, Real Estate, Personal, and College Agents, each scoped to a job and connected to your tools.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents" },
   openGraph: {
     // The house card, not an agent's. This page is the whole fleet, so sharing it should show
-    // Apollo[Claw] rather than picking one agent's art to stand for the other nine.
+    // Apollo Claw rather than picking one agent's art to stand for the other nine.
     images: OG_IMAGES,
-    title: "Our Fleet of AI Agents | Apollo[Claw]",
+    title: "Our Fleet of AI Agents | Apollo Claw",
     description:
-      "The full roster of Apollo[Claw] agents. Each one is scoped to a job, connected to your tools, and ships work with your approval.",
+      "The full roster of Apollo Claw agents. Each one is scoped to a job, connected to your tools, and ships work with your approval.",
     url: "https://apolloclaw.ai/ai-agents",
     type: "website",
   },
