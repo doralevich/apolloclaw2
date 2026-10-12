@@ -341,6 +341,22 @@ const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
 const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
+// The white-glove links only (David, Oct 12 2026, from the Adam Glassman intake): the work the
+// customer wants Apollo Claw to do for them, as distinct from what the agent will do. Every
+// other question on the form is about the agent; the done-for-you tasks - set up the machine,
+// connect the accounts, move the data, train the team - had no home and lived in David's
+// meeting notes. Rendered on Final Details, filed with the intake, read by nobody downstream.
+const SERVICE_REQUESTS = [
+  "Set up the server or Mac Mini",
+  "Connect email, calendar and file accounts",
+  "Connect our CRM, case or practice management system",
+  "Move contacts or data over from another system",
+  "Forward a phone line or set up call handling",
+  "Write our templates and documents into the agent",
+  "Train the team in person",
+  "Weekly check-ins for the first month",
+  "Something else",
+];
 // ════════════════════════════════════════════════════════════
 // PRIMITIVES
 // ════════════════════════════════════════════════════════════
@@ -1536,7 +1552,7 @@ const emptyS4 = () => ({ marital: "", partnerName: "", kids: "", kidsDetails: ""
 const emptyS5 = () => ({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
 const emptyS6 = () => ({ tone: [] as string[], writingComf: "", brandLike: [] as string[], brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
 const emptyS7 = () => ({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
-const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", agree: false });
+const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", serviceRequests: [] as string[], serviceRequestsNotes: "", agree: false });
 
 function hydrateGate(a: PrefillAnswers): GateData {
   // timezone/bestTime prefill like everything else, so re-saving an edited questionnaire keeps
@@ -1553,7 +1569,7 @@ function hydrateBizState(a: PrefillAnswers) {
     s5: { ...emptyS5(), decStyle: pfArr(a.decisionStyle), decStyleOther: pfStr(a.decisionStyleOther), stressResp: pfStr(a.stressResponse), motivators: pfArr(a.motivators), blockers: pfArr(a.blockers), moneyMind: pfStr(a.moneyMindset), agencyHist: pfStr(a.agencyHistory), techTrust: pfNum(a.techTrust), controlComfort: pfNum(a.controlComfort), worthIt: pfStr(a.worthIt), strategicBet: pfStr(a.strategicBet), growthBottleneck: pfArr(a.growthBottleneck), growthBottleneckOther: pfStr(a.growthBottleneckOther) },
     s6: { ...emptyS6(), tone: pfArr(a.writingTone), writingComf: pfStr(a.writingComfort), brandLike: typeof a.brandVoiceLike === "string" ? (a.brandVoiceLike ? [a.brandVoiceLike] : []) : pfArr(a.brandVoiceLike), brandLikeOther: pfStr(a.brandVoiceLikeOther), voiceStyle: pfArr(a.voiceDescription), loveWords: pfStr(a.loveWords), hateWords: pfStr(a.hateWords), socialActive: pfStr(a.socialPresence), platforms: pfArr(a.platforms), sample: pfStr(a.writingSample) },
     s7: { ...emptyS7(), goals: pfArr(a.aiGoals), goalsOther: pfStr(a.aiGoalsOther), metric: pfArr(a.successMetric), metricOther: pfStr(a.successMetricOther), prior: pfStr(a.priorAI), past: pfStr(a.pastExperience), aiThoughts: pfStr(a.aiThoughts), aiStartup: pfStr(a.aiStartup), teamSent: pfStr(a.teamSentiment), horizon3: pfStr(a.horizon3Months), horizon6: pfStr(a.horizon6Months), horizon12: pfStr(a.horizon12Months) },
-    s8: { ...emptyS8(), hosting: pfArr(a.hosting), os: pfStr(a.os), security: pfArr(a.securityMeasures), data: pfArr(a.dataTypes), comply: pfArr(a.compliance), budget: pfStr(a.budgetRange ?? a.budget), timeline: pfStr(a.timeline), engagement: pfStr(a.engagement), internalTech: pfStr(a.internalTech), constraints: pfStr(a.constraints), decisionAuthority: pfStr(a.decisionAuthority), agree: true },
+    s8: { ...emptyS8(), hosting: pfArr(a.hosting), os: pfStr(a.os), security: pfArr(a.securityMeasures), data: pfArr(a.dataTypes), comply: pfArr(a.compliance), budget: pfStr(a.budgetRange ?? a.budget), timeline: pfStr(a.timeline), engagement: pfStr(a.engagement), internalTech: pfStr(a.internalTech), constraints: pfStr(a.constraints), decisionAuthority: pfStr(a.decisionAuthority), serviceRequests: pfArr(a.serviceRequests), serviceRequestsNotes: pfStr(a.serviceRequestsNotes), agree: true },
     keyPeople: Array.isArray(a.keyPeople) && a.keyPeople.length ? (a.keyPeople as KeyPerson[]) : [{ name: "", role: "" }],
     companies: Array.isArray(a.companies) && a.companies.length ? (a.companies as Company[]) : [emptyCompany()],
     primaryIndex: typeof a.primaryCompanyIndex === "number" ? a.primaryCompanyIndex : 0,
@@ -1583,7 +1599,7 @@ function hydrateBizState(a: PrefillAnswers) {
   };
 }
 
-function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentTypeId }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void; onExit?: () => void; initialAnswers?: Record<string, unknown>; agentTypeId?: string }) {
+function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentTypeId, whiteGlove = false }: { gate: GateData; submitLabel: string; onDone: (data: Record<string, unknown>, track: string) => void; onExit?: () => void; initialAnswers?: Record<string, unknown>; agentTypeId?: string; /** The white-glove links: a done-for-you engagement, so the form also asks what Apollo Claw itself should handle. */ whiteGlove?: boolean }) {
   // On a true edit, `seed` rebuilds every field from the stored answers; on first-time setup
   // initialAnswers is absent and each field falls back to its blank factory.
   const seed = useMemo(() => (initialAnswers ? hydrateBizState(initialAnswers) : null), [initialAnswers]);
@@ -1736,7 +1752,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   };
   const roleOwns = scopeKeys ? roleAnswer(scopeKeys.owns) : undefined;
   const roleWin = scopeKeys ? roleAnswer(scopeKeys.win) : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -2027,6 +2043,14 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
           rather than reusing the old per-role `sampleCopy` wording (real estate's "upload
           listings instead") - without the writing-sample question beside it to answer for, one
           plain prompt covers every agent type. */}
+      {whiteGlove && (
+        <>
+          <CheckGroup label="What should Apollo Claw handle for you?" hint="The work on our side, beyond what the agent does. Select all that apply." options={SERVICE_REQUESTS} value={s8.serviceRequests} onChange={v => f8("serviceRequests", v)} cols={2} />
+          <FF label="Anything specific we should take care of?" hint="Optional. A system to migrate, a phone line to forward, a deadline on your side.">
+            <TArea value={s8.serviceRequestsNotes} onChange={v => f8("serviceRequestsNotes", v)} placeholder="e.g. Move our client list out of the old intake tool before we go live." rows={3} />
+          </FF>
+        </>
+      )}
       {finalNote ? (
         <FF label={finalNote.label} hint="Optional.">
           <TArea value={typeof roleDetails[finalNote.key] === "string" ? (roleDetails[finalNote.key] as string) : ""} onChange={v => setRoleDetail(finalNote.key, v)} placeholder={finalNote.placeholder} rows={4} />
@@ -2454,7 +2478,7 @@ export default function OnboardingForm({ mode, agentTypeId, agentLabel, workspac
     // is the only one where "back" from step 0 has an unambiguous destination. The paid flows
     // arrive via Personalize, which holds an uploaded avatar this component cannot re-seed —
     // sending them back there would silently drop it, so they keep no Back on step 0.
-    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : isDemo ? "Build My Agent →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
+    if (phase === "form") return <BizTrack gate={gate} agentTypeId={agentTypeId} whiteGlove={isWhiteGlove} initialAnswers={initialAnswers} submitLabel={isCustomer ? "Finish Setup →" : isDemo ? "Build My Agent →" : "Submit Application →"} onDone={handleDone} onExit={isWhiteGlove ? () => setPhase("gate") : undefined} />;
     return null;
   })();
   return (

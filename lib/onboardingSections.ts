@@ -253,6 +253,9 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
       rows: [
         { label: "Internal Tech Resources", value: d.internalTech },
         { label: "Constraints", value: d.constraints },
+        // White-glove links only: the done-for-you work the customer asked Apollo Claw to handle.
+        { label: "Apollo Claw to Handle", value: d.serviceRequests },
+        { label: "Service Notes", value: d.serviceRequestsNotes },
       ],
     });
     const ups = Array.isArray(d.uploadedFiles) ? (d.uploadedFiles as Array<Record<string, unknown>>) : [];
