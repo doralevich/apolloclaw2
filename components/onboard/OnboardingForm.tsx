@@ -10,7 +10,7 @@ import { fieldVisible, getIndustryBranch, type IndustryBranch } from "@/lib/indu
 import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
 import { timezoneOptions } from "@/config/timezones";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
-import { LEGAL_BRANCH } from "@/lib/legalIntake";
+import { LEGAL_BRANCH, LEGAL_STACK, type StackSection } from "@/lib/legalIntake";
 import { REALESTATE_BRANCH } from "@/lib/realEstateIntake";
 import { CEO_BRANCH } from "@/lib/ceoIntake";
 import { MARKETING_BRANCH } from "@/lib/marketingIntake";
@@ -68,6 +68,13 @@ const ROLE_INTAKES: Record<
     // twice: the CFO's accounting system, a salesperson's or realtor's CRM, a firm's document
     // tools.
     stackSkip?: readonly ("crm" | "comms" | "docs" | "pm" | "billing")[];
+    // REPLACE the Tech Stack page's generic sections with this role's own, in its own
+    // vocabulary, on the same logo-tile page. A law firm runs Clio and Westlaw, and a page
+    // offering it Salesforce, Asana and Stripe asked nothing it could answer (David, Oct 12
+    // 2026). Answers save into this role's details blob under each section's key, so the
+    // files, the PDF and the edit pre-fill pick them up like any deep-dive field. "After
+    // Launch" stays on the page either way.
+    stackSections?: readonly StackSection[];
     // OPT IN to dropping just the "Monthly Revenue" question on "Your Business", keeping Team
     // Size beside it. Narrower than `personalScale`, which drops all three company-scale
     // questions for a buyer who may have no company at all - this is for a role whose buyer
@@ -122,8 +129,8 @@ const ROLE_INTAKES: Record<
     standardGuard:
       "Anything filed with a court, any advice given directly to a client, any opinion on the merits or likely outcome of a matter, and anything requiring a signature always goes through a licensed attorney before it moves. Privileged or confidential client material is never summarized into shared or non-firm systems.",
     hideRevenue: true,
-    // Law asks both on its own pages (Your Documents, Email & Calendar).
-    stackSkip: ["docs", "comms"],
+    // The firm's tools, in a law firm's terms, on the Tech Stack page (lib/legalIntake.ts).
+    stackSections: LEGAL_STACK,
     // "Describe your business" moved onto the bottom of "Your Legal Practice", right after
     // practice areas, David's call - so it reads with the answer that gives it context instead
     // of arriving as its own page beforehand. dropPages removes the generic page asking the
@@ -482,6 +489,12 @@ const STACK_LOGOS: Record<string, string> = {
   "QuickBooks Online": "quickbooks", "QuickBooks Desktop": "quickbooks", Xero: "xero",
   FreshBooks: "freshbooks", NetSuite: "netsuite", "Bill.com": "bill", "Ramp / Brex": "ramp",
   Stripe: "stripe", Square: "square", PayPal: "paypal",
+  // The Law Agent's Tech Stack page (lib/legalIntake.ts LEGAL_STACK). Where the logo service has
+  // no mark for a legal product the tile falls back to its initial, which is fine.
+  Clio: "clio", "Clio Billing": "clio", "Clio Grow": "clio", "Clio Duo": "clio",
+  "Microsoft 365 / Outlook": "outlook", "Microsoft 365 / Outlook Calendar": "outlook", "Google Workspace": "gmail",
+  DocuSign: "docusign", "Adobe Sign": "adobe_sign", PandaDoc: "pandadoc",
+  Zoom: "zoom", RingCentral: "ringcentral",
 };
 
 // A stack tile: real product logo where we know one, the option's initial where we don't, the
@@ -1911,6 +1924,31 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "stack", label: "Tech Stack", node: (
     <Stack key="s2stack">
       <SHead stepNum={3} total={0} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
+      {roleIntake?.stackSections ? roleIntake.stackSections.map((s) => {
+        if ("text" in s) {
+          const v = roleDetails[s.key];
+          return (
+            <Fragment key={s.key}>
+              <Divider label={s.label} />
+              <FF label={s.question} hint={s.text.helper}><TInput value={typeof v === "string" ? v : ""} onChange={val => setRoleDetail(s.key, val)} placeholder={s.text.placeholder} /></FF>
+            </Fragment>
+          );
+        }
+        const raw = roleDetails[s.key];
+        const picked = Array.isArray(raw) ? raw : (typeof raw === "string" && raw ? [raw] : []);
+        const otherKey = `${s.key}_other`;
+        const other = roleDetails[otherKey];
+        // A single-choice section stores one string (config/connect-flow.ts reads email_platform
+        // as text): the tile just toggled on wins, and toggling the chosen one off clears it.
+        const pick = (v: string[]) => setRoleDetail(s.key, s.single ? (v.find(x => !picked.includes(x)) ?? "") : v);
+        return (
+          <Fragment key={s.key}>
+            <Divider label={s.label} />
+            <LogoCheckGroup options={[...s.options]} value={picked} onChange={pick} />
+            {picked.includes("Other") && <FF label="Which tool?"><TInput value={typeof other === "string" ? other : ""} onChange={val => setRoleDetail(otherKey, val)} placeholder="Name the tool" /></FF>}
+          </Fragment>
+        );
+      }) : (<>
       {!stackSkip.includes("crm") && (<>
       <Divider label="Sales & CRM" />
       <LogoCheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} />
@@ -1935,6 +1973,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <Divider label="Finance & Billing" />
       <LogoCheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
       </>)}
       {/* Moved here from Final Details at David's call. Who can touch the stack after launch is
           a fact about the stack, and asking it beside the tools it applies to gets a truer
