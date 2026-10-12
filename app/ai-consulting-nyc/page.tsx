@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
-import { OG_IMAGES } from "@/lib/seo";
+import { OG_IMAGES, ORG_REF } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Consulting in New York City | Apollo Claw" },
   description:
-    "Apollo Claw brings enterprise-grade AI to NYC businesses. Custom AI agents, hands-on implementation, no fluff. Serving Manhattan, Brooklyn, Queens, and the tri-state area.",
+    "Apollo Claw brings enterprise-grade AI to NYC businesses: custom AI agents and hands-on implementation across Manhattan, Brooklyn, Queens and tri-state area.",
   alternates: { canonical: "https://apolloclaw.ai/ai-consulting-nyc" },
   openGraph: {
     images: OG_IMAGES,
@@ -18,31 +18,25 @@ export const metadata: Metadata = {
   },
 };
 
+// A Service offered in NYC, provided by the one Organization in app/layout.tsx. This was a second
+// ProfessionalService with its own name and address, so the site described two businesses.
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "@id": "https://apolloclaw.ai/ai-consulting-nyc#business",
-  name: "Apollo[Claw] AI Consulting",
+  "@type": "Service",
+  "@id": "https://apolloclaw.ai/ai-consulting-nyc#service",
+  name: "AI Consulting for New York City Businesses",
+  serviceType: "AI Consulting and Implementation",
   description:
     "AI consulting for New York City businesses. Custom AI agents and hands-on implementation across Manhattan, Brooklyn, Queens, and the tri-state area.",
   url: "https://apolloclaw.ai/ai-consulting-nyc",
-  telephone: "+1-917-363-5487",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "69 Roslyn Road",
-    addressLocality: "Roslyn Heights",
-    addressRegion: "NY",
-    postalCode: "11577",
-    addressCountry: "US",
-  },
   areaServed: [
-    { "@type": "Place", name: "New York City" },
+    { "@type": "City", name: "New York City" },
     { "@type": "Place", name: "Manhattan" },
     { "@type": "Place", name: "Brooklyn" },
     { "@type": "Place", name: "Queens" },
     { "@type": "Place", name: "Tri-State Area" },
   ],
-  provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+  provider: ORG_REF,
 };
 
 const data: SeoLandingData = {
@@ -51,7 +45,7 @@ const data: SeoLandingData = {
     title: "AI Consulting for New York City",
     titleAccent: "Businesses",
     description:
-      "Apollo Claw brings enterprise-grade AI to NYC businesses. Custom AI agents, hands-on implementation, no fluff. Serving Manhattan, Brooklyn, Queens, and the tri-state area.",
+      "Apollo Claw brings enterprise-grade AI to NYC businesses: custom AI agents and hands-on implementation across Manhattan, Brooklyn, Queens and tri-state area.",
     cta: { label: "Book a Discovery Call", href: SCHEDULE_CONSULT_URL },
   },
   sections: [

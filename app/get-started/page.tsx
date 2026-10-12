@@ -6,7 +6,7 @@ import { OG_IMAGES } from "@/lib/seo";
 export const metadata: Metadata = {
   title: { absolute: "Get Started with Custom AI Implementation | Apollo Claw" },
   description:
-    "Apollo Claw delivers custom AI implementation for small businesses. We set up and manage AI agents that save 20+ hours weekly. Start here.",
+    "Apollo Claw delivers custom AI implementation for small businesses. We set up and manage AI agents that save 20+ hours a week. Start here with a short form.",
   alternates: { canonical: "https://apolloclaw.ai/get-started" },
   openGraph: {
     images: OG_IMAGES,

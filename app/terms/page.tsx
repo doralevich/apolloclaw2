@@ -19,7 +19,7 @@ const USAGE_TERMS =
 export const metadata: Metadata = {
   title: { absolute: "Terms of Service | Apollo Claw" },
   description:
-    "The agreement for buying and using an Apollo Claw agent: what you get, what it costs, how billing and cancellation work, what the agent may do, and where our responsibility ends.",
+    "The agreement for buying and using an Apollo Claw agent: what you get, what it costs, how billing and cancellation work, and where our responsibility ends.",
   alternates: { canonical: "https://apolloclaw.ai/terms" },
 };
 

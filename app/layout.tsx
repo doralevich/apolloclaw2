@@ -6,7 +6,7 @@ import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
 import PageViewTracker from "@/components/GoogleAnalytics";
 import CookieConsent from "@/components/CookieConsent";
-import { OG_IMAGES } from "@/lib/seo";
+import { OG_IMAGES, ORG_ID, ORG_REF } from "@/lib/seo";
 
 // The GA4 property the site actually reports into.
 //
@@ -94,135 +94,102 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = [
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Apollo Claw",
-    url: "https://apolloclaw.ai",
-    logo: "https://apolloclaw.ai/og-image.png",
-    description:
-      "AI strategy and implementation consultancy serving businesses nationwide.",
-    telephone: "+1-917-363-5487",
-    email: "hello@apolloclaw.ai",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "69 Roslyn Road",
-      addressLocality: "Roslyn Heights",
-      addressRegion: "NY",
-      postalCode: "11577",
-      addressCountry: "US",
-    },
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "sales",
-      url: "https://apolloclaw.ai/get-started",
-    },
-    founder: {
-      "@type": "Person",
-      name: "David Oralevich",
-      jobTitle: "AI Automation Consultant & Founder",
-    },
-    sameAs: [
-      "https://www.linkedin.com/company/apolloclaw/",
-      "https://designsbydaveo.com",
-    ],
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    name: "Apollo Claw AI Consulting",
-    url: "https://apolloclaw.ai",
-    description:
-      "Custom AI agent strategy, implementation, and management for businesses.",
-    serviceType: "AI Strategy and Implementation",
-    telephone: "+1-917-363-5487",
-    email: "hello@apolloclaw.ai",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "69 Roslyn Road",
-      addressLocality: "Roslyn Heights",
-      addressRegion: "NY",
-      postalCode: "11577",
-      addressCountry: "US",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 40.7998,
-      longitude: -73.651,
-    },
-    areaServed: [
-      { "@type": "Place", name: "United States" },
-      { "@type": "Place", name: "Long Island, NY" },
-      { "@type": "Place", name: "New York City" },
-      { "@type": "Place", name: "Nassau County, NY" },
-      { "@type": "Place", name: "NYC Metro Area" },
-      { "@type": "Place", name: "Universities and Colleges" },
-      { "@type": "Place", name: "Enterprise Organizations" },
-      { "@type": "Place", name: "Small and Mid-Market Businesses" },
-    ],
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "AI Consulting Services",
-      itemListElement: [
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "AI Strategy Consulting" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "AI Agent Implementation" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "Custom AI Agent Development" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "AI Automation for Small Business" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "AI Consulting for Universities" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "AI Consulting for Enterprise Organizations" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "AI Consulting for Nonprofits" },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: { "@type": "Service", name: "Fractional Chief AI Officer" },
-        },
+// The business, once. This used to be three separate top-level blocks (Organization,
+// ProfessionalService, LocalBusiness) with two different names, the same address typed three
+// times, and a list of "places served" that included "Universities and Colleges" and "Enterprise
+// Organizations", which are customers rather than places. Twelve pages then added their own
+// inline Organization as `provider`. A crawler saw up to fifteen organizations per page and had
+// to guess which was real (the SEO brief, Donna, Oct 9 2026).
+//
+// ProfessionalService is a LocalBusiness is an Organization in schema.org, so one node with that
+// type carries everything the three said. It has an @id (lib/seo.ts ORG_ID) and every other
+// page's structured data points at it with ORG_REF instead of restating it. The WebSite node
+// names the publisher the same way.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ProfessionalService",
+      "@id": ORG_ID,
+      name: "Apollo Claw",
+      alternateName: "Apollo Claw AI Consulting",
+      url: "https://apolloclaw.ai",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://apolloclaw.ai/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+      image: "https://apolloclaw.ai/og-image.png",
+      description:
+        "AI consulting and implementation for owner-led businesses: private AI agents set up on your own infrastructure, with hands-on training and support after launch.",
+      serviceType: "AI Strategy and Implementation",
+      priceRange: "$$$$",
+      telephone: "+1-917-363-5487",
+      email: "hello@apolloclaw.ai",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "69 Roslyn Road",
+        addressLocality: "Roslyn Heights",
+        addressRegion: "NY",
+        postalCode: "11577",
+        addressCountry: "US",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 40.7998,
+        longitude: -73.651,
+      },
+      areaServed: [
+        { "@type": "Country", name: "United States" },
+        { "@type": "Place", name: "Long Island, NY" },
+        { "@type": "AdministrativeArea", name: "Nassau County, NY" },
+        { "@type": "AdministrativeArea", name: "Suffolk County, NY" },
+        { "@type": "City", name: "New York City" },
       ],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        telephone: "+1-917-363-5487",
+        email: "hello@apolloclaw.ai",
+        url: "https://apolloclaw.ai/contact",
+      },
+      founder: {
+        "@type": "Person",
+        "@id": "https://apolloclaw.ai/company#david",
+        name: "David Oralevich",
+        jobTitle: "Founder, AI Automation Consultant",
+        url: "https://apolloclaw.ai/company",
+      },
+      sameAs: [
+        "https://www.linkedin.com/company/apolloclaw/",
+        "https://designsbydaveo.com",
+      ],
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "AI Consulting Services",
+        itemListElement: [
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Strategy Consulting" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Agent Implementation" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Custom AI Agent Development" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Automation for Small Business" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Universities" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Enterprise Organizations" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Nonprofits" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Fractional Chief AI Officer" } },
+        ],
+      },
     },
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: "Apollo Claw AI Consulting",
-    url: "https://apolloclaw.ai",
-    description: "Apollo Claw is a leading AI consulting firm serving businesses of all sizes, from small businesses and mid-market companies to enterprise organizations and universities.",
-    priceRange: "$$$$",
-    telephone: "+1-917-363-5487",
-    email: "hello@apolloclaw.ai",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "69 Roslyn Road",
-      addressLocality: "Roslyn Heights",
-      addressRegion: "NY",
-      postalCode: "11577",
-      addressCountry: "US",
+    {
+      "@type": "WebSite",
+      "@id": "https://apolloclaw.ai/#website",
+      url: "https://apolloclaw.ai",
+      name: "Apollo Claw",
+      publisher: ORG_REF,
+      inLanguage: "en-US",
     },
-    sameAs: [
-      "https://www.linkedin.com/company/apolloclaw/",
-      "https://designsbydaveo.com",
-    ],
-  }
-];
+  ],
+};
 
 export default function RootLayout({
   children,
@@ -249,13 +216,10 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {jsonLd.map((schema, i) => (
-          <script
-            key={i}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-          />
-        ))}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body
         className={`${inter.variable} ${bricolage.variable} font-body`}

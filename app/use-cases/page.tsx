@@ -8,7 +8,7 @@ import { OG_IMAGES } from "@/lib/seo";
 export const metadata: Metadata = {
   title: { absolute: "Case Studies | Apollo Claw" },
   description:
-    "Apollo Claw agents at work: client results from insurance, medical practices, real estate, property management, law firms, and professional services, plus the Personal Agent.",
+    "Apollo Claw agents at work: client results from insurance, medical practices, real estate, property management, law firms and professional services.",
   alternates: { canonical: "https://apolloclaw.ai/use-cases" },
   openGraph: {
     images: OG_IMAGES,

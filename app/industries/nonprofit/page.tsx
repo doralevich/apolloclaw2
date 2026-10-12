@@ -3,9 +3,9 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Nonprofits | Donor Outreach, Grant Research & Volunteer Coordination | Apollo Claw" },
+  title: { absolute: "AI Agent for Nonprofits and Donor Outreach | Apollo Claw" },
   description:
-    "AI agents for nonprofits. Automate donor communication, grant research, volunteer coordination, and board reporting so your team focuses on the mission, not the admin.",
+    "AI agents for nonprofits: donor communication, grant research, volunteer coordination and board reporting handled, so your team's hours go to the mission.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/nonprofit",
   },

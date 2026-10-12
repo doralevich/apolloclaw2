@@ -4,7 +4,7 @@ import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/what-we-do" },
-  title: { absolute: "What Apollo Claw Does | AI Strategy, Agents & Org-Wide Deployment" },
+  title: { absolute: "AI Strategy, Agents and Org-Wide Rollout | Apollo Claw" },
   description: "We sit across the table from your leadership team, map your operations, and build an AI strategy that pays for itself. No vendor fluff. No generic playbooks.",
 };
 

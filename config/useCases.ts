@@ -24,6 +24,8 @@ export type UseCase = {
   title: string;
   subtitle: string;
   description: string;
+  /** The meta description, 140 to 160 characters: `description` runs long for a search snippet. */
+  metaDescription: string;
   challenges: string[];
   solutions: { title: string; desc: string }[];
   results: string[];
@@ -52,6 +54,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "That Clears the Queue",
     description:
       "Your agent reads every incoming email, sorts what matters from what doesn't, labels and files the rest, and drafts replies in your voice for you to approve. You open your inbox to a short list of decisions instead of a wall of messages.",
+    metaDescription:
+      "Your agent reads every email, sorts what matters, files the rest and drafts replies in your voice, so you open your inbox to a short list of decisions.",
     challenges: [
       "Hours a day lost to reading, sorting, and filing email",
       "Important messages buried under newsletters and notifications",
@@ -86,6 +90,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "That Never Slips",
     description:
       "Most lost deals, late payments, and stalled projects come down to a follow-up nobody sent. Your agent tracks every open thread and commitment, and sends the nudge on time, so nothing depends on someone remembering.",
+    metaDescription:
+      "Your agent tracks every open thread and commitment and sends the nudge on time, so deals, payments and projects keep moving and follow-ups go out on schedule.",
     challenges: [
       "Promises made on calls that nobody writes down",
       "Threads that go quiet because no one owns the next step",
@@ -120,6 +126,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "That Answers Every Call",
     description:
       "Your agent answers the questions a front desk answers all day, takes messages, routes what needs a person to the right person, and books appointments straight into your calendar - after hours and at the busiest times included.",
+    metaDescription:
+      "Your agent answers what a front desk answers all day, takes messages, routes calls to the right person and books appointments into your calendar, day or night.",
     challenges: [
       "Calls going to voicemail when the front desk is busy or closed",
       "Staff interrupted all day by the same handful of questions",
@@ -152,6 +160,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "and Daily Briefings",
     description:
       "Start each day with a short brief: what's on your calendar, what needs a decision, and what changed overnight. Before each meeting, your agent puts together a one-pager on who you're meeting, your history with them, and what to push on.",
+    metaDescription:
+      "Start each day with a short brief on your calendar and decisions, and walk into every meeting with a one-pager on who you are meeting and what to push on.",
     challenges: [
       "Walking into meetings without the context from the last conversation",
       "Mornings spent piecing together the day from email, calendar, and chat",
@@ -185,6 +195,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "That Cut No-Shows",
     description:
       "Every no-show is revenue you can't get back. Your agent sends reminders on a schedule that works, handles confirmations and reschedules, and fills the gaps from a waitlist, so the schedule stays full.",
+    metaDescription:
+      "Your agent sends reminders on a schedule that works, handles confirmations and reschedules, and fills gaps from a waitlist, so the schedule stays full all week.",
     challenges: [
       "Double-digit no-show rates quietly eating revenue",
       "Staff time spent on reminder calls that go to voicemail",
@@ -218,6 +230,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "in Minutes, Not Days",
     description:
       "The first business to respond usually wins. Your agent replies to every new inquiry within minutes, asks the qualifying questions, and books the meeting or showing - then keeps following up with the ones who go quiet.",
+    metaDescription:
+      "Your agent replies to every inquiry within minutes, asks the qualifying questions, books the meeting or showing, and keeps after the ones who go quiet.",
     challenges: [
       "Leads that wait hours or days for a first reply",
       "Inconsistent follow-up from one salesperson or agent to the next",
@@ -251,6 +265,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "and Screening",
     description:
       "Your agent screens every inquiry within minutes, collects the basic facts, filters out the ones that aren't a fit, and schedules a consultation with the right person for the ones that are - so no good matter falls through.",
+    metaDescription:
+      "Your agent screens every inquiry within minutes, collects the facts, filters out poor fits and books a consultation with the right person for the good ones.",
     challenges: [
       "Half of inbound inquiries lost because follow-up is too slow",
       "Senior staff spending time on intake calls that go nowhere",
@@ -285,6 +301,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "That Keeps Clients",
     description:
       "Most renewals are lost to silence, not price. Your agent flags every renewal well ahead of the date, gathers what's needed, drafts the outreach, and makes sure it actually goes out.",
+    metaDescription:
+      "Your agent flags every renewal well ahead of the date, gathers what is needed, drafts the outreach and makes sure it goes out, so renewals are won on time.",
     challenges: [
       "Renewals noticed only weeks before they lapse",
       "Outreach that depends on each producer remembering",
@@ -318,6 +336,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "and Reporting",
     description:
       "Your agent pulls the numbers, flags the variances, and drafts the narrative, so your finance team reviews instead of produces. Recurring reports run on schedule and land in your inbox before you ask.",
+    metaDescription:
+      "Your agent pulls the numbers, flags the variances and drafts the narrative, so your finance team reviews instead of produces, and reports land before you ask.",
     challenges: [
       "A close that takes most of the second week of the month",
       "Analysts spending their time producing reports instead of reading them",
@@ -352,6 +372,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "and Collections",
     description:
       "Cash flow suffers most from invoices that go out late and follow-ups nobody sends. Your agent prompts time entry, gets invoices out on schedule, and follows up on overdue balances politely and persistently.",
+    metaDescription:
+      "Your agent prompts time entry, gets invoices out on schedule and follows up on overdue balances politely and persistently, so cash arrives on time.",
     challenges: [
       "Invoices that go out late because time wasn't entered",
       "Overdue balances nobody wants to chase",
@@ -385,6 +407,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "Drafting",
     description:
       "Your agent drafts from your own templates and prior work, redlines what comes in against your standards, and tracks the dates that matter - renewals, notice periods, deadlines - so nothing lapses unnoticed.",
+    metaDescription:
+      "Your agent drafts from your own templates and prior work, redlines incoming documents against your standards, and tracks renewals, notice periods and deadlines.",
     challenges: [
       "Routine documents drafted from a blank page every time",
       "Incoming contracts reviewed line by line for the same issues",
@@ -418,6 +442,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "and Candidate Pipeline",
     description:
       "Your agent screens applicants against the role, schedules interviews across busy calendars, and keeps every candidate informed, so good people don't drop out while they wait to hear back.",
+    metaDescription:
+      "Your agent screens applicants against the role, schedules interviews across busy calendars and keeps every candidate informed, so good people stay engaged.",
     challenges: [
       "Hiring managers buried in unscreened applications",
       "Interview scheduling that takes days of back-and-forth",
@@ -447,6 +473,8 @@ export const USE_CASES: UseCase[] = [
     subtitle: "and Onboarding",
     description:
       "Your agent answers policy questions from your handbook, handles PTO requests, and runs new hires through onboarding step by step, while keeping records straight.",
+    metaDescription:
+      "Your agent answers policy questions from your handbook, handles PTO requests and runs each hire through onboarding step by step, with records kept straight.",
     challenges: [
       "The same policy questions answered over and over",
       "PTO requests tracked across email and spreadsheets",

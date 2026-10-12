@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { LAW_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "Law AI Agent | Contract Drafting & Review for Businesses | Apollo Claw" },
-  description: "The Law Agent drafts and reviews contracts, summarizes documents in plain English, and tracks obligations and renewals. AI built for businesses that live in contracts.",
+  title: { absolute: "AI Agent for Contract Drafting and Review | Apollo Claw" },
+  description: "The Law Agent drafts and reviews contracts, summarizes documents in plain English, and tracks obligations and renewal dates for businesses built on contracts.",
   alternates: {
     // Self-referencing on purpose. This used to point at thelawagent.ai, which told Google to
     // index that page instead of this one. Both properties are meant to rank on their own; the
@@ -30,7 +30,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/ai-agents/legal#service",
       name: "The Law Agent: AI Legal Drafting and Review",
       description: "AI assistant for legal work that drafts contracts from your templates, reviews and redlines incoming agreements, summarizes documents in plain English, and tracks obligations and renewals. A drafting and review tool, not a substitute for a licensed attorney.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/ai-agents/legal",
       serviceType: "AI Automation for Legal and Contract Work",
       areaServed: "United States",

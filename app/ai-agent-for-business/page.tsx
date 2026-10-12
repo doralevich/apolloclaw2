@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
-import { OG_IMAGES } from "@/lib/seo";
+import { OG_IMAGES, ORG_REF } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Agent for Business | Apollo Claw" },
   description:
-    "Apollo Claw installs a dedicated AI agent into your business that thinks, acts, and communicates like your best employee. Built for business owners who want results, not hype.",
+    "Apollo Claw installs a dedicated AI agent into your business that thinks, acts and communicates like your best employee. Built for owners who want results.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agent-for-business" },
   openGraph: {
     images: OG_IMAGES,
@@ -25,7 +25,7 @@ const jsonLd = {
   name: "AI Agent for Business",
   description:
     "Apollo Claw builds and deploys a dedicated AI agent for your business, connected to your tools and trained on how you work.",
-  provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+  provider: ORG_REF,
   url: "https://apolloclaw.ai/ai-agent-for-business",
   serviceType: "AI Agent Deployment for Business",
   areaServed: "United States",

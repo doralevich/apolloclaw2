@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { PERSONAL_INJURY_FAQS, faqEntities } from "@/config/faqs";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Agent for Personal Injury Law Firms | AI Intake Specialist | Apollo Claw" },
+  title: { absolute: "AI Intake Agent for Personal Injury Law Firms | Apollo Claw" },
   description:
-    "Apollo Claw deploys AI agents that handle intake triage, client communication, and document follow-up for personal injury law firms. Based on Long Island. Deployed nationwide.",
+    "An AI intake agent for personal injury law firms: triages inquiries at any hour, keeps clients updated and chases files. Built on Long Island, used nationwide.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/personal-injury-law",
   },
   openGraph: {
     images: agentOgImages("legal"),
-    title: "AI Agent for Personal Injury Law Firms | AI Intake Specialist | Apollo Claw",
+    title: "AI Intake Agent for Personal Injury Law Firms | Apollo Claw",
     description:
       "AI intake specialist for injury law: 24/7 intake capture, automated follow-up, document reminders, and client status updates for personal injury practices.",
     url: "https://apolloclaw.ai/industries/personal-injury-law",
@@ -31,16 +30,15 @@ const jsonLd = {
       name: "AI Intake Specialist for Personal Injury Law Firms",
       description:
         "AI agent for personal injury law firms that captures intake 24/7, triages new injury inquiries, runs follow-up sequences, chases documents, and keeps clients updated through long case timelines.",
-      provider: { "@type": "Organization", name: "Apollo Claw", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/industries/personal-injury-law",
       serviceType: "AI Client Intake and Case Communication for Personal Injury Law Firms",
       areaServed: "United States",
     },
-    {
-      "@type": "FAQPage",
-      "@id": "https://apolloclaw.ai/industries/personal-injury-law#faq",
-      mainEntity: faqEntities(PERSONAL_INJURY_FAQS),
-    },
+    // No FAQPage here. The other agent and industry pages render their FAQ list on the page
+    // and mark it up; this one marked up PERSONAL_INJURY_FAQS while rendering none of them,
+    // which is structured data for content the visitor cannot see (the SEO brief, Donna, Oct 9
+    // 2026). The questions still appear, and are marked up, on /faq.
   ],
 };
 

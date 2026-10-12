@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
-import { OG_IMAGES } from "@/lib/seo";
+import { OG_IMAGES, ORG_REF } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
 export const metadata: Metadata = {
@@ -20,29 +20,23 @@ export const metadata: Metadata = {
   },
 };
 
+// A Service offered on Long Island, provided by the one Organization in app/layout.tsx. This was
+// a second ProfessionalService with its own name and address, so the site described two businesses.
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "@id": "https://apolloclaw.ai/ai-consulting-long-island#business",
-  name: "Apollo[Claw] AI Consulting",
+  "@type": "Service",
+  "@id": "https://apolloclaw.ai/ai-consulting-long-island#service",
+  name: "AI Consulting for Long Island Businesses",
+  serviceType: "AI Consulting and Implementation",
   description:
     "AI consulting for Long Island businesses. We install custom AI agents into local companies across Nassau and Suffolk counties.",
   url: "https://apolloclaw.ai/ai-consulting-long-island",
-  telephone: "+1-917-363-5487",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "69 Roslyn Road",
-    addressLocality: "Roslyn Heights",
-    addressRegion: "NY",
-    postalCode: "11577",
-    addressCountry: "US",
-  },
   areaServed: [
     { "@type": "AdministrativeArea", name: "Nassau County, NY" },
     { "@type": "AdministrativeArea", name: "Suffolk County, NY" },
     { "@type": "Place", name: "Long Island, NY" },
   ],
-  provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+  provider: ORG_REF,
 };
 
 const data: SeoLandingData = {

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/accessibility" },
   title: "Accessibility Statement",
   description:
-    "How Apollo Claw keeps its website usable for everyone: the standards we build to, what we have checked, known gaps, and how to reach us if something is in your way.",
+    "How Apollo Claw keeps its website usable for everyone: the standards we build to, what we have checked, known gaps, and how to reach us if something blocks you.",
 };
 
 export default function AccessibilityPage() {

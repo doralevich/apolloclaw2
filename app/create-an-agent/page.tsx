@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/create-an-agent" },
   title: { absolute: "Create Your Agent | Apollo Claw" },
   description:
-    "Get a private AI agent built around your business: your people, your stack, the work you keep meaning to hand off. See how it works, what it does, and how to start.",
+    "Get a private AI agent built around your business: your people, your stack, the work you keep meaning to hand off. See how it works and how to start.",
 };
 
 const STEPS = [

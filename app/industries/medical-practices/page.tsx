@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { MEDICAL_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "Medical AI Agent | AI for Medical Practices & Healthcare | Apollo Claw" },
+  title: { absolute: "AI Agent for Medical and Dental Practices | Apollo Claw" },
   description:
-    "An AI agent for medical practices. Handles patient intake, appointment reminders, follow-ups, and administrative tasks.",
+    "An AI agent for medical and dental practices: patient intake, appointment reminders, follow-ups and the admin that fills a front desk's day, run privately.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/medical-practices",
   },
@@ -30,7 +30,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/industries/medical-practices#service",
       name: "The Medical Agent: AI for Healthcare Practices",
       description: "Privacy-first AI assistant for medical practices that automates scheduling, patient follow-up, intake, and documentation prep.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/industries/medical-practices",
       serviceType: "AI Automation for Medical Practices",
       areaServed: "United States",
