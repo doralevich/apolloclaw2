@@ -361,104 +361,49 @@ const DOCUMENTS: IndustryBranch = {
       type: "dropdown",
       options: ["Plain English, warm", "Plain English, direct", "Formal and traditional", "Match the tone of whoever wrote to us"],
     },
-    {
-      key: "legal_tools",
-      label: "Which tools do your documents and files live in?",
-      type: "multiselect",
-      options: [
-        "Word / Microsoft 365",
-        "Google Docs",
-        "DocuSign",
-        "Ironclad",
-        "ContractPodAi",
-        "Clio",
-        "MyCase",
-        "PracticePanther",
-        "Filevine",
-        "NetDocuments",
-        "iManage",
-        "SharePoint",
-        "Email and folders",
-        "Other",
-      ],
-    },
+    // "Which tools do your documents and files live in?" (`legal_tools`) moved to the Tech
+    // Stack page (LEGAL_STACK below), same key, so older answers still pre-fill.
   ],
 };
 
-// ─── Pages 3-5: legal technology ─────────────────────────────────────────────
-// WHAT MAKES A LAW FIRM DIFFERENT FROM ANY OTHER BUSINESS ANSWERING "which tools do you use":
-// legal research, legal-specific AI, email, and how deadlines and conflicts get tracked. A
-// generic tech-stack question (CRM, billing, email, in the same shape every other role intake
-// asks) treats a law firm like any other services business and asks nothing that couldn't apply
-// to a plumber's CRM. These three exist because the answers change what the agent can actually
-// plug into and what it must never confuse itself with.
+// ─── The Tech Stack page, for a law firm ──────────────────────────────────────
+// The tools questions used to be spread over three deep-dive pages (Legal Research & AI Tools,
+// Email & Calendar, and "which tools do your documents live in" on Your Documents), and then the
+// generic Tech Stack page came round anyway with Salesforce, Asana and Stripe on it, which no
+// law firm runs. David's call (Oct 12, 2026, from the Adam Glassman intake): one Tech Stack
+// page, the same logo-tile page every other flow gets, with law-firm options on it. These
+// sections replace the generic five for the Law Agent (ROLE_INTAKES.legal.stackSections in
+// components/onboard/OnboardingForm.tsx) and save into the same legalDetails blob as everything
+// else, so USER.md, TOOLS.md (config/role-tools.ts), the intake PDF and the edit pre-fill all
+// see them without any further wiring.
 //
-// Three pages now rather than one, David's call - each one is short, but they cover different
-// ground (what the agent researches with, what it connects to, what it has to be careful with),
-// and cramming all three onto one page under a single "Technology" heading read as thinner than
-// three pages each worth their own beat.
+// Email and calendar are two questions rather than one: plenty of firms run Outlook mail against
+// a Google or iCloud calendar, and the single answer hid it. `email_platform` keeps its key and
+// its Microsoft / Google wording, and stays single-choice, because config/connect-flow.ts reads
+// it as a string to pre-select the mail connector. Calendar sync is a free-text box rather than a
+// pick list, David's call: the tools are specific to each practice and a list would miss most.
 
-const TECH_RESEARCH: IndustryBranch = {
-  stepTitle: "Legal Research & AI Tools",
-  stepSubtitle: "What you already use for research, so your agent complements it instead of duplicating it.",
-  stepLabel: "Research Tools",
-  fields: [
-    {
-      key: "legal_research_tools",
-      label: "Which legal research or AI tools do you already use?",
-      type: "multiselect",
-      options: [
-        "Westlaw",
-        "LexisNexis / Lexis+ AI",
-        "Bloomberg Law",
-        "vLex",
-        "Fastcase",
-        "Casetext / CoCounsel",
-        "Harvey",
-        "Spellbook",
-        "Litera",
-        "Clio Duo",
-        "Relativity (e-discovery)",
-        "None yet",
-        "Other",
-      ],
-      helper: "So your agent complements what you already pay for rather than duplicating it, and knows what it is allowed to pull citations from.",
-    },
-    {
-      key: "ai_comfort",
-      label: "Where is your team with AI tools generally?",
-      type: "dropdown",
-      options: [
-        "Early exploration, still getting a feel for it",
-        "Regular use for specific tasks",
-        "Deeply integrated into how we already work",
-        "Cautious, and want to move slowly",
-      ],
-      helper: "Sets how much you want to review at first versus how much the agent can just get on with.",
-    },
-  ],
-};
+/** One section of a role's Tech Stack page: a logo-tile pick list, or a single text box. */
+export type StackSection =
+  | { key: string; label: string; options: readonly string[]; /** Store one string rather than an array. */ single?: boolean }
+  | { key: string; label: string; question: string; text: { placeholder?: string; helper?: string } };
 
-const TECH_COMMS: IndustryBranch = {
-  stepTitle: "Email & Calendar",
-  stepSubtitle: "What your agent connects to first: the platform, rather than a specific address.",
-  stepLabel: "Email & Calendar",
-  fields: [
-    {
-      key: "email_platform",
-      label: "What email and calendar software does the firm run on?",
-      type: "radio",
-      options: ["Microsoft 365 / Outlook", "Google Workspace", "Other", "Still deciding"],
-      helper: "This is what your agent's inbox and calendar connections point at during setup.",
-    },
-    {
-      key: "scheduling_tool",
-      label: "Does your calendar sync with a client-facing scheduling tool?",
-      type: "dropdown",
-      options: ["Yes, Calendly or similar", "No, scheduling is handled manually", "Unsure"],
-    },
-  ],
-};
+export const LEGAL_STACK: readonly StackSection[] = [
+  { key: "practice_management", label: "Practice & Case Management", options: ["Clio", "MyCase", "PracticePanther", "Filevine", "Smokeball", "CosmoLex", "Rocket Matter", "Litify", "None yet", "Other"] },
+  { key: "email_platform", label: "Email", single: true, options: ["Microsoft 365 / Outlook", "Google Workspace", "Other"] },
+  { key: "calendar_platform", label: "Calendar", single: true, options: ["Microsoft 365 / Outlook Calendar", "Google Calendar", "Apple iCloud Calendar", "Other"] },
+  {
+    key: "calendar_sync_tools",
+    label: "Calendar Sync",
+    question: "What tools does your calendar sync with?",
+    text: { placeholder: "e.g. Calendly for consults, Clio Scheduler, Zoom", helper: "Scheduling links, booking pages, video tools, anything that puts time on the calendar." },
+  },
+  { key: "legal_tools", label: "Documents & Files", options: ["Microsoft Word", "Google Docs", "NetDocuments", "iManage", "OneDrive / SharePoint", "Google Drive", "Dropbox", "Box", "Email and folders", "Other"] },
+  { key: "esign_intake_tools", label: "E-Signature & Intake", options: ["DocuSign", "Adobe Sign", "PandaDoc", "Clio Grow", "Lawmatics", "None yet", "Other"] },
+  { key: "billing_tools", label: "Billing & Payments", options: ["Clio Billing", "QuickBooks Online", "LawPay", "TimeSolv", "Bill4Time", "None yet", "Other"] },
+  { key: "legal_research_tools", label: "Legal Research & AI", options: ["Westlaw", "LexisNexis / Lexis+ AI", "Bloomberg Law", "Fastcase / vLex", "Casetext / CoCounsel", "Harvey", "Clio Duo", "None yet", "Other"] },
+  { key: "comms_tools", label: "Communication", options: ["Slack", "Microsoft Teams", "Zoom", "RingCentral", "WhatsApp", "Other"] },
+];
 
 const TECH_DOCKETING: IndustryBranch = {
   stepTitle: "Intake, Deadlines & Conflicts",
@@ -500,6 +445,21 @@ const TECH_DOCKETING: IndustryBranch = {
         "Still deciding",
       ],
     },
+    // Moved here from the retired Legal Research & AI Tools page (its tools question now lives
+    // on the Tech Stack page, LEGAL_STACK above). The comfort level is about process, so it
+    // sits with the other process questions.
+    {
+      key: "ai_comfort",
+      label: "Where is your team with AI tools generally?",
+      type: "dropdown",
+      options: [
+        "Early exploration, still getting a feel for it",
+        "Regular use for specific tasks",
+        "Deeply integrated into how we already work",
+        "Cautious, and want to move slowly",
+      ],
+      helper: "Sets how much you want to review at first versus how much the agent can just get on with.",
+    },
   ],
 };
 
@@ -530,6 +490,15 @@ const AGENT: IndustryBranch = {
       ],
       helper: "Specific beats broad. The more of these you tick, the better your agent knows where it helps most.",
     },
+    // A free box under the pick list, David's call (Oct 12, 2026): the list names the common
+    // jobs, and the firm's own words name the one that made them book the call.
+    {
+      key: "owns_work_notes",
+      label: "Anything else it should own, or detail on the above?",
+      type: "textarea",
+      placeholder: "e.g. Chase medical records on every PI matter and tell me when a request passes 30 days.",
+      helper: "Optional. In your words.",
+    },
     // review_authority and handoff_line used to sit here - a dropdown on how the agent's drafts
     // get reviewed, and a required essay on where a licensed attorney must take over. Both are
     // gone, David's call: the boundary they asked about is not a per-firm preference, it is the
@@ -552,5 +521,6 @@ const AGENT: IndustryBranch = {
   ],
 };
 
-/** Six pages, one blob. The onboarding form renders these in order. */
-export const LEGAL_BRANCH: IndustryBranch[] = [PRACTICE, DOCUMENTS, TECH_RESEARCH, TECH_COMMS, TECH_DOCKETING, AGENT];
+/** Four pages, one blob. The onboarding form renders these in order; the firm's tools are asked
+ *  on the Tech Stack page (LEGAL_STACK) that follows the executive profile. */
+export const LEGAL_BRANCH: IndustryBranch[] = [PRACTICE, DOCUMENTS, TECH_DOCKETING, AGENT];

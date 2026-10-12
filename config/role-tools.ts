@@ -34,7 +34,18 @@ export const ROLE_TOOL_FIELDS: Record<string, RoleToolField[]> = {
     { key: "accounting_system", label: "Accounting system" },
     { key: "finance_stack", label: "Finance tools" },
   ],
-  legalDetails: [{ key: "legal_tools", label: "Where documents live" }],
+  // The Law Agent's Tech Stack page (lib/legalIntake.ts LEGAL_STACK), one bullet per section.
+  legalDetails: [
+    { key: "practice_management", label: "Practice and case management" },
+    { key: "email_platform", label: "Email" },
+    { key: "calendar_platform", label: "Calendar" },
+    { key: "calendar_sync_tools", label: "Calendar syncs with" },
+    { key: "legal_tools", label: "Where documents live" },
+    { key: "esign_intake_tools", label: "E-signature and intake" },
+    { key: "billing_tools", label: "Billing and payments" },
+    { key: "legal_research_tools", label: "Legal research and AI" },
+    { key: "comms_tools", label: "Communication" },
+  ],
   realEstateDetails: [{ key: "crm", label: "CRM" }],
   ceoDetails: [
     { key: "email_tool", label: "Email and calendar" },
