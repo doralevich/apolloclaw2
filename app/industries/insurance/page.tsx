@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { INSURANCE_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Insurance Agent | Automate Renewals, Follow-ups & Policy Communication | Apollo Claw" },
+  title: { absolute: "AI Agent for Insurance Agencies and Brokers | Apollo Claw" },
   description:
-    "An AI agent for insurance agencies. Handles renewals, client follow-ups, and policy communications automatically.",
+    "An AI agent for insurance agencies and brokers: renewal outreach on schedule, quote follow-up, claims status updates and policy questions, with your approval.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/insurance",
   },
@@ -30,7 +30,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/industries/insurance#service",
       name: "The Insurance Agent: AI for Insurance Agencies",
       description: "AI assistant for insurance agencies that automates renewal outreach, quote follow-up, and client communication.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/industries/insurance",
       serviceType: "AI Automation for Insurance Agencies",
       areaServed: "United States",

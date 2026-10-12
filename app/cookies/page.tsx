@@ -4,7 +4,7 @@ import LegalPage, { type LegalSection } from "@/components/LegalPage";
 export const metadata: Metadata = {
   title: { absolute: "Cookie Policy | Apollo Claw" },
   description:
-    "The cookies apolloclaw.ai sets, which are strictly necessary, which require your consent, and how to change your choice.",
+    "The cookies apolloclaw.ai sets: which ones are strictly necessary, which ones need your consent, how long each lasts, and how to change your choice at any time.",
   alternates: { canonical: "https://apolloclaw.ai/cookies" },
 };
 

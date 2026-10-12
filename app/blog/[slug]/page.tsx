@@ -5,6 +5,7 @@ import { PortableText } from "@portabletext/react";
 import { sanityClient } from "@/lib/sanity";
 import { POST_BY_SLUG_QUERY, ALL_POST_SLUGS_QUERY, POSTS_QUERY } from "@/lib/sanity-queries";
 import { Button } from "@/components/ui/button";
+import { ORG_REF } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -157,12 +158,8 @@ export default async function BlogPostPage({
       name: post.author || "David Oralevich",
       url: "https://apolloclaw.ai/company",
     },
-    publisher: {
-      "@type": "Organization",
-      name: "Apollo Claw",
-      url: "https://apolloclaw.ai",
-      logo: { "@type": "ImageObject", url: "https://apolloclaw.ai/og-image.png" },
-    },
+    // The Organization node itself is in app/layout.tsx on every page; this points at it.
+    publisher: ORG_REF,
   };
 
   return (

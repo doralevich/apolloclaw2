@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CEO_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
@@ -26,7 +26,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/ai-agents/ceo#service",
       name: "The CEO Bot: AI Executive Assistant",
       description: "AI executive assistant for CEOs that handles briefings, communications, research, and follow-up automatically.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/ai-agents/ceo",
       serviceType: "AI Automation for Executives",
       areaServed: "United States",

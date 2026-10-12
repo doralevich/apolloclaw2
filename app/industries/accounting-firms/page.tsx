@@ -3,7 +3,7 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Accounting Firms & CPAs | Document Collection & Deadline Automation | Apollo Claw" },
+  title: { absolute: "AI Agent for Accounting Firms and CPAs | Apollo Claw" },
   description:
     "AI agents for accounting firms and CPA practices. Automate client document collection, deadline reminders, status updates, and engagement letter tracking.",
   alternates: {

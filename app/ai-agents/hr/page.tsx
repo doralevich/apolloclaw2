@@ -5,7 +5,7 @@ import { OG_IMAGES } from "@/lib/seo";
 export const metadata: Metadata = {
   title: { absolute: "AI for Human Resources | Apollo Claw" },
   description:
-    "The HR Agent handles PTO requests, onboarding steps, and policy questions, and keeps employee records straight so a small HR team can support a growing headcount.",
+    "The HR Agent handles PTO requests, onboarding steps and policy questions, and keeps employee records straight so a small HR team can support growing headcount.",
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/hr" },
   openGraph: {
     images: OG_IMAGES,

@@ -18,11 +18,13 @@ export const dynamicParams = false;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const uc = findUseCase((await params).slug);
   if (!uc) return {};
-  const title = `${uc.label} | AI Use Cases | Apollo Claw`;
+  // "AI Use Case", singular: each page is one job, and the longest label ("Appointment Reminders
+  // & No-Shows") put the plural form one character over the 60 the search snippet shows.
+  const title = `${uc.label} | AI Use Case | Apollo Claw`;
   const url = `https://apolloclaw.ai/use-cases/${uc.slug}`;
   return {
     title: { absolute: title },
-    description: uc.description,
+    description: uc.metaDescription,
     alternates: { canonical: url },
     openGraph: { images: OG_IMAGES, title, description: uc.summary, url, type: "website" },
   };

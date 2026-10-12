@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/ai-101" },
   title: { absolute: "AI 101 for Business Owners | Apollo Claw" },
   description:
-    "A plain-English guide to AI for business owners. What AI agents are, what they can do, and how to get started without the hype.",
+    "A plain-English guide to AI for business owners: what AI agents are, what they can do today, what they cost to run, and how to start with the hype left out.",
 };
 
 const topics = [

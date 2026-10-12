@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { REAL_ESTATE_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "Real Estate AI Agent | AI for Realtors & Property Managers | Apollo Claw" },
+  title: { absolute: "AI Agent for Realtors and Property Managers | Apollo Claw" },
   description:
-    "The Real Estate Agent handles client follow-ups, listing inquiries, and tenant communication for real estate professionals.",
+    "For realtors and property managers: the Real Estate Agent answers listing inquiries in minutes, follows up with every lead and keeps tenants informed.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/real-estate",
   },
@@ -30,7 +30,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/industries/real-estate#service",
       name: "The Real Estate Agent: AI for Real Estate Professionals",
       description: "AI assistant for real estate agents that automates lead follow-up, listing management, showing coordination, and CRM updates.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/industries/real-estate",
       serviceType: "AI Automation for Real Estate Agents",
       areaServed: "United States",

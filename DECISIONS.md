@@ -324,3 +324,29 @@ From Donna's SEO brief of Oct 9, 2026, which David approved the same day:
   Audited Oct 5: every site's analytics and consent setup matches its policy text.
 - **The blog.** See the site structure section above: it needs a Sanity content type
   before there is anything to wire up.
+
+## One Organization node, referenced by @id (Oct 12, 2026)
+
+The SEO brief's second PR. The root layout used to render three top-level business blocks
+(Organization, ProfessionalService, LocalBusiness) under two different names, and twelve pages
+each inlined their own `provider: { "@type": "Organization", ... }`. A crawler saw up to fifteen
+organizations per page.
+
+The rules from here:
+
+- The business is ONE node, in `app/layout.tsx`, typed `ProfessionalService` (which is a
+  LocalBusiness, which is an Organization) with `@id` `https://apolloclaw.ai/#organization`
+  (`ORG_ID` in `lib/seo.ts`). A `WebSite` node sits beside it.
+- Any other structured data that names the business as `provider` or `publisher` spreads
+  `ORG_REF` from `lib/seo.ts`. It never restates the name, address or phone.
+- A city or region landing page (NYC, Long Island) is a `Service` provided by that node, with
+  its own `areaServed`. It is never a second ProfessionalService with its own address.
+- `areaServed` lists places only. Customer segments ("Universities", "Enterprise") are not places
+  and were removed.
+- `FAQPage` markup goes only on a page that renders those same questions and answers. The
+  personal injury page marked up a list it never showed; that block is gone. The questions
+  remain on /faq.
+- Every static page's title fits 60 characters and its description 140 to 160, measured on the
+  rendered HTML, not the source (the template adds " | Apollo Claw"). Use-case pages carry a
+  separate `metaDescription` in `config/useCases.ts`, because the on-page description runs long.
+  The audit script lives in the PR that set this; rerun it before touching metadata at scale.

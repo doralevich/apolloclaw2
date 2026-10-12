@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CFO_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
@@ -31,7 +31,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/ai-agents/cfo#service",
       name: "The CFO Agent: AI Financial Intelligence",
       description: "AI assistant for CFOs that automates financial reporting, cash forecasting, board prep, and month-end close.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/ai-agents/cfo",
       serviceType: "AI Automation for Finance Leaders",
       areaServed: "United States",

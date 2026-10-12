@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { STARTING_PRICE } from "@/config/agent-plans";
-import { agentOgImages } from "@/lib/seo";
+import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { LAW_FIRMS_FAQS, faqEntities } from "@/config/faqs";
@@ -8,7 +8,7 @@ import { LAW_FIRMS_FAQS, faqEntities } from "@/config/faqs";
 export const metadata: Metadata = {
   title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo Claw" },
   description:
-    "The Law Agent automates client intake, case follow-ups, and legal communications. Built for attorneys and law firms.",
+    "The Law Agent handles client intake, case follow-ups, deadline tracking and billing reminders for law firms, so attorneys spend their hours on billable work.",
   alternates: {
     canonical: "https://apolloclaw.ai/industries/law-firms",
   },
@@ -30,7 +30,7 @@ const jsonLd = {
       "@id": "https://apolloclaw.ai/industries/law-firms#service",
       name: "The Law Agent: AI for Law Firms",
       description: "AI assistant for law firms that automates client intake, deadline tracking, document summaries, and billing follow-up.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: ORG_REF,
       url: "https://apolloclaw.ai/industries/law-firms",
       serviceType: "AI Automation for Law Firms",
       areaServed: "United States",

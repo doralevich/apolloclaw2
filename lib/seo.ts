@@ -14,6 +14,15 @@
 
 export const OG_IMAGE_URL = "/og-image.png";
 
+// The one Organization node, declared once in app/layout.tsx and referenced by @id everywhere
+// else. Twelve pages used to carry their own inline `provider: { "@type": "Organization", ... }`
+// alongside three separate business blocks in the root layout, so a crawler saw a dozen
+// near-duplicate organizations with three different names and had to guess which was the real
+// one (the SEO brief, Donna, Oct 9 2026). A page that needs to name the business as provider or
+// publisher spreads ORG_REF; the facts live in one place.
+export const ORG_ID = "https://apolloclaw.ai/#organization";
+export const ORG_REF = { "@id": ORG_ID } as const;
+
 export const OG_IMAGES = [
   {
     url: OG_IMAGE_URL,
