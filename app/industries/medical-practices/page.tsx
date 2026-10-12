@@ -6,7 +6,7 @@ import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { MEDICAL_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "Medical AI Agent | AI for Medical Practices & Healthcare | Apollo[Claw]" },
+  title: { absolute: "Medical AI Agent | AI for Medical Practices & Healthcare | Apollo Claw" },
   description:
     "An AI agent for medical practices. Handles patient intake, appointment reminders, follow-ups, and administrative tasks.",
   alternates: {

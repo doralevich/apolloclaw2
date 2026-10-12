@@ -9,7 +9,7 @@ import { OG_IMAGES } from "@/lib/seo";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: { absolute: "AI Agent Guides & Insights | Apollo[Claw]" },
+  title: { absolute: "AI Agent Guides & Insights | Apollo Claw" },
   description:
     "Learn how AI agents handle client intake, follow-ups, and communication for law firms, insurance agencies, and real estate teams.",
   keywords: ["AI blog", "AI automation tips", "AI for business", "Apollo Claw insights", "AI agents for law firms", "AI agents for real estate", "AI agents for insurance"],

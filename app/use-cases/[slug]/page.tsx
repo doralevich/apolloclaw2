@@ -18,7 +18,7 @@ export const dynamicParams = false;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const uc = findUseCase((await params).slug);
   if (!uc) return {};
-  const title = `${uc.label} | AI Use Cases | Apollo[Claw]`;
+  const title = `${uc.label} | AI Use Cases | Apollo Claw`;
   const url = `https://apolloclaw.ai/use-cases/${uc.slug}`;
   return {
     title: { absolute: title },

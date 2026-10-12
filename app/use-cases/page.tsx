@@ -6,14 +6,14 @@ import { CASE_STUDIES, CASE_STUDY_DISCLAIMER, CASE_STUDY_EXAMPLE_NOTE } from "@/
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "Case Studies | Apollo[Claw]" },
+  title: { absolute: "Case Studies | Apollo Claw" },
   description:
-    "Apollo[Claw] agents at work: client results from insurance, medical practices, real estate, property management, law firms, and professional services, plus the Personal Agent.",
+    "Apollo Claw agents at work: client results from insurance, medical practices, real estate, property management, law firms, and professional services, plus the Personal Agent.",
   alternates: { canonical: "https://apolloclaw.ai/use-cases" },
   openGraph: {
     images: OG_IMAGES,
-    title: "Case Studies | Apollo[Claw]",
-    description: "Apollo[Claw] agents at work, with client results grouped by industry.",
+    title: "Case Studies | Apollo Claw",
+    description: "Apollo Claw agents at work, with client results grouped by industry.",
     url: "https://apolloclaw.ai/use-cases",
     type: "website",
   },

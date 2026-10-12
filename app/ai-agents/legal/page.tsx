@@ -5,7 +5,7 @@ import AgentHero from "@/components/AgentHero";
 import { LAW_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "Law AI Agent | Contract Drafting & Review for Businesses | Apollo[Claw]" },
+  title: { absolute: "Law AI Agent | Contract Drafting & Review for Businesses | Apollo Claw" },
   description: "The Law Agent drafts and reviews contracts, summarizes documents in plain English, and tracks obligations and renewals. AI built for businesses that live in contracts.",
   alternates: {
     // Self-referencing on purpose. This used to point at thelawagent.ai, which told Google to

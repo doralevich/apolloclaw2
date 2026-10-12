@@ -19,7 +19,7 @@ const TYPE = getAgentType("apollo");
 export function generateMetadata(): Metadata {
   if (!TYPE) return { title: "Not found", robots: { index: false, follow: false } };
   return {
-    title: `Build your ${inlineAgentLabel(TYPE.label)} | ApolloClaw`,
+    title: `Build your ${inlineAgentLabel(TYPE.label)}`,
     robots: { index: false, follow: false },
   };
 }

@@ -4,13 +4,13 @@ import { OG_IMAGES } from "@/lib/seo";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 
 export const metadata: Metadata = {
-  title: { absolute: "AI for Professional Services Firms | Apollo[Claw]" },
+  title: { absolute: "AI for Professional Services Firms | Apollo Claw" },
   description:
-    "Consultancies, agencies, and advisory firms use Apollo[Claw] agents for intake, project admin, and client follow-up, so billable people stay billable.",
+    "Consultancies, agencies, and advisory firms use Apollo Claw agents for intake, project admin, and client follow-up, so billable people stay billable.",
   alternates: { canonical: "https://apolloclaw.ai/industries/professional-services" },
   openGraph: {
     images: OG_IMAGES,
-    title: "AI for Professional Services Firms | Apollo[Claw]",
+    title: "AI for Professional Services Firms | Apollo Claw",
     description:
       "Intake, scheduling, project admin, and client follow-up handled so billable people stay billable.",
     url: "https://apolloclaw.ai/industries/professional-services",

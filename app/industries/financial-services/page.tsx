@@ -4,7 +4,7 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/industries/financial-services" },
   title: "AI for Financial Services",
-  description: "Apollo[Claw] AI agents for financial advisors, planners, and wealth management firms. Automate client communication, reporting, and compliance documentation.",
+  description: "Apollo Claw AI agents for financial advisors, planners, and wealth management firms. Automate client communication, reporting, and compliance documentation.",
 };
 
 const uc = {

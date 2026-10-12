@@ -12,7 +12,7 @@ import OnboardingForm from "@/components/onboard/OnboardingForm";
 // which is what actually configures and provisions the buyer's live agent.
 
 export const metadata: Metadata = {
-  title: "Set up your agent | ApolloClaw",
+  title: "Set up your agent",
   robots: { index: false },
 };
 

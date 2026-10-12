@@ -17,6 +17,17 @@ export async function generateStaticParams() {
   }
 }
 
+// Sanity titles tend to arrive already branded ("... | Apollo Claw"), and the root layout's
+// title template appends the brand again, so every post went out as "X | Apollo Claw | Apollo
+// Claw" (the SEO brief, Donna, Oct 9 2026). Strip whatever brand suffix the editor typed,
+// in any spelling, then add the one suffix ourselves and mark the title absolute so the
+// template stays out of it.
+const BRAND_SUFFIX = /\s*[|\-–—:]\s*apollo\s*\[?\s*claw\s*\]?\s*$/i;
+
+function stripBrand(title: string): string {
+  return title.replace(BRAND_SUFFIX, "").trim();
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -27,7 +38,7 @@ export async function generateMetadata({
     const post = await sanityClient.fetch(POST_BY_SLUG_QUERY, { slug });
     if (!post) return { title: "Post Not Found" };
     return {
-      title: post.seoTitle || post.title,
+      title: { absolute: `${stripBrand(post.seoTitle || post.title || "")} | Apollo Claw` },
       description: post.seoDescription || post.excerpt || "",
       // Without this every post inherits the root layout's canonical, which points at the
       // homepage - so each post told Google it was a duplicate of apolloclaw.ai and none of
@@ -127,8 +138,39 @@ export default async function BlogPostPage({
     { label: "The CFO Agent", href: "/ai-agents/cfo" },
   ];
 
+  // BlogPosting structured data. Posts carried no schema at all, so Google had no author, no
+  // dates and no image to show. dateModified falls back to publishedAt when Sanity gives us
+  // nothing newer, so the two dates stay consistent rather than one being blank.
+  const postUrl = `https://apolloclaw.ai/blog/${slug}`;
+  const blogPosting = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.seoDescription || post.excerpt || undefined,
+    url: postUrl,
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+    image: post.featuredImage?.asset?.url || "https://apolloclaw.ai/og-image.png",
+    datePublished: post.publishedAt || undefined,
+    dateModified: post._updatedAt || post.publishedAt || undefined,
+    author: {
+      "@type": "Person",
+      name: post.author || "David Oralevich",
+      url: "https://apolloclaw.ai/company",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Apollo Claw",
+      url: "https://apolloclaw.ai",
+      logo: { "@type": "ImageObject", url: "https://apolloclaw.ai/og-image.png" },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background py-10 pt-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPosting) }}
+      />
       <div className="container mx-auto max-w-6xl px-4 md:px-8">
         <Link
           href="/blog"

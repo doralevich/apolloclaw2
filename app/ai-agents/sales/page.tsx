@@ -3,7 +3,7 @@ import UseCaseTemplate from "@/components/UseCaseTemplate";
 import { agentOgImages } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: { absolute: "Sales AI Agent | AI-Powered Sales Assistant | Apollo[Claw]" },
+  title: { absolute: "Sales AI Agent | AI-Powered Sales Assistant | Apollo Claw" },
   description:
     "An AI agent that qualifies leads, follows up with prospects, and keeps your sales pipeline moving - 24/7.",
   alternates: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     images: agentOgImages("sales"),
     title: "AI Sales Agent | Automate Outreach, Follow-Up & Pipeline Management",
     description:
-      "Apollo[Claw] AI agents for sales teams. Automate outreach, follow-up sequences, and pipeline hygiene so your reps close more deals with less busywork.",
+      "Apollo Claw AI agents for sales teams. Automate outreach, follow-up sequences, and pipeline hygiene so your reps close more deals with less busywork.",
     url: "https://apolloclaw.ai/ai-agents/sales",
     type: "website",
   },

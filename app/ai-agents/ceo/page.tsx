@@ -6,12 +6,13 @@ import { CEO_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/ai-agents/ceo" },
-  title: { absolute: "AI Assistant for CEOs | Apollo[Claw]" },
-  description: "The CEO Bot handles your briefings, communications, research, and follow-up automatically. Stop being the bottleneck; let your bot run the details.",
+  // The SEO brief's copy (Donna, Oct 9 2026).
+  title: { absolute: "AI Chief of Staff for CEOs and Founders | Apollo Claw" },
+  description: "An AI chief of staff for CEOs: it triages your inbox, prepares your meetings, tracks follow-ups and sends a morning brief. Private and built to your rules.",
   openGraph: {
     images: agentOgImages("ceo"),
-    title: "AI Assistant for CEOs | Automate Executive Workflows",
-    description: "The CEO Bot handles briefings, communications, research, and follow-up so you can focus on what only you can do.",
+    title: "AI Chief of Staff for CEOs and Founders | Apollo Claw",
+    description: "An AI chief of staff for CEOs: it triages your inbox, prepares your meetings, tracks follow-ups and sends a morning brief. Private and built to your rules.",
     url: "https://apolloclaw.ai/ai-agents/ceo",
     type: "website",
   },

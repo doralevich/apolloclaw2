@@ -17,9 +17,9 @@ const USAGE_TERMS =
   "Your plan includes a monthly usage allowance, shared across its agents. If your agents use all of it, they pause until the allowance renews at the start of the next month, or until you add credit in the dashboard, so you are never billed for usage you did not choose to buy.";
 
 export const metadata: Metadata = {
-  title: { absolute: "Terms of Service | Apollo[Claw]" },
+  title: { absolute: "Terms of Service | Apollo Claw" },
   description:
-    "The agreement for buying and using an Apollo[Claw] agent: what you get, what it costs, how billing and cancellation work, what the agent may do, and where our responsibility ends.",
+    "The agreement for buying and using an Apollo Claw agent: what you get, what it costs, how billing and cancellation work, what the agent may do, and where our responsibility ends.",
   alternates: { canonical: "https://apolloclaw.ai/terms" },
 };
 

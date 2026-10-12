@@ -277,6 +277,30 @@ titles, interview stages, an ATS, EEO. Decided Oct 8, 2026:
   once the Recruiting Agent is running. The admin flow was already in place; nothing here
   changes billing.
 
+## SEO rules for titles, descriptions and the sitemap
+
+From Donna's SEO brief of Oct 9, 2026, which David approved the same day:
+
+- **Titles** are 50 to 60 characters, one primary phrase, the brand once at the end as
+  "Apollo Claw" (not the bracketed wordmark, which reads as noise in a search result). The
+  root template is `%s | Apollo Claw`; a page that sets its own full title includes the suffix
+  itself. **Descriptions** are 140 to 160 characters with a reason to click. No dollar amounts
+  in either.
+- **The home title** is the local phrase, "Apollo Claw | AI Consulting for NYC & Long Island
+  Businesses", with the chief-of-staff line in the description. This supersedes the
+  hero-matching "Your AI Chief of Staff" title from Sept 27.
+- **The sitemap's lastmod is the date the page's content last changed**, kept by hand in
+  `app/sitemap.ts` and updated in the same commit as a content change. It was the build time
+  on every URL, which Google ignores. Blog posts take their date from Sanity.
+- **Blog posts** carry BlogPosting structured data and one brand suffix. Each post's own title
+  already ended in the brand and the old template added it again.
+- `/agents` redirects to `/ai-agents`, not `/contact`. `/about` stays a permanent redirect to
+  `/company` (Next.js sends 308, which Google treats as 301).
+- App and account routes stay out of search with `noindex` only. They are not added to
+  robots.txt: a crawl block hides the noindex tag from Google.
+- The Long Island blog post's rewrite (a how-to that links to the page) and the three new
+  articles are Sanity content, Donna's lane; Claude drafts, Donna publishes.
+
 ## Open items
 
 - **CEO lead capture: resolved, closed Oct 5, 2026.** The broken `app/api/lead/route.ts`

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 // terms were agreed offline, so it must never surface in search or in the sitemap. noindex
 // plus nofollow, matching /onboard and /setup.
 export const metadata: Metadata = {
-  title: "Onboarding | ApolloClaw",
+  title: "Onboarding",
   robots: { index: false, follow: false },
 };
 

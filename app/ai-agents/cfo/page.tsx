@@ -5,8 +5,9 @@ import AgentHero from "@/components/AgentHero";
 import { CFO_AGENT_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
-  title: { absolute: "CFO AI Agent | Financial Intelligence for Finance Leaders | Apollo[Claw]" },
-  description: "The CFO Agent handles reporting, forecasting, and financial communications. AI built specifically for finance executives.",
+  // The SEO brief's copy (Donna, Oct 9 2026).
+  title: { absolute: "AI Agent for CFOs: Cash and Invoices by 8 AM | Apollo Claw" },
+  description: "An AI agent for the CFO's desk: a daily cash view, invoice follow-up and flagged exceptions by 8 AM, with your approval before anything is sent.",
   alternates: {
     // Self-referencing on purpose. This used to point at thecfoagent.ai, which told Google to
     // index that page instead of this one. Both properties are meant to rank on their own; the
@@ -15,8 +16,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     images: agentOgImages("cfo"),
-    title: "The CFO Agent: AI Financial Agent for Small Business",
-    description: "The CFO Agent is your AI financial advisor for small business: automated financial reporting AI that handles your close cycle so you focus on decisions.",
+    title: "AI Agent for CFOs: Cash and Invoices by 8 AM | Apollo Claw",
+    description: "An AI agent for the CFO's desk: a daily cash view, invoice follow-up and flagged exceptions by 8 AM, with your approval before anything is sent.",
     url: "https://apolloclaw.ai/ai-agents/cfo",
     type: "website",
   },
