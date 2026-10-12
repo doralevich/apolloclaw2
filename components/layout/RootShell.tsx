@@ -13,7 +13,7 @@ import ChatWidget from '@/components/ChatWidget';
 // /onboard form pinned to one agent type. It also arrives from that agent's own marketing site,
 // so wrapping it in ApolloClaw's nav and footer put a second site's chrome around the checkout
 // and offered a dozen ways to wander off the page the visitor came to complete.
-const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard', '/build', '/white-glove-onboarding', '/cfo-onboarding', '/legal-onboarding'];
+const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard', '/build', '/white-glove-onboarding', '/cfo-onboarding', '/legal-onboarding', '/recruiting-onboarding'];
 // Dashboard surfaces render their own chrome — no marketing nav/footer/chat.
 const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite', '/admin'];
 
