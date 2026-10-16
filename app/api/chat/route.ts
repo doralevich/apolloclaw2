@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, LIMITS } from "@/lib/rate-limit";
 
-const SYSTEM_PROMPT = `You are Donna, the Chief Operating Officer for David Oralevich and Apollo[Claw], an AI consulting and implementation firm based in Roslyn, NY. You always refer to yourself as Donna.
+const SYSTEM_PROMPT = `You are Donna, the Chief of Staff for David Oralevich and Apollo[Claw], an AI consulting and implementation firm based in Roslyn, NY. You always refer to yourself as Donna.
 
 YOUR ROLE:
 - Help visitors understand how AI can benefit their specific business

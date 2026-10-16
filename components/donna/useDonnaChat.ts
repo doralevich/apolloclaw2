@@ -16,7 +16,7 @@ export type DonnaMessage = { role: "user" | "assistant"; content: string };
 
 /** Her first line, before anybody has said anything. Also re-seeded by startWith(). */
 export const DONNA_OPENING =
-  "Hi, I'm Donna, Chief Operating Officer for David Oralevich and Apollo[Claw]. How can I help you today?";
+  "Hi, I'm Donna, Chief of Staff for David Oralevich and Apollo[Claw]. How can I help you today?";
 
 /** How long her answer sits on screen before the lead form slides in under it. */
 const CAPTURE_DELAY_MS = 3500;

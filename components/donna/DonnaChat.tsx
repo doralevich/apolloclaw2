@@ -62,7 +62,7 @@ export function DonnaChat({ token }: { token: string }) {
         </div>
         <div>
           <p className="m-0 font-mono text-sm font-bold leading-tight text-white">Donna</p>
-          <p className="m-0 text-[11px] text-white/75">Chief Operating Officer, Apollo[Claw]</p>
+          <p className="m-0 text-[11px] text-white/75">Chief of Staff, Apollo[Claw]</p>
         </div>
       </div>
 
