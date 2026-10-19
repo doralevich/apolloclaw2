@@ -350,3 +350,25 @@ The rules from here:
   rendered HTML, not the source (the template adds " | Apollo Claw"). Use-case pages carry a
   separate `metaDescription` in `config/useCases.ts`, because the on-page description runs long.
   The audit script lives in the PR that set this; rerun it before touching metadata at scale.
+
+## The home page: who the agents are for, and where they run (Oct 19, 2026)
+
+David's final call closing the SEO brief, overriding the Oct 9 title. The H1 is, exactly,
+"Custom AI Agents, Built for Your Business". The line under it: "Apollo Claw designs, builds and
+runs private AI agents for individuals and departments at businesses and law firms. Each one
+runs on a Mac Mini on your network or a private virtual server, working across the tools you
+already use." The title tag is "Custom AI Agents Built for Your Business | Apollo Claw"; the
+meta description, Open Graph and Twitter tags, and the root layout's defaults carry the subline
+trimmed to fit a snippet.
+
+Two wording rules that came with it:
+
+- An agent is built for one person or one department. Never "a client", and no client names
+  anywhere on the site.
+- Site-wide, the hosting is a "private server". Where a page describes how an agent is hosted,
+  say "a Mac Mini on your network or a private virtual server". The hosting is never described
+  as the customer's own server: the VPS is ours to provision, and only the Mac Mini is theirs.
+
+/pricing is a real page: indexed, in the sitemap, with a self-referencing canonical, and with
+no dollar amount in its title or description (prices live on the page; no page prints one in a
+title, description or structured data). The /cost-estimator and /agents redirects stay as they are.

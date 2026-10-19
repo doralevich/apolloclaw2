@@ -10,12 +10,14 @@ import { HOME_FAQS } from "@/config/faqs";
 import { FinalCta } from "@/components/home/FinalCta";
 import { OG_IMAGES } from "@/lib/seo";
 
-// The SEO brief's title and description (Donna, Oct 9 2026; David said yes): the local phrase
-// the site is trying to rank for, with the chief-of-staff line kept in the description. This
-// replaces "Apollo Claw | Your AI Chief of Staff", the hero-matching title from Sept 27.
-const TITLE = "Apollo Claw | AI Consulting for NYC & Long Island Businesses";
+// The title and description match the hero (components/home/Hero.tsx), David's final call on
+// Oct 19 2026 closing the SEO brief: the H1 in the title, the H1's subline as the description,
+// trimmed to fit a search snippet. This replaces the brief's "AI Consulting for NYC & Long
+// Island Businesses" title from Oct 9. Root layout's default title and description say the
+// same thing.
+const TITLE = "Custom AI Agents Built for Your Business | Apollo Claw";
 const DESCRIPTION =
-  "Apollo Claw builds private AI agents for owners and executives: a chief of staff that handles email, calendar, follow-ups and reports. Book a discovery call.";
+  "Apollo Claw builds and runs private AI agents for individuals and departments at businesses and law firms, on a Mac Mini or a private virtual server.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },

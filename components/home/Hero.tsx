@@ -23,15 +23,21 @@ export function Hero() {
             >
               Your AI Chief of Staff
             </span>
+            {/* The H1 and the line under it are David's exact words (Oct 19 2026, his final call
+                closing the SEO brief): who the agents are for (one person or one department, at a
+                business or a law firm) and where each one runs (a Mac Mini on your network or a
+                private virtual server). The title tag and description in app/page.tsx say the
+                same thing. The hosting is never described as the customer's own server. */}
             <h1
               className="font-heading text-[clamp(2rem,3.8vw,3.25rem)] font-extrabold leading-[1.1] tracking-tight"
               style={{ color: INK, textWrap: "balance" }}
             >
-              Meet the Chief of Staff You&apos;ve Always Wanted.
+              Custom AI Agents, Built for Your Business
             </h1>
             <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: INK_MUTED, maxWidth: 580 }}>
-              A custom AI agent built around how you work. It knows your business, keeps everything
-              moving, and gives you back the hours you&apos;ve been missing.
+              Apollo Claw designs, builds and runs private AI agents for individuals and departments
+              at businesses and law firms. Each one runs on a Mac Mini on your network or a private
+              virtual server, working across the tools you already use.
             </p>
             <p className="font-body mt-4 text-[14px]" style={{ color: INK_SOFT }}>
               Already running for founders, physicians, and company leaders.

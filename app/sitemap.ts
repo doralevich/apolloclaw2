@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // metadata-only edit, a style change or a shared component edit does not. Blog posts take
   // their date from Sanity below and are not listed here.
   const staticPages = [
-    { path: "/",                 priority: 1.0, changed: "2026-10-09" },
+    { path: "/",                 priority: 1.0, changed: "2026-10-19" },
     { path: "/how-it-works",     priority: 0.9, changed: "2026-09-27" },
     { path: "/pricing",          priority: 0.9, changed: "2026-10-04" },
     { path: "/privacy",          priority: 0.3, changed: "2026-09-26" },
