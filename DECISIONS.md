@@ -372,3 +372,23 @@ Two wording rules that came with it:
 /pricing is a real page: indexed, in the sitemap, with a self-referencing canonical, and with
 no dollar amount in its title or description (prices live on the page; no page prints one in a
 title, description or structured data). The /cost-estimator and /agents redirects stay as they are.
+
+## Dates, breadcrumbs, llms.txt and one robots file (Oct 19, 2026)
+
+The schema and technical group of the SEO brief's follow-up. The rules:
+
+- A page's structured data carries a real `dateModified`: the day its words last changed, kept
+  by hand beside the page (`UPDATED` or `EFFECTIVE` constants, ISO YYYY-MM-DD) the same way
+  app/sitemap.ts keeps `changed`. Metadata and style edits leave it alone. The policy pages
+  show "Effective" and, when later, "Last updated"; the accessibility and security pages show
+  "Last updated". `components/PageDates.tsx` renders both the node and the line.
+- David is one Person node in app/layout.tsx (`PERSON_ID`). The business names him as founder,
+  blog posts as author, /company as its subject, all by reference. The business node carries no
+  `priceRange`.
+- Breadcrumbs are structured data only, from the path, in `components/seo/Breadcrumbs.tsx` for
+  the agent, industry and use-case pages, and in the blog post page for posts. A visible trail
+  is a design decision David has yet to make.
+- /llms.txt is a route (app/llms.txt/route.ts): what the site is, who an agent is for, where it
+  runs, and the pages that answer what. No prices, no client names.
+- robots.txt has one source: app/robots.ts. The copy in public/ is gone; a public file and a
+  route for the same path is how two robots files disagree.

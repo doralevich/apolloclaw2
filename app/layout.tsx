@@ -6,7 +6,7 @@ import RootShell from "@/components/layout/RootShell";
 import { Toaster } from "sonner";
 import PageViewTracker from "@/components/GoogleAnalytics";
 import CookieConsent from "@/components/CookieConsent";
-import { OG_IMAGES, ORG_ID, ORG_REF } from "@/lib/seo";
+import { OG_IMAGES, ORG_ID, ORG_REF, PERSON_ID, PERSON_REF } from "@/lib/seo";
 
 // The GA4 property the site actually reports into.
 //
@@ -125,7 +125,8 @@ const jsonLd = {
       description:
         "AI consulting and implementation for owner-led businesses: private AI agents set up on your own infrastructure, with hands-on training and support after launch.",
       serviceType: "AI Strategy and Implementation",
-      priceRange: "$$$$",
+      // No priceRange: it read as "$$$$" in search results, which says "expensive" and
+      // nothing else (the SEO brief's follow-up, Oct 19 2026). Prices live on /pricing.
       telephone: "+1-917-363-5487",
       email: "hello@apolloclaw.ai",
       address: {
@@ -155,13 +156,7 @@ const jsonLd = {
         email: "hello@apolloclaw.ai",
         url: "https://apolloclaw.ai/contact",
       },
-      founder: {
-        "@type": "Person",
-        "@id": "https://apolloclaw.ai/company#david",
-        name: "David Oralevich",
-        jobTitle: "Founder, AI Automation Consultant",
-        url: "https://apolloclaw.ai/company",
-      },
+      founder: PERSON_REF,
       sameAs: [
         "https://www.linkedin.com/company/apolloclaw/",
         "https://designsbydaveo.com",
@@ -180,6 +175,21 @@ const jsonLd = {
           { "@type": "Offer", itemOffered: { "@type": "Service", name: "Fractional Chief AI Officer" } },
         ],
       },
+    },
+    {
+      // David as his own node (lib/seo.ts PERSON_ID). The business names him as founder, blog
+      // posts as author, and /company as its subject, all by reference.
+      "@type": "Person",
+      "@id": PERSON_ID,
+      name: "David Oralevich",
+      givenName: "David",
+      familyName: "Oralevich",
+      jobTitle: "Founder, AI Automation Consultant",
+      url: "https://apolloclaw.ai/company",
+      image: "https://apolloclaw.ai/david-oralevich.png",
+      worksFor: ORG_REF,
+      email: "david@apolloclaw.ai",
+      sameAs: ["https://designsbydaveo.com"],
     },
     {
       "@type": "WebSite",

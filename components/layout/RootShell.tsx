@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { PreFooter } from '@/components/layout/PreFooter';
 import ChatWidget from '@/components/ChatWidget';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
 // Marketing pages that render without the marketing nav/footer (but keep chat).
 // /white-glove-onboarding renders the SAME full-screen questionnaire as /onboard, so it gets
@@ -65,6 +66,7 @@ export default function RootShell({
           (38px). Mobile hides the utility bar, so it clears the nav alone.
           The old values (88 / 124) were under the true height and survived only on the slack
           the shorter utility bar left behind. Raising that bar used the slack up. */}
+      <Breadcrumbs />
       <main className="pt-[89px] md:pt-[127px]">{children}</main>
       {/* Standing discovery-call band, identical on every marketing page except the home page,
           which closes on its own call to action (components/home/FinalCta.tsx), and /pricing,

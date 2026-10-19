@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
+import PageDates from "@/components/PageDates";
 import { OG_IMAGES } from "@/lib/seo";
+
+// The day these words last changed: the cloud card's title, from "your own" VPS to the hosting
+// wording the site uses everywhere (a private virtual server), David's call Oct 19 2026.
+const UPDATED = "2026-10-19";
 
 export const metadata: Metadata = {
   title: { absolute: "AI Data Security & Privacy | Apollo Claw" },
@@ -294,6 +299,11 @@ export default function SecurityPage() {
         titleAccent="You Can Verify"
         description="Enterprise-grade protection, in plain language. Here is exactly how we protect your business."
       />
+      <div style={{ background: CREAM }}>
+        <div className="container mx-auto max-w-7xl px-5 pt-8 md:px-8">
+          <PageDates url="https://apolloclaw.ai/security" name="Security You Can Verify" dateModified={UPDATED} show />
+        </div>
+      </div>
 
       {/* DEPLOYMENT MODELS - the two ways an agent actually runs, cream bg, side by side.
           First section after the hero, on purpose: this is the concrete, specific answer, and
@@ -310,7 +320,7 @@ export default function SecurityPage() {
               <DeployBox
                 icon={Cloud}
                 eyebrow="Cloud-Hosted"
-                title="Your Own Dedicated VPS"
+                title="A Dedicated Private Virtual Server"
                 points={[
                   "One VPS per agent — never shared, multi-tenant compute",
                   "Full-volume LUKS2 disk encryption",

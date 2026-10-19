@@ -5,7 +5,7 @@ import { PortableText } from "@portabletext/react";
 import { sanityClient } from "@/lib/sanity";
 import { POST_BY_SLUG_QUERY, ALL_POST_SLUGS_QUERY, POSTS_QUERY } from "@/lib/sanity-queries";
 import { Button } from "@/components/ui/button";
-import { ORG_REF } from "@/lib/seo";
+import { ORG_REF, PERSON_REF, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -144,7 +144,6 @@ export default async function BlogPostPage({
   // nothing newer, so the two dates stay consistent rather than one being blank.
   const postUrl = `https://apolloclaw.ai/blog/${slug}`;
   const blogPosting = {
-    "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
     description: post.seoDescription || post.excerpt || undefined,
@@ -153,20 +152,30 @@ export default async function BlogPostPage({
     image: post.featuredImage?.asset?.url || "https://apolloclaw.ai/og-image.png",
     datePublished: post.publishedAt || undefined,
     dateModified: post._updatedAt || post.publishedAt || undefined,
-    author: {
-      "@type": "Person",
-      name: post.author || "David Oralevich",
-      url: "https://apolloclaw.ai/company",
-    },
+    // David's Person node lives in app/layout.tsx; a post by anyone else names them inline.
+    author: !post.author || post.author === "David Oralevich"
+      ? PERSON_REF
+      : { "@type": "Person", name: post.author },
     // The Organization node itself is in app/layout.tsx on every page; this points at it.
     publisher: ORG_REF,
+  };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      blogPosting,
+      breadcrumbJsonLd([
+        { name: "Home", url: "https://apolloclaw.ai/" },
+        { name: "Blog", url: "https://apolloclaw.ai/blog" },
+        { name: post.title, url: postUrl },
+      ]),
+    ],
   };
 
   return (
     <div className="min-h-screen bg-background py-10 pt-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPosting) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="container mx-auto max-w-6xl px-4 md:px-8">
         <Link

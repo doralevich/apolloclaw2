@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://apolloclaw.ai/sitemap.xml

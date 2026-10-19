@@ -1,4 +1,6 @@
 import PageHero from "@/components/PageHero";
+import PageDates from "@/components/PageDates";
+import { humanDate } from "@/lib/seo";
 
 const NAVY = "#0B1729";
 const CREAM = "#FAFAF7";
@@ -20,22 +22,37 @@ export default function LegalPage({
   titleAccent,
   description,
   effective,
+  updated,
+  url,
   sections,
 }: {
   label: string;
   title: string;
   titleAccent: string;
   description: string;
+  /** The day the document took effect, ISO (YYYY-MM-DD). Shown as "Effective …". */
   effective: string;
+  /** The day its words last changed, ISO. Shown as "Last updated …" when it differs from
+   *  `effective`, and carried as dateModified either way. */
+  updated?: string;
+  /** The page's absolute URL, for its WebPage node. */
+  url: string;
   sections: LegalSection[];
 }) {
+  const modified = updated ?? effective;
   return (
     <>
       <PageHero label={label} title={title} titleAccent={titleAccent} description={description} />
+      <PageDates url={url} name={`${title} ${titleAccent}`} description={description} datePublished={effective} dateModified={modified} />
       <div style={{ background: CREAM }} className="py-16 md:py-20">
         <div className="container mx-auto max-w-3xl px-5 md:px-8">
           <p className="font-mono mb-12 text-xs uppercase tracking-widest" style={{ color: "rgba(11,23,41,0.45)" }}>
-            Effective {effective}
+            <time dateTime={effective}>Effective {humanDate(effective)}</time>
+            {modified !== effective && (
+              <>
+                {" "}&middot; <time dateTime={modified}>Last updated {humanDate(modified)}</time>
+              </>
+            )}
           </p>
 
           {sections.map((section) => (

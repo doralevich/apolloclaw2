@@ -39,7 +39,10 @@ export const metadata: Metadata = {
 // of terms for it, written so a customer can actually read it. Two clauses are business
 // decisions rather than drafting - the refund position and the liability cap - and both are
 // flagged to David rather than quietly chosen. Have counsel read this before relying on it.
-const EFFECTIVE = "September 7, 2026";
+const EFFECTIVE = "2026-09-07";
+// The wording last changed on Oct 4 2026 (the plan prices came off the site), after the
+// effective date. Both show on the page and the later one is the dateModified.
+const UPDATED = "2026-10-04";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -327,6 +330,8 @@ export default function TermsPage() {
       titleAccent="Service"
       description="What you are buying, how billing works, what your agent may and may not do, and where our responsibility ends."
       effective={EFFECTIVE}
+      updated={UPDATED}
+      url="https://apolloclaw.ai/terms"
       sections={SECTIONS}
     />
   );
