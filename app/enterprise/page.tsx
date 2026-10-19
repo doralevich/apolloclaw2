@@ -162,7 +162,7 @@ export default function EnterprisePage() {
           <BracketLabel light>Deployment</BracketLabel>
           <H2 light>Dedicated Infrastructure, Your Choice.</H2>
           <div className="mt-6">
-            <BodyLarge light>Every agent runs privately for one client, in the environment you choose at setup.</BodyLarge>
+            <BodyLarge light>Every agent runs privately for one person or one department, in the environment you choose at setup.</BodyLarge>
           </div>
         </div>
         <div className="mx-auto mt-12 grid max-w-7xl gap-6 md:grid-cols-2">

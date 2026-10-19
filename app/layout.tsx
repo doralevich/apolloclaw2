@@ -43,11 +43,11 @@ export const metadata: Metadata = {
   // blog post whose own title already ended in the brand put it there twice.
   // The default matches the home page (app/page.tsx), David's final call on Oct 19 2026.
   title: {
-    default: "Custom AI Agents, Run on Your Own Server | Apollo Claw",
+    default: "Custom AI Agents Built for Your Business | Apollo Claw",
     template: "%s | Apollo Claw",
   },
   description:
-    "Apollo Claw designs, builds and runs private AI agents for businesses and law firms. Your own Chief of Staff, working across the tools you already use.",
+    "Apollo Claw builds and runs private AI agents for individuals and departments at businesses and law firms, on a Mac Mini or a private virtual server.",
   keywords: [
     "AI consulting firm",
     "AI consulting company",

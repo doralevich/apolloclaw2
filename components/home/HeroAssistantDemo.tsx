@@ -19,11 +19,11 @@ const CONVERSATION: { role: Role; text: string }[] = [
   { role: "user", text: "Does it work with the tools we already use?" },
   { role: "agent", text: "Yes. Google Workspace, Microsoft 365, Slack, email, calendars, CRMs, wherever your team already works." },
   { role: "user", text: "How fast can we get one running?" },
-  { role: "agent", text: "About 15 minutes. Your custom agent is built online from a short questionnaire, on its own private server, and our team is a Telegram message away whenever you need us." },
+  { role: "agent", text: "About 15 minutes. Your custom agent is built online from a short questionnaire, on a private virtual server, and our team is a Telegram message away whenever you need us." },
   { role: "user", text: "Is it a fit for a business our size?" },
   { role: "agent", text: "Yes. Solo founders, growing teams, and established companies all get an agent built to fit the way they work." },
   { role: "user", text: "Is our data safe?" },
-  { role: "agent", text: "Every agent is privately deployed for one client, on a dedicated private server or your own Mac Mini." },
+  { role: "agent", text: "Every agent is built for one person or one department and runs on a Mac Mini on your network or a private virtual server." },
   { role: "user", text: "Great, how do I get started?" },
   { role: "agent", text: "Hit Book a Discovery Call, or ask me anything right here first." },
 ];

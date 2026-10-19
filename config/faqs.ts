@@ -13,12 +13,12 @@ export type Faq = { q: string; a: string };
  *  build, custom agent included, takes about 15 minutes; hands-on training is an add-on, or part
  *  of a custom build, so it is kept out of this answer). */
 export const SETUP_TIME_ANSWER =
-  "About 15 minutes. Answer a short questionnaire and your custom agent is built for you online, running on its own private server and ready to connect to Telegram or Slack.";
+  "About 15 minutes. Answer a short questionnaire and your custom agent is built for you online, running on a private virtual server and ready to connect to Telegram or Slack.";
 
 export const HOME_FAQS: Faq[] = [
   {
     q: "How is my data protected?",
-    a: "Every agent is privately deployed for one client, on a dedicated private server or your own Mac Mini. Your data stays in your environment and your accounts.",
+    a: "Every agent is built for one person or one department and runs on a Mac Mini on your network or a private virtual server. Your data stays in your environment and your accounts.",
   },
   {
     q: "How quickly will my agent be up and running?",
@@ -61,7 +61,7 @@ export const GENERAL_FAQS: Faq[] = [
   },
   {
     q: "Is my data secure?",
-    a: "Yes. Every agent is privately deployed for one client, on a dedicated private server or your own Mac Mini, and your data stays in your environment and your accounts. Our Security page has the details.",
+    a: "Yes. Every agent is built for one person or one department and runs on a Mac Mini on your network or a private virtual server, and your data stays in your environment and your accounts. Our Security page has the details.",
   },
   {
     q: "How much does it cost?",
@@ -219,7 +219,7 @@ export const MEDICAL_FAQS: Faq[] = [
   },
   {
     q: "How is patient information handled?",
-    a: "Patient information stays on infrastructure you approve, a dedicated private server or your own Mac Mini, with least-privilege access to the systems you connect. Before launch we agree what the agent may see and where it may write, and your practice keeps control of both.",
+    a: "Patient information stays on infrastructure you approve, a Mac Mini on your network or a private virtual server, with least-privilege access to the systems you connect. Before launch we agree what the agent may see and where it may write, and your practice keeps control of both.",
   },
   {
     q: "Will it replace my front desk staff?",

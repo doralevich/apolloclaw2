@@ -10,7 +10,7 @@ const RED = "#E12E30";
 const STEPS = [
   { n: "01", title: "We Find Your Pain Point", body: "We learn how you work and where your time is going." },
   { n: "02", title: "We Design the Solution", body: "A custom agent, shaped around your business and the tools you already use." },
-  { n: "03", title: "We Implement It", body: "Built on its own private server in about 15 minutes online, or as a custom build for your organization." },
+  { n: "03", title: "We Implement It", body: "Built on a Mac Mini on your network or a private virtual server, in about 15 minutes online or as a custom build for your organization." },
   { n: "04", title: "We Keep It Running", body: "Our team is a Telegram message away, with hands-on training there when you want it." },
 ];
 
