@@ -23,6 +23,65 @@ export const OG_IMAGE_URL = "/og-image.png";
 export const ORG_ID = "https://apolloclaw.ai/#organization";
 export const ORG_REF = { "@id": ORG_ID } as const;
 
+// David, once, as his own Person node beside the business in app/layout.tsx. The founder used
+// to be an inline Person inside the Organization; a blog post's author and /company's subject
+// could only restate him. Now both point here.
+export const PERSON_ID = "https://apolloclaw.ai/company#david";
+export const PERSON_REF = { "@id": PERSON_ID } as const;
+
+/** One crumb of a BreadcrumbList: the visible name and the absolute URL. */
+export type Crumb = { name: string; url: string };
+
+/** BreadcrumbList structured data for a page. The last item is the page itself. */
+export function breadcrumbJsonLd(crumbs: readonly Crumb[]) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.name,
+      item: c.url,
+    })),
+  };
+}
+
+/**
+ * A WebPage node with real dates. `dateModified` is the day the page's words last changed,
+ * kept by hand beside the page the same way app/sitemap.ts keeps `changed`; a metadata or
+ * style edit leaves it alone. ISO dates (YYYY-MM-DD) only.
+ */
+export function webPageJsonLd(page: {
+  url: string;
+  name: string;
+  description?: string;
+  datePublished?: string;
+  dateModified: string;
+  type?: "WebPage" | "AboutPage" | "ContactPage";
+}) {
+  return {
+    "@type": page.type ?? "WebPage",
+    "@id": `${page.url}#page`,
+    url: page.url,
+    name: page.name,
+    ...(page.description ? { description: page.description } : {}),
+    ...(page.datePublished ? { datePublished: page.datePublished } : {}),
+    dateModified: page.dateModified,
+    isPartOf: { "@id": "https://apolloclaw.ai/#website" },
+    publisher: ORG_REF,
+    inLanguage: "en-US",
+  };
+}
+
+/** "October 4, 2026" from "2026-10-04", read as a calendar day rather than a UTC instant. */
+export function humanDate(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export const OG_IMAGES = [
   {
     url: OG_IMAGE_URL,

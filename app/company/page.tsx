@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
-import { OG_IMAGES } from "@/lib/seo";
+import { OG_IMAGES, PERSON_REF } from "@/lib/seo";
+
+// The page is about David: an AboutPage whose main entity is his Person node (app/layout.tsx).
+const aboutJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": "https://apolloclaw.ai/company#page",
+  url: "https://apolloclaw.ai/company",
+  name: "About Apollo Claw",
+  mainEntity: PERSON_REF,
+  isPartOf: { "@id": "https://apolloclaw.ai/#website" },
+};
 
 export const metadata: Metadata = {
   // The SEO brief's copy (Donna, Oct 9 2026). /about redirects here permanently.
@@ -37,6 +48,7 @@ const processSteps = [
 export default function CompanyPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }} />
       {/* HERO - dark navy */}
       <section
         style={{ background: "#0B1729", color: "#ffffff" }}

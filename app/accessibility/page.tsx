@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
+import PageDates from "@/components/PageDates";
+
+// The day these words last changed. Metadata edits since (Oct 9 and 12, 2026) leave it alone.
+const UPDATED = "2026-10-03";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/accessibility" },
@@ -20,6 +24,9 @@ export default function AccessibilityPage() {
       />
       <div className="bg-background py-16">
       <div className="container mx-auto max-w-3xl px-4 md:px-8">
+        <div className="mb-6">
+          <PageDates url="https://apolloclaw.ai/accessibility" name="Accessibility Statement" dateModified={UPDATED} show />
+        </div>
 
         <div className="bauhaus-card p-8 md:p-12 space-y-6">
           <ScrollReveal>

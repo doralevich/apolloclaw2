@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/cookies" },
 };
 
-const EFFECTIVE = "August 3, 2026";
+const EFFECTIVE = "2026-08-03";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -103,6 +103,7 @@ export default function CookiePolicyPage() {
       titleAccent="Policy"
       description="Every cookie this site sets, which ones you control, and how to change your mind."
       effective={EFFECTIVE}
+      url="https://apolloclaw.ai/cookies"
       sections={SECTIONS}
     />
   );

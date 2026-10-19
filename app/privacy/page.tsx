@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://apolloclaw.ai/privacy" },
 };
 
-const EFFECTIVE = "August 3, 2026";
+const EFFECTIVE = "2026-08-03";
 
 // Written against what this codebase actually does, not a template: every processor listed
 // below corresponds to a real integration (lib/mailchimp.ts, lib/attio.ts, lib/email.ts,
@@ -163,6 +163,7 @@ export default function PrivacyPage() {
       titleAccent="Policy"
       description="What we collect, why we collect it, who processes it, and how to get it deleted."
       effective={EFFECTIVE}
+      url="https://apolloclaw.ai/privacy"
       sections={SECTIONS}
     />
   );

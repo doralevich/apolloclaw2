@@ -63,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/contact",      priority: 0.7, changed: "2026-09-21" },
     { path: "/what-we-do",       priority: 0.8, changed: "2026-09-27" },
     { path: "/ai-101",       priority: 0.7, changed: "2026-09-27" },
-    { path: "/security",       priority: 0.6, changed: "2026-10-04" },
+    { path: "/security",       priority: 0.6, changed: "2026-10-19" },
     { path: "/ai-agents/personal-assistant", priority: 0.8, changed: "2026-09-08" },
     { path: "/accessibility", priority: 0.3, changed: "2026-10-09" },
     { path: "/integrations", priority: 0.8, changed: "2026-09-27" },
