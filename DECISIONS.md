@@ -414,3 +414,27 @@ Rules for these and any page like them:
 components/SeoLanding.tsx gained three section types for this: `compare` (a two-column table),
 `faq` (details and summary, with the FAQPage node built from the same list) and `links` (hub
 cards). Any later landing page can use them.
+
+## The legal cluster under the law firms hub (Oct 19, 2026)
+
+Group 3 of the SEO brief's follow-up. /industries/law-firms is the hub, and four practice pages
+sit beneath it: family law, estate planning, immigration and commercial litigation. Each one is
+the same Law Agent set up for one practice (intake questions, checklists, the calendar), and
+each links to its siblings, to the hub, to the personal injury page and to /ai-agents/legal. The
+hub gained a "Practice Areas" section that links down to all of them.
+
+- One template, components/PracticeAreaPage.tsx, and one data object per page. The cluster list
+  (LAW_CLUSTER) lives in the template so the hub and every practice page draw their cards from
+  the same place. Adding a practice is one page file and one line in that list.
+- Breadcrumbs for a practice page run Home, Industries, Law Firms, the practice. The one
+  depth-three case in components/seo/Breadcrumbs.tsx.
+- The price line on the hub and on the personal injury page is gone. They were the two legal
+  pages touched in this group; six other industry and agent pages still print the starting price
+  from config/agent-plans.ts, and the law hub's shared FAQ answer prints it too. Whether the
+  site-wide rule is "no dollar amounts outside /pricing" is David's call, and the rest changes
+  when he makes it.
+- Hosting on these pages reads "a Mac Mini on your network or a private virtual server reserved
+  for your firm". The agent is for the firm, set up by one person or one department at the firm;
+  the client of a law firm is the firm's client, and is only ever referred to that way.
+- The testimonials on the hub were left as they were, per the standing rule.
+- All copy is approved by David before merge; the PR goes up as a draft and he marks it ready.

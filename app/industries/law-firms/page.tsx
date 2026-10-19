@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { STARTING_PRICE } from "@/config/agent-plans";
+import Link from "next/link";
 import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
+import { LAW_CLUSTER } from "@/components/PracticeAreaPage";
 import { LAW_FIRMS_FAQS, faqEntities } from "@/config/faqs";
 
 export const metadata: Metadata = {
@@ -229,7 +230,7 @@ export default function LegalPage() {
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Firms That Are Done Leaving Billable Hours on the Table</h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every Law Agent deployment is set up around your firm. Plans start at {STARTING_PRICE} a month with no setup fee.{" "}
+            Every Law Agent deployment is set up around your firm, month to month with setup included.{" "}
             <a href="/pricing" style={{ color: RED, fontWeight: 700 }}>See every plan</a>, or book a consultation for a custom build.
           </p>
           <a href="https://cal.com/therealdaveo/dbdo-consultation" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>
@@ -238,8 +239,30 @@ export default function LegalPage() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Practice areas: the legal cluster under this hub (Oct 19 2026). */}
       <section style={{ background: CREAM }} className="py-20">
+        <div className="container mx-auto max-w-7xl px-5 md:px-8">
+          <div className="text-center mb-12">
+            <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Practice Areas</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4" style={{ color: NAVY }}>Set Up for the Way Your Practice Works</h2>
+            <p className="font-body text-lg leading-relaxed" style={{ color: "rgba(11,23,41,0.65)" }}>
+              The same Law Agent, with intake, checklists and calendars shaped to each practice.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {LAW_CLUSTER.filter((c) => c.slug !== "law-firms").map((c) => (
+              <Link key={c.href} href={c.href} className="block rounded-xl p-6 transition-transform hover:-translate-y-0.5" style={{ background: CREAM2, border: "1px solid rgba(11,23,41,0.07)", textDecoration: "none" }}>
+                <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>{c.label}</h3>
+                <p className="font-body text-sm leading-relaxed" style={{ color: "rgba(11,23,41,0.6)" }}>{c.desc}</p>
+                <span className="font-body text-sm font-bold mt-3 inline-block" style={{ color: RED }}>Read more →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-7xl px-5 md:px-8">
           <div className="text-center mb-12">
             <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>FAQ</p>
@@ -247,7 +270,7 @@ export default function LegalPage() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {faqs.map((f, i) => (
-              <div key={i} className="rounded-xl p-7" style={{ background: CREAM2, border: "1px solid rgba(11,23,41,0.07)" }}>
+              <div key={i} className="rounded-xl p-7" style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.07)" }}>
                 <h3 className="font-display text-base font-bold mb-2" style={{ color: NAVY }}>{f.q}</h3>
                 <p className="font-body text-sm leading-relaxed" style={{ color: "rgba(11,23,41,0.6)" }}>{f.a}</p>
               </div>

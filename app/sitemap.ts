@@ -35,7 +35,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/ai-agents/cfo",          priority: 0.9, changed: "2026-10-09" },
     { path: "/ai-agents/legal",        priority: 0.9, changed: "2026-10-05" },
     { path: "/industries/medical-practices",       priority: 0.9, changed: "2026-10-05" },
-    { path: "/industries/law-firms",        priority: 0.9, changed: "2026-10-05" },
+    { path: "/industries/law-firms",        priority: 0.9, changed: "2026-10-19" },
+    // The legal cluster under the hub (Oct 19 2026).
+    { path: "/industries/law-firms/family-law",            priority: 0.8, changed: "2026-10-19" },
+    { path: "/industries/law-firms/estate-planning",       priority: 0.8, changed: "2026-10-19" },
+    { path: "/industries/law-firms/immigration",           priority: 0.8, changed: "2026-10-19" },
+    { path: "/industries/law-firms/commercial-litigation", priority: 0.8, changed: "2026-10-19" },
     { path: "/industries/personal-injury-law", priority: 0.8, changed: "2026-10-04" },
     { path: "/industries/insurance",    priority: 0.9, changed: "2026-10-05" },
     { path: "/industries/real-estate",  priority: 0.9, changed: "2026-10-05" },
