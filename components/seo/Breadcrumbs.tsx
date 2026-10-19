@@ -42,6 +42,13 @@ const INDUSTRIES: Record<string, string> = {
   "real-estate": "Real Estate",
 };
 
+// The comparison pages (Oct 19 2026). Their hub is the category pillar, /ai-agent-for-business.
+const COMPARE: Record<string, string> = {
+  "mac-mini-vs-private-virtual-server": "Mac Mini vs Private Virtual Server",
+  "ai-agent-vs-chatbot": "AI Agent vs Chatbot",
+  "ai-consultant-vs-in-house": "AI Consultant vs In House",
+};
+
 const HOME: Crumb = { name: "Home", url: `${SITE}/` };
 
 export function crumbsFor(pathname: string): Crumb[] | null {
@@ -59,6 +66,9 @@ export function crumbsFor(pathname: string): Crumb[] | null {
   if (section === "use-cases") {
     const uc = USE_CASES.find((u) => u.slug === slug);
     if (uc) return [HOME, { name: "Use Cases", url: `${SITE}/use-cases` }, { name: uc.label, url: here }];
+  }
+  if (section === "compare" && COMPARE[slug]) {
+    return [HOME, { name: "AI Agents for Business", url: `${SITE}/ai-agent-for-business` }, { name: COMPARE[slug], url: here }];
   }
   return null;
 }

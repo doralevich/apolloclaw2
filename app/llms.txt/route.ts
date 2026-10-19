@@ -11,6 +11,10 @@ const SITE = "https://apolloclaw.ai";
 
 const PAGES: [string, string][] = [
   ["/", "Custom AI agents built for your business: what Apollo Claw does and who it is for."],
+  ["/ai-agent-for-business", "The category guide: what an AI agent for a business is, who it is for, where it runs and what it does on day one."],
+  ["/compare/mac-mini-vs-private-virtual-server", "Where the agent runs: a Mac Mini on your network compared with a private virtual server."],
+  ["/compare/ai-agent-vs-chatbot", "A chatbot answers questions; an agent does the work. When each is the right buy."],
+  ["/compare/ai-consultant-vs-in-house", "Hire a consultant or build in house: time to value, what you keep, and when each is right."],
   ["/how-it-works", "The four steps from a discovery call to an agent in production."],
   ["/ai-agents", "Every agent Apollo Claw builds: CEO, CFO, Sales, Recruiting, Law, Insurance, Medical, Real Estate, HR, Receptionist and Personal."],
   ["/ai-agents/ceo", "The CEO Agent: an AI chief of staff for inbox, calendar, follow-ups and a morning brief."],

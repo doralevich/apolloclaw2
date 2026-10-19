@@ -392,3 +392,25 @@ The schema and technical group of the SEO brief's follow-up. The rules:
   runs, and the pages that answer what. No prices, no client names.
 - robots.txt has one source: app/robots.ts. The copy in public/ is gone; a public file and a
   route for the same path is how two robots files disagree.
+
+## The category pillar and the comparison pages (Oct 19, 2026)
+
+Group 2 of the SEO brief's follow-up, David's page list. /ai-agent-for-business is the category
+pillar: what an agent for a business is, who it is for (one person or one department), where it
+runs (a Mac Mini on your network or a private virtual server), the four steps, and cards to the
+pages beneath it. Three comparison pages sit under /compare and link back to it through their
+breadcrumbs: Mac Mini vs private virtual server, AI agent vs chatbot, AI consultant vs in house.
+Each one argues the other side honestly, because a buyer who is sent to the right thing comes
+back.
+
+Rules for these and any page like them:
+
+- No dollar amount anywhere on the page, no client name anywhere on the site. Comparisons are in
+  time, roles and what you keep.
+- The comparison table's facts match the Security page line for line. Change one, change both.
+- FAQPage markup only on a page that renders its FAQs (the `faq` section of SeoLanding).
+- All new copy is approved by David before merge; the PR goes up as a draft and he marks it ready.
+
+components/SeoLanding.tsx gained three section types for this: `compare` (a two-column table),
+`faq` (details and summary, with the FAQPage node built from the same list) and `links` (hub
+cards). Any later landing page can use them.

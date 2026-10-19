@@ -1,3 +1,4 @@
+import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import ScrollReveal from "@/components/ScrollReveal";
 
@@ -50,13 +51,46 @@ export interface CtaSection {
   sub?: string;
   button: { label: string; href: string };
 }
+// Two options side by side, one row per thing a buyer weighs. The comparison pages (Oct 19
+// 2026) are built on this; a table reads faster than two columns of prose for "which one".
+export interface CompareSection {
+  type: "compare";
+  kicker?: string;
+  heading: string;
+  headingAccent?: string;
+  intro?: string;
+  columns: [string, string];
+  rows: { label: string; a: string; b: string }[];
+}
+// Questions and answers rendered on the page. A page that uses this section is the only kind
+// that may carry FAQPage structured data (DECISIONS.md: FAQPage only where FAQs render).
+export interface FaqSection {
+  type: "faq";
+  kicker?: string;
+  heading: string;
+  headingAccent?: string;
+  items: { q: string; a: string }[];
+}
+// A hub's links to the pages beneath it, as cards. The pillar page uses it to point at the
+// comparison pages, the agents and the industries it is the category page for.
+export interface LinksSection {
+  type: "links";
+  kicker?: string;
+  heading: string;
+  headingAccent?: string;
+  intro?: string;
+  links: { label: string; desc: string; href: string }[];
+}
 
 export type Section =
   | ColumnsSection
   | StepsSection
   | BulletsSection
   | ProseSection
-  | CtaSection;
+  | CtaSection
+  | CompareSection
+  | FaqSection
+  | LinksSection;
 
 export interface SeoLandingData {
   hero: {
@@ -297,6 +331,80 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
                         <span style={{ color: RED, fontWeight: 800, fontSize: 16, lineHeight: 1.5, flexShrink: 0 }}>→</span>
                         <span style={{ fontSize: 15, lineHeight: 1.55, color: "#333333" }}>{b}</span>
                       </div>
+                    </ScrollReveal>
+                  ))}
+                </div>
+              )}
+
+              {section.type === "compare" && (
+                <ScrollReveal delay={120}>
+                  <div
+                    style={{ marginTop: 40, overflowX: "auto", background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 10 }}
+                  >
+                    <table style={{ width: "100%", minWidth: 640, borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr>
+                          <th scope="col" style={{ width: "22%", padding: "16px 20px", textAlign: "left", fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: LABEL, borderBottom: "1px solid rgba(0,0,0,0.1)" }} />
+                          {section.columns.map((c) => (
+                            <th
+                              key={c}
+                              scope="col"
+                              style={{ padding: "16px 20px", textAlign: "left", fontFamily: "var(--font-body), Inter, sans-serif", fontSize: 17, fontWeight: 800, color: NAVY, borderBottom: `3px solid ${RED}` }}
+                            >
+                              {c}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.rows.map((r) => (
+                          <tr key={r.label}>
+                            <th scope="row" style={{ padding: "16px 20px", textAlign: "left", verticalAlign: "top", fontSize: 14, fontWeight: 700, color: INK, borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+                              {r.label}
+                            </th>
+                            <td style={{ padding: "16px 20px", verticalAlign: "top", fontSize: 14.5, lineHeight: 1.6, color: MUTED, borderBottom: "1px solid rgba(0,0,0,0.07)" }}>{r.a}</td>
+                            <td style={{ padding: "16px 20px", verticalAlign: "top", fontSize: 14.5, lineHeight: 1.6, color: MUTED, borderBottom: "1px solid rgba(0,0,0,0.07)" }}>{r.b}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </ScrollReveal>
+              )}
+
+              {section.type === "faq" && (
+                <div style={{ marginTop: 36, display: "grid", gap: 12 }}>
+                  {section.items.map((f, j) => (
+                    <ScrollReveal key={f.q} delay={(j % 4) * 70}>
+                      <details style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 10, padding: "6px 22px" }}>
+                        <summary
+                          className="font-display"
+                          style={{ cursor: "pointer", padding: "14px 0", fontSize: 17, fontWeight: 700, color: NAVY, listStyle: "none" }}
+                        >
+                          {f.q}
+                        </summary>
+                        <p className="font-body" style={{ fontSize: 15, lineHeight: 1.7, color: MUTED, margin: "0 0 16px" }}>{f.a}</p>
+                      </details>
+                    </ScrollReveal>
+                  ))}
+                </div>
+              )}
+
+              {section.type === "links" && (
+                <div
+                  style={{ marginTop: 44, display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))" }}
+                >
+                  {section.links.map((l, j) => (
+                    <ScrollReveal key={l.href} delay={(j % 3) * 90}>
+                      <Link
+                        href={l.href}
+                        className="block transition-transform hover:-translate-y-0.5"
+                        style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 10, padding: "22px 24px", height: "100%", textDecoration: "none" }}
+                      >
+                        <span style={{ display: "block", fontFamily: "var(--font-body), Inter, sans-serif", fontSize: 17, fontWeight: 800, color: NAVY, marginBottom: 8 }}>{l.label}</span>
+                        <span style={{ display: "block", fontSize: 14, lineHeight: 1.6, color: MUTED }}>{l.desc}</span>
+                        <span style={{ display: "inline-block", marginTop: 14, fontSize: 13, fontWeight: 700, color: RED }}>Read more →</span>
+                      </Link>
                     </ScrollReveal>
                   ))}
                 </div>
