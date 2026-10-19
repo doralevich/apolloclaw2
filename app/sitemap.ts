@@ -57,7 +57,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/enterprise", priority: 0.8, changed: "2026-10-04" },
     ...USE_CASES.map((u) => ({ path: `/use-cases/${u.slug}`, priority: 0.7, changed: "2026-10-04" })),
     { path: "/ai-consulting-education",       priority: 0.8, changed: "2026-10-04" },
-    { path: "/ai-agent-for-business",   priority: 0.9, changed: "2026-10-05" },
+    { path: "/ai-agent-for-business",   priority: 0.9, changed: "2026-10-19" },
+    // The comparison pages under the pillar (Oct 19 2026).
+    { path: "/compare/mac-mini-vs-private-virtual-server", priority: 0.7, changed: "2026-10-19" },
+    { path: "/compare/ai-agent-vs-chatbot",                priority: 0.7, changed: "2026-10-19" },
+    { path: "/compare/ai-consultant-vs-in-house",          priority: 0.7, changed: "2026-10-19" },
     { path: "/ai-consulting-long-island",     priority: 0.8, changed: "2026-10-09" },
     { path: "/ai-consulting-nyc",             priority: 0.8, changed: "2026-09-22" },
     { path: "/contact",      priority: 0.7, changed: "2026-09-21" },
