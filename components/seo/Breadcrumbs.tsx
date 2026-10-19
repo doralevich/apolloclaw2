@@ -51,8 +51,24 @@ const COMPARE: Record<string, string> = {
 
 const HOME: Crumb = { name: "Home", url: `${SITE}/` };
 
+// The legal cluster under the law firms hub (Oct 19 2026).
+const LAW_PRACTICES: Record<string, string> = {
+  "family-law": "Family Law",
+  "estate-planning": "Estate Planning",
+  immigration: "Immigration",
+  "commercial-litigation": "Commercial Litigation",
+};
+
 export function crumbsFor(pathname: string): Crumb[] | null {
   const parts = pathname.split("/").filter(Boolean);
+  if (parts.length === 3 && parts[0] === "industries" && parts[1] === "law-firms" && LAW_PRACTICES[parts[2]]) {
+    return [
+      HOME,
+      { name: "Industries", url: `${SITE}/use-cases` },
+      { name: "Law Firms", url: `${SITE}/industries/law-firms` },
+      { name: LAW_PRACTICES[parts[2]], url: `${SITE}/industries/law-firms/${parts[2]}` },
+    ];
+  }
   if (parts.length !== 2) return null;
   const [section, slug] = parts;
   const here = `${SITE}/${section}/${slug}`;
