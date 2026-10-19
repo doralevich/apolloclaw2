@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CEO_AGENT_FAQS, faqEntities } from "@/config/faqs";
@@ -270,7 +269,7 @@ export default function CeoPage() {
             Built for Executives Who Value Their Time
           </h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every CEO Bot deployment is set up around your organization. Plans start at {STARTING_PRICE} a month with no setup fee.{" "}
+            Every CEO Bot deployment is set up around your organization, month to month with setup included.{" "}
             <a href="/pricing" style={{ color: RED, fontWeight: 700 }}>See every plan</a>, or book a consultation for a custom build.
           </p>
           <a

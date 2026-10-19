@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
@@ -220,7 +219,7 @@ export default function HealthcarePage() {
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Practices Ready to Deliver Better Care at Scale</h2>
           <p className="font-body text-lg leading-relaxed mb-6" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every Medical Agent deployment is set up around your practice. Plans start at {STARTING_PRICE} a month with no setup fee.{" "}
+            Every Medical Agent deployment is set up around your practice, month to month with setup included.{" "}
             <a href="/pricing" style={{ color: RED, fontWeight: 700 }}>See every plan</a>, or book a consultation for a custom build.
           </p>
           <div className="inline-flex items-center gap-2 mb-10 px-4 py-2 rounded-full" style={{ background: "rgba(11,23,41,0.06)", border: "1px solid rgba(11,23,41,0.1)" }}>

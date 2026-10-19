@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { STARTING_PRICE } from "@/config/agent-plans";
 import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
@@ -220,7 +219,7 @@ export default function RealEstatePage() {
           <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: RED }}>Investment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>Built for Agents Who Are Done Losing Leads to Slow Follow-Up</h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every Real Estate Agent deployment is set up around your business. Plans start at {STARTING_PRICE} a month with no setup fee.{" "}
+            Every Real Estate Agent deployment is set up around your business, month to month with setup included.{" "}
             <a href="/pricing" style={{ color: RED, fontWeight: 700 }}>See every plan</a>, or book a consultation for a custom build.
           </p>
           <a href="https://cal.com/therealdaveo/dbdo-consultation" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center font-bold uppercase transition-all hover:brightness-110" style={{ background: RED, color: "#ffffff", fontSize: 13, letterSpacing: "0.1em", padding: "14px 32px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.35)" }}>

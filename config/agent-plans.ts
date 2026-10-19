@@ -156,15 +156,12 @@ export const LEGACY_TIER: AgentTier = {
 /** The plans a customer can buy today, in page order. */
 export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale);
 
-/** The entry plan on sale, for "plans start at" lines across the site. */
-const ENTRY_PLAN = PLANS_ON_SALE.reduce((a, b) => ((b.monthlyCents ?? Infinity) < (a.monthlyCents ?? Infinity) ? b : a));
-
-/** "$49": the lowest monthly price on sale. */
-export const STARTING_PRICE = `$${((ENTRY_PLAN.monthlyCents ?? 0) / 100).toLocaleString("en-US")}`;
-
-/** The one answer to "how much does it cost" anywhere outside /pricing: the FAQs, and the
- *  industry and agent pages. Built from the plans so it can never quote a retired price. */
-export const PRICING_FAQ_ANSWER = `Plans start at ${STARTING_PRICE} a month for ${agentsLabel(ENTRY_PLAN.agents)}, with no setup fee and no minimum term, and every agent is set up around your business. Every plan is on our pricing page. For a custom build, book a call.`;
+/** The one answer to "how much does it cost" anywhere outside /pricing: the FAQs on /faq and
+ *  on the industry and agent pages. It names no number on purpose: David's call (Oct 19 2026)
+ *  is that /pricing is the only page that prints a dollar amount, so a price change is one edit
+ *  and a visitor reads the current one. The industry and agent pages' own pricing lines follow
+ *  the same rule ("month to month with setup included", then a link to /pricing). */
+export const PRICING_FAQ_ANSWER = `Every plan is month to month with setup included, and every agent is set up around your business. Every plan, with its price, is on our pricing page. For a custom build, book a call.`;
 
 /** Every tier Super Admin can put a workspace on: the plans, and back to legacy. */
 export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS];
