@@ -350,3 +350,20 @@ The rules from here:
   rendered HTML, not the source (the template adds " | Apollo Claw"). Use-case pages carry a
   separate `metaDescription` in `config/useCases.ts`, because the on-page description runs long.
   The audit script lives in the PR that set this; rerun it before touching metadata at scale.
+
+## The home page's one claim: your own server (Oct 19, 2026)
+
+David's final call closing the SEO brief, overriding the Oct 9 title. The H1 is, exactly,
+"Custom AI Agents, Built for Your Business and Run on Your Own Server." The line under it:
+"Apollo Claw designs, builds and runs private AI agents for businesses and law firms. Your own
+Chief of Staff, working across the tools you already use." The title tag, meta description, Open
+Graph and Twitter tags, and the root layout's defaults say the same thing.
+
+Elsewhere the site says "private server" (the FAQ's 15-minute setup "on its own private server",
+the pricing page, the agent pages) and that is the wording to keep: a dedicated server per
+agent that we provision, or a Mac Mini the customer owns. Where a page needs to describe the
+hosting, write "private server" rather than inventing a third phrase.
+
+/pricing is a real page: indexed, in the sitemap, with a self-referencing canonical, and with
+no dollar amount in its title or description (prices live on the page). The /cost-estimator and
+/agents redirects stay as they are.

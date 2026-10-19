@@ -41,12 +41,13 @@ export const metadata: Metadata = {
   // bracketed wordmark, which reads as noise in a search result. A description is 140 to 160
   // characters with a reason to click. The suffix was "| Apollo Claw AI Consulting", which on a
   // blog post whose own title already ended in the brand put it there twice.
+  // The default matches the home page (app/page.tsx), David's final call on Oct 19 2026.
   title: {
-    default: "Apollo Claw | AI Consulting for NYC & Long Island Businesses",
+    default: "Custom AI Agents, Run on Your Own Server | Apollo Claw",
     template: "%s | Apollo Claw",
   },
   description:
-    "Apollo Claw builds private AI agents for owners and executives: a chief of staff that handles email, calendar, follow-ups and reports. Book a discovery call.",
+    "Apollo Claw designs, builds and runs private AI agents for businesses and law firms. Your own Chief of Staff, working across the tools you already use.",
   keywords: [
     "AI consulting firm",
     "AI consulting company",

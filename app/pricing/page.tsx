@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ENTERPRISE, PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
+import { ENTERPRISE, PLANS_ON_SALE, dollars } from "@/config/agent-plans";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { EnterpriseContactButton, EnterpriseForm } from "@/components/pricing/EnterpriseForm";
 import { Bot, ClipboardList, Headphones, Layers, MessageCircle, Network, Plug, Rocket, Server, Users, type LucideIcon } from "lucide-react";
@@ -36,18 +36,20 @@ const SOFT = "#F7F6F3";
 
 const featured = PLANS_ON_SALE.find((p) => p.featured);
 const team = PLANS_ON_SALE.find((p) => p.id === "team");
-const lowest = Math.min(...PLANS_ON_SALE.map((p) => p.monthlyCents ?? Infinity));
 
-const summary = PLANS_ON_SALE.map((p) => `${p.label} ${dollars(p.monthlyCents ?? 0)}/month for ${agentsLabel(p.agents)}`).join(", ");
-
+// No dollar amounts in the title or description (the SEO brief, Donna, Oct 9 2026; David's final
+// call Oct 19): the prices live on the page, where they can change without the search snippet
+// going stale. /pricing is a real, indexed page with a self-referencing canonical; the redirect
+// to /contact that the brief found in an older build is gone.
 export const metadata: Metadata = {
   title: { absolute: "Pricing | Apollo Claw" },
-  description: `Apollo Claw plans: ${summary}. No setup fee. Custom corporate builds on a call.`,
+  description:
+    "Apollo Claw plans for one agent, a small team or an executive bench: month to month, setup included, hosting and updates built in. Private servers on a call.",
   alternates: { canonical: "https://apolloclaw.ai/pricing" },
   openGraph: {
     images: OG_IMAGES,
     title: "Pricing | Apollo Claw",
-    description: `AI agents built around your business, from ${dollars(lowest)} a month. No setup fee.`,
+    description: "AI agents built around your business, month to month, with hosting and updates included.",
     url: "https://apolloclaw.ai/pricing",
     type: "website",
   },
