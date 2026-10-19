@@ -35,7 +35,7 @@ export default function DemoPage() {
       {/* Short on purpose. On a phone every line here is a line between the visitor and the
           thing they came to try, and the chat introduces itself anyway. */}
       <p className="mt-5 text-base leading-relaxed text-[#4A4A4A] sm:text-lg">
-        She is our Chief Operating Officer and she is an AI agent, built on the same thing we build
+        She is our Chief of Staff and she is an AI agent, built on the same thing we build
         for clients. Ask her what one of these could do for your business. She can put a call in
         the diary while you are here.
       </p>
