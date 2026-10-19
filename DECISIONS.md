@@ -438,3 +438,19 @@ hub gained a "Practice Areas" section that links down to all of them.
   the client of a law firm is the firm's client, and is only ever referred to that way.
 - The testimonials on the hub were left as they were, per the standing rule.
 - All copy is approved by David before merge; the PR goes up as a draft and he marks it ready.
+
+## /pricing is the only page that prints a dollar amount (Oct 19, 2026)
+
+David's call after the legal cluster went up. The "Plans start at $49 a month with no setup fee"
+line on the insurance, real estate, medical, CEO Agent, Law Agent and CFO Agent pages now reads
+"month to month with setup included" with the link to /pricing beside it, the same line the law
+firms hub and the personal injury page got in the legal cluster PR. The shared FAQ answer to
+"How much does it cost?" (PRICING_FAQ_ANSWER in config/agent-plans.ts) names no number either;
+it points to the pricing page. STARTING_PRICE is gone with its last reader.
+
+Why: a price lives in one place, so a price change is one edit, and a visitor always reads the
+current one. The plans on /pricing and /create-an-agent still read from config/agent-plans.ts.
+
+Left alone, on purpose: the case-study descriptors ("$400M AUM", "$180M in premiums") on the
+agent, industry and use-case pages. They describe a customer's size, they are part of the
+testimonials, and testimonials stay as they are.
