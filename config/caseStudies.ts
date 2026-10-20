@@ -49,7 +49,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     result: "Close cycle cut from 11 days to 6.",
     quote: "Our month-end close used to take eleven days. We're at six now. The CFO Agent pulls the data, flags the variances, and drafts the narrative. My team reviews instead of produces. That's the difference.",
     role: "CFO, Regional Insurance Group",
-    detail: "Multi-line carrier, $180M in premiums",
+    detail: "Multi-line regional carrier",
   },
   {
     industry: "/industries/insurance",
@@ -153,7 +153,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     result: "Every client update drafted, every review prepped.",
     quote: "Client communication is everything in this business. The bot drafts quarterly updates, flags clients who haven't heard from us in 60 days, and preps me before every review meeting. My clients think I have a larger team. In a way, I do.",
     role: "CEO, Wealth Management Firm",
-    detail: "RIA, $400M AUM, New York",
+    detail: "Independent RIA, New York",
   },
   // PROPERTY MANAGEMENT. The first is the client quote /industries/real-estate already carries;
   // the other two are labeled example scenarios. `industry` is a group key rather than a page,

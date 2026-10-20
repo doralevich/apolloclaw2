@@ -451,6 +451,6 @@ it points to the pricing page. STARTING_PRICE is gone with its last reader.
 Why: a price lives in one place, so a price change is one edit, and a visitor always reads the
 current one. The plans on /pricing and /create-an-agent still read from config/agent-plans.ts.
 
-Left alone, on purpose: the case-study descriptors ("$400M AUM", "$180M in premiums") on the
-agent, industry and use-case pages. They describe a customer's size, they are part of the
-testimonials, and testimonials stay as they are.
+The case-study descriptors ("$400M AUM", "$180M in premiums", "$40M revenue") went the next
+day, Oct 20, at David's call: they now describe the customer by kind and place ("Independent RIA,
+New York", "General contractor, Long Island"). The quotes, roles and results are as they were.
