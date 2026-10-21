@@ -75,7 +75,7 @@ const testimonials = [
     industry: "Insurance",
     quote: "Our month-end close used to take eleven days. We're at six now. The CFO Agent pulls the data, flags the variances, and drafts the narrative. My team reviews instead of produces. That's the difference.",
     role: "CFO, Regional Insurance Group",
-    detail: "Multi-line carrier, $180M in premiums",
+    detail: "Multi-line regional carrier",
   },
   {
     industry: "Real Estate",
@@ -93,13 +93,13 @@ const testimonials = [
     industry: "Construction",
     quote: "Job costing across 30 active projects used to require two full-time people just to keep current. The agent tracks actuals against budget on every job and flags anything drifting before it becomes a problem.",
     role: "CFO, General Contracting Firm",
-    detail: "$40M revenue, Long Island",
+    detail: "General contracting firm, Long Island",
   },
   {
     industry: "Finance",
     quote: "Audit prep used to be a fire drill every year. Now the documentation is maintained continuously. When our auditors show up, everything is organized and nothing is missing. Our audit fees went down.",
     role: "CFO, Wealth Management Firm",
-    detail: "RIA, $600M AUM",
+    detail: "Independent RIA",
   },
   {
     industry: "Healthcare",

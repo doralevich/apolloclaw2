@@ -112,13 +112,13 @@ const testimonials = [
     industry: "Finance",
     quote: "Client communication is everything in this business. The bot drafts quarterly updates, flags clients who haven't heard from us in 60 days, and preps me before every review meeting. My clients think I have a larger team. In a way, I do.",
     role: "CEO, Wealth Management Firm",
-    detail: "RIA, $400M AUM, New York",
+    detail: "Independent RIA, New York",
   },
   {
     industry: "Construction",
     quote: "Running a construction company means you're putting out fires all day. The CEO Bot started giving me a morning brief every day, what's on the schedule, what's at risk, what needs a call. I stopped reacting and started running the business.",
     role: "President & CEO",
-    detail: "General contractor, $25M revenue, Long Island",
+    detail: "General contractor, Long Island",
   },
 ];
 
