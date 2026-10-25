@@ -34,10 +34,11 @@ export function Hero() {
             >
               Custom AI Agents, Built for Your Business
             </h1>
+            {/* The subline is the "Who We Are" body text David picked on Oct 25 2026, in place of
+                the hosting sentence from Oct 19. Same words as the meta description. */}
             <p className="font-body mt-6 text-[1.125rem] leading-[1.65]" style={{ color: INK_MUTED, maxWidth: 580 }}>
-              Apollo Claw designs, builds and runs private AI agents for individuals and departments
-              at businesses and law firms. Each one runs on a Mac Mini on your network or a private
-              virtual server, working across the tools you already use.
+              We handle the infrastructure, workflows, training, deployment, and ongoing support, so
+              your team can focus on the work that needs human judgment.
             </p>
             <p className="font-body mt-4 text-[14px]" style={{ color: INK_SOFT }}>
               Already running for founders, physicians, and company leaders.

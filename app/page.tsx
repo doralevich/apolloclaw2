@@ -11,13 +11,13 @@ import { FinalCta } from "@/components/home/FinalCta";
 import { OG_IMAGES } from "@/lib/seo";
 
 // The title and description match the hero (components/home/Hero.tsx), David's final call on
-// Oct 19 2026 closing the SEO brief: the H1 in the title, the H1's subline as the description,
-// trimmed to fit a search snippet. This replaces the brief's "AI Consulting for NYC & Long
-// Island Businesses" title from Oct 9. Root layout's default title and description say the
-// same thing.
+// Oct 19 2026 closing the SEO brief: the H1 in the title. Oct 25: the description is the "Who We
+// Are" body text David picked, the same words as the hero subline, with the company named so it
+// stands alone in a search snippet. Root layout's default title and description say the same
+// thing.
 const TITLE = "Custom AI Agents Built for Your Business | Apollo Claw";
 const DESCRIPTION =
-  "Apollo Claw builds and runs private AI agents for individuals and departments at businesses and law firms, on a Mac Mini or a private virtual server.";
+  "Apollo Claw handles the infrastructure, workflows, training, deployment and ongoing support, so your team can focus on the work that needs human judgment.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },

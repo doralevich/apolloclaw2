@@ -454,3 +454,13 @@ current one. The plans on /pricing and /create-an-agent still read from config/a
 The case-study descriptors ("$400M AUM", "$180M in premiums", "$40M revenue") went the next
 day, Oct 20, at David's call: they now describe the customer by kind and place ("Independent RIA,
 New York", "General contractor, Long Island"). The quotes, roles and results are as they were.
+
+## The home page subline and meta description (Oct 25, 2026)
+
+David picked the "Who We Are" body text for both: "We handle the infrastructure, workflows,
+training, deployment, and ongoing support, so your team can focus on the work that needs human
+judgment." The hero subline carries it word for word. The meta description, Open Graph and
+Twitter text, and the root layout default carry it with the company named in place of "We", so
+the snippet stands alone in a results page. The H1 and title from Oct 19 stay. The hosting
+sentence (Mac Mini on your network or a private virtual server) stays on /security, /enterprise,
+the comparison page and the FAQ; it is no longer the subline.

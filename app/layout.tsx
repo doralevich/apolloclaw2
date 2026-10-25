@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     template: "%s | Apollo Claw",
   },
   description:
-    "Apollo Claw builds and runs private AI agents for individuals and departments at businesses and law firms, on a Mac Mini or a private virtual server.",
+    "Apollo Claw handles the infrastructure, workflows, training, deployment and ongoing support, so your team can focus on the work that needs human judgment.",
   keywords: [
     "AI consulting firm",
     "AI consulting company",
