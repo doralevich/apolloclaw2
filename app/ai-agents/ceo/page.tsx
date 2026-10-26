@@ -269,8 +269,7 @@ export default function CeoPage() {
             Built for Executives Who Value Their Time
           </h2>
           <p className="font-body text-lg leading-relaxed mb-10" style={{ color: "rgba(11,23,41,0.65)" }}>
-            Every CEO Bot deployment is set up around your organization, month to month with setup included.{" "}
-            <a href="/pricing" style={{ color: RED, fontWeight: 700 }}>See every plan</a>, or book a consultation for a custom build.
+            Every CEO Bot deployment is set up around your organization, month to month with setup included. Book a consultation for a custom build.
           </p>
           <a
             href="https://cal.com/therealdaveo/dbdo-consultation"

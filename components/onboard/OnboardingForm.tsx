@@ -1314,7 +1314,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
 
           <p style={{ textAlign: "center", fontSize: 12, color: TXD, marginTop: 14, lineHeight: 1.6 }}>
             Need more agents, several users, or your own private server?{" "}
-            <a href="/pricing#enterprise" style={{ color: TXM, fontWeight: 600 }}>Talk to us about a custom build</a>.
+            <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us about a custom build</a>.
           </p>
         </div>
       </div>

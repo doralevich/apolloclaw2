@@ -156,11 +156,19 @@ const nextConfig: NextConfig = {
       // pricing-intent URLs moved to /contact rather than being dropped: someone searching for
       // our pricing still wants to reach a human, and a 301 into a 404 is worse than either.
       //
-      // /pricing IS LIVE AGAIN and its redirect is gone. It serves app/pricing/page.tsx, the
-      // page carrying the two tiers and the support plans. This redirect is why the page was
-      // invisible when first added: the route existed, the build rendered it, and every request
-      // still 308'd to /contact, which is the kind of thing you only catch by fetching the URL
-      // rather than trusting the build output. Re-add it here only if the page is retired again.
+      // /pricing is HIDDEN again (David, Oct 26 2026: "hide it for now"). app/pricing/page.tsx
+      // stays in the tree so the page comes back by deleting this one entry; the redirect wins
+      // over the route, so the build still renders the page and nobody can reach it. Temporary
+      // (307) on purpose: a 308 would tell Google the URL is gone for good, and "for now" says
+      // otherwise. Every link to /pricing in the nav, the final CTA, the sitemap, llms.txt and the
+      // industry and agent pages came off in the same commit, so the redirect only catches old
+      // links and typed URLs. The earlier lesson stands: a route can exist, build and still be
+      // invisible behind a redirect, which you only catch by fetching the URL.
+      {
+        source: "/pricing",
+        destination: "/contact",
+        permanent: false,
+      },
       {
         source: "/cost-estimator",
         destination: "/contact",

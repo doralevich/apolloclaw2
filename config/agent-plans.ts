@@ -156,12 +156,12 @@ export const LEGACY_TIER: AgentTier = {
 /** The plans a customer can buy today, in page order. */
 export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale);
 
-/** The one answer to "how much does it cost" anywhere outside /pricing: the FAQs on /faq and
- *  on the industry and agent pages. It names no number on purpose: David's call (Oct 19 2026)
- *  is that /pricing is the only page that prints a dollar amount, so a price change is one edit
- *  and a visitor reads the current one. The industry and agent pages' own pricing lines follow
- *  the same rule ("month to month with setup included", then a link to /pricing). */
-export const PRICING_FAQ_ANSWER = `Every plan is month to month with setup included, and every agent is set up around your business. Every plan, with its price, is on our pricing page. For a custom build, book a call.`;
+/** The one answer to "how much does it cost" on the public site: the FAQs on /faq and on the
+ *  industry and agent pages. It names no number on purpose: David's call (Oct 19 2026) is that
+ *  /pricing is the only page that prints a dollar amount, so a price change is one edit and a
+ *  visitor reads the current one. Since Oct 26 2026 the pricing page is hidden, so the answer
+ *  points to a call rather than a page; when the page returns, point it back. */
+export const PRICING_FAQ_ANSWER = `Every plan is month to month with setup included, and every agent is set up around your business. Book a call and we will walk you through the plans and the price for your setup.`;
 
 /** Every tier Super Admin can put a workspace on: the plans, and back to legacy. */
 export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS];
