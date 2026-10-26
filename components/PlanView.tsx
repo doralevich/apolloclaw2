@@ -7,7 +7,6 @@ import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { Button } from "@/components/ui/button";
 import { useAgentPlan } from "@/components/AgentPlan";
-import Link from "next/link";
 import { PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { HOSTING_PLAN } from "@/lib/pricing/catalog";
@@ -243,9 +242,7 @@ export function PlanView() {
               Talk to us about switching
             </a>
           </Button>
-          <Link href="/pricing" className="text-sm font-medium underline-offset-4 hover:underline">
-            See all plans
-          </Link>
+          {/* "See all plans" linked /pricing, hidden Oct 26 2026 (David). Back with the page. */}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">We switch you over so you are never billed twice.</p>
       </div>

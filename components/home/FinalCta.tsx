@@ -1,4 +1,4 @@
-import { H2, PrimaryButton, Section, SoftLink, TAN, TAN_INK_MUTED } from "@/components/home/ui";
+import { H2, PrimaryButton, Section, TAN, TAN_INK_MUTED } from "@/components/home/ui";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 
 // Section 8 of the home page, the closing call to action (David's spec, Sept 27 2026). The
@@ -21,11 +21,8 @@ export function FinalCta() {
               30 relaxed minutes. You&apos;ll walk away with real ideas either way.
             </p>
           </div>
-          <div className="mt-8">
-            <SoftLink light href="/pricing">
-              See Plans and Pricing →
-            </SoftLink>
-          </div>
+          {/* The "See Plans and Pricing" link came off on Oct 26 2026 with the pricing page
+              hidden (David). It returns with the page. */}
         </div>
       </div>
     </Section>

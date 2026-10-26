@@ -266,12 +266,8 @@ export default function Navbar() {
       to: "/use-cases",
       active: (p) => p.startsWith("/use-cases"),
     },
-    {
-      kind: "link",
-      label: "Pricing",
-      to: "/pricing",
-      active: (p) => p.startsWith("/pricing"),
-    },
+    // "Pricing" came off the nav on Oct 26 2026 (David: hide the pricing page for now). The
+    // /pricing route redirects to /contact until it returns; see next.config.ts.
     {
       kind: "link",
       label: "Connect",

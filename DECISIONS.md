@@ -464,3 +464,20 @@ Twitter text, and the root layout default carry it with the company named in pla
 the snippet stands alone in a results page. The H1 and title from Oct 19 stay. The hosting
 sentence (Mac Mini on your network or a private virtual server) stays on /security, /enterprise,
 the comparison page and the FAQ; it is no longer the subline.
+
+## The pricing page is hidden (Oct 26, 2026)
+
+David's call: "hide it for now." /pricing redirects to /contact with a temporary 307 (one entry
+in next.config.ts), so the URL keeps pointing at a human and Google is told the move is not
+permanent. The page file stays in the tree and the build still renders it; delete the redirect
+entry and it is back. Every link to it came off in the same commit: the nav item, the "See Plans
+and Pricing" link in the home page's final CTA, "See every plan" on the eight industry and agent
+pages (their line now ends "Book a consultation for a custom build"), the dashboard's "See all
+plans", the create-an-agent page's "See full pricing", the onboarding form's custom-build link
+(now /contact), the sitemap entry and the llms.txt line. The shared FAQ answer points to a call
+instead of the page. The Oct 19 rule stands: no dollar amount outside the pricing page, which now
+means none on the public site; /create-an-agent still prints the plan cards because it is the
+purchase page.
+
+To bring it back: delete the /pricing redirect, restore the sitemap line with a fresh date, the
+llms.txt line, the nav item and the links above, and point the FAQ answer at the page again.

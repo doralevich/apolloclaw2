@@ -307,11 +307,7 @@ export default function CreateAnAgentPage() {
             </a>
             .
           </p>
-          <p className="font-body text-sm text-muted-foreground mt-3 text-center">
-            <Link href="/pricing" className="font-bold text-foreground underline underline-offset-4">
-              See full pricing
-            </Link>
-          </p>
+          {/* "See full pricing" linked /pricing, hidden Oct 26 2026 (David). Back with the page. */}
         </div>
       </section>
 
