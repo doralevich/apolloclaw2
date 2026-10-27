@@ -8,7 +8,13 @@ import { AgentCards } from "@/components/home/AgentCards";
 import { HomeFaq } from "@/components/home/HomeFaq";
 import { HOME_FAQS } from "@/config/faqs";
 import { FinalCta } from "@/components/home/FinalCta";
+import PageDates from "@/components/PageDates";
 import { OG_IMAGES } from "@/lib/seo";
+
+// The day the home page's words last changed (the subline, Oct 25 2026). The WebPage node
+// below carries it as dateModified; app/sitemap.ts carries the same day. No visible line here:
+// the hero is the hero.
+const UPDATED = "2026-10-25";
 
 // The title and description match the hero (components/home/Hero.tsx), David's final call on
 // Oct 19 2026 closing the SEO brief: the H1 in the title. Oct 25: the description is the "Who We
@@ -54,6 +60,7 @@ export default function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <PageDates url="https://apolloclaw.ai/" name={TITLE.replace(/ \| Apollo Claw$/, "")} description={DESCRIPTION} dateModified={UPDATED} />
       <Hero />
       <WhatWeDo />
       <HeroSteps />

@@ -481,3 +481,31 @@ purchase page.
 
 To bring it back: delete the /pricing redirect, restore the sitemap line with a fresh date, the
 llms.txt line, the nav item and the links above, and point the FAQ answer at the page again.
+
+## AIO and schema: dates, bylines, FAQ blocks, breadcrumbs (Oct 27, 2026)
+
+David's task list, done in one PR from a fresh branch off main.
+
+- /company, /ai-agents, /ai-consulting-long-island and /industries/law-firms carry a visible
+  "Last updated: Month D, YYYY" line and "By David Oralevich, Founder". One constant per page
+  (UPDATED) drives the visible line and the WebPage node's dateModified through
+  components/PageDates.tsx, so the two can never disagree, and app/sitemap.ts carries the same
+  day. The home page carries dateModified in its WebPage node with no visible line. A byline
+  also sets David as the WebPage's author by reference.
+- BreadcrumbList on /company and /ai-consulting-long-island, inline, because
+  components/seo/Breadcrumbs.tsx only handles two-level paths. /industries/law-firms already had
+  one from that component.
+- FAQPage with visible, matching Q&A on /ai-agents, /company and /ai-consulting-long-island:
+  FLEET_FAQS, COMPANY_FAQS and LONG_ISLAND_FAQS in config/faqs.ts, rendered on their page and on
+  /faq. Real buyer questions: how a private agent differs from ChatGPT Enterprise, where the
+  data lives, how long a build takes, who supports it, what happens after launch. No prices.
+- The Client Results section on /industries/law-firms links to a hand-built post,
+  /blog/what-three-law-firms-got-back: three firms by practice type, no names, no figures in
+  dollars, no head counts or cities.
+- Primary-source links (ABA Formal Opinion 512, the NY State Bar AI guidance) were left out:
+  the build environment cannot reach americanbar.org or nysba.org, so neither URL could be
+  opened and confirmed, and the rule is to verify before linking.
+- sameAs on the Organization: LinkedIn, Crunchbase (David's URL) and designsbydaveo.com.
+  Clutch and GoodFirms wait for URLs David sends; none could be verified from here.
+- One ProfessionalService node per page, declared once in app/layout.tsx and referenced by
+  @id everywhere else; no priceRange. Checked on every changed page in the PR's verification.

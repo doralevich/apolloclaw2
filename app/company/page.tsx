@@ -1,17 +1,31 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
-import { OG_IMAGES, PERSON_REF } from "@/lib/seo";
+import PageDates from "@/components/PageDates";
+import { OG_IMAGES, PERSON_REF, breadcrumbJsonLd } from "@/lib/seo";
+import { COMPANY_FAQS, faqEntities } from "@/config/faqs";
 
 // The page is about David: an AboutPage whose main entity is his Person node (app/layout.tsx).
-const aboutJsonLd = {
+// The AboutPage node itself comes from <PageDates type="AboutPage"> in the hero, which also
+// carries the real dateModified and the visible "Last updated" line and byline (Oct 27 2026).
+// Beside it: the crumb trail (this page is one level deep, so components/seo/Breadcrumbs.tsx
+// leaves it alone) and the FAQ section's questions, from the same list the cards render.
+const graphJsonLd = {
   "@context": "https://schema.org",
-  "@type": "AboutPage",
-  "@id": "https://apolloclaw.ai/company#page",
-  url: "https://apolloclaw.ai/company",
-  name: "About Apollo Claw",
-  mainEntity: PERSON_REF,
-  isPartOf: { "@id": "https://apolloclaw.ai/#website" },
+  "@graph": [
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://apolloclaw.ai/" },
+      { name: "About Apollo Claw", url: "https://apolloclaw.ai/company" },
+    ]),
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/company#faq",
+      mainEntity: faqEntities(COMPANY_FAQS),
+    },
+  ],
 };
+
+// The day this page's words last changed; app/sitemap.ts carries the same day.
+const UPDATED = "2026-10-27";
 
 export const metadata: Metadata = {
   // The SEO brief's copy (Donna, Oct 9 2026). /about redirects here permanently.
@@ -48,7 +62,7 @@ const processSteps = [
 export default function CompanyPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(graphJsonLd) }} />
       {/* HERO - dark navy */}
       <section
         style={{ background: "#0B1729", color: "#ffffff" }}
@@ -142,6 +156,20 @@ export default function CompanyPage() {
             >
               Schedule a Free Call →
             </a>
+          </div>
+          <div style={{ marginTop: 32 }}>
+            <PageDates
+              url="https://apolloclaw.ai/company"
+              name="About Apollo Claw"
+              description="Meet David Oralevich and Apollo Claw: AI consulting and implementation from Roslyn, NY."
+              type="AboutPage"
+              mainEntity={PERSON_REF}
+              dateModified={UPDATED}
+              show
+              byline
+              tone="dark"
+              align="center"
+            />
           </div>
         </div>
       </section>
@@ -430,6 +458,40 @@ export default function CompanyPage() {
                   >
                     {s.desc}
                   </p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ - cream. The questions buyers ask about the company (David, Oct 27 2026), from
+          COMPANY_FAQS in config/faqs.ts: the same list the FAQPage node is built from and /faq
+          renders. */}
+      <section style={{ background: "#F2F1ED", color: "#1A1A1A" }} className="relative overflow-hidden">
+        <div className="container mx-auto px-5 md:px-8 py-20 md:py-24 max-w-7xl">
+          <ScrollReveal>
+            <div style={{ textAlign: "center", marginBottom: 44 }}>
+              <span
+                className="inline-block font-mono uppercase mb-4"
+                style={{ fontSize: 11, letterSpacing: "0.16em", color: "#888888" }}
+              >
+                [ Questions Buyers Ask ]
+              </span>
+              <h2
+                className="font-display leading-[1.05] tracking-tight"
+                style={{ fontSize: "clamp(30px, 4vw, 50px)", fontWeight: 800, color: "#1A1A1A", margin: 0 }}
+              >
+                Before You Call
+              </h2>
+            </div>
+          </ScrollReveal>
+          <div className="grid gap-4 md:grid-cols-2">
+            {COMPANY_FAQS.map((f, i) => (
+              <ScrollReveal key={f.q} delay={(i % 4) * 70}>
+                <div className="rounded-xl p-7 h-full" style={{ background: "#ffffff", border: "1px solid rgba(11,23,41,0.07)" }}>
+                  <h3 className="font-display text-base font-bold mb-2" style={{ color: "#0B1729" }}>{f.q}</h3>
+                  <p className="font-body text-sm leading-relaxed" style={{ color: "rgba(11,23,41,0.6)" }}>{f.a}</p>
                 </div>
               </ScrollReveal>
             ))}

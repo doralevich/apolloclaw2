@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { FleetGrid } from "@/components/agents/FleetGrid";
 import { AGENTS } from "@/config/navigation";
-import { OG_IMAGES } from "@/lib/seo";
+import { OG_IMAGES, breadcrumbJsonLd } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import { FLEET_FAQS, faqEntities } from "@/config/faqs";
+import PageDates from "@/components/PageDates";
 import {
   BodyLarge,
   BracketLabel,
@@ -72,6 +74,27 @@ const jsonLd = {
   })),
 };
 
+// The FAQ section's questions as structured data, from the same list the cards render, and the
+// crumb trail (one level deep, so components/seo/Breadcrumbs.tsx leaves this page alone).
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/ai-agents#faq",
+      mainEntity: faqEntities(FLEET_FAQS),
+    },
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://apolloclaw.ai/" },
+      { name: "AI Agents", url: "https://apolloclaw.ai/ai-agents" },
+    ]),
+  ],
+};
+
+// The day this page's words last changed. Drives the WebPage dateModified and the visible
+// "Last updated" line at once (components/PageDates.tsx), and app/sitemap.ts carries the same day.
+const UPDATED = "2026-10-27";
+
 // What every agent shares, and every line here is already a claim the site makes elsewhere
 // (the homepage description and components/home/TwoFoldModel.tsx). A directory page is the
 // easiest place in a site to start inventing capabilities, so these were taken from copy that
@@ -99,6 +122,7 @@ export default function FleetPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <section style={{ background: NAVY }} className="relative overflow-hidden">
         <TextureBackground />
@@ -126,6 +150,17 @@ export default function FleetPage() {
                 Book a Discovery Call
               </PrimaryButton>
               <SecondaryButton href="/how-it-works">How It Works</SecondaryButton>
+            </div>
+            <div className="mt-8">
+              <PageDates
+                url="https://apolloclaw.ai/ai-agents"
+                name="Our Fleet of AI Agents"
+                description="Every agent Apollo Claw builds, each scoped to a job and wired to your tools."
+                dateModified={UPDATED}
+                show
+                byline
+                tone="dark"
+              />
             </div>
           </div>
         </div>
@@ -175,6 +210,32 @@ export default function FleetPage() {
               </h3>
               <p className="font-body mt-3 text-[1rem] leading-[1.7]" style={{ color: TAN_INK_MUTED }}>
                 {point.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* FAQ: the questions buyers ask before they pick an agent (David, Oct 27 2026). The list
+          is FLEET_FAQS in config/faqs.ts, the same list the FAQPage node above is built from and
+          /faq renders, so the markup can never ask a question the page does not answer. */}
+      <Section bg={NAVY_ELEVATED}>
+        <div className="mx-auto max-w-7xl text-center">
+          <BracketLabel>Questions Buyers Ask</BracketLabel>
+          <H2>Before You Pick an Agent</H2>
+        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {FLEET_FAQS.map((f) => (
+            <div
+              key={f.q}
+              className="rounded-2xl border p-7"
+              style={{ borderColor: "rgba(245,246,248,0.1)", background: "rgba(255,255,255,0.04)" }}
+            >
+              <h3 className="font-heading text-[1.125rem] font-semibold leading-[1.3]" style={{ color: PAPER }}>
+                {f.q}
+              </h3>
+              <p className="font-body mt-3 text-[0.95rem] leading-[1.7]" style={{ color: PAPER_MUTED }}>
+                {f.a}
               </p>
             </div>
           ))}

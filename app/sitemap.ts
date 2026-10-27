@@ -30,12 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/cookies",          priority: 0.3, changed: "2026-09-26" },
     { path: "/terms",            priority: 0.3, changed: "2026-10-04" },
     // The fleet page: the index every /ai-agents/* entry below hangs off.
-    { path: "/ai-agents",              priority: 0.9, changed: "2026-09-27" },
+    { path: "/ai-agents",              priority: 0.9, changed: "2026-10-27" },
     { path: "/ai-agents/ceo",          priority: 0.9, changed: "2026-10-20" },
     { path: "/ai-agents/cfo",          priority: 0.9, changed: "2026-10-20" },
     { path: "/ai-agents/legal",        priority: 0.9, changed: "2026-10-19" },
     { path: "/industries/medical-practices",       priority: 0.9, changed: "2026-10-19" },
-    { path: "/industries/law-firms",        priority: 0.9, changed: "2026-10-19" },
+    { path: "/industries/law-firms",        priority: 0.9, changed: "2026-10-27" },
     // The legal cluster under the hub (Oct 19 2026).
     { path: "/industries/law-firms/family-law",            priority: 0.8, changed: "2026-10-19" },
     { path: "/industries/law-firms/estate-planning",       priority: 0.8, changed: "2026-10-19" },
@@ -55,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/industries/private-equity",        priority: 0.9, changed: "2026-09-22" },
     { path: "/industries/professional-services", priority: 0.9, changed: "2026-10-20" },
     { path: "/get-started",  priority: 0.9, changed: "2026-09-04" },
-    { path: "/company",      priority: 0.8, changed: "2026-10-09" },
+    { path: "/company",      priority: 0.8, changed: "2026-10-27" },
     { path: "/faq",          priority: 0.8, changed: "2026-10-19" },
     { path: "/blog",         priority: 0.8, changed: "2026-09-27" },
     { path: "/use-cases", priority: 0.8, changed: "2026-10-20" },
@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/compare/mac-mini-vs-private-virtual-server", priority: 0.7, changed: "2026-10-19" },
     { path: "/compare/ai-agent-vs-chatbot",                priority: 0.7, changed: "2026-10-19" },
     { path: "/compare/ai-consultant-vs-in-house",          priority: 0.7, changed: "2026-10-19" },
-    { path: "/ai-consulting-long-island",     priority: 0.8, changed: "2026-10-09" },
+    { path: "/ai-consulting-long-island",     priority: 0.8, changed: "2026-10-27" },
     { path: "/ai-consulting-nyc",             priority: 0.8, changed: "2026-09-22" },
     { path: "/contact",      priority: 0.7, changed: "2026-09-21" },
     { path: "/what-we-do",       priority: 0.8, changed: "2026-09-27" },
@@ -79,6 +79,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Both of these are public, indexable pages that were simply never added here.
     { path: "/create-an-agent", priority: 0.8, changed: "2026-10-04" },
     { path: "/blog/ai-assistant-for-ceo", priority: 0.6, changed: "2026-09-21" },
+    // Hand-built like the one above: the law-firm results write-up (Oct 27 2026).
+    { path: "/blog/what-three-law-firms-got-back", priority: 0.6, changed: "2026-10-27" },
     // Donna, full size. High, because it is the page the whole site is trying to get somebody
     // to: every other page argues that the agents work and this one lets them find out.
     { path: "/demo", priority: 0.9, changed: "2026-09-26" },

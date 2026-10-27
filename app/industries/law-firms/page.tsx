@@ -4,7 +4,16 @@ import { agentOgImages, ORG_REF } from "@/lib/seo";
 import AgentHero from "@/components/AgentHero";
 import { CaseStudiesSection } from "@/components/CaseStudiesSection";
 import { LAW_CLUSTER } from "@/components/PracticeAreaPage";
+import PageDates from "@/components/PageDates";
 import { LAW_FIRMS_FAQS, faqEntities } from "@/config/faqs";
+
+// The day this page's words last changed. Drives the WebPage dateModified and the visible
+// "Last updated" line at once (components/PageDates.tsx); app/sitemap.ts carries the same day.
+const UPDATED = "2026-10-27";
+
+// The write-up the Client Results section points at: three firms, no names, no figures in
+// dollars, no identifying details (app/blog/what-three-law-firms-got-back/page.tsx).
+const RESULTS_POST = "/blog/what-three-law-firms-got-back";
 
 export const metadata: Metadata = {
   title: { absolute: "Law Agent | AI for Law Firms & Attorneys | Apollo Claw" },
@@ -133,6 +142,17 @@ export default function LegalPage() {
       {/* Value Prop */}
       <section style={{ background: CREAM2 }} className="py-20">
         <div className="container mx-auto max-w-7xl px-5 md:px-8 text-center">
+          <div className="mb-8">
+            <PageDates
+              url="https://apolloclaw.ai/industries/law-firms"
+              name="The Law Agent: AI for Law Firms"
+              description="The Law Agent handles client intake, case follow-ups, deadline tracking and billing reminders for law firms."
+              dateModified={UPDATED}
+              show
+              byline
+              align="center"
+            />
+          </div>
           <p className="font-mono text-xs uppercase tracking-widest mb-6" style={{ color: RED }}>Legal Intelligence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-6" style={{ color: NAVY }}>
             The Best Attorneys Focus on Law. Not Admin.
@@ -221,6 +241,11 @@ export default function LegalPage() {
             ))}
           </div>
           <p className="text-center font-mono text-xs mt-8" style={{ color: "rgba(255,255,255,0.25)" }}>Outcomes from real client engagements. Names and identifying details changed or withheld at client request.</p>
+          <p className="text-center font-body text-base mt-6">
+            <Link href={RESULTS_POST} className="font-bold underline underline-offset-4" style={{ color: "#ffffff" }}>
+              Read the write-up: what three law firms got back in their first 30 days →
+            </Link>
+          </p>
         </div>
       </section>
 

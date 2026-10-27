@@ -57,6 +57,10 @@ export function webPageJsonLd(page: {
   datePublished?: string;
   dateModified: string;
   type?: "WebPage" | "AboutPage" | "ContactPage";
+  /** What the page is about, by reference (an AboutPage's Person, for instance). */
+  mainEntity?: { "@id": string };
+  /** The page's author, by reference. Set when the page carries a visible byline. */
+  author?: { "@id": string };
 }) {
   return {
     "@type": page.type ?? "WebPage",
@@ -64,6 +68,8 @@ export function webPageJsonLd(page: {
     url: page.url,
     name: page.name,
     ...(page.description ? { description: page.description } : {}),
+    ...(page.mainEntity ? { mainEntity: page.mainEntity } : {}),
+    ...(page.author ? { author: page.author } : {}),
     ...(page.datePublished ? { datePublished: page.datePublished } : {}),
     dateModified: page.dateModified,
     isPartOf: { "@id": "https://apolloclaw.ai/#website" },
@@ -71,6 +77,9 @@ export function webPageJsonLd(page: {
     inLanguage: "en-US",
   };
 }
+
+/** The visible byline that goes with a page's "Last updated" line. One string, one author. */
+export const FOUNDER_BYLINE = "By David Oralevich, Founder";
 
 /** "October 4, 2026" from "2026-10-04", read as a calendar day rather than a UTC instant. */
 export function humanDate(iso: string): string {

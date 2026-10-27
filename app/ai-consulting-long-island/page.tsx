@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import SeoLanding, { type SeoLandingData } from "@/components/SeoLanding";
-import { OG_IMAGES, ORG_REF } from "@/lib/seo";
+import PageDates from "@/components/PageDates";
+import { OG_IMAGES, ORG_REF, breadcrumbJsonLd } from "@/lib/seo";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
+import { LONG_ISLAND_FAQS, faqEntities } from "@/config/faqs";
+
+// The day this page's words last changed. Drives the WebPage dateModified and the visible
+// "Last updated" line at once (components/PageDates.tsx); app/sitemap.ts carries the same day.
+const UPDATED = "2026-10-27";
 
 export const metadata: Metadata = {
   // The SEO brief's copy (Donna, Oct 9 2026). This page is the canonical target for the
@@ -22,21 +28,37 @@ export const metadata: Metadata = {
 
 // A Service offered on Long Island, provided by the one Organization in app/layout.tsx. This was
 // a second ProfessionalService with its own name and address, so the site described two businesses.
+// Beside it (Oct 27 2026): the crumb trail, which components/seo/Breadcrumbs.tsx leaves to
+// one-level pages, and the FAQ section's questions from the same list the page renders. The
+// WebPage node with dateModified comes from <PageDates> under the hero.
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Service",
-  "@id": "https://apolloclaw.ai/ai-consulting-long-island#service",
-  name: "AI Consulting for Long Island Businesses",
-  serviceType: "AI Consulting and Implementation",
-  description:
-    "AI consulting for Long Island businesses. We install custom AI agents into local companies across Nassau and Suffolk counties.",
-  url: "https://apolloclaw.ai/ai-consulting-long-island",
-  areaServed: [
-    { "@type": "AdministrativeArea", name: "Nassau County, NY" },
-    { "@type": "AdministrativeArea", name: "Suffolk County, NY" },
-    { "@type": "Place", name: "Long Island, NY" },
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": "https://apolloclaw.ai/ai-consulting-long-island#service",
+      name: "AI Consulting for Long Island Businesses",
+      serviceType: "AI Consulting and Implementation",
+      description:
+        "AI consulting for Long Island businesses. We install custom AI agents into local companies across Nassau and Suffolk counties.",
+      url: "https://apolloclaw.ai/ai-consulting-long-island",
+      areaServed: [
+        { "@type": "AdministrativeArea", name: "Nassau County, NY" },
+        { "@type": "AdministrativeArea", name: "Suffolk County, NY" },
+        { "@type": "Place", name: "Long Island, NY" },
+      ],
+      provider: ORG_REF,
+    },
+    breadcrumbJsonLd([
+      { name: "Home", url: "https://apolloclaw.ai/" },
+      { name: "AI Consulting for Long Island", url: "https://apolloclaw.ai/ai-consulting-long-island" },
+    ]),
+    {
+      "@type": "FAQPage",
+      "@id": "https://apolloclaw.ai/ai-consulting-long-island#faq",
+      mainEntity: faqEntities(LONG_ISLAND_FAQS),
+    },
   ],
-  provider: ORG_REF,
 };
 
 const data: SeoLandingData = {
@@ -48,6 +70,16 @@ const data: SeoLandingData = {
       "Apollo Claw is Long Island's AI consulting firm. We install custom AI agents into local businesses, no tech background required. Based in Roslyn Heights, NY.",
     cta: { label: "Book a Free Discovery Call", href: SCHEDULE_CONSULT_URL },
   },
+  afterHero: (
+    <PageDates
+      url="https://apolloclaw.ai/ai-consulting-long-island"
+      name="AI Consulting for Long Island Businesses"
+      description="Long Island AI consulting for owner-led businesses: a private AI agent set up, your team trained and supported after launch."
+      dateModified={UPDATED}
+      show
+      byline
+    />
+  ),
   sections: [
     {
       type: "columns",
@@ -88,6 +120,13 @@ const data: SeoLandingData = {
         { title: "Accountable", desc: "One firm, one point of contact, standing behind the build. If something needs fixing, you know exactly who to call." },
         { title: "Results-Driven", desc: "We install agents to remove real work and give you real time back, not to check an innovation box." },
       ],
+    },
+    {
+      type: "faq",
+      kicker: "Questions Buyers Ask",
+      heading: "Before You",
+      headingAccent: "Call",
+      items: LONG_ISLAND_FAQS,
     },
     {
       type: "cta",

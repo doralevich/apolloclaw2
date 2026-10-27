@@ -77,6 +77,84 @@ export const GENERAL_FAQS: Faq[] = [
   },
 ];
 
+// The three AIO question blocks (David, Oct 27 2026): real buyer questions, answered on the page
+// that gets asked them, with matching FAQPage markup. Each list renders in full on its page and
+// again on /faq. The data answer says where the data lives in one sentence everywhere.
+const DATA_LIVES_ANSWER =
+  "On a Mac Mini on your network or on a private virtual server reserved for you. Your agent connects to your own accounts, so your email, documents and records stay where they already are, and we see only what you grant it.";
+
+/** /ai-agents, the fleet page. */
+export const FLEET_FAQS: Faq[] = [
+  {
+    q: "How is a private AI agent different from ChatGPT Enterprise?",
+    a: "ChatGPT Enterprise is a chat window your team opens and types into, shared with every other customer on the same platform. A private agent is built for one person or one department, holds its own memory of how you work, connects to your mail, calendar, documents and systems, and acts on its own, drafting, filing and following up, with your approval before anything goes out.",
+  },
+  {
+    q: "Where does my data live?",
+    a: DATA_LIVES_ANSWER,
+  },
+  {
+    q: "How long does a build take?",
+    a: SETUP_TIME_ANSWER,
+  },
+  {
+    q: "Which agent should I start with?",
+    a: "The one pointed at the work that lands on your desk most. The CEO Agent for inbox, calendar and follow-ups, the CFO Agent for cash and invoices, the Law Agent for intake and deadlines. Book a discovery call and we will tell you which one covers it, or that none of them do yet.",
+  },
+  {
+    q: "What happens after launch?",
+    a: "Hosting, monitoring and updates are part of every plan, and hands-on training and support come with every custom build. The agent keeps learning your preferences, and you can add a second agent or a department when the first one has earned it.",
+  },
+];
+
+/** /company, the about page. */
+export const COMPANY_FAQS: Faq[] = [
+  {
+    q: "What does Apollo Claw do?",
+    a: "Apollo Claw designs, builds and runs private AI agents for individuals and departments at businesses and law firms. We handle the infrastructure, workflows, training, deployment and ongoing support, so your team can focus on the work that needs human judgment.",
+  },
+  {
+    q: "How is a private AI agent different from ChatGPT Enterprise?",
+    a: "ChatGPT Enterprise gives your team a shared chat tool and leaves the work to them. A private agent is built around one person or one department, remembers their context, connects to the tools they already use, and does the work itself: triage, drafts, scheduling, follow-ups, reports. You approve; it acts.",
+  },
+  {
+    q: "Where does my data live?",
+    a: DATA_LIVES_ANSWER,
+  },
+  {
+    q: "How long does a build take?",
+    a: SETUP_TIME_ANSWER,
+  },
+  {
+    q: "Who builds and supports the agent?",
+    a: "David Oralevich and the Apollo Claw team, from Roslyn Heights, New York. One firm, one point of contact, from the first discovery call through setup, training and the months after launch.",
+  },
+];
+
+/** /ai-consulting-long-island. */
+export const LONG_ISLAND_FAQS: Faq[] = [
+  {
+    q: "How is a private AI agent different from ChatGPT Enterprise?",
+    a: "ChatGPT Enterprise is a shared chat tool. A private agent is yours: built for one person or one department at your business, connected to your email, calendar, documents and systems, and working on its own with your approval. It remembers your context from one day to the next and runs in an environment reserved for you.",
+  },
+  {
+    q: "Where does my data live?",
+    a: DATA_LIVES_ANSWER,
+  },
+  {
+    q: "How long does a build take?",
+    a: SETUP_TIME_ANSWER,
+  },
+  {
+    q: "Do you work on site?",
+    a: "Yes. We are based at 69 Roslyn Road in Roslyn Heights and serve businesses across Nassau and Suffolk counties. Discovery calls, setup and training can happen at your office, and a video call works too.",
+  },
+  {
+    q: "Which Long Island businesses is this for?",
+    a: "Owner-led companies and professional practices where one person or one team carries a load of repetitive work: law firms, medical and dental practices, insurance agencies, real estate teams, accounting firms and service businesses. The first agent goes where the most hours are lost.",
+  },
+];
+
 export const CEO_AGENT_FAQS: Faq[] = [
   {
     q: "What exactly is an AI bot?",
