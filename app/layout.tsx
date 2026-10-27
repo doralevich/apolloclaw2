@@ -10,13 +10,14 @@ import { OG_IMAGES, ORG_ID, ORG_REF, PERSON_ID, PERSON_REF } from "@/lib/seo";
 
 // The GA4 property the site actually reports into.
 //
-// G-4ZR38XGEME is the apolloclaw.ai web stream in the "Apollo Claw" property (534279936),
-// read off GA Admin > Data streams by David on Oct 6, 2026. The constant had been G-54RFVNJSSN
-// since before Sep 4, with a note here claiming the opposite history, so the tag was firing
-// correctly the whole time into a property nobody was looking at. That is the failure that
-// looks exactly like working, which is why there is one constant for both the loader and the
-// config call, and why the id is confirmed against the stream page rather than remembered.
-const GA_MEASUREMENT_ID = "G-4ZR38XGEME";
+// G-54RFVNJSSN is the measurement id in the gtag snippet GA showed David on Oct 27, 2026, when
+// the property he watches reported "Google tag isn't detected". The constant had been switched
+// to G-4ZR38XGEME on Oct 6 on the belief that it was the apolloclaw.ai stream, and since then the
+// tag fired correctly into a stream nobody was looking at, for the second time. The id in this
+// constant must be the one GA Admin > Data streams shows for the property David opens; when the
+// snippet GA offers and this constant disagree, the snippet wins. One constant feeds both the
+// loader and the config call so the two can never diverge.
+const GA_MEASUREMENT_ID = "G-54RFVNJSSN";
 
 const inter = Inter({
   subsets: ["latin"],

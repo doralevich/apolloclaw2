@@ -509,3 +509,12 @@ David's task list, done in one PR from a fresh branch off main.
   Clutch and GoodFirms wait for URLs David sends; none could be verified from here.
 - One ProfessionalService node per page, declared once in app/layout.tsx and referenced by
   @id everywhere else; no priceRange. Checked on every changed page in the PR's verification.
+
+## The Google Analytics measurement id (Oct 27, 2026)
+
+The site reports into G-54RFVNJSSN, the id in the gtag snippet GA showed David when his property
+said "Google tag isn't detected". The constant had been switched to G-4ZR38XGEME on Oct 6 in the
+belief that it was the apolloclaw.ai stream, so for three weeks the tag fired correctly into a
+stream nobody watched. Rule: the id in app/layout.tsx is whatever GA Admin shows for the property
+David opens, and the snippet GA offers settles any disagreement. There is one constant for the
+loader and the config call so they cannot diverge.
