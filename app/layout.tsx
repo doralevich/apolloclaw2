@@ -126,7 +126,7 @@ const jsonLd = {
         "AI consulting and implementation for owner-led businesses: private AI agents set up on your own infrastructure, with hands-on training and support after launch.",
       serviceType: "AI Strategy and Implementation",
       // No priceRange: it read as "$$$$" in search results, which says "expensive" and
-      // nothing else (the SEO brief's follow-up, Oct 19 2026). Prices live on /pricing.
+      // nothing else (the SEO brief's follow-up, Oct 19 2026). Checked again Oct 27 2026.
       telephone: "+1-917-363-5487",
       email: "hello@apolloclaw.ai",
       address: {
@@ -157,8 +157,11 @@ const jsonLd = {
         url: "https://apolloclaw.ai/contact",
       },
       founder: PERSON_REF,
+      // Profiles that exist. Crunchbase added Oct 27 2026 from David's URL; Clutch and GoodFirms
+      // go in the day he sends their URLs (none could be verified from the build environment).
       sameAs: [
         "https://www.linkedin.com/company/apolloclaw/",
+        "https://www.crunchbase.com/organization/apollo-claw",
         "https://designsbydaveo.com",
       ],
       hasOfferCatalog: {

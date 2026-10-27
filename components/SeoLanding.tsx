@@ -101,6 +101,9 @@ export interface SeoLandingData {
     description?: string;
     cta?: { label: string; href: string };
   };
+  /** Rendered straight under the hero, on the first section's ground: the place for a page's
+   *  "Last updated" line and byline (components/PageDates.tsx). */
+  afterHero?: React.ReactNode;
   sections: Section[];
 }
 
@@ -148,6 +151,14 @@ export default function SeoLanding({ data }: { data: SeoLandingData }) {
         description={data.hero.description}
         cta={data.hero.cta}
       />
+
+      {data.afterHero ? (
+        <div style={{ background: CREAM[0] }}>
+          <div className="container mx-auto px-5 md:px-8 max-w-7xl" style={{ paddingTop: 28 }}>
+            {data.afterHero}
+          </div>
+        </div>
+      ) : null}
 
       {data.sections.map((section, i) => {
         if (section.type === "cta") {
