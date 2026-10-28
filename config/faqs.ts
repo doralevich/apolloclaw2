@@ -185,7 +185,15 @@ export const CEO_AGENT_FAQS: Faq[] = [
 export const CFO_AGENT_FAQS: Faq[] = [
   {
     q: "What financial systems does the CFO Agent connect to?",
-    a: "We connect to QuickBooks, NetSuite, Sage, Xero, and most major ERP platforms. We also work with Excel and Google Sheets-based workflows. Every engagement is scoped individually.",
+    a: "We connect to your ledger (QuickBooks Online, Xero, NetSuite, Sage, and most major ERP platforms), your banking and payroll feeds, and the email, calendar, and document tools your team already uses. QuickBooks Desktop connects through a secure connector on your machine or server. We also work with Excel and Google Sheets-based workflows. Every engagement is scoped individually, and we confirm how deep each connection goes before we build.",
+  },
+  {
+    q: "Does the CFO Agent work for accounting and tax firms?",
+    a: "Yes. For a firm, it takes the repetitive admin layer: document intake and classification, chasing clients for records, drafting routine communications, and keeping filing calendars with deadline alerts. Anything that needs professional judgment, like a tax position or client advice, goes to a person for review. It works around your tax and practice software rather than inside the return itself, and we confirm what that looks like for your platforms on the discovery call.",
+  },
+  {
+    q: "Which AI model does it run on, and where does it live?",
+    a: "You pick the model: Claude, GPT, Gemini, or Grok. The agent runs on a private server you control, either a private virtual server or a Mac mini on your own network, and it keeps a compounding memory of your context.",
   },
   {
     q: "How long does it take to get up and running?",

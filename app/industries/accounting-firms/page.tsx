@@ -23,7 +23,7 @@ const uc = {
   label: "Accounting Firms",
   title: "AI for",
   subtitle: "Accounting Firms",
-  description: "Apollo[Claw] helps CPA firms and financial services businesses automate the repetitive work that spikes during tax season and never fully goes away.",
+  description: "Apollo[Claw] builds a private AI agent that acts like a chief of staff for your firm. It runs the repetitive admin layer that spikes during tax season and never fully goes away, and routes every judgment call to a person.",
   challenges: [
     "Document collection from clients taking weeks",
     "Deadline reminders sent manually for every client",
@@ -36,6 +36,8 @@ const uc = {
     { title: "Document Collection", desc: "AI sends automated document request sequences, follows up on missing items, and confirms receipt, without your team chasing every client." },
     { title: "Deadline Automation", desc: "Automatic deadline alerts for filing deadlines, extension requests, and client deliverables. No more manual calendar management." },
     { title: "Client Communication", desc: "AI drafts status updates, answers common questions, and keeps clients informed, so your team handles only what requires professional judgment." },
+    { title: "Document Intake and Reconciliation", desc: "Client files get sorted and classified, receipts and invoices get matched against the ledger, and exceptions reach you with a reason instead of a pile." },
+    { title: "Works Around Your Tax Software", desc: "The agent works at the workflow and data layer of your tax and practice platforms: import-ready data, status tracking, and the communication around the return. We confirm how deep each connection goes for your platforms before we build." },
   ],
   results: [
     "Faster document turnaround from clients",
