@@ -15,9 +15,14 @@ import type {
 
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
 
+// Exec has its own host. api.agent37.com/.../exec still works but proxies through to this one,
+// so going direct saves a hop. It authenticates with X-Agent37-Key rather than a bearer, and
+// waits up to 900s for a command (the control plane gives up at 780s).
+const EXEC_BASE = (process.env.AGENT37_EXEC_BASE_URL || "https://sandbox.agent37.app").replace(/\/$/, "");
+
 // The per-instance Agents API (chat: /v1/responses, /v1/models, /v1/sessions, /v1/files) is
 // served on the INSTANCE host — the bare instance URL `https://{id}.agent37.app`, default port
-// 3737 — NOT the control-plane BASE above (which owns instance lifecycle: start/stop/exec/etc).
+// 3737 — NOT the control-plane BASE above (which owns instance lifecycle: start/stop/etc).
 // Overridable via env in case the apex domain ever differs by environment.
 const INSTANCE_DOMAIN = process.env.AGENT37_INSTANCE_DOMAIN || "agent37.app";
 
@@ -88,9 +93,10 @@ async function parseAgent37<T>(res: Response, augment402 = false): Promise<T> {
     const raw = (data ?? {}) as {
       code?: string;
       message?: string;
-      error?: { code?: string; message?: string };
+      error?: string | { code?: string; message?: string };
     };
-    const err = raw.error ?? raw;
+    // The exec sandbox host sometimes sends the code as a bare string: {"error":"not_found"}.
+    const err = typeof raw.error === "string" ? { code: raw.error, message: raw.message } : raw.error ?? raw;
     let message = err.message || res.statusText;
     if (augment402 && res.status === 402) {
       // Almost always an unfunded wallet at create/start time — point the operator at billing.
@@ -211,12 +217,22 @@ export const agent37 = {
       body: JSON.stringify({ port, ...(ttlSeconds ? { ttl_seconds: ttlSeconds } : {}) }),
     }),
 
-  // Run a shell command inside the running instance (docker exec, server-side only).
-  exec: (id: string, command: string) =>
-    call<{ exit_code: number; stdout: string; stderr: string; truncated: boolean }>(
-      `/instances/${id}/exec`,
-      { method: "POST", body: JSON.stringify({ command }) }
-    ),
+  // Run a shell command inside the instance (sh -c, server-side only), on the sandbox host (see
+  // EXEC_BASE). A sleeping instance is woken first. A nonzero exit is still a 200; errors mean the
+  // platform couldn't run it.
+  exec: async (id: string, command: string) => {
+    const key = process.env.AGENT37_API_KEY;
+    if (!key) {
+      throw new Agent37Error(500, "config_error", "AGENT37_API_KEY is not set on the server");
+    }
+    const res = await fetch(`${EXEC_BASE}/v1/instances/${id}/exec`, {
+      method: "POST",
+      headers: { "X-Agent37-Key": key, "Content-Type": "application/json" },
+      body: JSON.stringify({ command }),
+      cache: "no-store",
+    });
+    return parseAgent37<{ exit_code: number; stdout: string; stderr: string; truncated: boolean }>(res, true);
+  },
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
 
