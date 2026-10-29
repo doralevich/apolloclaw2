@@ -40,6 +40,7 @@
 // answer comes back as $412,000, which it can only get by messaging the other agent.
 
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
+const EXEC_BASE = (process.env.AGENT37_EXEC_BASE_URL || "https://sandbox.agent37.app").replace(/\/$/, "");
 const KEY = process.env.AGENT37_API_KEY;
 
 // The API's smallest accepted combination. 1 vCPU is refused ("Unsupported resource
@@ -87,10 +88,12 @@ if (!["setup", "verify", "revert", "teardown"].includes(mode)) usage();
 
 // ─── Agent37 control plane (mirrors lib/agent37.ts) ──────────────────────────
 
-async function api(path, init = {}) {
-  const res = await fetch(`${BASE}/v1${path}`, {
+async function api(path, init = {}, base = BASE) {
+  // The sandbox host takes the key as X-Agent37-Key; the control plane wants a bearer.
+  const auth = base === EXEC_BASE ? { "X-Agent37-Key": KEY } : { Authorization: `Bearer ${KEY}` };
+  const res = await fetch(`${base}/v1${path}`, {
     ...init,
-    headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json", ...(init.headers || {}) },
+    headers: { ...auth, "Content-Type": "application/json", ...(init.headers || {}) },
   });
   const text = await res.text();
   let body;
@@ -106,7 +109,8 @@ async function api(path, init = {}) {
 }
 
 const getInstance = (id) => api(`/instances/${id}`);
-const exec = (id, command) => api(`/instances/${id}/exec`, { method: "POST", body: JSON.stringify({ command }) });
+const exec = (id, command) =>
+  api(`/instances/${id}/exec`, { method: "POST", body: JSON.stringify({ command }) }, EXEC_BASE);
 const restart = (id) => api(`/instances/${id}/restart`, { method: "POST" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
