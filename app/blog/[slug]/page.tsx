@@ -26,9 +26,30 @@ export async function generateMetadata({
   try {
     const post = await sanityClient.fetch(POST_BY_SLUG_QUERY, { slug });
     if (!post) return { title: "Post Not Found" };
+    // Use the post's own featured image for link previews (LinkedIn, Telegram, iMessage).
+    // Falls back to the site-wide image from the root layout when a post has none.
+    const ogImageUrl: string | undefined = post.featuredImage?.asset?.url;
+    const ogImages = ogImageUrl
+      ? [{ url: ogImageUrl, width: 1200, height: 627, alt: post.featuredImage?.alt || post.title }]
+      : undefined;
     return {
       title: post.seoTitle || post.title,
       description: post.seoDescription || post.excerpt || "",
+      ...(ogImages && {
+        openGraph: {
+          type: "article",
+          title: post.seoTitle || post.title,
+          description: post.seoDescription || post.excerpt || "",
+          url: `https://apolloclaw.ai/blog/${slug}`,
+          images: ogImages,
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: post.seoTitle || post.title,
+          description: post.seoDescription || post.excerpt || "",
+          images: [ogImageUrl as string],
+        },
+      }),
       // Without this every post inherits the root layout's canonical, which points at the
       // homepage - so each post told Google it was a duplicate of apolloclaw.ai and none of
       // them could rank on their own.
