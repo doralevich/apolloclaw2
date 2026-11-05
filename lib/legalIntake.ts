@@ -26,7 +26,7 @@
 //
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
 
-import type { IndustryBranch, IndustryField } from "@/lib/industryConfig";
+import type { IndustryBranch, IndustryField, StackSection } from "@/lib/industryConfig";
 
 // The full options list for "What are your primary practice areas?". Kept as its own constant
 // (rather than inlined) because PRACTICE_AREA_FOLLOWUPS below has to reference the exact same
@@ -384,9 +384,9 @@ const DOCUMENTS: IndustryBranch = {
 // pick list, David's call: the tools are specific to each practice and a list would miss most.
 
 /** One section of a role's Tech Stack page: a logo-tile pick list, or a single text box. */
-export type StackSection =
-  | { key: string; label: string; options: readonly string[]; /** Store one string rather than an array. */ single?: boolean }
-  | { key: string; label: string; question: string; text: { placeholder?: string; helper?: string } };
+// The section shape now lives in lib/industryConfig.ts, since an industry's software uses the
+// same page (Nov 5 2026); re-exported here so the form's import keeps working.
+export type { StackSection };
 
 export const LEGAL_STACK: readonly StackSection[] = [
   { key: "practice_management", label: "Practice & Case Management", options: ["Clio", "MyCase", "PracticePanther", "Filevine", "Smokeball", "CosmoLex", "Rocket Matter", "Litify", "None yet", "Other"] },

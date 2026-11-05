@@ -1,4 +1,5 @@
 import type { PdfSectionInput } from "@/lib/pdf";
+import { industryFieldLabel } from "@/lib/industryConfig";
 
 // Shared section/label builder for the Apollo[Claw] business onboarding form
 // (components/onboard/OnboardingForm.tsx). One source of truth for how the raw
@@ -67,8 +68,11 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
     if (Object.keys(idet).length) {
       sections.push({
         title: "Industry Deep-Dive",
+        // The question each answer was given to, not its key with the underscores swapped out:
+        // the agent reads this file, and "EHR / Practice Management: Epic" tells it something
+        // "Ehr System: Epic" does not.
         rows: Object.entries(idet).map(([k, v]) => ({
-          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          label: industryFieldLabel(k),
           value: v as unknown,
         })),
       });
@@ -193,7 +197,6 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         { label: "Website", value: d.website },
         { label: "Industry", value: d.industry },
         { label: "Team Size", value: d.companySize },
-        { label: "Monthly Revenue", value: d.revenue },
         { label: "Years in Business", value: d.businessAge },
         { label: "Description", value: d.businessDescription },
         { label: "Differentiation", value: d.differentiator },
@@ -221,7 +224,6 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
       rows: [
         { label: "Biggest Goal / Priority (12mo)", value: d.strategicBet },
         { label: "Growth Bottleneck", value: d.growthBottleneck },
-        { label: "Tech Trust (1–10)", value: d.techTrust },
       ],
     });
     sections.push({
@@ -242,9 +244,10 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         { label: "AI Goals", value: d.aiGoals },
         { label: "Primary Success Metric", value: d.successMetric },
         { label: "Prior AI Experience", value: d.priorAI },
-        { label: "Past AI Attempts", value: d.pastExperience },
-        { label: "Team's View of Prior AI", value: d.aiThoughts },
-        { label: "Prior AI Implementation", value: d.aiStartup },
+        { label: "AI Tools Used", value: d.aiTools },
+        { label: "AI Tools Used (Other)", value: d.aiToolsOther },
+        { label: "Comfort With AI Tools (1-5)", value: d.aiProficiency },
+        { label: "Processes to Keep", value: d.aiKeepProcesses },
         { label: "Team Sentiment", value: d.teamSentiment },
       ],
     });
@@ -256,6 +259,7 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         // White-glove links only: the done-for-you work the customer asked Apollo Claw to handle.
         { label: "Apollo Claw to Handle", value: d.serviceRequests },
         { label: "Service Notes", value: d.serviceRequestsNotes },
+        { label: "Anything Else", value: d.anythingElse },
       ],
     });
     const ups = Array.isArray(d.uploadedFiles) ? (d.uploadedFiles as Array<Record<string, unknown>>) : [];

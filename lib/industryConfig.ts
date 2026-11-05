@@ -4,7 +4,29 @@
 // The dynamic Step 4 ("Industry Deep-Dive") renders whichever branch matches
 // the PRIMARY company's industry. Answers save into the industry_details JSONB column.
 //
+// Each branch may also carry `stack`: the software that industry runs on, asked on the Tech
+// Stack page beside the generic CRM / communication / documents tiles rather than on the
+// deep-dive page (David, Nov 5 2026: "we have that in the next page under Tech Stack"). Those
+// answers save into the same industry_details blob, and lib/agent-files.ts reads them into
+// TOOLS.md the way it reads a role agent's tools.
+//
 // Brand rule: no em dashes in any user-facing string. Use hyphens or commas.
+
+import { LEGAL_STACK } from "@/lib/legalIntake";
+
+/** One section on the Tech Stack page: a row of logo tiles, or a single type-in question.
+ *  Shared with the role agents' own stack pages (lib/legalIntake.ts LEGAL_STACK). */
+export type StackSection =
+  | {
+      key: string;
+      label: string;
+      options: readonly string[];
+      /** Store one string rather than an array. */
+      single?: boolean;
+      /** Continue is refused until at least one tile is picked. */
+      required?: boolean;
+    }
+  | { key: string; label: string; question: string; text: { placeholder?: string; helper?: string } };
 
 export type FieldType =
   | "dropdown"
@@ -67,55 +89,63 @@ export interface IndustryBranch {
   // character and becomes wallpaper.
   art?: boolean;
   fields: IndustryField[];
+  // The software this industry runs on, asked on the Tech Stack page (see the file header).
+  // Answers save into industry_details under each section's key.
+  stack?: readonly StackSection[];
+  // Generic Tech Stack sections this industry's own `stack` already covers, hidden so nothing
+  // is asked twice: a realtor's CRM, a CPA's accounting software.
+  stackSkip?: readonly ("crm" | "comms" | "docs" | "pm" | "billing")[];
+  // REPLACE the generic Tech Stack sections with `stack` entirely, for an industry whose stack
+  // is its own world (a law firm runs Clio and Westlaw, and a page offering it Salesforce and
+  // Asana asks nothing it can answer).
+  stackReplaces?: boolean;
 }
 
-// Step 2 industry dropdown. Note the Finance/Accounting/Legal split into three.
+// Step 2 industry dropdown, alphabetical with "Other" last (David, Nov 5 2026; it used to be in
+// the order the branches were written, which read as random to anyone scanning for their own).
+// Note the Finance/Accounting/Legal split into three.
+//
+// Not every row has a deep-dive branch below. An option without one just skips the industry
+// step and runs the generic fallback, which is the right answer for a dealership or a salon:
+// a real industry with no dedicated agent and nowhere better to send them.
+//
+// INSURANCE IS DELIBERATELY NOT HERE. It sat in this list with no branch behind it, so an
+// agency owner picking it was asked nothing whatsoever about insurance - while The Insurance
+// Agent exists as its own product, with its own site and its own twelve-question intake that
+// asks about lines written, carriers, renewals and the licensed handoff. Sending that buyer
+// down the generic business track was the worst of both: too general to be useful, and it
+// hid the thing they should have been sold. They belong at /onboard?agent=insurance.
+//
+// Staffing is here because the site sells a recruiting agent on its own use-case page while
+// the questionnaire once had no way to say you run a staffing firm. The two athletics rows
+// each have a deep-dive branch below, so picking either makes the questionnaire go athletic.
 export const INDUSTRY_OPTIONS: string[] = [
-  "E-commerce / Retail",
-  "Professional Services",
-  "Healthcare / Medical",
-  "Real Estate",
-  "SaaS / Software",
-  "Marketing / Ad Agency",
-  "Legal",
   "Accounting / CPA",
-  "Financial Services / RIA",
-  "Hospitality / Food & Beverage",
-  "Education / Coaching",
-  "Manufacturing / Logistics",
-  "Construction / Trades",
-  "Funeral & Memorial Services",
-  "Non-profit",
-  "Consulting",
-  "Media / Entertainment",
-  // The second wave, from David's "are we missing any industries?" pass. Each is a business
-  // type that was landing on "Other" often enough to deserve its own row - and Staffing was an
-  // outright embarrassment: the site sells a recruiting agent on its own use-case page while
-  // the questionnaire had no way to say you run a staffing firm. None of these has an
-  // industry-branch page yet (industryConfig below), which is fine - an option without a branch
-  // just skips the industry step, same as Non-profit always has.
-  //
-  // INSURANCE IS DELIBERATELY NOT HERE. It sat in this list with no branch behind it, so an
-  // agency owner picking it was asked nothing whatsoever about insurance - while The Insurance
-  // Agent exists as its own product, with its own site and its own twelve-question intake that
-  // asks about lines written, carriers, renewals and the licensed handoff. Sending that buyer
-  // down the generic business track was the worst of both: too general to be useful, and it
-  // hid the thing they should have been sold. They belong at /build/insurance.
-  //
-  // The rest below stay. They are real industries with no dedicated agent, and the generic
-  // fallback is the right answer for them - unlike insurance, there is nowhere better to send
-  // somebody who runs a dealership.
   "Automotive / Dealership",
   "Beauty / Personal Care",
+  "College Athletics",
+  "Construction / Trades",
+  "Consulting",
+  "E-commerce / Retail",
+  "Education / Coaching",
+  "Financial Services / RIA",
   "Fitness / Wellness",
+  "Funeral & Memorial Services",
+  "Healthcare / Medical",
   "Home Services",
+  "Hospitality / Food & Beverage",
   "IT Services / MSP",
+  "Legal",
+  "Manufacturing / Logistics",
+  "Marketing / Ad Agency",
+  "Media / Entertainment",
+  "Non-profit",
+  "Professional Athletics",
+  "Professional Services",
+  "Real Estate",
+  "SaaS / Software",
   "Staffing / Recruiting",
   "Travel / Tourism",
-  // Athletics: college programs (GW basketball, Michigan football) and the pro side each get
-  // their own deep-dive branch below, so picking either makes the questionnaire go athletic.
-  "College Athletics",
-  "Professional Athletics",
   "Other",
 ];
 
@@ -123,6 +153,9 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Healthcare / Medical": {
     stepTitle: "Your Practice",
     stepSubtitle: "A few specifics so your agent speaks your clinical world fluently.",
+    stack: [
+      { key: "ehr_system", label: "EHR / Practice Management", options: ["Epic", "Athenahealth", "eClinicalWorks", "Tebra / Kareo", "DrChrono", "SimplePractice", "RxNT", "None", "Other"] },
+    ],
     fields: [
       {
         key: "practice_type",
@@ -160,22 +193,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Refill / prescription requests",
           "Records requests",
           "Reviews and reputation",
-        ],
-      },
-      {
-        key: "ehr_system",
-        label: "EHR / practice management system",
-        type: "dropdown",
-        options: [
-          "Epic",
-          "Athenahealth",
-          "eClinicalWorks",
-          "Tebra / Kareo",
-          "DrChrono",
-          "SimplePractice",
-          "RxNT",
-          "None",
-          "Other",
         ],
       },
       {
@@ -217,6 +234,10 @@ export const industryConfig: Record<string, IndustryBranch> = {
   Legal: {
     stepTitle: "Your Law Practice",
     stepSubtitle: "The shape of your firm so the agent handles matters the way you do.",
+    // The same law-firm stack the Law Agent asks, in place of the generic tiles: a firm that
+    // picked Legal as its industry runs Clio and Westlaw whichever agent it is buying.
+    stack: LEGAL_STACK,
+    stackReplaces: true,
     fields: [
       {
         key: "practice_areas",
@@ -264,21 +285,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         options: ["Hourly", "Flat fee", "Contingency", "Retainer", "Hybrid"],
       },
       {
-        key: "case_mgmt",
-        label: "Case management system",
-        type: "dropdown",
-        options: [
-          "Clio",
-          "MyCase",
-          "PracticePanther",
-          "Filevine",
-          "Smokeball",
-          "Litify",
-          "None",
-          "Other",
-        ],
-      },
-      {
         key: "legal_bottlenecks",
         label: "Biggest bottleneck",
         type: "multiselect",
@@ -304,6 +310,10 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Real Estate": {
     stepTitle: "Your Real Estate Business",
     stepSubtitle: "How you transact so the agent works your pipeline, not a generic one.",
+    stack: [
+      { key: "re_platform", label: "Real Estate CRM / Platform", options: ["Follow Up Boss", "kvCORE", "BoomTown", "Chime", "kw Command", "AppFolio / Buildium", "None", "Other"] },
+    ],
+    stackSkip: ["crm"],
     fields: [
       {
         key: "re_focus",
@@ -347,21 +357,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         ],
       },
       {
-        key: "re_platform",
-        label: "CRM / platform",
-        type: "dropdown",
-        options: [
-          "Follow Up Boss",
-          "kvCORE",
-          "BoomTown",
-          "Chime",
-          "kw Command",
-          "AppFolio / Buildium",
-          "None",
-          "Other",
-        ],
-      },
-      {
         key: "re_team",
         label: "Team shape",
         type: "dropdown",
@@ -386,6 +381,10 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Accounting / CPA": {
     stepTitle: "Your Firm",
     stepSubtitle: "How you serve clients so the agent survives busy season with you.",
+    stack: [
+      { key: "cpa_software", label: "Tax & Accounting Software", options: ["QuickBooks", "Xero", "UltraTax", "Lacerte", "ProConnect", "Drake", "Karbon", "Canopy", "Other"] },
+    ],
+    stackSkip: ["billing"],
     fields: [
       {
         key: "firm_type",
@@ -421,22 +420,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         ],
       },
       {
-        key: "cpa_software",
-        label: "Primary software",
-        type: "dropdown",
-        options: [
-          "QuickBooks",
-          "Xero",
-          "UltraTax",
-          "Lacerte",
-          "ProConnect",
-          "Drake",
-          "Karbon",
-          "Canopy",
-          "Other",
-        ],
-      },
-      {
         key: "cpa_seasonality",
         label: "How seasonal is the work?",
         type: "radio",
@@ -454,6 +437,10 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Financial Services / RIA": {
     stepTitle: "Your Firm",
     stepSubtitle: "Your book and compliance posture so the agent stays inside the lines.",
+    stack: [
+      { key: "ria_platform", label: "Advisor CRM / Platform", options: ["Redtail", "Wealthbox", "Salesforce FSC", "Orion", "Black Diamond", "None", "Other"] },
+    ],
+    stackSkip: ["crm"],
     fields: [
       {
         key: "ria_type",
@@ -494,20 +481,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         ],
       },
       {
-        key: "ria_platform",
-        label: "Primary CRM / platform",
-        type: "dropdown",
-        options: [
-          "Redtail",
-          "Wealthbox",
-          "Salesforce FSC",
-          "Orion",
-          "Black Diamond",
-          "None",
-          "Other",
-        ],
-      },
-      {
         key: "ria_households",
         label: "Households or clients served",
         type: "dropdown",
@@ -532,22 +505,12 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "E-commerce / Retail": {
     stepTitle: "Your Store",
     stepSubtitle: "How you sell so the agent handles the volume behind it.",
+    stack: [
+      // Still required, as it was on the deep-dive page: the store platform is the one tool an
+      // e-commerce agent cannot work without knowing.
+      { key: "ecom_platform", label: "Store Platform", required: true, options: ["Shopify", "WooCommerce", "BigCommerce", "Amazon", "Etsy", "Physical / POS", "Other"] },
+    ],
     fields: [
-      {
-        key: "ecom_platform",
-        label: "Primary platform",
-        type: "dropdown",
-        required: true,
-        options: [
-          "Shopify",
-          "WooCommerce",
-          "BigCommerce",
-          "Amazon",
-          "Etsy",
-          "Physical / POS",
-          "Other",
-        ],
-      },
       {
         key: "sku_count",
         label: "SKU count",
@@ -602,11 +565,14 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Marketing / Ad Agency": {
     stepTitle: "Your Agency",
     stepSubtitle: "How your shop runs so the agent works your accounts, not a generic one.",
+    stack: [
+      { key: "agency_tool", label: "Agency Platform", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Airtable", "GoHighLevel", "AgencyAnalytics", "None", "Other"] },
+    ],
+    stackSkip: ["pm"],
     fields: [
       { key: "agency_type", label: "Agency type", type: "dropdown", required: true, options: ["Full-service", "Digital / performance", "Branding / creative", "PR / communications", "Social media", "SEO / content", "Web / dev shop", "Media buying"] },
       { key: "client_load", label: "Active clients", type: "dropdown", required: true, options: ["Under 10", "10 to 25", "25 to 60", "60+"] },
       { key: "agency_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["New business and pitching", "Client reporting", "Content production", "Campaign management", "Scope creep and billing", "Team capacity", "Lead follow-up"] },
-      { key: "agency_tool", label: "Primary platform", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Airtable", "GoHighLevel", "AgencyAnalytics", "None", "Other"] },
       {
         key: "agency_revenue_mix",
         label: "How the work is sold",
@@ -625,6 +591,10 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "SaaS / Software": {
     stepTitle: "Your Product",
     stepSubtitle: "Your motion and stage so the agent fits how you grow and retain.",
+    stack: [
+      { key: "saas_tool", label: "CRM / Support Tool", options: ["HubSpot", "Salesforce", "Intercom", "Zendesk", "Pipedrive", "Stripe Billing", "None", "Other"] },
+    ],
+    stackSkip: ["crm"],
     fields: [
       // "Not applicable" on both, at David's call. Both are REQUIRED, and both assume a
       // venture-shaped software company: an ARR band assumes revenue is how you measure
@@ -634,7 +604,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "saas_stage", label: "Stage", type: "dropdown", required: true, options: ["Pre-revenue / MVP", "Early (under $1M ARR)", "Growth ($1M to $10M ARR)", "Scale ($10M+ ARR)", "Not applicable"] },
       { key: "saas_motion", label: "Go-to-market motion", type: "dropdown", required: true, options: ["Product-led / self-serve", "Sales-led", "Hybrid", "Not applicable"] },
       { key: "saas_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Onboarding and activation", "Support tickets", "Churn and retention", "Sales follow-up", "Lead qualification", "Billing and dunning", "Feature request triage"] },
-      { key: "saas_tool", label: "Primary CRM / support tool", type: "dropdown", options: ["HubSpot", "Salesforce", "Intercom", "Zendesk", "Pipedrive", "Stripe Billing", "None", "Other"] },
       {
         key: "saas_support",
         label: "How customers reach you",
@@ -647,11 +616,14 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Professional Services": {
     stepTitle: "Your Practice",
     stepSubtitle: "How you serve clients so the agent supports your delivery.",
+    stack: [
+      { key: "services_tool", label: "Practice Management", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Notion", "Dubsado / HoneyBook", "None", "Other"] },
+    ],
+    stackSkip: ["pm"],
     fields: [
       { key: "services_type", label: "Type of practice", type: "dropdown", required: true, options: ["Consulting", "Design / creative", "Engineering / architecture", "Coaching", "Recruiting / staffing", "Other services"] },
       { key: "engagement_model", label: "Primary engagement model", type: "dropdown", required: true, options: ["Retainer", "Project-based", "Hourly", "Performance-based", "Mix"] },
       { key: "services_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and scoping", "Client onboarding", "Project delivery", "Time tracking and billing", "Lead follow-up", "Scheduling"] },
-      { key: "services_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Asana", "ClickUp", "Notion", "Dubsado / HoneyBook", "None", "Other"] },
       {
         key: "services_clients",
         label: "Active clients",
@@ -670,11 +642,13 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Hospitality / Food & Beverage": {
     stepTitle: "Your Venue",
     stepSubtitle: "How you serve guests so the agent handles the volume behind it.",
+    stack: [
+      { key: "hosp_tool", label: "POS & Reservations", options: ["Toast", "Square", "Resy / OpenTable", "Clover", "7shifts", "None", "Other"] },
+    ],
     fields: [
       { key: "hosp_type", label: "Type", type: "dropdown", required: true, options: ["Restaurant", "Bar / cafe", "Hotel / lodging", "Catering / events", "Franchise", "Multi-location group"] },
       { key: "covers_volume", label: "Weekly covers / guests", type: "dropdown", required: true, options: ["Under 500", "500 to 2000", "2000 to 5000", "5000+"] },
       { key: "hosp_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Reservations and no-shows", "Staffing and scheduling", "Reviews and reputation", "Ordering and inventory", "Guest messaging", "Loyalty and marketing"] },
-      { key: "hosp_tool", label: "Primary system", type: "dropdown", options: ["Toast", "Square", "Resy / OpenTable", "Clover", "7shifts", "None", "Other"] },
       {
         key: "hosp_locations",
         label: "Locations",
@@ -700,11 +674,13 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Education / Coaching": {
     stepTitle: "Your Program",
     stepSubtitle: "How you teach so the agent supports enrollment and students.",
+    stack: [
+      { key: "edu_tool", label: "Course & Community Platform", options: ["Kajabi", "Teachable", "Thinkific", "Circle", "Skool", "Calendly", "None", "Other"] },
+    ],
     fields: [
       { key: "edu_type", label: "Format", type: "dropdown", required: true, options: ["1:1 coaching", "Group coaching", "Online courses", "Tutoring", "Membership / community", "Corporate training"] },
       { key: "student_volume", label: "Active students / members", type: "dropdown", required: true, options: ["Under 25", "25 to 100", "100 to 500", "500+"] },
       { key: "edu_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Enrollment and sales", "Student onboarding", "Content delivery", "Scheduling", "Support and questions", "Retention and renewals"] },
-      { key: "edu_tool", label: "Primary platform", type: "dropdown", options: ["Kajabi", "Teachable", "Thinkific", "Circle", "Skool", "Calendly", "None", "Other"] },
       {
         key: "edu_delivery",
         label: "How you teach",
@@ -724,11 +700,13 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Manufacturing / Logistics": {
     stepTitle: "Your Operation",
     stepSubtitle: "How product moves so the agent supports orders and fulfillment.",
+    stack: [
+      { key: "mfg_tool", label: "ERP & Inventory", options: ["NetSuite", "SAP", "QuickBooks", "Fishbowl", "ShipStation", "None", "Other"] },
+    ],
     fields: [
       { key: "mfg_type", label: "Type", type: "dropdown", required: true, options: ["Manufacturing", "Distribution / wholesale", "Logistics / 3PL", "Warehousing", "Import / export"] },
       { key: "mfg_volume", label: "Monthly order volume", type: "dropdown", required: true, options: ["Under 100", "100 to 1000", "1000 to 5000", "5000+"] },
       { key: "mfg_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Order processing", "Inventory management", "Quoting and RFQs", "Supplier coordination", "Shipping and tracking", "Customer service"] },
-      { key: "mfg_tool", label: "Primary system", type: "dropdown", options: ["NetSuite", "SAP", "QuickBooks", "Fishbowl", "ShipStation", "None", "Other"] },
       {
         key: "mfg_customers",
         label: "Who you sell to",
@@ -747,11 +725,13 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Construction / Trades": {
     stepTitle: "Your Business",
     stepSubtitle: "How you win and run jobs so the agent keeps work moving.",
+    stack: [
+      { key: "trade_tool", label: "Field Service & Job Management", options: ["ServiceTitan", "Jobber", "Housecall Pro", "Procore", "Buildertrend", "QuickBooks", "None", "Other"] },
+    ],
     fields: [
       { key: "trade_type", label: "Type", type: "dropdown", required: true, options: ["General contractor", "Specialty trade (HVAC / plumbing / electrical)", "Remodeling", "Roofing", "Landscaping", "Commercial construction"] },
       { key: "job_volume", label: "Jobs per month", type: "dropdown", required: true, options: ["Under 10", "10 to 30", "30 to 100", "100+"] },
       { key: "trade_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Lead follow-up and estimates", "Scheduling and dispatch", "Quoting and bids", "Invoicing and collections", "Client updates", "Crew coordination"] },
-      { key: "trade_tool", label: "Primary system", type: "dropdown", options: ["ServiceTitan", "Jobber", "Housecall Pro", "Procore", "Buildertrend", "QuickBooks", "None", "Other"] },
       {
         key: "trade_crew",
         label: "Crew size",
@@ -790,6 +770,17 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Funeral & Memorial Services": {
     stepTitle: "Your Memorial Business",
     stepSubtitle: "How you serve families so the agent handles the wait, not just the sale.",
+    stack: [
+      {
+        // Every other industry names vendors. This one asks in plain language instead, because
+        // the software in this trade is small and regional and a list of guessed product
+        // names would put words in the customer's mouth that may not exist.
+        key: "records_system",
+        label: "Orders & Family Records",
+        question: "What you run orders and family records on",
+        text: { placeholder: "Software by name, spreadsheets, paper files, or a mix of all three" },
+      },
+    ],
     fields: [
       {
         key: "memorial_business_type",
@@ -913,26 +904,20 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Each one has its own rules on size, material, and foundations. This tells the agent how many rulebooks it is holding at once.",
         options: ["1 to 5", "6 to 20", "21 to 50", "More than 50", "We are the cemetery"],
       },
-      {
-        // Every other branch names vendors. This one asks in plain language instead, because
-        // the software in this trade is small and regional and a list of guessed product
-        // names would put words in the customer's mouth that may not exist.
-        key: "records_system",
-        label: "What you run orders and family records on",
-        type: "text",
-        placeholder: "Software by name, spreadsheets, paper files, or a mix of all three",
-      },
     ],
   },
 
   "Non-profit": {
     stepTitle: "Your Organization",
     stepSubtitle: "How you operate so the agent supports donors and programs.",
+    stack: [
+      { key: "np_tool", label: "Donor CRM", options: ["Salesforce NPSP", "Bloomerang", "DonorPerfect", "Little Green Light", "Kindful", "None", "Other"] },
+    ],
+    stackSkip: ["crm"],
     fields: [
       { key: "np_type", label: "Type", type: "dropdown", required: true, options: ["Charity / direct service", "Foundation / grantmaking", "Advocacy", "Faith-based", "Arts / culture", "Education"] },
       { key: "np_size", label: "Annual budget", type: "dropdown", required: true, options: ["Under $250k", "$250k to $1M", "$1M to $5M", "$5M+"] },
       { key: "np_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Donor outreach and follow-up", "Grant writing and reporting", "Volunteer coordination", "Event management", "Donor data and CRM", "Communications"] },
-      { key: "np_tool", label: "Primary system", type: "dropdown", options: ["Salesforce NPSP", "Bloomerang", "DonorPerfect", "Little Green Light", "Kindful", "None", "Other"] },
       {
         key: "np_staff",
         label: "Paid staff",
@@ -958,11 +943,14 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Consulting": {
     stepTitle: "Your Practice",
     stepSubtitle: "How you deliver so the agent supports clients and pipeline.",
+    stack: [
+      { key: "consult_tool", label: "Practice Management", options: ["HubSpot", "Monday.com", "Notion", "Asana", "Dubsado", "None", "Other"] },
+    ],
+    stackSkip: ["pm"],
     fields: [
       { key: "consult_type", label: "Focus", type: "dropdown", required: true, options: ["Management / strategy", "IT / technical", "Financial / advisory", "Marketing", "HR / operations", "Boutique / solo"] },
       { key: "consult_load", label: "Active clients", type: "dropdown", required: true, options: ["1 to 3", "4 to 10", "10 to 25", "25+"] },
       { key: "consult_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Proposals and pitching", "Client onboarding", "Deliverable production", "Scheduling", "Billing and time tracking", "Lead follow-up"] },
-      { key: "consult_tool", label: "Primary tool", type: "dropdown", options: ["HubSpot", "Monday.com", "Notion", "Asana", "Dubsado", "None", "Other"] },
       {
         key: "consult_engagement",
         label: "Typical engagement length",
@@ -981,11 +969,13 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "Media / Entertainment": {
     stepTitle: "Your Media Business",
     stepSubtitle: "How you produce and monetize so the agent supports the work.",
+    stack: [
+      { key: "media_tool", label: "Publishing & Audience Tools", options: ["Notion", "Airtable", "Later / Buffer", "Patreon", "ConvertKit", "None", "Other"] },
+    ],
     fields: [
       { key: "media_type", label: "Type", type: "dropdown", required: true, options: ["Creator / influencer", "Production company", "Publishing / media outlet", "Podcast / audio", "Agency / talent", "Events / live"] },
       { key: "audience_volume", label: "Audience size", type: "dropdown", required: true, options: ["Under 10k", "10k to 100k", "100k to 1M", "1M+"] },
       { key: "media_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Content production", "Scheduling and publishing", "Audience and community", "Sponsor and brand deals", "Monetization", "Analytics and reporting"] },
-      { key: "media_tool", label: "Primary tool", type: "dropdown", options: ["Notion", "Airtable", "Later / Buffer", "Patreon", "ConvertKit", "None", "Other"] },
       {
         key: "media_formats",
         label: "What you produce",
@@ -1013,6 +1003,14 @@ export const industryConfig: Record<string, IndustryBranch> = {
   "College Athletics": {
     stepTitle: "Your Program",
     stepSubtitle: "A few specifics so your agent speaks college sports fluently, recruiting, roster, and compliance included.",
+    stack: [
+      {
+        key: "program_tools",
+        label: "Program Software",
+        question: "Software the program runs on",
+        text: { placeholder: "Recruiting CRM (Teamworks, ARMS, Front Rush), film (Hudl, Synergy), etc.", helper: "Recruiting, film, compliance, communications, whatever you use." },
+      },
+    ],
     fields: [
       {
         key: "sport",
@@ -1112,13 +1110,6 @@ export const industryConfig: Record<string, IndustryBranch> = {
         label: "How involved are you with NIL?",
         type: "radio",
         options: ["We run or work with a collective", "We facilitate deals", "We advise athletes", "Not involved"],
-      },
-      {
-        key: "program_tools",
-        label: "Software the program runs on",
-        type: "text",
-        placeholder: "Recruiting CRM (Teamworks, ARMS, Front Rush), film (Hudl, Synergy), etc.",
-        helper: "Recruiting, film, compliance, communications, whatever you use.",
       },
       {
         key: "biggest_headache",
@@ -1233,3 +1224,29 @@ export function getIndustryBranch(industry?: string): IndustryBranch | null {
   if (!industry) return null;
   return industryConfig[industry] ?? genericBranch;
 }
+
+/**
+ * The question each industry_details key answers, for the readers that print those answers
+ * back (USER.md, the intake email and PDF). Without this they printed the key with its
+ * underscores swapped for spaces, so a Law Agent read "Ehr System: Epic" where its owner had
+ * answered "EHR / Practice Management". Covers every branch's fields and stack sections; a key
+ * from a question that has since been removed falls back to that same prettified key.
+ */
+export function industryFieldLabel(key: string): string {
+  if (!INDUSTRY_LABELS) {
+    INDUSTRY_LABELS = new Map();
+    for (const branch of [...Object.values(industryConfig), genericBranch]) {
+      for (const f of branch.fields) INDUSTRY_LABELS.set(f.key, f.label);
+      for (const s of branch.stack ?? []) INDUSTRY_LABELS.set(s.key, "question" in s ? s.question : s.label);
+    }
+  }
+  const known = INDUSTRY_LABELS.get(key);
+  if (known) return known;
+  // A "<key>_other" write-in reads as the question it belongs to, marked as the write-in.
+  if (key.endsWith("_other")) {
+    const base = INDUSTRY_LABELS.get(key.slice(0, -"_other".length));
+    if (base) return `${base} (Other)`;
+  }
+  return key.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase());
+}
+let INDUSTRY_LABELS: Map<string, string> | null = null;
