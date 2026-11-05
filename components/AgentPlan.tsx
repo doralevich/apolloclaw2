@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { SubAgentDialog } from "@/components/SubAgentDialog";
-import { AGENT_UPGRADE_HREF, PLANS_ON_SALE, agentsLabel, dollars, type AgentPlanUsage } from "@/config/agent-plans";
+import { AGENT_UPGRADE_HREF, agentsLabel, dollars, plansBeside, type AgentPlanUsage } from "@/config/agent-plans";
 
 // The workspace's agent plan on the customer's side: how many agents it includes, how many are in
 // use, and the one button that follows from those two numbers. "Add agent" while there is room,
@@ -89,7 +89,7 @@ export function AddAgentOrUpgrade({
   // Full, and the plan sells one more: still "Add agent", with the monthly price on it, and the
   // dialog states the charge before anything is billed.
   const charge = !usage.canAdd && usage.addOnCents !== null ? usage.addOnCents : null;
-  const nextPlan = PLANS_ON_SALE.find((p) => p.agents > usage.tier.agents);
+  const nextPlan = plansBeside(usage.tier).find((p) => p.agents > usage.tier.agents);
   const chargeNote =
     charge !== null
       ? `Adds ${dollars(charge)} a month to your ${usage.tier.label} plan, charged now for the rest of this month.`

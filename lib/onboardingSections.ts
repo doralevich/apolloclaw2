@@ -190,6 +190,18 @@ export function buildIntakeSections(d: Record<string, unknown>): PdfSectionInput
         })),
       });
     }
+    // The student questionnaire (lib/collegeIntake.ts). "The Student", because this is the
+    // one agent whose owner has no business to deep-dive into.
+    const coldet = d.collegeDetails && typeof d.collegeDetails === "object" ? (d.collegeDetails as Record<string, unknown>) : {};
+    if (Object.keys(coldet).length) {
+      sections.push({
+        title: "The Student",
+        rows: Object.entries(coldet).map(([k, v]) => ({
+          label: k.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase()),
+          value: v as unknown,
+        })),
+      });
+    }
     sections.push({
       title: "Business Profile",
       rows: [

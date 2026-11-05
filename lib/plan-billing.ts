@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { setBaseCap } from "@/lib/instance-credit";
 import { PLAN_SKUS } from "@/lib/pricing/catalog";
-import { agentTier, isPlanId, PLANS, type AgentTier, type PlanId } from "@/config/agent-plans";
+import { agentTier, COLLEGE_PLANS, isPlanId, PLANS, type AgentTier, type PlanId } from "@/config/agent-plans";
 
 // The money side of the plans: recording what someone bought, the pooled usage credit it carries,
 // and extra agents billed as a quantity on the plan's own subscription.
@@ -175,7 +175,7 @@ export async function syncPlanFromSubscription(sub: Stripe.Subscription): Promis
   if (!workspaceId) return;
 
   const keys = new Map(sub.items.data.map((i) => [i.price.lookup_key ?? "", i.quantity ?? 0]));
-  const plan = PLANS.find((p) => p.sku && keys.has(PLAN_SKUS[p.sku].catalogKey));
+  const plan = [...PLANS, ...COLLEGE_PLANS].find((p) => p.sku && keys.has(PLAN_SKUS[p.sku].catalogKey));
   if (!plan || !isPlanId(plan.id)) {
     console.error("[plan-billing:sync] no plan line on subscription", sub.id);
     return;

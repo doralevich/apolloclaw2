@@ -757,3 +757,54 @@ Both from David's walk through the application, done after the conversational in
   ticked, so the agent knows what it is being judged on.
 
 Both apply to the conversational intake and to the ten-page form.
+
+## The College Agent sells through ApolloClaw (Nov 5, 2026)
+
+David's call, on the question of what to do with the college agent's branding: "let's make
+this a simpler infrastructure." thecollegeagent.ai ran its own checkout, Stripe webhook,
+Supabase project, auth, questionnaire, provisioning, dashboard and admin, a second copy of
+everything ApolloClaw has. It had zero customers at the cutover.
+
+**What the college site is now.** A storefront, like every other agent's site
+(Architecture, above): landing pages, blog, demo sandbox, ambassador pages. Its "Build"
+button lands on `/onboard?agent=college`. Everything behind a sign-in runs here: the same
+checkout, auto sign-in, conversational questionnaire, build, connect flow and dashboard
+every other agent uses. The college site's own backend is retired in a follow-up PR in that
+repo, with redirects from `/build`, `/login`, `/dashboard` and `/setup`.
+
+**Pricing: the three student tiers, unchanged.** Essentials $25, Plus $50, Pro $100 a month
+(`COLLEGE_PLANS`, config/agent-plans.ts), with the AI allowance each carried on the college
+site. They are sold only in the college funnel and never appear on `/pricing`,
+`/create-an-agent`, the terms page or a business dashboard's upgrade cards:
+`plansForAgentType` and `plansBeside` pick the family by the agent. Fresh Stripe catalog
+keys (`apollo_college_*`): reusing the college site's lookup keys would have let the seed
+move a live price out from under its checkout. Annual billing is not sold here yet. Run the
+Stripe catalog sync once after this deploys.
+
+**The questionnaire.** The student flow is a role intake (lib/collegeIntake.ts,
+`ROLE_INTAKES.college`): who they are, their semester, and how the agent works with them.
+The business pages drop out, same as the Personal Agent. The college site's class builder,
+majors dropdown, school typeahead and résumé upload became text questions; the résumé goes
+in through Files once the agent exists.
+
+**The persona** (config/personas.ts `college`) carries two boundaries that matter more for
+a student than for any other buyer: the work they hand in is theirs, and real distress gets
+a person (campus counseling, 988) before anything else. The same lines are the role's fixed
+guard, so they reach the agent's own instructions whatever the questionnaire says.
+
+**The box keeps Claude Code.** The college site's image was Hermes plus the Claude Code
+CLI, so a student could open the terminal, type `claude` and sign in with their own account
+("I like to have it"). The replacement (template/college/Dockerfile) is the stock OpenClaw
+box plus Claude Code, registered as `apollo-college`, so provisioning and the file layout
+are the same as every other agent. Until Donna publishes and registers that image, the type
+provisions the stock box through its alias. The old `college-agent` Hermes template stays
+registered for the boxes it owns.
+
+**Hidden for now, David's call.** The ambassador program. Referral codes still apply at
+checkout, but crediting the ambassador, the clearing window and payouts lived in the
+college site's webhook and tables. Port it to ApolloClaw only if it comes back.
+
+**Not on the picker.** The college slug works as a link and is unlisted on `/onboard`'s
+picker (`UNLISTED_SLUGS`, lib/buildFunnel.ts): a business buyer is never offered a college
+agent, and `internal` keeps it out of the create-agent modal for the same reason. The nav
+row for it still goes to thecollegeagent.ai, which is its marketing page.

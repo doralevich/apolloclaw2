@@ -90,6 +90,32 @@ export const PLAN_SKUS = {
     amountCents: 1900,
     interval: "month",
   },
+  // THE STUDENT PLANS (Nov 5 2026): Essentials $25, Plus $50, Pro $100 a month, the three tiers
+  // thecollegeagent.ai sold, now sold here (config/agent-plans.ts COLLEGE_PLANS). Fresh catalog
+  // keys on purpose. That site's own prices carry the lookup keys ca_hosting, ca_tier_50 and
+  // ca_tier_100 on this same Stripe account, and the seed moves a lookup key onto the price it
+  // mints (transfer_lookup_key): reusing those keys would have pulled the live price out from
+  // under the college site's checkout for as long as it still runs. No college customer existed
+  // at the cutover, so there is nothing on the old prices to migrate. Annual billing, which that
+  // site offered at ten times monthly, is not sold here yet.
+  college_essentials: {
+    catalogKey: "apollo_college_essentials",
+    name: "The College Agent - Essentials",
+    amountCents: 2500,
+    interval: "month",
+  },
+  college_plus: {
+    catalogKey: "apollo_college_plus",
+    name: "The College Agent - Plus",
+    amountCents: 5000,
+    interval: "month",
+  },
+  college_pro: {
+    catalogKey: "apollo_college_pro",
+    name: "The College Agent - Pro",
+    amountCents: 10000,
+    interval: "month",
+  },
 } as const;
 
 export type PlanSkuId = keyof typeof PLAN_SKUS;

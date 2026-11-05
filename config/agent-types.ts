@@ -57,29 +57,40 @@ const PAID_AGENT = { monthlyCapUsd: 25 };
 
 export const AGENT_TYPES: AgentType[] = [
   {
-    // `internal` keeps it out of the create-agent modal. It is a DIFFERENT PRODUCT on a
-    // different site, and once the retired per-role types were removed it was the only card
-    // left — so an ApolloClaw customer pressing "Create Agent" was offered a college agent
-    // and a button off to thecollegeagent.ai. The entry stays because the registry is what
-    // resolves `agent_type` on existing rows and what the templates check reads.
+    // SOLD HERE SINCE NOV 5 2026 (David: "let's make this a simpler infrastructure"). It used
+    // to carry `externalUrl` and be sold, built and provisioned on thecollegeagent.ai, with its
+    // own checkout, webhook, Supabase project and dashboard. That site is now the storefront
+    // only: its "Build" button lands on /onboard?agent=college and everything behind a sign-in
+    // runs here, the same checkout, questionnaire, build and connect flow every other agent
+    // uses. Zero college customers existed at the cutover, so nothing migrated.
     //
-    // Sold and provisioned on thecollegeagent.ai; nothing in this app ever creates one. The
-    // template name still matters, though: that site
-    // provisions from `college-agent` on the SAME Agent37 account we use, so the name has to
-    // keep existing there. It does — as its own template alongside `apollo-agent`, both
-    // pointing at the same image, after renaming ours broke theirs for exactly as long as it
-    // took to notice.
+    // `internal` stays: it keeps the card out of the create-agent modal, which is for business
+    // customers adding a second agent, and a student does not arrive that way. The funnel slug
+    // (lib/buildFunnel.ts) is deliberately unlisted on the /onboard picker for the mirror
+    // reason - a business buyer is never offered a college agent - so the only way in is the
+    // link from the storefront.
+    //
+    // THE TEMPLATE. `apollo-college` is the student box: the stock OpenClaw image plus the
+    // Claude Code CLI preinstalled, so a student can open the terminal, type `claude` and sign
+    // in with their own account (template/college/Dockerfile). Until that image is published
+    // and registered on Agent37 (Donna's step), the alias provisions the stock box, which is
+    // the same agent minus the terminal tool - and the paid path's template fallback covers it
+    // again after that. The old `college-agent` name is the Hermes image thecollegeagent.ai
+    // provisioned from; it stays registered for the boxes it owns and is not an alias here,
+    // because Hermes lays its files out differently and provisioning writes for OpenClaw.
+    //
+    // The cap is the Essentials plan's allowance. It is the floor only: the plan sync puts the
+    // bought tier's allowance on the box (lib/plan-billing.ts), $5, $15 or $40.
     id: "college",
     label: "The College Agent",
     description:
-      "An AI agent that guides a student from sophomore year of high school through college graduation - classes, deadlines, applications, financial aid, and internships.",
-    template: "college-agent",
+      "A personal AI agent for a college student - classes, deadlines, study planning, email, and the internship and job search.",
+    template: "apollo-college",
+    templateAliases: ["agent37-openclaw"],
     monthlyCapUsd: 5,
     available: true,
     icon: "GraduationCap",
     internal: true,
-    externalUrl: "https://thecollegeagent.ai/build",
-    priceLabel: "$599 one-time + hosting",
   },
   // ─── Retired: the eight per-role types ──────────────────────────────────────
   //

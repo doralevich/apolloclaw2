@@ -7,7 +7,7 @@ import { apiFetch } from "@/lib/api";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { Button } from "@/components/ui/button";
 import { useAgentPlan } from "@/components/AgentPlan";
-import { PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
+import { PLANS_ON_SALE, agentsLabel, dollars, plansBeside } from "@/config/agent-plans";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { HOSTING_PLAN } from "@/lib/pricing/catalog";
 
@@ -88,7 +88,7 @@ export function PlanView() {
     const extras = plan.custom ? 0 : Math.max(0, plan.limit - tier.agents);
     const monthly = (tier.monthlyCents ?? 0) + extras * (tier.addOn?.monthlyCents ?? 0);
     const usage = tier.includedCreditCents + extras * (tier.addOn?.creditCents ?? 0);
-    const others = PLANS_ON_SALE.filter((p) => p.id !== tier.id);
+    const others = plansBeside(tier);
     return (
       <div className="max-w-xl space-y-6">
         <div>

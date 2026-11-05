@@ -22,7 +22,14 @@ export const BUILD_SLUGS: Record<string, string> = {
   medical: "medical",
   insurance: "insurance",
   personal: "personal",
+  college: "college",
 };
+
+// Slugs that work as a link but never appear on the picker. The College Agent is sold to
+// students from thecollegeagent.ai, whose "Build" button links here with the slug; a business
+// buyer opening plain /onboard is choosing between agents for a business, and a college agent on
+// that grid is a card for the wrong customer (David, Nov 5 2026).
+const UNLISTED_SLUGS: ReadonlySet<string> = new Set(["college"]);
 
 /** The slug for the generic Apollo Agent, so a picker card and a redirect can name it. */
 export const APOLLO_SLUG = "apollo";
@@ -32,7 +39,7 @@ export function buildFunnelType(slug: string | undefined): AgentType | null {
   const id = slug ? BUILD_SLUGS[slug] : undefined;
   if (!id) return null;
   const type = getAgentType(id);
-  // Never a type sold on another site (College Agent) or one with no questionnaire (Blank).
+  // Never a type sold on another site, or one with no questionnaire (Blank).
   if (!type || type.externalUrl || type.noSetup) return null;
   return type;
 }
@@ -57,7 +64,7 @@ export function pickerAgents(): Array<{ slug: string; type: AgentType }> {
   const apollo = getAgentType(LICENSE_AGENT_TYPE_ID);
   const roles = AGENT_TYPES.flatMap((type) => {
     const slug = Object.keys(BUILD_SLUGS).find((s) => BUILD_SLUGS[s] === type.id);
-    return slug && buildFunnelType(slug) ? [{ slug, type }] : [];
+    return slug && !UNLISTED_SLUGS.has(slug) && buildFunnelType(slug) ? [{ slug, type }] : [];
   });
   return apollo ? [{ slug: APOLLO_SLUG, type: apollo }, ...roles] : roles;
 }

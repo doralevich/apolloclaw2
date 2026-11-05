@@ -103,6 +103,10 @@ const TEMPLATE_PORTS: Record<string, Partial<Record<PortName, number>>> = {
   // so an agent that provisions through the alias fallback isn't left with dead buttons.
   "college-agent": { ...HERMES_PORTS },
   "apollo-agent": { ...HERMES_PORTS },
+  // The student box (template/college/Dockerfile): the stock OpenClaw image plus Claude Code,
+  // so the same ports as the stock box. Not to be confused with `college-agent` above, the
+  // Hermes image thecollegeagent.ai used to provision from.
+  "apollo-college": { dashboard: PORTS.dashboard, terminal: PORTS.terminal, files: PORTS.files },
 };
 
 // Which runtime an image actually is, which is a different question from what the template
@@ -120,6 +124,7 @@ const TEMPLATE_RUNTIMES: Record<string, "Hermes" | "OpenClaw"> = {
   // /home/node/.hermes/memories/USER.md, and its port remap targets the Hermes surfaces.
   "college-agent": "Hermes",
   "apollo-agent": "Hermes",
+  "apollo-college": "OpenClaw",
 };
 
 export function runtimeForTemplate(template: string | null | undefined): "Hermes" | "OpenClaw" | null {
