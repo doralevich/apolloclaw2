@@ -2,6 +2,13 @@ import { agent37 } from "@/lib/agent37";
 import { looksLikeModelRejection, modelFallbackFor } from "@/config/chat-models";
 import { requireAgentAccess, requireEntitled } from "@/lib/auth";
 import { ApiError, readJson, route, upstreamErrorMessage } from "@/lib/http";
+import { STARTING_UP_MESSAGE, isWarmingUp, looksNotReady } from "@/lib/instance-ready";
+
+// A young agent's chat host can lag Agent37's "running" by a couple of minutes
+// (lib/instance-ready.ts). A turn that lands in that gap is retried on this schedule, about a
+// minute in all, before the visitor hears "still starting up" instead of the edge's "Instance
+// not found". Well inside maxDuration.
+const WARMUP_RETRY_MS = [4_000, 6_000, 8_000, 10_000, 12_000, 15_000];
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,7 +27,7 @@ interface ResponsesBody {
 // { error: { code, message } } shape so the client's apiFetch can read it.
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
-  const { supabase } = await requireAgentAccess(id, "member"); // SAME ownership gate as every per-agent route
+  const { supabase, row } = await requireAgentAccess(id, "member"); // SAME ownership gate as every per-agent route
   // A chat turn drives LLM/tool usage billed to the operator key — a spend-increasing action,
   // so it passes the same entitlement gate as create/start/resize (see requireEntitled's doc).
   await requireEntitled(supabase);
@@ -46,7 +53,38 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   if (body.reasoning_effort) payload.reasoning_effort = body.reasoning_effort;
   if (files.length) payload.files = files;
 
-  let upstream = await agent37.createResponse(id, payload);
+  // The turn, with the warm-up retries for a young agent. A network failure on the way to the
+  // instance host counts the same as a not-ready reply: both mean the route is not there yet.
+  const young = isWarmingUp(row.created_at);
+  let upstream: Response | null = null;
+  for (let attempt = 0; ; attempt++) {
+    let notReady = false;
+    let reason = "";
+    try {
+      upstream = await agent37.createResponse(id, payload);
+      if (upstream.ok) break;
+      const text = await upstream.clone().text().catch(() => "");
+      notReady = looksNotReady(upstream.status, text);
+      reason = `${upstream.status} ${text.slice(0, 120)}`;
+      if (!notReady) break;
+    } catch (e) {
+      upstream = null;
+      notReady = true;
+      reason = (e as Error).message;
+    }
+    if (!young || attempt >= WARMUP_RETRY_MS.length) {
+      if (upstream) break;
+      throw new ApiError(502, "upstream_error", young ? STARTING_UP_MESSAGE : reason || "Chat request failed");
+    }
+    console.warn(`[chat/responses] ${id} not ready yet (${reason.replace(/\s+/g, " ")}), retry ${attempt + 1}`);
+    await new Promise((r) => setTimeout(r, WARMUP_RETRY_MS[attempt]));
+  }
+  if (!upstream) throw new ApiError(502, "upstream_error", "Chat request failed");
+  if (!upstream.ok && young) {
+    // Every retry came back not-ready: say so in words a customer can act on.
+    const text = await upstream.clone().text().catch(() => "");
+    if (looksNotReady(upstream.status, text)) throw new ApiError(503, "starting_up", STARTING_UP_MESSAGE);
+  }
 
   // Sonnet 5.5 is the default, and an instance whose gateway does not route it yet (or spells it
   // differently) refuses the id. Retry once on Sonnet 5 so the customer gets an answer rather

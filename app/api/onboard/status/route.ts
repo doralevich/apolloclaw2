@@ -1,4 +1,5 @@
 import { agent37 } from "@/lib/agent37";
+import { instanceReady } from "@/lib/instance-ready";
 import { getAgentType, licenseAgentType } from "@/config/agent-types";
 import { ApiError, json, route } from "@/lib/http";
 import { findBuyerAccount, verifyPaidLicenseSession } from "@/lib/license-session";
@@ -12,8 +13,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // no session yet (they have not set a password), so the paid checkout session authorizes
 // the read instead — see lib/license-session.ts.
 //
-// The response says only what the screen draws: whether the agent row exists and whether
-// its instance reports running. No agent id, no workspace id, no instance internals.
+// The response says only what the screen draws: whether the agent row exists, whether its
+// instance reports running, and whether its chat host answers yet (lib/instance-ready.ts).
+// No agent id, no workspace id, no instance internals.
 
 export const GET = route(async (request: Request) => {
   // The build screen polls every few seconds for a couple of minutes, so this needs more
@@ -40,7 +42,7 @@ export const GET = route(async (request: Request) => {
     .maybeSingle();
 
   const agentId = row?.agent37_id as string | undefined;
-  if (!agentId) return json({ created: false, running: false });
+  if (!agentId) return json({ created: false, running: false, ready: false });
 
   // The DB row appears the moment the instance is created; "running" comes from Agent37
   // itself. A failure to reach it is reported as not-yet-running rather than as an error —
@@ -53,5 +55,9 @@ export const GET = route(async (request: Request) => {
     console.error("[onboard-status] could not reach Agent37:", err);
   }
 
-  return json({ created: true, running });
+  // "running" is the container; "ready" is the agent's chat host answering. The screen enters
+  // Chat on the second, which is the one a first message needs (Nov 5 2026).
+  const ready = running ? await instanceReady(agentId) : false;
+
+  return json({ created: true, running, ready });
 });
