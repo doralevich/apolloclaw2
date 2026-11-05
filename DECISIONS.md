@@ -683,3 +683,32 @@ words, and the generic page asks it again in generic words; the clean version is
 once, on the "take on" page, using the industry's list. That changes what `aiGoals`
 holds, which the chat opener and checklist read by exact string, so it is a deliberate
 change rather than a tidy-up.
+
+## Signed in the moment they pay (Nov 5, 2026)
+
+The college agent's post-checkout, brought over: Stripe returns the buyer to
+`/api/onboard/post-checkout`, which signs them in (a magic link minted and verified
+server-side, cookies set on the redirect) and sends them to a skippable "set your
+password" stop, then to their questionnaire at `/onboard/<type>?ws=…&paid=1`, inside their
+account. The questionnaire's submit provisions the agent, the build screen runs without a
+password form, and the connect flow follows.
+
+Before this, the questionnaire ran on a public page against the checkout session as a
+token, and the password came last, on the build screen. Two things made that worse than
+the college agent's order: ten pages of questions with nothing to come back to if the tab
+closed, and a password screen at the end of the longest part.
+
+**The session id crosses the line once.** `lib/license-session.ts` says a checkout session
+id must never open the dashboard. This route is the one place it does, under the two
+constraints `/api/onboard/set-password` already used: an account that has ever signed in
+is sent to `/login` instead, and the id is spent on first use through
+`license_password_claims`. A leaked or replayed id gets a login page.
+
+**The plan is what allows the first build.** `/api/agent-setup` provisions for a customer
+when the workspace's plan has room for another agent (`lib/agent-plan.ts`), the same rule
+the dashboard's Create an Agent applies. The webhook records the plan and stops.
+
+**The old path stays wired.** Every failure in the new route (webhook not landed, cookies
+refused, link not minted) falls back to `/onboard?paid=1&session_id=…`, which still runs
+the questionnaire on the session token and sets the password on the build screen. In-flight
+checkouts from before the deploy return there directly.

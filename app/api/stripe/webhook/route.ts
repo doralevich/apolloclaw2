@@ -407,9 +407,10 @@ async function handleLicensePurchase(session: Stripe.Checkout.Session): Promise<
 // ordinary one that proves control of the mailbox rather than a link sitting in an inbox.
 async function sendPurchaseReceiptEmail(email: string, first: string): Promise<void> {
   const origin = publicSiteOrigin();
-  // Licence buyers have no agent provisioned yet, so their questionnaire is the lead-mode
-  // form at plain /onboard — the same place Stripe returns them to.
-  const questionnaireUrl = `${origin}/onboard`;
+  // Since Nov 5 2026 checkout signs the buyer in and their questionnaire runs inside their
+  // account, so the way back is the login page: with the password they chose on the welcome
+  // stop, or "Forgot password?" if they skipped it.
+  const loginUrl = `${origin}/login`;
   try {
     await sendMandrillEmail({
       to: email,
@@ -418,10 +419,9 @@ async function sendPurchaseReceiptEmail(email: string, first: string): Promise<v
         `<div style="font-family:sans-serif;color:#0B1729;font-size:15px;line-height:1.7">` +
         `<h2 style="color:#0B1729">Welcome${first ? `, ${first}` : ""}.</h2>` +
         `<p>Your payment is confirmed and your ApolloClaw account has been created for <strong>${email}</strong>.</p>` +
-        `<p>Carry on where you left off - you'll choose your password at the end, and go straight into your dashboard.</p>` +
-        `<p><a href="${questionnaireUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Continue setting up</a></p>` +
-        `<p style="color:#6b7280;font-size:13px">The questionnaire is what your agent gets built from, so it is worth the few minutes.</p>` +
-        `<p style="color:#6b7280;font-size:13px">Already finished and need to get back in? Log in with the password you chose, or use "Forgot password?" on the login page.</p>` +
+        `<p>You are signed in and the short questionnaire is what your agent gets built from, so it is worth the few minutes. If you closed the tab, log in and pick up where you left off.</p>` +
+        `<p><a href="${loginUrl}" style="display:inline-block;background:#D72B2B;color:#fff;font-weight:700;padding:14px 30px;border-radius:6px;text-decoration:none">Log in</a></p>` +
+        `<p style="color:#6b7280;font-size:13px">Skipped choosing a password? Use "Forgot password?" on the login page and it will walk you through setting one.</p>` +
         `</div>`,
     });
   } catch (err) {

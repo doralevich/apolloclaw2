@@ -1,5 +1,6 @@
 import { getAgentType } from "@/config/agent-types";
 import { isAdminEmail } from "@/config/admins";
+import { getAgentPlanUsage } from "@/lib/agent-plan";
 import { storeAgentSetup, type AvatarUpload } from "@/lib/agent-setup";
 import { requireMember, requireUser } from "@/lib/auth";
 import { ApiError, json, readJson, route } from "@/lib/http";
@@ -72,6 +73,13 @@ export const POST = route(async (request: Request) => {
   // provisioned HERE on submit - not before. So an admin submitting a role questionnaire for a
   // type that has no agent yet provisions one; a customer still may only fill in the questionnaire
   // for an agent that ALREADY exists (no free self-provisioning).
+  //
+  // AND the licence buyer (Nov 5 2026). Since checkout signs them in and sends them here
+  // (app/api/onboard/post-checkout), this is where their first agent gets built, and nothing
+  // else ever will: the webhook creates the account and records the plan and stops. So a
+  // workspace whose plan has room for another agent may provision one here. That is the plan's
+  // own rule (lib/agent-plan.ts), the same one the dashboard's Create an Agent applies, so it
+  // cannot be bent into free provisioning: no plan, no room, no agent.
   const isAdmin = isAdminEmail(user.email);
   let provisionIfMissing = false;
   if (!type.planKey) {
@@ -87,11 +95,16 @@ export const POST = route(async (request: Request) => {
       if (isAdmin) {
         provisionIfMissing = true;
       } else {
-        throw new ApiError(
-          400,
-          "invalid_request",
-          `There is no ${type.label} in this workspace to set up yet.`
-        );
+        const usage = await getAgentPlanUsage(workspaceId);
+        if (usage.tier.id !== "legacy" && usage.canAdd) {
+          provisionIfMissing = true;
+        } else {
+          throw new ApiError(
+            400,
+            "invalid_request",
+            `There is no ${type.label} in this workspace to set up yet.`
+          );
+        }
       }
     }
   }

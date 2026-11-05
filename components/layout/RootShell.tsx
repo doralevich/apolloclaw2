@@ -16,7 +16,10 @@ import Breadcrumbs from '@/components/seo/Breadcrumbs';
 // per-role doors (/build, /cfo-onboarding and friends) redirect into these two.
 const STANDALONE_ROUTES = ['/pre-call', '/setup', '/onboard', '/white-glove-onboarding'];
 // Dashboard surfaces render their own chrome — no marketing nav/footer/chat.
-const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite', '/admin'];
+// /reset-password joined this list on Nov 5 2026: it is now also the first screen a buyer sees
+// after paying (app/api/onboard/post-checkout), and the marketing nav, cookie banner and footer
+// around a "choose your password" form read as having been dropped back on the website.
+const DASHBOARD_ROUTES = ['/dashboard', '/login', '/auth', '/invite', '/admin', '/reset-password'];
 
 // Marketing pages that keep the nav and footer but NOT the floating chat bubble.
 //
