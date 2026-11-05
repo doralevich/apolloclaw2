@@ -27,7 +27,7 @@ import { PROPERTY_MANAGEMENT_BRANCH } from "@/lib/propertyManagementIntake";
 //   - stepKey / stepLabel: the id and heading of the injected deep-dive page.
 //   - detailsKey: the JSONB blob the answers save under (read back by lib/onboardingSections.ts).
 //   - roleName: filled into the white-glove "Let's Customize Your ___" heading.
-const ROLE_INTAKES: Record<
+export const ROLE_INTAKES: Record<
   string,
   {
     // One page, or several. A deep-dive long enough to need page breaks passes an array and
@@ -296,8 +296,8 @@ function FunnelWordmark({ size = 17 }: { size?: number }) {
 // ════════════════════════════════════════════════════════════
 // OPTION LISTS
 // ════════════════════════════════════════════════════════════
-const BIZ_SIZES    = ["Just me (Solo)","2-5 people","6-10 people","11-25 people","26-50 people","51-100 people","100+ people"];
-const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years","Not applicable"];
+export const BIZ_SIZES    = ["Just me (Solo)","2-5 people","6-10 people","11-25 people","26-50 people","51-100 people","100+ people"];
+export const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years","Not applicable"];
 // Sales & CRM, weighted to what mid-market and enterprise buyers actually run.
 //
 // Keap and Close came out at David's call - both are small-business tools, and neither is a
@@ -308,7 +308,7 @@ const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years"
 // a CRM rather than replacing one - which is why this is a multi-select and why naming them
 // matters: an agent that knows sequences live in Outreach and calls are recorded in Gong knows
 // where to look.
-const STACK_CRM    = ["Salesforce","HubSpot","Microsoft Dynamics 365","Oracle NetSuite CRM","Zoho CRM","Pipedrive","Attio","Copper","Freshsales","Outreach","Salesloft","Gong","Apollo.io","No CRM currently","Other"];
+export const STACK_CRM    = ["Salesforce","HubSpot","Microsoft Dynamics 365","Oracle NetSuite CRM","Zoho CRM","Pipedrive","Attio","Copper","Freshsales","Outreach","Salesloft","Gong","Apollo.io","No CRM currently","Other"];
 // Otter, Fathom, Fireflies and Zoom removed at David's call. The three note-takers are
 // meeting-recording add-ons rather than the communication system a business runs on, and they
 // made a short list read like a tool directory. WhatsApp added: outside the US it is the
@@ -318,9 +318,9 @@ const STACK_CRM    = ["Salesforce","HubSpot","Microsoft Dynamics 365","Oracle Ne
 // was one checkbox standing for two separate Composio connections, so ticking it produced a
 // single checklist item for mail and silently nothing for calendar - and somebody who lives in
 // Calendar but not Gmail had no way to say so.
-const STACK_COMMS  = ["Google Mail","Google Calendar","Office 365","Slack","Microsoft Teams","Google Meet","WhatsApp","Telegram","Other"];
-const STACK_PM     = ["Notion","Asana","ClickUp","Trello","Monday.com","Jira / Linear","No PM tool","Other"];
-const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBooks","NetSuite","Bill.com","Ramp / Brex","Stripe","Square","PayPal","None","Other"];
+export const STACK_COMMS  = ["Google Mail","Google Calendar","Office 365","Slack","Microsoft Teams","Google Meet","WhatsApp","Telegram","Other"];
+export const STACK_PM     = ["Notion","Asana","ClickUp","Trello","Monday.com","Jira / Linear","No PM tool","Other"];
+export const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBooks","NetSuite","Bill.com","Ramp / Brex","Stripe","Square","PayPal","None","Other"];
 // Documents, both suites, plus where the files actually live.
 //
 // The Microsoft three and the Google three are listed side by side on purpose: most businesses
@@ -329,7 +329,7 @@ const STACK_BILLING= ["QuickBooks Online","QuickBooks Desktop","Xero","FreshBook
 // wrong. The storage row underneath is not padding - Drive, OneDrive, Dropbox and Box are the
 // connections that let the agent open any of the files above, and until this section existed
 // the questionnaire never asked where a customer's documents are kept.
-const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint","Google Docs","Google Sheets","Google Slides","Google Drive","OneDrive / SharePoint","Dropbox","Box","None","Other"];
+export const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint","Google Docs","Google Sheets","Google Slides","Google Drive","OneDrive / SharePoint","Dropbox","Box","None","Other"];
 // IT_COMPLY (the "Any compliance requirements?" options) was removed with that question at David's call.
 // BROKEN_AREAS (the "which areas feel most broken?" options) lived here until the Operations &
 // Pain Points page was removed at David's call. It was that page's only consumer, so it went with it.
@@ -338,17 +338,17 @@ const STACK_DOCS   = ["Microsoft Word","Microsoft Excel","Microsoft PowerPoint",
 // WRITING_TONE and BRAND_LIKE are back, on the Voice page (Sept 29, 2026): David asked for "the
 // same tones as the main website intake form", and these are those two lists as they were. The
 // only edit is Hormozi's "no fluff", reworded to keep the copy positively framed.
-const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive","Calm & measured"];
-const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, to the point","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Other"];
-const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
-const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
+export const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & punchy","Educational & detailed","Bold & provocative","Humble & approachable","Witty & clever","Empathetic & supportive","Calm & measured"];
+export const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, to the point","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Other"];
+export const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
+export const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
 // The assistants and automation people have already tried, for "Where You Are With AI". Named
 // products rather than an open box (David, Nov 5 2026): the three paragraphs that used to open
 // behind "Yes" asked for a review of past projects, which is not what readiness means. The
 // list, a comfort scale and the processes worth keeping are what the agent can use.
-const AI_TOOLS     = ["ChatGPT","Claude","Google Gemini","Microsoft Copilot","Perplexity","Grok","Zapier / Make automations","A custom-built tool","Other"];
-const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
-const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
+export const AI_TOOLS     = ["ChatGPT","Claude","Google Gemini","Microsoft Copilot","Perplexity","Grok","Zapier / Make automations","A custom-built tool","Other"];
+export const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
+export const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
 // The white-glove links only (David, Oct 12 2026, from the Adam Glassman intake): the work the
 // customer wants Apollo Claw to do for them, as distinct from what the agent will do. Every
 // other question on the form is about the agent; the done-for-you tasks - set up the machine,
@@ -475,7 +475,7 @@ function ScaleRow({ label, hint, low, high, value, onChange, max = 10 }: { label
 // product mark, and a wrong slug here costs nothing - the <img> errors, the fallback initial
 // shows, nobody dead-ends. That asymmetry is why this list can afford to guess broadly where
 // TOOL_SLUGS cannot.
-const STACK_LOGOS: Record<string, string> = {
+export const STACK_LOGOS: Record<string, string> = {
   Salesforce: "salesforce", HubSpot: "hubspot", "Microsoft Dynamics 365": "dynamics365",
   "Oracle NetSuite CRM": "netsuite", "Zoho CRM": "zoho", Pipedrive: "pipedrive", Attio: "attio",
   Copper: "copper", Freshsales: "freshworks_crm", Outreach: "outreach", Salesloft: "salesloft",
@@ -931,7 +931,7 @@ function Gatekeeper({ onPass, heading, intro, initial, brand, skipEmailCheck = f
 // ════════════════════════════════════════════════════════════
 // PERSONALIZE (customer mode only — name + avatar for the agent itself, not the buyer)
 // ════════════════════════════════════════════════════════════
-const AGENT_NAME_SUGGESTIONS = ["Atlas", "Nova", "Sage", "Ember", "Juno", "Orion", "Vale", "Piper", "Rex", "Iris", "Max", "Lex"];
+export const AGENT_NAME_SUGGESTIONS = ["Atlas", "Nova", "Sage", "Ember", "Juno", "Orion", "Vale", "Piper", "Rex", "Iris", "Max", "Lex"];
 const AVATAR_COLORS = ["#D72B2B", "#0B1729", "#2563EB", "#059669", "#7C3AED", "#EA580C"];
 
 // A small inline SVG "initials in a colored circle" avatar — no image asset dependency,
@@ -1480,7 +1480,7 @@ function PaymentSplash({ agentLabel, onStart }: { agentLabel: string; onStart: (
 // ════════════════════════════════════════════════════════════
 // BUSINESS TRACK
 // ════════════════════════════════════════════════════════════
-const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","My team - capacity, skills, or hiring","My systems & processes - too much is manual","Demand - not enough qualified pipeline","Capital - funding constrains the next move","Not sure - that's part of why I'm here","Other"];
+export const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","My team - capacity, skills, or hiring","My systems & processes - too much is manual","Demand - not enough qualified pipeline","Capital - funding constrains the next move","Not sure - that's part of why I'm here","Other"];
 
 // Renders the dynamic "Industry Deep-Dive" step from an industryConfig branch,
 // mapping each field type onto the form's existing primitives.
