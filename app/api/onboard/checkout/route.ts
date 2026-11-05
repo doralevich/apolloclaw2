@@ -1,7 +1,7 @@
 import { getAgentType } from "@/config/agent-types";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { PLAN_SKUS } from "@/lib/pricing/catalog";
-import { PLANS_ON_SALE, type AgentTier } from "@/config/agent-plans";
+import { plansForAgentType, type AgentTier } from "@/config/agent-plans";
 import { enforceRateLimit, LIMITS } from "@/lib/rate-limit";
 import { publicSiteOrigin } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe/client";
@@ -65,21 +65,23 @@ export const POST = route(async (request: Request) => {
 
   if (!first || !last) throw new ApiError(400, "invalid_request", "First and last name are required.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new ApiError(400, "invalid_request", "A valid business email is required.");
+    throw new ApiError(400, "invalid_request", "A valid email is required.");
   }
 
-  // The plan is resolved from the catalog, never taken as a price id from the body. A caller who
-  // could name the price could name a $0 one, and this route is deliberately open.
-  const plan: AgentTier =
-    PLANS_ON_SALE.find((p) => p.id === body.plan) ?? PLANS_ON_SALE.find((p) => p.featured) ?? PLANS_ON_SALE[0];
-  const planKey = PLAN_SKUS[plan.sku!].catalogKey;
-
   // A role agent to build, if the branded funnel asked for one. Only a real, self-serve role type
-  // is honoured (never external like the College Agent, never the no-questionnaire Blank build);
+  // is honoured (never one sold on another site, never the no-questionnaire Blank build);
   // anything else falls through to the generic license agent, keeping plain /onboard unchanged.
   const requestedType = clean(body.agentType, 40);
   const rt = requestedType ? getAgentType(requestedType) : undefined;
   const agentType = rt && !rt.externalUrl && !rt.noSetup ? rt.id : "";
+
+  // The plan is resolved from the catalog, never taken as a price id from the body. A caller who
+  // could name the price could name a $0 one, and this route is deliberately open. Which plans
+  // are on the table depends on the agent: the student plans for the College Agent, the business
+  // plans for everything else, and a plan from the wrong list resolves to that list's default.
+  const onSale = plansForAgentType(agentType);
+  const plan: AgentTier = onSale.find((p) => p.id === body.plan) ?? onSale.find((p) => p.featured) ?? onSale[0];
+  const planKey = PLAN_SKUS[plan.sku!].catalogKey;
 
   // Where Stripe returns to. Must be an internal path (no open redirect), and only the pathname is
   // used - the ?paid / ?session_id / ?checkout params are appended here.

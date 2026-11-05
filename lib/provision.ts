@@ -592,8 +592,12 @@ export function buildUserMd(
   agentTypeId?: string | null
 ): string {
   const sections = buildIntakeSections({ ...answers, trackType: "business" });
+  // A student has no business. The heading says who the file is about, because an agent told
+  // "about the business you work for" over a page of classes and clubs starts its first
+  // conversation confused about what its owner is.
+  const student = agentTypeId === "college";
   return [
-    `# About the business you work for`,
+    student ? `# About the student you work for` : `# About the business you work for`,
     ``,
     `Notes from your owner's ${typeLabel} setup questionnaire. Treat this as ground truth`,
     `about who you work for - and update it as you learn more.`,

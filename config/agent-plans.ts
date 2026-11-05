@@ -18,7 +18,10 @@ import { PLAN_SKUS, type PlanSkuId } from "@/lib/pricing/catalog";
 // agents, and the seat flow it already has. Only checkout records a plan, so nothing here can
 // reprice anyone by accident (workspace_agent_plans, migration 0033).
 
-export type PlanId = "solo" | "team" | "executive";
+export type PlanId = "solo" | "team" | "executive" | CollegePlanId;
+
+/** The student plans, sold only through the College Agent's funnel (see COLLEGE_PLANS). */
+export type CollegePlanId = "college_essentials" | "college_plus" | "college_pro";
 
 export interface AgentTier {
   /** Stored against the workspace. Never rename an id that is in use; change the label. */
@@ -156,6 +159,83 @@ export const LEGACY_TIER: AgentTier = {
 /** The plans a customer can buy today, in page order. */
 export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale);
 
+// ─── The student plans ────────────────────────────────────────────────────────
+//
+// Essentials $25, Plus $50, Pro $100 a month: the three tiers thecollegeagent.ai sold, carried
+// over unchanged when the college agent started selling through this checkout (David, Nov 5
+// 2026: "Pricing yes"). Every tier is the same private agent for one student; what moves is
+// the monthly AI allowance, $5, $15 and $40, which is what the college site's own plan file
+// gave them (lib/pricing/intro-cutoff.ts there) and what planCapMicros puts on the box.
+//
+// NOT IN `PLANS`, on purpose. PLANS_ON_SALE feeds /pricing, /create-an-agent, the terms page
+// and the dashboard's upgrade cards, all of which are for business customers; a student plan on
+// any of them is a card for the wrong buyer. These are reached only through plansForAgentType,
+// which the paywall and the checkout route ask with the agent being built. They still sit in
+// AGENT_TIERS so agentTier() resolves a student workspace's plan everywhere a plan is read.
+//
+// Telegram only, one agent, no add-ons, no upgrade nudge: a student does not run a bench.
+const STUDENT_PLAN = {
+  agents: 1,
+  agentsText: "Your own private agent",
+  addOn: null,
+  maxAgents: 1,
+  upgradeAt: null,
+  channels: ["telegram"],
+  channelsText: "Telegram",
+  supportText: "Email support",
+  onSale: true,
+} as const;
+
+export const COLLEGE_PLANS: readonly AgentTier[] = [
+  {
+    ...STUDENT_PLAN,
+    id: "college_essentials",
+    label: "Essentials",
+    tagline: "For staying on top of classes and deadlines.",
+    monthlyCents: PLAN_SKUS.college_essentials.amountCents,
+    includedCreditCents: 500,
+    usageText: "Everyday AI usage included",
+    features: ["Deadlines, planning and study schedules", "Email drafts in your voice", "Hosting and updates included"],
+    sku: "college_essentials",
+  },
+  {
+    ...STUDENT_PLAN,
+    id: "college_plus",
+    label: "Plus",
+    tagline: "For students who lean on their agent every day.",
+    monthlyCents: PLAN_SKUS.college_plus.amountCents,
+    includedCreditCents: 1500,
+    usageText: "Three times the AI usage of Essentials",
+    features: ["Everything in Essentials", "Room for daily check-ins and long study sessions", "Internship and job search, start to finish"],
+    sku: "college_plus",
+    featured: true,
+  },
+  {
+    ...STUDENT_PLAN,
+    id: "college_pro",
+    label: "Pro",
+    tagline: "For heavy research, long papers, and big semesters.",
+    monthlyCents: PLAN_SKUS.college_pro.amountCents,
+    includedCreditCents: 4000,
+    usageText: "Eight times the AI usage of Essentials",
+    features: ["Everything in Plus", "Built for research-heavy majors and thesis years", "Priority email support"],
+    sku: "college_pro",
+  },
+];
+
+/** The plans on the table for an agent being bought: the student plans for the College Agent,
+ *  the business plans for everything else. */
+export function plansForAgentType(agentTypeId: string | null | undefined): readonly AgentTier[] {
+  return agentTypeId === "college" ? COLLEGE_PLANS : PLANS_ON_SALE;
+}
+
+/** The other plans a workspace on `tier` could move to: the rest of whichever family the tier
+ *  belongs to. A student is never offered Team, and a business is never offered Plus. */
+export function plansBeside(tier: AgentTier): readonly AgentTier[] {
+  const family = COLLEGE_PLANS.some((p) => p.id === tier.id) ? COLLEGE_PLANS : PLANS_ON_SALE;
+  return family.filter((p) => p.id !== tier.id);
+}
+
 /** The one answer to "how much does it cost" on the public site: the FAQs on /faq and on the
  *  industry and agent pages. It names no number on purpose: David's call (Oct 19 2026) is that
  *  /pricing is the only page that prints a dollar amount, so a price change is one edit and a
@@ -163,8 +243,9 @@ export const PLANS_ON_SALE: readonly AgentTier[] = PLANS.filter((p) => p.onSale)
  *  points to a call rather than a page; when the page returns, point it back. */
 export const PRICING_FAQ_ANSWER = `Every plan is month to month with setup included, and every agent is set up around your business. Book a call and we will walk you through the plans and the price for your setup.`;
 
-/** Every tier Super Admin can put a workspace on: the plans, and back to legacy. */
-export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS];
+/** Every tier Super Admin can put a workspace on: the plans, the student plans, and back to
+ *  legacy. */
+export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS, ...COLLEGE_PLANS];
 
 /** Enterprise: never a published price, except the one "starting at". */
 export const ENTERPRISE = {
@@ -181,7 +262,7 @@ export function agentTier(id: string | null | undefined): AgentTier {
 }
 
 export function isPlanId(id: unknown): id is PlanId {
-  return PLANS.some((p) => p.id === id);
+  return PLANS.some((p) => p.id === id) || COLLEGE_PLANS.some((p) => p.id === id);
 }
 
 /** "$99". Whole dollars, as the plans are priced. */

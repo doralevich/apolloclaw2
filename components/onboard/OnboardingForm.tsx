@@ -19,6 +19,7 @@ import { RECRUITING_BRANCH } from "@/lib/recruitingIntake";
 import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
 import { PERSONAL_BRANCH } from "@/lib/personalIntake";
+import { COLLEGE_BRANCH, COLLEGE_ANYTHING_ELSE_PLACEHOLDER } from "@/lib/collegeIntake";
 import { PROPERTY_MANAGEMENT_BRANCH } from "@/lib/propertyManagementIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
@@ -201,12 +202,36 @@ export const ROLE_INTAKES: Record<
       placeholder: "e.g. I coach my son's soccer team on Saturdays, and Sundays are family days.",
     },
   },
+  // THE STUDENT FLOW (Nov 5 2026), ported from thecollegeagent.ai when the college agent
+  // started selling through this checkout. Same bones as the Personal Agent: a person buying
+  // for themselves, so the business pages go and the gate is the short one. "scopeai" goes too:
+  // "How does your team feel about bringing me in?" has no answer for a student, and the AI
+  // comfort questions are asked, in the student's words, nowhere - the agent finds out by
+  // working with them.
+  //
+  // The guard is fixed rather than asked, and it carries the one line that matters more for a
+  // student than any other buyer: the agent helps them plan, study and draft, and the work they
+  // hand in is their own. The persona (config/personas.ts -> `college`) says the same thing.
+  college: {
+    branch: COLLEGE_BRANCH, stepKey: "college", stepLabel: "About You", detailsKey: "collegeDetails", roleName: "College Agent",
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Plans, drafts and reminds, and the student does the work: never writes an assignment, essay, exam answer or anything graded for them to hand in as their own. Drafts rather than sends: checks with them first before emailing a professor, an employer or anyone new, submitting anything on their behalf, spending money, or sharing personal information. If they seem to be in real distress, points them to campus counseling or the 988 Suicide and Crisis Lifeline before anything else.",
+    intro: "A few quick questions, mostly taps. Takes about three minutes.",
+    dropPages: ["biz", "whatyoudo", "exec", "stack", "voice", "goals", "scopeai"],
+    quickGate: true,
+    finalNote: {
+      key: "anything_else",
+      label: "Anything else you'd like your agent to know?",
+      placeholder: COLLEGE_ANYTHING_ELSE_PLACEHOLDER,
+    },
+  },
 };
 // AgentWordmark renders "The <name> [Agent]", so it wants the roleName without its trailing
 // noun - "Real Estate Agent" is the product, "Real Estate" is the word that goes in the mark.
 // Derived rather than a tenth field per entry, since every roleName ends the same way.
 const wordmarkName = (roleName: string) => roleName.replace(/\s+Agent$/, "");
-import { agentTier, dollars, PLANS_ON_SALE, type PlanId } from "@/config/agent-plans";
+import { agentTier, dollars, plansForAgentType, type PlanId } from "@/config/agent-plans";
 import { apiFetch } from "@/lib/api";
 
 // The single business-onboarding questionnaire, shared by three entry points:
@@ -1174,14 +1199,20 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
   const [picked] = useState<string | null>(() =>
     typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("plan")
   );
+  // The plans on the table: the student plans in the College Agent's funnel, the business plans
+  // everywhere else (config/agent-plans.ts plansForAgentType). The checkout route makes the same
+  // call from the agent type it is sent, so a plan from the wrong list can never be bought.
+  const student = agentTypeId === "college";
+  const onSale = plansForAgentType(agentTypeId);
   // A choice already made goes straight to checkout rather than being asked again (David, Oct 4
   // 2026): the plan picked on /pricing, or, in a role agent's funnel (/onboard?agent=<slug>, which
-  // builds one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans.
+  // builds one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans,
+  // and so does the student funnel: its three tiers are the choice, so there is nothing to preset.
   const preset =
-    PLANS_ON_SALE.find((p) => p.id === picked) ??
-    (agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID ? PLANS_ON_SALE.find((p) => p.id === "solo") : undefined);
+    onSale.find((p) => p.id === picked) ??
+    (agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID && !student ? onSale.find((p) => p.id === "solo") : undefined);
   const [showPicker, setShowPicker] = useState(!preset);
-  const leading = preset?.id ?? PLANS_ON_SALE.find((p) => p.featured)?.id;
+  const leading = preset?.id ?? onSale.find((p) => p.featured)?.id;
 
   // Set when the buyer backs out of the hand-off while its checkout request is still in
   // flight, so the reply, when it lands, is dropped instead of navigating them away from the
@@ -1280,8 +1311,9 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           Let&apos;s Make It <span style={{ color: a }}>Yours.</span>
         </h1>
         <p style={{ fontSize: 15, color: TXM, maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>
-          We do not sell an off-the-shelf bot. We build one around your business, and the
-          questionnaire that follows is what we build from.
+          {student
+            ? "Every plan is the same private agent, built around you from the questions that follow. The plans differ in how much it can do each month."
+            : "We do not sell an off-the-shelf bot. We build one around your business, and the questionnaire that follows is what we build from."}
         </p>
       </div>
 
@@ -1295,7 +1327,7 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
               side (David, Nov 5 2026: the third plan used to wrap under the other two); one
               column on a phone. The card is wide enough to hold three without squeezing. */}
           <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, marginTop: 6, alignItems: "stretch" }}>
-            {PLANS_ON_SALE.map((t) => {
+            {onSale.map((t) => {
               const lead = t.id === leading;
               const planId = t.id as PlanId;
               return (
@@ -1350,10 +1382,12 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
             ← Back
           </button>
 
-          <p style={{ textAlign: "center", fontSize: 12, color: TXD, marginTop: 14, lineHeight: 1.6 }}>
-            Need more agents, several users, or your own private server?{" "}
-            <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us about a custom build</a>.
-          </p>
+          {!student && (
+            <p style={{ textAlign: "center", fontSize: 12, color: TXD, marginTop: 14, lineHeight: 1.6 }}>
+              Need more agents, several users, or your own private server?{" "}
+              <a href="/contact" style={{ color: TXM, fontWeight: 600 }}>Talk to us about a custom build</a>.
+            </p>
+          )}
         </div>
       </div>
     </div>
