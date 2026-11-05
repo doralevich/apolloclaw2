@@ -589,3 +589,23 @@ customer, a step rather than a door; `/setup` and `/pre-call` are the same. `/he
 an intro page with a booking link, `/get-started` and `/demo` book a call or talk to
 Donna, `/create-an-agent` is the mailer's landing page, and `/davidtest` is the admin
 walkthrough. None of them builds an agent, so none of them was in the count.
+
+## The build screen that would not finish (Nov 5, 2026)
+
+The first build after "Warming up" shipped (earlier today) sat on that step until David
+refreshed; the agent was there and answered. Two causes, both fixed:
+
+- **The progress poll was rate-limited into silence.** `/api/onboard/status` shared the
+  assistant's bucket of 30 requests an hour. The build screen polls every five seconds,
+  so the bucket ran dry two and a half minutes into the first build, and stayed dry for
+  the next demo in the same hour. Every poll after that was a 429, which the screen reads
+  as "still building". It now has its own bucket (`LIMITS.build_status`, 600 an hour),
+  sized for the poll it serves.
+- **The readiness probe was too strict.** It wanted a 200 with a model list from
+  `/v1/models`. Any other reply from a live host kept the screen waiting. It now counts
+  any reply that is not the edge's "no route yet" as ready.
+
+And a ceiling, so neither of these can strand anyone again: once the agent has been
+"running" for 90 seconds, the screen enters Chat whether or not the probe agrees. The
+chat route retries a not-ready reply on its own for a young agent, so going in a little
+early costs a "still starting up" message at worst.
