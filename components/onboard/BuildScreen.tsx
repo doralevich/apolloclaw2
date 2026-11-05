@@ -8,9 +8,15 @@ import { POST_BUILD_LANDING } from "@/lib/routes";
 import type { MergedAgent } from "@/lib/types";
 
 // Post-submit screen for the paid onboarding flow: polls the workspace's agent list
-// until the webhook-provisioned agent exists and is running, walking a checklist
-// (profile saved -> building -> starting up), then enters the dashboard automatically.
-// If anything is slow, a manual dashboard link appears.
+// until the webhook-provisioned agent exists, is running AND its chat host answers, walking a
+// checklist (profile saved -> building -> starting up -> warming up), then enters the dashboard
+// automatically. If anything is slow, a manual dashboard link appears.
+//
+// "Warming up" is the step that was missing (Nov 5 2026). Agent37 reports "running" when the
+// container is up, and the agent's own chat host comes up some time after that. Entering Chat
+// on "running" put the first message of every demo into that gap, where the edge answers
+// "Instance not found". Now the screen waits for /api/agents/{id}/ready (or the `ready` field
+// of /api/onboard/status in the license flow), which probes the chat host itself.
 
 const R = "#D72B2B";
 const BG = "#FAFAF7";
@@ -46,8 +52,9 @@ function StepRow({ state, label }: { state: "done" | "active" | "pending"; label
 //                 signs them in with it, and walks them into the dashboard like anyone else.
 export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }: { agentTypeId: string; agentLabel: string; workspaceId?: string; sessionId?: string }) {
   const viaSession = !!sessionId && !workspaceId;
-  // created: the agent row exists; running: the instance reports running.
-  const [phase, setPhase] = useState<"provisioning" | "starting" | "ready" | "slow">(workspaceId || sessionId ? "provisioning" : "slow");
+  // created: the agent row exists; running: the instance reports running; ready: its chat host
+  // answers. "warming" is the stretch between the last two.
+  const [phase, setPhase] = useState<"provisioning" | "starting" | "warming" | "ready" | "slow">(workspaceId || sessionId ? "provisioning" : "slow");
   const phaseRef = useRef(phase);
   useEffect(() => {
     phaseRef.current = phase;
@@ -61,25 +68,35 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
     // would get (wrongly) narrowed by TS control-flow analysis.
     const isReady = () => phaseRef.current === "ready";
 
-    // Both endpoints answer the same two questions — does the agent exist, is it running —
-    // and differ only in what authorizes the read.
-    const poll = async (): Promise<{ created: boolean; running: boolean }> => {
+    // Both endpoints answer the same three questions — does the agent exist, is it running, does
+    // its chat host answer — and differ only in what authorizes the read.
+    const poll = async (): Promise<{ created: boolean; running: boolean; ready: boolean }> => {
       if (workspaceId) {
         const { agents } = await apiFetch<{ agents: MergedAgent[] }>(`/api/agents?workspace=${encodeURIComponent(workspaceId)}`);
         const mine = agents.find((a) => a.agent_type === agentTypeId);
-        return { created: !!mine, running: mine?.live_status === "running" };
+        const running = mine?.live_status === "running";
+        let ready = false;
+        if (mine && running) {
+          try {
+            ({ ready } = await apiFetch<{ ready: boolean }>(`/api/agents/${encodeURIComponent(mine.agent37_id)}/ready`));
+          } catch {
+            // the probe itself failing reads as not ready yet
+          }
+        }
+        return { created: !!mine, running, ready };
       }
       const res = await fetch(`/api/onboard/status?id=${encodeURIComponent(sessionId!)}`);
       if (!res.ok) throw new Error("status unavailable");
-      return (await res.json()) as { created: boolean; running: boolean };
+      const body = (await res.json()) as { created: boolean; running: boolean; ready?: boolean };
+      return { created: body.created, running: body.running, ready: !!body.ready };
     };
 
     const tick = async () => {
       if (cancelled || isReady()) return;
       try {
-        const { created, running } = await poll();
+        const { created, running, ready } = await poll();
         if (created) {
-          if (running) {
+          if (running && ready) {
             setPhase("ready");
             // Only the logged-in flow can be walked into the dashboard. A license buyer has
             // no session yet, so they stay here and read the closing instructions.
@@ -90,13 +107,15 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
             }
             return;
           }
-          setPhase("starting");
+          setPhase(running ? "warming" : "starting");
         }
       } catch {
         // transient — keep polling
       }
-      // After 4 minutes stop implying live progress and hand over a manual link.
-      if (Date.now() - started > 240_000 && !isReady()) setPhase("slow");
+      // After 6 minutes stop implying live progress and hand over a manual link. The chat
+      // route retries on its own for a young agent, so a visitor who goes in early still gets
+      // "starting up" rather than an error.
+      if (Date.now() - started > 360_000 && !isReady()) setPhase("slow");
       if (!cancelled) setTimeout(tick, 5000);
     };
     void tick();
@@ -144,7 +163,8 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
     }
   };
 
-  const provisioned = phase === "starting" || phase === "ready";
+  const provisioned = phase === "starting" || phase === "warming" || phase === "ready";
+  const started = phase === "warming" || phase === "ready";
   // Deliberately NOT gated on the build being finished. Setting a password does not depend on
   // the agent being up — the account already exists, because /api/onboard/complete resolved it
   // before any of this rendered. Gating it on "ready" meant a build that stalled, or merely ran
@@ -165,13 +185,14 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
         <h2 style={{ fontSize: 24, fontWeight: 900, color: TX, margin: "0 0 6px", letterSpacing: "-0.02em" }}>Building Your {agentLabel}</h2>
         <p style={{ fontSize: 13, color: TXM, margin: "0 0 18px", lineHeight: 1.6 }}>
           {viaSession
-            ? "This usually takes a minute or two. Your answers are already in - we're building your agent around them now."
-            : "This usually takes a minute or two. You'll be taken to your dashboard the moment it's ready."}
+            ? "This usually takes a few minutes. Your answers are already in - we're building your agent around them now."
+            : "This usually takes a few minutes. You'll be taken to your dashboard the moment it's ready to talk."}
         </p>
         <div style={{ borderTop: `1px solid ${BDR}` }}>
           <StepRow state="done" label="Business profile saved" />
           <StepRow state={provisioned ? "done" : "active"} label={`Provisioning your ${agentLabel}`} />
-          <StepRow state={phase === "ready" ? "done" : phase === "starting" ? "active" : "pending"} label="Starting it up" />
+          <StepRow state={started ? "done" : phase === "starting" ? "active" : "pending"} label="Starting it up" />
+          <StepRow state={phase === "ready" ? "done" : phase === "warming" ? "active" : "pending"} label="Warming up, so your first message gets an answer" />
           {viaSession ? (
             <StepRow state={phase === "ready" ? "done" : "pending"} label="Writing your business profile in" />
           ) : (

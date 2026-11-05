@@ -518,3 +518,22 @@ belief that it was the apolloclaw.ai stream, so for three weeks the tag fired co
 stream nobody watched. Rule: the id in app/layout.tsx is whatever GA Admin shows for the property
 David opens, and the snippet GA offers settles any disagreement. There is one constant for the
 loader and the config call so they cannot diverge.
+
+## A fresh agent's first message (Nov 5, 2026)
+
+Every demo run through /onboard launched the agent and lost the first message: the chat
+answered "Instance not found" the moment the build screen let the visitor in, and the same
+message went through a minute later. Agent37 reports an instance "running" when the container
+is up; the agent's own chat host (https://{id}.agent37.app) comes up some time after, and the
+build screen was entering Chat on the first signal. Two changes:
+
+- The build screen waits for the chat host. /api/agents/{id}/ready (logged-in flow) and the
+  `ready` field of /api/onboard/status (license flow) probe the host's /v1/models
+  (lib/instance-ready.ts), and the screen shows "Warming up" between "Starting it up" and the
+  dashboard. The slow-path cap moved from four minutes to six.
+- The chat route retries for a young agent. For fifteen minutes after an agent's row is
+  created, a reply that reads as not-ready (the edge's "Instance not found", a 502/503/504, a
+  connection failure) is retried on a schedule of about a minute, and if it is still not there
+  the visitor reads "Your agent is still starting up. Give it a minute and send that again."
+  An older agent's errors pass through unchanged, because for it "Instance not found" means
+  what the admin fleet page says it means: the instance is gone.
