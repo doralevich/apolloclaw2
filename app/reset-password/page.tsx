@@ -19,6 +19,12 @@ export default function ResetPasswordPage() {
   // null = still checking for the recovery session.
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   const [done, setDone] = useState(false);
+  // ?welcome=1: the first-run stop straight after checkout (app/api/onboard/post-checkout),
+  // where the buyer is already signed in and is choosing a password for next time rather than
+  // replacing one. Skippable, and it continues to `next` (an internal path) rather than the
+  // dashboard, because the questionnaire is what comes next for them.
+  const [welcome, setWelcome] = useState(false);
+  const [next, setNext] = useState(POST_AUTH_LANDING);
 
   useEffect(() => {
     // The recovery link routes through /auth/callback, which establishes a session
@@ -26,7 +32,13 @@ export default function ResetPasswordPage() {
     // expired, or opened in a different browser than the one that requested it.
     createClient()
       .auth.getUser()
-      .then(({ data }) => setHasSession(!!data.user));
+      .then(({ data }) => {
+        const params = new URLSearchParams(window.location.search);
+        const rawNext = params.get("next") || "";
+        setWelcome(params.get("welcome") === "1");
+        setNext(rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : POST_AUTH_LANDING);
+        setHasSession(!!data.user);
+      });
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
@@ -38,6 +50,11 @@ export default function ResetPasswordPage() {
     const { error } = await createClient().auth.updateUser({ password });
     setLoading(false);
     if (error) return toast.error(error.message);
+    // First run: no "updated" card to read, straight on to the questionnaire.
+    if (welcome) {
+      window.location.href = next;
+      return;
+    }
     setDone(true);
   }
 
@@ -47,7 +64,11 @@ export default function ResetPasswordPage() {
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">{branding.appName}</h1>
           {hasSession && !done && (
-            <p className="text-sm text-muted-foreground">Choose a new password.</p>
+            <p className="text-sm text-muted-foreground">
+              {welcome
+                ? "You're in. Choose a password so you can get back in next time."
+                : "Choose a new password."}
+            </p>
           )}
         </div>
 
@@ -59,7 +80,7 @@ export default function ResetPasswordPage() {
               <p className="font-medium">Password updated</p>
               <p className="mt-1 text-muted-foreground">You&apos;re all set.</p>
             </div>
-            <Button className="w-full" onClick={() => (window.location.href = POST_AUTH_LANDING)}>
+            <Button className="w-full" onClick={() => (window.location.href = next)}>
               Continue to dashboard
             </Button>
           </div>
@@ -108,8 +129,15 @@ export default function ResetPasswordPage() {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Updating..." : "Update password"}
+              {loading ? "Saving..." : welcome ? "Save password and continue" : "Update password"}
             </Button>
+            {welcome && (
+              <p className="text-center text-sm">
+                <a href={next} className="text-muted-foreground underline underline-offset-4 hover:text-foreground">
+                  Skip for now
+                </a>
+              </p>
+            )}
           </form>
         )}
       </div>

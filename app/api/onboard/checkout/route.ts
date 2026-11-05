@@ -138,7 +138,11 @@ export const POST = route(async (request: Request) => {
     // `agent` goes back on both URLs when a role was asked for: /onboard opens on the agent
     // picker without it, which is the wrong screen for someone who just paid for the Law Agent
     // (or backed out of paying for it).
-    success_url: `${origin}${returnPath}?${agentParam}paid=1&session_id={CHECKOUT_SESSION_ID}`,
+    //
+    // Success goes through /api/onboard/post-checkout (Nov 5 2026), which signs the buyer in and
+    // sends them to their questionnaire inside their account. It falls back to this page's
+    // ?paid=1 path on its own when it cannot, so that path stays wired below it.
+    success_url: `${origin}/api/onboard/post-checkout?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}${returnPath}?${agentParam}checkout=cancelled`,
     allow_promotion_codes: true,
     // A promotion code that brings the total to zero (David's own WELCOME100 for demos) used
