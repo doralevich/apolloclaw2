@@ -21,6 +21,7 @@ import {
   fieldVisible,
   getIndustryBranch,
   INDUSTRY_OPTIONS,
+  takeOnField,
   type IndustryBranch,
   type IndustryField,
   type StackSection,
@@ -177,8 +178,15 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
   }
 
   // ── The industry deep-dive (generic agent only) ─────────────────────────────────────────
+  // Its "Biggest bottleneck" is asked later, folded into "What should I take off your plate
+  // first?", so the same question is not put twice in two vocabularies (lib/industryConfig.ts
+  // takeOnField).
+  const takeOn = takeOnField(branch);
   if (branch) {
-    for (const f of branch.fields) q.push(fromField(f, "ind", "Your industry", a.ind));
+    for (const f of branch.fields) {
+      if (f === takeOn) continue;
+      q.push(fromField(f, "ind", "Your industry", a.ind));
+    }
   }
 
   // ── Exec (generic: before the stack; role flows ask it after voice, as the form does) ───
@@ -224,8 +232,14 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
     q.push({ id: "teamSentiment", bucket: "top", section: "Where you are with AI", ask: "How does your team feel about bringing me in?", kind: "single", options: TEAM_SENT });
   }
   if (!role?.coversScope && !dropped.has("scopeai")) {
-    q.push({ id: "aiGoals", bucket: "top", section: "What I should take on", ask: "What should I take off your plate first?", help: "Pick all that apply.", kind: "multi", options: AI_GOALS, other: "Other" });
-    q.push({ id: "successMetric", bucket: "top", section: "What I should take on", ask: "What does winning look like?", kind: "multi", options: SUCCESS_MET, other: "Something else" });
+    // The industry's own tasks first, in its own words, then the generic list. The chat opener
+    // and the checklist read these by exact string for the generic list and by keyword for
+    // the rest, and fall back to a plain "Hand over <task>" row for anything else.
+    const takeOnOptions = [...(takeOn?.options ?? []).filter((o) => o !== "Other"), ...AI_GOALS];
+    q.push({ id: "aiGoals", bucket: "top", section: "What I should take on", ask: "What should I take off your plate first?", help: "Pick all that apply.", kind: "multi", options: takeOnOptions, other: "Other" });
+    // Up to two (David, Nov 5 2026): a priority rather than everything ticked, so the agent
+    // knows what it is being judged on.
+    q.push({ id: "successMetric", bucket: "top", section: "What I should take on", ask: "What does winning look like?", help: "Pick up to two.", kind: "multi", max: 2, options: SUCCESS_MET, other: "Something else" });
   }
 
   // ── Final details ───────────────────────────────────────────────────────────────────────
@@ -279,6 +293,13 @@ export function toPayload(agentTypeId: string, a: Answers, user: SignedInUser | 
     ownership: "",
   };
   const tz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone || "" : "";
+  // The industry's take-on picks go back under the industry key too, so USER.md's industry
+  // section reads as it did when the question lived on that page.
+  const takeOn = role ? null : takeOnField(getIndustryBranch(industry));
+  const goals = arr(t.aiGoals);
+  const industryDetails = takeOn
+    ? { ...a.ind, [takeOn.key]: goals.filter((g) => (takeOn.options ?? []).includes(g)) }
+    : a.ind;
   return {
     firstName: user?.first ?? "",
     lastName: user?.last ?? "",
@@ -287,7 +308,7 @@ export function toPayload(agentTypeId: string, a: Answers, user: SignedInUser | 
     companies: company.name || company.industry || company.role ? [company] : [],
     primaryCompanyIndex: 0,
     portfolio: {},
-    industryDetails: a.ind,
+    industryDetails,
     ...(role ? { [role.detailsKey]: a.role } : {}),
     timezone: tz,
     bestTime: "",

@@ -740,3 +740,20 @@ white-glove links and the demo walkthrough, and `?classic=1` on `/onboard/<type>
 comparison. Two things the form asks that the conversation does not yet: the file upload
 on Final Details (Connections and chat can take files later) and a second company. Both
 are rare on a first run and both can come back as questions.
+
+## The two smaller questionnaire ideas (Nov 5, 2026)
+
+Both from David's walk through the application, done after the conversational intake landed:
+
+- **"What should I take off your plate first?" carries the industry's own tasks.** Every
+  industry page asked "Biggest bottleneck" in that trade's words, and the take-on page
+  asked the same thing again in generic words. It is asked once now: the industry's list
+  first, then the generic one, on the take-on page. The picks that came from the industry
+  list are still saved under the industry's own key, so USER.md's industry section reads
+  as before. The chat opener and the checklist already handle a task they do not
+  recognize (a keyword pass, then a plain "Hand over <task>" row), which is what made
+  this safe. Recognized by key (`_bottlenecks`, `agent_focus`), see `takeOnField()`.
+- **"What does winning look like" takes up to two.** A priority rather than everything
+  ticked, so the agent knows what it is being judged on.
+
+Both apply to the conversational intake and to the ten-page form.
