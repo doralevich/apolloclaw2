@@ -6,7 +6,7 @@ import AgentWordmark from "@/components/AgentWordmark";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
 import { LICENSE_AGENT_TYPE_ID } from "@/config/agent-types";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
-import { fieldVisible, getIndustryBranch, type IndustryBranch } from "@/lib/industryConfig";
+import { fieldVisible, getIndustryBranch, takeOnField, type IndustryBranch } from "@/lib/industryConfig";
 import { agentBrand, type AgentBrand } from "@/lib/agentBrand";
 import { timezoneOptions } from "@/config/timezones";
 import { CFO_BRANCH } from "@/lib/cfoIntake";
@@ -1484,13 +1484,14 @@ export const GROWTH_BOTTLENECK = ["Me - my time and attention are the ceiling","
 
 // Renders the dynamic "Industry Deep-Dive" step from an industryConfig branch,
 // mapping each field type onto the form's existing primitives.
-function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry" }: { branch: IndustryBranch; values: Record<string, string | string[]>; onChange: (k: string, v: string | string[]) => void; otherLabel?: string; badge?: string }) {
+function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry", hideTakeOn = false }: { branch: IndustryBranch; values: Record<string, string | string[]>; onChange: (k: string, v: string | string[]) => void; otherLabel?: string; badge?: string; /** The industry page: its "Biggest bottleneck" is asked on the take-on page instead (lib/industryConfig.ts takeOnField). */ hideTakeOn?: boolean }) {
   const isGeneric = branch.fields[0]?.key === "industry_detail";
   const subtitle = isGeneric && otherLabel ? `A bit more about your ${otherLabel} business.` : branch.stepSubtitle;
+  const takeOn = hideTakeOn ? takeOnField(branch) : null;
   return (
     <Stack>
       <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} art={branch.art} />
-      {branch.fields.filter(f => fieldVisible(f, values)).map(f => {
+      {branch.fields.filter(f => fieldVisible(f, values) && f !== takeOn).map(f => {
         const val = values[f.key];
         const str = typeof val === "string" ? val : "";
         // Many of these were type-in boxes before Sept 29, 2026. A saved paragraph under a key
@@ -1805,7 +1806,13 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   };
   const roleOwns = scopeKeys ? roleAnswer(scopeKeys.owns) : undefined;
   const roleWin = scopeKeys ? roleAnswer(scopeKeys.win) : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, aiTools: s7.aiTools, aiToolsOther: s7.aiToolsOther, aiProficiency: s7.aiProficiency, aiKeepProcesses: s7.aiKeep, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes, anythingElse: s8.anythingElse });
+  // The industry's "Biggest bottleneck" is asked on the take-on page now; the picks that came
+  // from its list go back under its own key so USER.md's industry section reads as before.
+  const takeOn = takeOnField(branch);
+  const industryDetailsOut = takeOn
+    ? { ...industryDetails, [takeOn.key]: s7.goals.filter(g => (takeOn.options ?? []).includes(g)) }
+    : industryDetails;
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails: industryDetailsOut, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, aiTools: s7.aiTools, aiToolsOther: s7.aiToolsOther, aiProficiency: s7.aiProficiency, aiKeepProcesses: s7.aiKeep, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes, anythingElse: s8.anythingElse });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1951,7 +1958,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     </Stack>
     ) },
     ...(branch ? [{ key: "industry", label: "Industry", node: (
-      <IndustryStep branch={branch} values={industryDetails} onChange={setIndustry} otherLabel={primaryCompany?.industryOther} />
+      <IndustryStep branch={branch} values={industryDetails} onChange={setIndustry} otherLabel={primaryCompany?.industryOther} hideTakeOn />
     ) }] : []),
     ...rolePages.map((rb, i) => ({
       key: roleStepKeys[i],
@@ -2084,14 +2091,18 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "scopeai", label: "What It Should Do", node: (
     <Stack key="s7scope">
       <SHead stepNum={9} total={0} title="What your agent should take on" subtitle="The work you want off your desk, and what a win looks like." badge="Business" art />
-      <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={AI_GOALS} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
+      {/* The industry's own tasks first (its "Biggest bottleneck" list, no longer asked on the
+          industry page), then the generic list: one question, in the industry's words (David,
+          Nov 5 2026). The industry picks are saved under the industry key too (buildData). */}
+      <CheckGroup label="What tasks would you like your agent to manage?" hint="Select all that apply" options={[...(takeOn?.options ?? []).filter(o => o !== "Other"), ...AI_GOALS]} value={s7.goals} onChange={v => f7("goals", v)} cols={2} />
       {s7.goals.includes("Other") && <FF label="What else should it manage?"><TInput value={s7.goalsOther} onChange={v => f7("goalsOther", v)} placeholder="Name the task" /></FF>}
       {/* `split` removed at David's call. It bolded everything before the dash and greyed the
           rest, so "Save time" and "Increase revenue" shouted while the clause that carried the
           actual meaning receded. Plain sentences, read as written.
           Multi-select too: it kept only the last box despite saying "select all that apply",
           the same bug as the tone question - and most people want two or three of these. */}
-      <CheckGroup label="What does winning look like?" hint="Select all that apply" options={SUCCESS_MET} value={s7.metric} onChange={v => f7("metric", v)} cols={2} />
+      {/* Up to two (David, Nov 5 2026): a priority rather than everything ticked. */}
+      <CheckGroup label="What does winning look like?" hint="Pick up to 2" options={SUCCESS_MET} value={s7.metric} onChange={v => f7("metric", v.slice(-2))} cols={2} />
       {s7.metric.includes("Something else") && (
         <FF label="Tell us what winning looks like" hint="In your words.">
           <TArea value={s7.metricOther} onChange={v => f7("metricOther", v)} placeholder="What would make this obviously worth it, six months from now?" rows={2} />

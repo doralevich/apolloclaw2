@@ -1250,3 +1250,17 @@ export function industryFieldLabel(key: string): string {
   return key.replace(/_/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase());
 }
 let INDUSTRY_LABELS: Map<string, string> | null = null;
+
+/**
+ * The one question on an industry page that asks what the agent should take on: every branch's
+ * "Biggest bottleneck" (and the athletics branches' "What should the agent take off your
+ * plate?"). Since Nov 5 2026 it is not asked on the industry page at all: its options join the
+ * generic "What should I take off your plate first?" list, so the question is asked once, in
+ * the industry's own words, and the picks that came from this list are still saved under this
+ * key so USER.md's industry section reads as before (David: "could be updated with industry
+ * specific tasks"). Recognized by key, so a branch opts in by naming its field that way.
+ */
+export function takeOnField(branch: IndustryBranch | null | undefined): IndustryField | null {
+  if (!branch) return null;
+  return branch.fields.find((f) => f.type === "multiselect" && (/_bottlenecks$/.test(f.key) || f.key === "agent_focus")) ?? null;
+}
