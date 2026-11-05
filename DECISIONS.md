@@ -537,3 +537,13 @@ build screen was entering Chat on the first signal. Two changes:
   the visitor reads "Your agent is still starting up. Give it a minute and send that again."
   An older agent's errors pass through unchanged, because for it "Instance not found" means
   what the admin fleet page says it means: the instance is gone.
+
+## A zero-total checkout asks for no card (Nov 5, 2026)
+
+David demos /onboard with his own 100% promotion code and Stripe still asked for a card every
+time. On a subscription checkout Stripe collects a payment method whatever the first invoice
+comes to, unless the session says the card is optional. Both checkout routes now set
+payment_method_collection to "if_required": a code that brings the total to zero shows no card
+field, and the webhook, the account email and the provisioning run exactly as for a paid
+checkout. A paying customer still enters a card. The promotion code stays private; a test agent
+is deleted from the admin fleet page afterwards so the VPS stops billing.
