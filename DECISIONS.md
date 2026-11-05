@@ -590,22 +590,46 @@ an intro page with a booking link, `/get-started` and `/demo` book a call or tal
 Donna, `/create-an-agent` is the mailer's landing page, and `/davidtest` is the admin
 walkthrough. None of them builds an agent, so none of them was in the count.
 
-## The build screen that would not finish (Nov 5, 2026)
+## The questionnaire, simpler and smarter (Nov 5, 2026)
 
-The first build after "Warming up" shipped (earlier today) sat on that step until David
-refreshed; the agent was there and answered. Two causes, both fixed:
+David walked the application and asked for a pass. What changed, and why:
 
-- **The progress poll was rate-limited into silence.** `/api/onboard/status` shared the
-  assistant's bucket of 30 requests an hour. The build screen polls every five seconds,
-  so the bucket ran dry two and a half minutes into the first build, and stayed dry for
-  the next demo in the same hour. Every poll after that was a 429, which the screen reads
-  as "still building". It now has its own bucket (`LIMITS.build_status`, 600 an hour),
-  sized for the poll it serves.
-- **The readiness probe was too strict.** It wanted a 200 with a model list from
-  `/v1/models`. Any other reply from a live host kept the screen waiting. It now counts
-  any reply that is not the edge's "no route yet" as ready.
+- **The industry dropdown is alphabetical**, "Other" last. It was in the order the
+  branches were written, which read as random to anyone scanning for their own.
+- **Monthly Revenue is gone** from "Your Business", for every flow. Nothing downstream
+  decided anything on it. Team Size and Years in Business now share the row. The Law
+  Agent's `hideRevenue` opt-out went with it, since there is nothing left to hide.
+- **Industry software moved to the Tech Stack page.** Every industry page used to carry a
+  "Primary tool" dropdown, one page before the Tech Stack page asked about tools again.
+  Each branch now declares `stack` in `lib/industryConfig.ts`: a logo-tile section (or a
+  type-in question) rendered at the top of the Tech Stack page and saved into the same
+  industry_details blob. Where the industry section covers a generic one (a realtor's
+  CRM, a CPA's accounting software), `stackSkip` hides the generic tiles; **Legal** gets
+  the Law Agent's whole stack page (`LEGAL_STACK`) and none of the generic ones. The
+  store platform stays required for e-commerce, as it was. `lib/agent-files.ts` reads
+  these into TOOLS.md, which the "Primary tool" answer never reached: it only ever landed
+  in USER.md's industry dump.
+- **USER.md prints the question, not the key.** The Industry Deep-Dive section used to
+  print snake_case keys with the underscores swapped out ("Ehr System: Epic").
+  `industryFieldLabel()` looks the label up from the branch.
+- **"Where You Are With AI" asks about AI.** Behind "Yes" it used to open three paragraphs
+  asking for a review of past projects. It now asks which tools (ChatGPT, Claude, Gemini,
+  Copilot, Perplexity, Grok, Zapier / Make, custom, Other), a 1 to 5 comfort scale, and
+  the processes worth keeping. Those three reach AGENTS.md's "How they decide" section in
+  place of the old trust score and prose. The 1 to 10 "How much do you trust technology
+  to handle critical tasks?" scale is gone; "How does your team feel about implementing
+  our new program?" stays.
+- **Final Details has an open box**, "Anything else we should know?", above the file
+  drop. Saved as `anythingElse`, printed into USER.md.
 
-And a ceiling, so neither of these can strand anyone again: once the agent has been
-"running" for 90 seconds, the screen enters Chat whether or not the probe agrees. The
-chat route retries a not-ready reply on its own for a young agent, so going in a little
-early costs a "still starting up" message at worst.
+**Still asked, and worth keeping:** "Your Voice" (two questions) is what AGENTS.md's
+voice section is built from; cut it and every agent writes in the persona's default
+voice. "What does winning look like" feeds "How they'll judge whether you're working" in
+the same file.
+
+**Not done, pending David's call:** industry-specific task lists on "What your agent
+should take on". The industry page already asks "Biggest bottleneck" in that industry's
+words, and the generic page asks it again in generic words; the clean version is to ask
+once, on the "take on" page, using the industry's list. That changes what `aiGoals`
+holds, which the chat opener and checklist read by exact string, so it is a deliberate
+change rather than a tidy-up.

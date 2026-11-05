@@ -54,8 +54,8 @@ const ROLE_INTAKES: Record<
     // page and a company name is a fair thing to require. The Personal Agent can be bought by a
     // person for themselves, and for them the page was not merely awkward: validate("biz")
     // required a company name and a role, so a private individual could not get past it at all.
-    // Setting this reframes the page, makes the company optional, and drops team size, monthly
-    // revenue and years in business - three questions about a company, asked of a person.
+    // Setting this reframes the page, makes the company optional, and drops team size and
+    // years in business - questions about a company, asked of a person.
     personalScale?: { title: string; subtitle: string };
     // OPT IN to the short contact screen: first name, last name and email required, phone
     // optional, LinkedIn hidden. For a buyer signing up for themselves, where a LinkedIn profile
@@ -75,11 +75,6 @@ const ROLE_INTAKES: Record<
     // files, the PDF and the edit pre-fill pick them up like any deep-dive field. "After
     // Launch" stays on the page either way.
     stackSections?: readonly StackSection[];
-    // OPT IN to dropping just the "Monthly Revenue" question on "Your Business", keeping Team
-    // Size beside it. Narrower than `personalScale`, which drops all three company-scale
-    // questions for a buyer who may have no company at all - this is for a role whose buyer
-    // has a company, David just does not want revenue asked of it.
-    hideRevenue?: boolean;
     // OPT IN to dropping the generic "What your agent should take on" page, by naming the two
     // fields in this branch that already ask its two questions. Only set it once the branch
     // genuinely covers both - the whole point is to stop asking twice, not to stop asking.
@@ -128,7 +123,6 @@ const ROLE_INTAKES: Record<
     // regardless of what, if anything, the questionnaire covers otherwise.
     standardGuard:
       "Anything filed with a court, any advice given directly to a client, any opinion on the merits or likely outcome of a matter, and anything requiring a signature always goes through a licensed attorney before it moves. Privileged or confidential client material is never summarized into shared or non-firm systems.",
-    hideRevenue: true,
     // The firm's tools, in a law firm's terms, on the Tech Stack page (lib/legalIntake.ts).
     stackSections: LEGAL_STACK,
     // "Describe your business" moved onto the bottom of "Your Legal Practice", right after
@@ -303,7 +297,6 @@ function FunnelWordmark({ size = 17 }: { size?: number }) {
 // OPTION LISTS
 // ════════════════════════════════════════════════════════════
 const BIZ_SIZES    = ["Just me (Solo)","2-5 people","6-10 people","11-25 people","26-50 people","51-100 people","100+ people"];
-const REVENUE      = ["Pre-revenue","Under $5k/mo","$5k-$10k/mo","$10k-$25k/mo","$25k-$50k/mo","$50k-$100k/mo","$100k-$250k/mo","$250k-$500k/mo","$500k+/mo","Not applicable","Prefer not to say"];
 const BIZ_AGE      = ["Less than 6 months","6-12 months","1-2 years","2-5 years","5-10 years","10+ years","Not applicable"];
 // Sales & CRM, weighted to what mid-market and enterprise buyers actually run.
 //
@@ -349,6 +342,11 @@ const WRITING_TONE = ["Professional & formal","Conversational & warm","Direct & 
 const BRAND_LIKE   = ["Alex Hormozi - direct, value-packed, to the point","Gary Vaynerchuk - raw, authentic","Simon Sinek - thoughtful, purpose-driven","Seth Godin - pithy, surprising","Donald Miller - clear, customer-focused","Marie Forleo - energetic, empowering","Oprah Winfrey - empathetic, inspirational","Tim Ferriss - tactical, optimizing","Other"];
 const AI_GOALS     = ["Inbox & email management","Lead qualification & follow-up","Customer support / chat","Appointment scheduling","Proposals & quotes","Content & social media","Research & competitive intel","CRM data entry & updates","Invoicing & billing","Internal workflow automation","Other"];
 const SUCCESS_MET  = ["Save time - get hours back every week","Increase revenue - close more, faster","Reduce headcount or overhead costs","Scale without hiring more people","Improve customer experience & response speed","Improve consistency across my team","Reduce errors and manual mistakes","Something else"];
+// The assistants and automation people have already tried, for "Where You Are With AI". Named
+// products rather than an open box (David, Nov 5 2026): the three paragraphs that used to open
+// behind "Yes" asked for a review of past projects, which is not what readiness means. The
+// list, a comfort scale and the processes worth keeping are what the agent can use.
+const AI_TOOLS     = ["ChatGPT","Claude","Google Gemini","Microsoft Copilot","Perplexity","Grok","Zapier / Make automations","A custom-built tool","Other"];
 const TEAM_SENT    = ["Very excited - they've been asking for this","Mostly positive - open to change","Neutral - they'll adapt when it's here","Skeptical - they worry about job security","Resistant - there will be pushback","Just me - no team involved"];
 const INTERNAL_TECH= ["Yes - we have internal IT or a developer","We have a tech-savvy person who can help","We prefer Apollo[Claw] to manage everything after launch","We'll figure it out as we go","Not sure yet"];
 // The white-glove links only (David, Oct 12 2026, from the Adam Glassman intake): the work the
@@ -450,13 +448,14 @@ function RadioGroup({ label, hint, options, value, onChange }: { label?: string;
     </FF>
   );
 }
-function ScaleRow({ label, hint, low, high, value, onChange }: { label?: string; hint?: string; low: string; high: string; value: number | null; onChange: (v: number) => void }) {
+// `max` is 10 unless a question wants a shorter scale (the AI comfort question is 1 to 5).
+function ScaleRow({ label, hint, low, high, value, onChange, max = 10 }: { label?: string; hint?: string; low: string; high: string; value: number | null; onChange: (v: number) => void; max?: number }) {
   const { a } = useAccent();
   return (
     <FF label={label} hint={hint}>
       <div style={{ marginTop: 6 }}>
         <div style={{ display: "flex", gap: 5 }}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => {
+          {Array.from({ length: max }, (_, i) => i + 1).map(n => {
             const on = value === n;
             return <button key={n} type="button" onClick={() => onChange(n)} style={{ flex: 1, padding: "8px 0", borderRadius: 5, fontSize: 13, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s", background: on ? a : SRF2, border: `1px solid ${on ? a : BDR}`, color: on ? "#fff" : TXD }}>{n}</button>;
           })}
@@ -536,6 +535,41 @@ function LogoCheckGroup({ options, value = [], onChange }: { options: string[]; 
       {options.map(opt => <LogoTile key={opt} opt={opt} on={value.includes(opt)} onToggle={() => toggle(opt)} />)}
     </div>
   );
+}
+
+// The Tech Stack page's sections, one per entry: a labelled row of logo tiles, or a single
+// type-in question. Shared by a role agent's own stack page (ROLE_INTAKES stackSections) and an
+// industry's software (lib/industryConfig.ts `stack`); `values` and `set` point at whichever
+// details blob those answers belong to.
+function StackSections({ sections, values, set }: { sections: readonly StackSection[]; values: Record<string, string | string[]>; set: (k: string, v: string | string[]) => void }) {
+  return (<>{sections.map((s) => {
+    if ("text" in s) {
+      const v = values[s.key];
+      return (
+        <Fragment key={s.key}>
+          <Divider label={s.label} />
+          <FF label={s.question} hint={s.text.helper}><TInput value={typeof v === "string" ? v : ""} onChange={val => set(s.key, val)} placeholder={s.text.placeholder} /></FF>
+        </Fragment>
+      );
+    }
+    const raw = values[s.key];
+    const picked = Array.isArray(raw) ? raw : (typeof raw === "string" && raw ? [raw] : []);
+    const otherKey = `${s.key}_other`;
+    const other = values[otherKey];
+    // A single-choice section stores one string (config/connect-flow.ts reads email_platform
+    // as text): the tile just toggled on wins, and toggling the chosen one off clears it.
+    const pick = (v: string[]) => set(s.key, s.single ? (v.find(x => !picked.includes(x)) ?? "") : v);
+    // An answer saved while this was a dropdown on the industry page (before Nov 5 2026) is
+    // shown as one more, ticked, tile rather than silently dropped.
+    const options = [...s.options, ...picked.filter(p => !s.options.includes(p))];
+    return (
+      <Fragment key={s.key}>
+        <Divider label={s.required ? `${s.label} (required)` : s.label} />
+        <LogoCheckGroup options={options} value={picked} onChange={pick} />
+        {picked.includes("Other") && <FF label="Which tool?"><TInput value={typeof other === "string" ? other : ""} onChange={val => set(otherKey, val)} placeholder="Name the tool" /></FF>}
+      </Fragment>
+    );
+  })}</>);
 }
 
 function FF({ label, required, hint, children }: { label?: string; required?: boolean; hint?: string; children: React.ReactNode }) {
@@ -1563,13 +1597,13 @@ const pfStr = (v: unknown): string => (typeof v === "string" ? v : "");
 const pfArr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
 const pfNum = (v: unknown): number | null => (typeof v === "number" ? v : null);
 
-const emptyS2 = () => ({ biz: "", url: "", industry: "", size: "", revenue: "", age: "", model: "", crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", docs: [] as string[], docsOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
+const emptyS2 = () => ({ biz: "", url: "", industry: "", size: "", age: "", model: "", crm: [] as string[], crmOther: "", ecom: [] as string[], ecomOther: "", comms: [] as string[], commsOther: "", pm: [] as string[], pmOther: "", billing: [] as string[], billingOther: "", docs: [] as string[], docsOther: "", mktg: [] as string[], auto: [] as string[], autoOther: "", support: [] as string[], supportOther: "", webplat: "", desc: "", differentiate: "", web_presence: "" });
 const emptyS3 = () => ({ pain: "", depts: [] as string[], hours: "", duration: "", hate: "", tried: [] as string[], costImpact: "", opsVolume: "" });
 const emptyS4 = () => ({ marital: "", partnerName: "", kids: "", kidsDetails: "", household: "", kidsAges: [] as string[], caretaking: [] as string[], homeLife: "", protect: [] as string[], lifeStage: "", timeline3yr: [] as string[], personalGoal: "" });
-const emptyS5 = () => ({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", techTrust: null as number | null, controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
+const emptyS5 = () => ({ decStyle: [] as string[], decStyleOther: "", stressResp: "", motivators: [] as string[], blockers: [] as string[], moneyMind: "", agencyHist: "", controlComfort: null as number | null, worthIt: "", strategicBet: "", growthBottleneck: [] as string[], growthBottleneckOther: "" });
 const emptyS6 = () => ({ tone: [] as string[], writingComf: "", brandLike: [] as string[], brandLikeOther: "", voiceDesc: "", voiceStyle: [] as string[], loveWords: "", hateWords: "", socialActive: "", platforms: [] as string[], sample: "" });
-const emptyS7 = () => ({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", past: "", aiThoughts: "", aiStartup: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
-const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", serviceRequests: [] as string[], serviceRequestsNotes: "", agree: false });
+const emptyS7 = () => ({ goals: [] as string[], goalsOther: "", metric: [] as string[], metricOther: "", prior: "", aiTools: [] as string[], aiToolsOther: "", aiProficiency: null as number | null, aiKeep: "", teamSent: "", horizon3: "", horizon6: "", horizon12: "" });
+const emptyS8 = () => ({ hosting: [] as string[], os: "", security: [] as string[], data: [] as string[], comply: [] as string[], budget: "", timeline: "", engagement: "", internalTech: "", itInvolved: "", constraints: "", decisionAuthority: "", serviceRequests: [] as string[], serviceRequestsNotes: "", anythingElse: "", agree: false });
 
 function hydrateGate(a: PrefillAnswers): GateData {
   // timezone/bestTime prefill like everything else, so re-saving an edited questionnaire keeps
@@ -1580,13 +1614,13 @@ function hydrateGate(a: PrefillAnswers): GateData {
 
 function hydrateBizState(a: PrefillAnswers) {
   return {
-    s2: { ...emptyS2(), biz: pfStr(a.companyName), url: pfStr(a.website), industry: pfStr(a.industry), size: pfStr(a.companySize), revenue: pfStr(a.revenue), age: pfStr(a.businessAge), model: pfStr(a.businessModel), crm: pfArr(a.crmTools), crmOther: pfStr(a.crmToolsOther), ecom: pfArr(a.ecomTools), comms: pfArr(a.commsTools), pm: pfArr(a.pmTools), billing: pfArr(a.billingTools), docs: pfArr(a.docsTools), docsOther: pfStr(a.docsToolsOther), mktg: pfArr(a.mktgTools), auto: pfArr(a.autoTools), support: pfArr(a.supportTools), webplat: pfStr(a.webPlatform), desc: pfStr(a.businessDescription), differentiate: pfStr(a.differentiator), web_presence: pfStr(a.webPresence) },
+    s2: { ...emptyS2(), biz: pfStr(a.companyName), url: pfStr(a.website), industry: pfStr(a.industry), size: pfStr(a.companySize), age: pfStr(a.businessAge), model: pfStr(a.businessModel), crm: pfArr(a.crmTools), crmOther: pfStr(a.crmToolsOther), ecom: pfArr(a.ecomTools), comms: pfArr(a.commsTools), pm: pfArr(a.pmTools), billing: pfArr(a.billingTools), docs: pfArr(a.docsTools), docsOther: pfStr(a.docsToolsOther), mktg: pfArr(a.mktgTools), auto: pfArr(a.autoTools), support: pfArr(a.supportTools), webplat: pfStr(a.webPlatform), desc: pfStr(a.businessDescription), differentiate: pfStr(a.differentiator), web_presence: pfStr(a.webPresence) },
     s3: { ...emptyS3(), pain: pfStr(a.mainPain), depts: pfArr(a.brokenAreas), hours: pfStr(a.manualHours), duration: pfStr(a.painDuration), hate: pfStr(a.hatedTasks), tried: pfArr(a.triedBefore), costImpact: pfStr(a.costImpact), opsVolume: pfStr(a.opsVolume) },
     s4: { ...emptyS4(), marital: pfStr(a.maritalStatus), partnerName: pfStr(a.partnerName), kids: pfStr(a.children), kidsDetails: pfStr(a.childrenDetails), household: pfStr(a.household), kidsAges: pfArr(a.childrenAges), caretaking: pfArr(a.caretaking), homeLife: pfStr(a.homeLife), protect: pfArr(a.protecting), lifeStage: pfStr(a.lifeStage), timeline3yr: pfArr(a.threeYearGoals), personalGoal: pfStr(a.personalGoal) },
-    s5: { ...emptyS5(), decStyle: pfArr(a.decisionStyle), decStyleOther: pfStr(a.decisionStyleOther), stressResp: pfStr(a.stressResponse), motivators: pfArr(a.motivators), blockers: pfArr(a.blockers), moneyMind: pfStr(a.moneyMindset), agencyHist: pfStr(a.agencyHistory), techTrust: pfNum(a.techTrust), controlComfort: pfNum(a.controlComfort), worthIt: pfStr(a.worthIt), strategicBet: pfStr(a.strategicBet), growthBottleneck: pfArr(a.growthBottleneck), growthBottleneckOther: pfStr(a.growthBottleneckOther) },
+    s5: { ...emptyS5(), decStyle: pfArr(a.decisionStyle), decStyleOther: pfStr(a.decisionStyleOther), stressResp: pfStr(a.stressResponse), motivators: pfArr(a.motivators), blockers: pfArr(a.blockers), moneyMind: pfStr(a.moneyMindset), agencyHist: pfStr(a.agencyHistory), controlComfort: pfNum(a.controlComfort), worthIt: pfStr(a.worthIt), strategicBet: pfStr(a.strategicBet), growthBottleneck: pfArr(a.growthBottleneck), growthBottleneckOther: pfStr(a.growthBottleneckOther) },
     s6: { ...emptyS6(), tone: pfArr(a.writingTone), writingComf: pfStr(a.writingComfort), brandLike: typeof a.brandVoiceLike === "string" ? (a.brandVoiceLike ? [a.brandVoiceLike] : []) : pfArr(a.brandVoiceLike), brandLikeOther: pfStr(a.brandVoiceLikeOther), voiceStyle: pfArr(a.voiceDescription), loveWords: pfStr(a.loveWords), hateWords: pfStr(a.hateWords), socialActive: pfStr(a.socialPresence), platforms: pfArr(a.platforms), sample: pfStr(a.writingSample) },
-    s7: { ...emptyS7(), goals: pfArr(a.aiGoals), goalsOther: pfStr(a.aiGoalsOther), metric: pfArr(a.successMetric), metricOther: pfStr(a.successMetricOther), prior: pfStr(a.priorAI), past: pfStr(a.pastExperience), aiThoughts: pfStr(a.aiThoughts), aiStartup: pfStr(a.aiStartup), teamSent: pfStr(a.teamSentiment), horizon3: pfStr(a.horizon3Months), horizon6: pfStr(a.horizon6Months), horizon12: pfStr(a.horizon12Months) },
-    s8: { ...emptyS8(), hosting: pfArr(a.hosting), os: pfStr(a.os), security: pfArr(a.securityMeasures), data: pfArr(a.dataTypes), comply: pfArr(a.compliance), budget: pfStr(a.budgetRange ?? a.budget), timeline: pfStr(a.timeline), engagement: pfStr(a.engagement), internalTech: pfStr(a.internalTech), constraints: pfStr(a.constraints), decisionAuthority: pfStr(a.decisionAuthority), serviceRequests: pfArr(a.serviceRequests), serviceRequestsNotes: pfStr(a.serviceRequestsNotes), agree: true },
+    s7: { ...emptyS7(), goals: pfArr(a.aiGoals), goalsOther: pfStr(a.aiGoalsOther), metric: pfArr(a.successMetric), metricOther: pfStr(a.successMetricOther), prior: pfStr(a.priorAI), aiTools: pfArr(a.aiTools), aiToolsOther: pfStr(a.aiToolsOther), aiProficiency: pfNum(a.aiProficiency), aiKeep: pfStr(a.aiKeepProcesses), teamSent: pfStr(a.teamSentiment), horizon3: pfStr(a.horizon3Months), horizon6: pfStr(a.horizon6Months), horizon12: pfStr(a.horizon12Months) },
+    s8: { ...emptyS8(), hosting: pfArr(a.hosting), os: pfStr(a.os), security: pfArr(a.securityMeasures), data: pfArr(a.dataTypes), comply: pfArr(a.compliance), budget: pfStr(a.budgetRange ?? a.budget), timeline: pfStr(a.timeline), engagement: pfStr(a.engagement), internalTech: pfStr(a.internalTech), constraints: pfStr(a.constraints), decisionAuthority: pfStr(a.decisionAuthority), serviceRequests: pfArr(a.serviceRequests), serviceRequestsNotes: pfStr(a.serviceRequestsNotes), anythingElse: pfStr(a.anythingElse), agree: true },
     keyPeople: Array.isArray(a.keyPeople) && a.keyPeople.length ? (a.keyPeople as KeyPerson[]) : [{ name: "", role: "" }],
     companies: Array.isArray(a.companies) && a.companies.length ? (a.companies as Company[]) : [emptyCompany()],
     primaryIndex: typeof a.primaryCompanyIndex === "number" ? a.primaryCompanyIndex : 0,
@@ -1657,7 +1691,9 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   // and the required marks it draws can never disagree with each other.
   const personalScale = roleIntake?.personalScale;
   const finalNote = roleIntake?.finalNote;
-  const stackSkip = roleIntake?.stackSkip ?? [];
+  // Generic Tech Stack sections to hide: the ones a role's own stack covers, and the ones the
+  // industry's software section covers (a realtor's CRM, lib/industryConfig.ts `stackSkip`).
+  const stackSkip = [...(roleIntake?.stackSkip ?? []), ...(branch?.stackSkip ?? [])];
   // A role deep-dive is one or more pages. Normalising to an array here means the rest of the
   // form does not care which, and the page keys are derived rather than hand-listed so a branch
   // can gain a page without touching the ordering below.
@@ -1769,7 +1805,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   };
   const roleOwns = scopeKeys ? roleAnswer(scopeKeys.owns) : undefined;
   const roleWin = scopeKeys ? roleAnswer(scopeKeys.win) : undefined;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, revenue: s2.revenue, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, techTrust: s5.techTrust, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, pastExperience: s7.past, aiThoughts: s7.aiThoughts, aiStartup: s7.aiStartup, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, aiTools: s7.aiTools, aiToolsOther: s7.aiToolsOther, aiProficiency: s7.aiProficiency, aiKeepProcesses: s7.aiKeep, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes, anythingElse: s8.anythingElse });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
@@ -1805,6 +1841,15 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         if (!f.required || !fieldVisible(f, industryDetails)) continue;
         const v = industryDetails[f.key];
         if (!v || (Array.isArray(v) && v.length === 0) || (typeof v === "string" && !v.trim())) return `Please complete: ${f.label.replace(/[?.]+$/, "")}.`;
+      }
+    }
+    // The industry's software sections on the Tech Stack page (a store's platform is required
+    // there, as it was on the deep-dive page before it moved).
+    if (key === "stack" && branch?.stack && !roleIntake?.stackSections) {
+      for (const s of branch.stack) {
+        if (!("options" in s) || !s.required) continue;
+        const v = industryDetails[s.key];
+        if (!v || (Array.isArray(v) && v.length === 0)) return `Please pick your ${s.label.toLowerCase()}.`;
       }
     }
     const rolePageIdx = key ? roleStepKeys.indexOf(key) : -1;
@@ -1853,25 +1898,21 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       {!personalScale && (
       <FF label="Website"><TInput value={s2.web_presence} onChange={v => f2("web_presence", v)} placeholder="yourcompany.com" /></FF>
       )}
-      {/* Team size, monthly revenue and years in business are questions about a company. Asked of
-          somebody buying a Personal Agent for themselves they are unanswerable, and answering them
-          about their employer tells the agent nothing it uses. */}
+      {/* Team size and years in business are questions about a company. Asked of somebody buying
+          a Personal Agent for themselves they are unanswerable, and answering them about their
+          employer tells the agent nothing it uses.
+
+          Monthly Revenue sat beside Team Size and is gone for every flow at David's call (Nov 5
+          2026); nothing downstream decided anything on it. Business Model went the same way
+          earlier: service-based vs product vs SaaS is the kind of self-classification people
+          stall on when their business is two of them, and the answers below - what you sell,
+          what is broken, which tools you run - say it more accurately than the label would.
+          s2.model stays in state and in the payload as an empty string; nothing reads it. */}
       {!personalScale && (
       <Row2>
         <FF label="Team Size"><TSelect value={s2.size} onChange={v => f2("size", v)} options={BIZ_SIZES} /></FF>
-        {/* Monthly Revenue dropped for the Law Agent specifically, David's call - see
-            ROLE_INTAKES.legal's `hideRevenue`. `s2.revenue` stays in state and goes out empty
-            for this flow, same as every other question removed this way. */}
-        {!roleIntake?.hideRevenue && <FF label="Monthly Revenue"><TSelect value={s2.revenue} onChange={v => f2("revenue", v)} options={REVENUE} /></FF>}
+        <FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF>
       </Row2>
-      )}
-      {/* Business Model sat beside this and is gone at David's call. Service-based vs product
-          vs SaaS is the kind of self-classification people stall on when their business is two
-          of them, and the answers below - what you sell, what is broken, which tools you run -
-          say it more accurately than the label would. s2.model stays in state and in the
-          payload as an empty string; nothing reads it to decide anything. */}
-      {!personalScale && (
-      <Row2><FF label="Years in Business"><TSelect value={s2.age} onChange={v => f2("age", v)} options={BIZ_AGE} /></FF></Row2>
       )}
       {/* A list of colleagues, asked of somebody who may have no business at all. */}
       {!personalScale && (
@@ -1928,31 +1969,16 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
     { key: "stack", label: "Tech Stack", node: (
     <Stack key="s2stack">
       <SHead stepNum={3} total={0} title="Your Tech Stack" subtitle="What the business runs on today. Pick what applies - this tells us what your agent has to work with." badge="Business" />
-      {roleIntake?.stackSections ? roleIntake.stackSections.map((s) => {
-        if ("text" in s) {
-          const v = roleDetails[s.key];
-          return (
-            <Fragment key={s.key}>
-              <Divider label={s.label} />
-              <FF label={s.question} hint={s.text.helper}><TInput value={typeof v === "string" ? v : ""} onChange={val => setRoleDetail(s.key, val)} placeholder={s.text.placeholder} /></FF>
-            </Fragment>
-          );
-        }
-        const raw = roleDetails[s.key];
-        const picked = Array.isArray(raw) ? raw : (typeof raw === "string" && raw ? [raw] : []);
-        const otherKey = `${s.key}_other`;
-        const other = roleDetails[otherKey];
-        // A single-choice section stores one string (config/connect-flow.ts reads email_platform
-        // as text): the tile just toggled on wins, and toggling the chosen one off clears it.
-        const pick = (v: string[]) => setRoleDetail(s.key, s.single ? (v.find(x => !picked.includes(x)) ?? "") : v);
-        return (
-          <Fragment key={s.key}>
-            <Divider label={s.label} />
-            <LogoCheckGroup options={[...s.options]} value={picked} onChange={pick} />
-            {picked.includes("Other") && <FF label="Which tool?"><TInput value={typeof other === "string" ? other : ""} onChange={val => setRoleDetail(otherKey, val)} placeholder="Name the tool" /></FF>}
-          </Fragment>
-        );
-      }) : (<>
+      {roleIntake?.stackSections ? (
+        <StackSections sections={roleIntake.stackSections} values={roleDetails} set={setRoleDetail} />
+      ) : (<>
+      {/* The industry's own software first (lib/industryConfig.ts `stack`): a practice's EHR, a
+          firm's tax software, a store's platform. It used to be a "Primary tool" dropdown on the
+          industry page; David, Nov 5 2026: "we have that in the next page under Tech Stack".
+          Saved into industryDetails with the rest of the deep-dive. A firm that picked Legal gets
+          the Law Agent's whole stack page and none of the generic tiles (`stackReplaces`). */}
+      {branch?.stack && <StackSections sections={branch.stack} values={industryDetails} set={setIndustry} />}
+      {!branch?.stackReplaces && (<>
       {!stackSkip.includes("crm") && (<>
       <Divider label="Sales & CRM" />
       <LogoCheckGroup options={STACK_CRM} value={s2.crm} onChange={v => f2("crm", v)} />
@@ -1977,6 +2003,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
       <Divider label="Finance & Billing" />
       <LogoCheckGroup options={STACK_BILLING} value={s2.billing} onChange={v => f2("billing", v)} />
       {s2.billing.includes("Other") && <FF label="Which tool?"><TInput value={s2.billingOther || ""} onChange={v => f2("billingOther", v)} placeholder="Name the tool" /></FF>}
+      </>)}
       </>)}
       </>)}
       {/* Moved here from Final Details at David's call. Who can touch the stack after launch is
@@ -2034,17 +2061,21 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
           you have tried, how the room feels about it, how far you trust it. Each answer sets up
           the next, and all three are about READINESS. "What should it do" is a different
           question and now gets its own page. */}
-      <SHead stepNum={8} total={0} title="Where You Are With AI" subtitle="What you have tried, how your team feels, and how much you want it deciding on its own." badge="Business" />
+      <SHead stepNum={8} total={0} title="Where You Are With AI" subtitle="What you have tried and how your team feels about it." badge="Business" />
       <RadioGroup label="Have you tried AI or automation before?" options={["Yes","No"]} value={s7.prior} onChange={v => f7("prior", v)} />
       {s7.prior === "Yes" && (
         <>
-          <FF label="What did you use? Which programs or tools?"><TArea value={s7.past} onChange={v => f7("past", v)} placeholder="e.g. ChatGPT for content, a Zapier automation for leads, a hired dev who built a bot..." rows={2} /></FF>
-          <FF label="What did you and/or your team think about it?"><TArea value={s7.aiThoughts} onChange={v => f7("aiThoughts", v)} placeholder="What worked, what fell short, how the team felt about it." rows={2} /></FF>
-          <FF label="How was the implementation / startup?"><TArea value={s7.aiStartup} onChange={v => f7("aiStartup", v)} placeholder="How smooth or rough was getting it set up and adopted?" rows={2} /></FF>
+          <CheckGroup label="Which AI tools have you used?" hint="Select all that apply" options={AI_TOOLS} value={s7.aiTools} onChange={v => f7("aiTools", v)} cols={2} />
+          {s7.aiTools.includes("Other") && <FF label="Which other tools?"><TInput value={s7.aiToolsOther} onChange={v => f7("aiToolsOther", v)} placeholder="Name them" /></FF>}
+          <ScaleRow label="How comfortable are you with AI tools?" low="Just getting started" high="Power user" max={5} value={s7.aiProficiency} onChange={v => f7("aiProficiency", v)} />
+          <FF label="Processes you use today and want to keep" hint="Optional. Anything that works and should stay as it is, AI or otherwise.">
+            <TArea value={s7.aiKeep} onChange={v => f7("aiKeep", v)} placeholder="e.g. The Zapier flow that posts new leads to Slack, the weekly report template in Google Sheets..." rows={3} />
+          </FF>
         </>
       )}
+      {/* "How much do you trust technology to handle critical tasks?" (a 1 to 10 scale) sat
+          below this and is gone at David's call (Nov 5 2026). The team question stays. */}
       <RadioGroup label="How does your team feel about implementing our new program?" options={TEAM_SENT} value={s7.teamSent} onChange={v => f7("teamSent", v)} />
-      <ScaleRow label="How much do you trust technology to handle critical tasks?" low="Not at all - want humans involved" high="Fully - automate everything" value={s5.techTrust} onChange={v => f5("techTrust", v)} />
     </Stack>
     ) },
     // The page break David asked for. "What should it do" and "what does winning look like" are
@@ -2100,6 +2131,11 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
         </FF>
       ) : (
       <>
+      {/* The open box every form needs and this one lacked (David, Nov 5 2026): a place for
+          whatever the questions above did not ask. Lands in USER.md with the rest. */}
+      <FF label="Anything else we should know?" hint="Optional. Whatever did not fit a question above.">
+        <TArea value={s8.anythingElse} onChange={v => f8("anythingElse", v)} placeholder="Context, quirks, a thing you have been meaning to fix, how you want to be kept in the loop..." rows={4} />
+      </FF>
       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0 2px" }}>
         <span style={{ flex: 1, height: 1, background: BDR }} />
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: TXD }}>Drop files in</span>

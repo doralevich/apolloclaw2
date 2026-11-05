@@ -1,6 +1,7 @@
 import "server-only";
 import { CONTEXT_FILENAME } from "@/config/agent-workspace";
 import { roleToolFields } from "@/config/role-tools";
+import { getIndustryBranch } from "@/lib/industryConfig";
 
 // The files an OpenClaw agent auto-loads, generated from the setup questionnaire.
 //
@@ -172,8 +173,9 @@ export function buildAgentsMd(answers: Record<string, unknown>, contextSummary?:
     ...section(
       "How they decide",
       [
-        bullet("Trust in technology (1–10)", answers.techTrust),
-        bullet("Past experience with AI", answers.pastExperience),
+        bullet("AI tools they have used", withWriteIn(answers.aiTools, answers.aiToolsOther)),
+        bullet("Comfort with AI tools (1 to 5)", answers.aiProficiency),
+        bullet("Processes they want kept as they are", answers.aiKeepProcesses),
       ],
       `Read the room with this. A low score means propose and wait; a high one means act and` +
         ` report.`
@@ -263,7 +265,17 @@ export function buildToolsMd(answers: Record<string, unknown>): string {
   // most of these answers are dropdowns and checklists.
   const roleRows = role ? role.fields.map((f) => bullet(f.label, withWriteIn(role.blob[f.key], role.blob[`${f.key}_other`]))) : [];
 
-  const rows = [...generic, ...roleRows].filter((r): r is string => !!r);
+  // The industry's own software, asked on the Tech Stack page (lib/industryConfig.ts `stack`)
+  // and saved with the rest of the industry deep-dive: a practice's EHR, a store's platform, a
+  // law firm's whole stack when Legal was the industry picked.
+  const industry = getIndustryBranch(str(answers.industry));
+  const idet =
+    answers.industryDetails && typeof answers.industryDetails === "object" && !Array.isArray(answers.industryDetails)
+      ? (answers.industryDetails as Record<string, unknown>)
+      : {};
+  const industryRows = (industry?.stack ?? []).map((s) => bullet(s.label, withWriteIn(idet[s.key], idet[`${s.key}_other`])));
+
+  const rows = [...generic, ...industryRows, ...roleRows].filter((r): r is string => !!r);
 
   if (!rows.length) {
     return [
