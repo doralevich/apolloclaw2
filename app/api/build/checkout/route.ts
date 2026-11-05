@@ -91,6 +91,12 @@ export const POST = route(async (request: Request) => {
     success_url: `${origin}/onboard/${encodeURIComponent(type.id)}?ws=${encodeURIComponent(body.workspace_id)}&paid=1`,
     cancel_url: `${origin}/dashboard?checkout=cancelled`,
     allow_promotion_codes: true,
+    // A promotion code that brings the total to zero (David's own WELCOME100 for demos) used
+    // to leave the card step in place: on a subscription checkout Stripe collects a payment
+    // method regardless of the first invoice unless told it is optional. With this, a zero
+    // total shows no card field and everything downstream (webhook, account, provisioning)
+    // runs exactly as a paid checkout does. A paying customer still enters a card.
+    payment_method_collection: "if_required",
   });
 
   if (!session.url) throw new ApiError(502, "stripe_error", "Stripe did not return a checkout URL");
