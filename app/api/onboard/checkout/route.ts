@@ -36,13 +36,14 @@ interface CheckoutBody {
   /** The plan picked on /pricing ("team", "executive"). Anything missing, unknown or not on sale
    *  resolves to the featured plan; the paywall shows which before anyone pays. */
   plan?: string;
-  /** Which role agent this purchase builds (e.g. "realestate" from the branded /build/[type]
-   *  funnel). Absent (or not a valid, self-serve role type) provisions the generic license agent -
+  /** Which role agent this purchase builds (e.g. "realestate" from /onboard?agent=real-estate).
+   *  Absent (or not a valid, self-serve role type) provisions the generic license agent -
    *  so the plain /onboard flow is unchanged. Carried on the session metadata and read back by
-   *  /api/onboard/complete + /status; the webhook ignores it (it only creates the account). */
+   *  /api/onboard/complete + /status; the webhook ignores it (it only creates the account). It
+   *  also goes back onto the return URL as ?agent=, so the resumed questionnaire is that role's. */
   agentType?: string;
-  /** Internal path to return to after Stripe (the branded funnel page, so the post-payment
-   *  questionnaire is the right one). Validated to an internal path; defaults to /onboard. */
+  /** Internal path to return to after Stripe. Validated to an internal path; defaults to
+   *  /onboard. Only the pathname is kept: the role rides on `agentType` above. */
   returnPath?: string;
 }
 
@@ -84,6 +85,7 @@ export const POST = route(async (request: Request) => {
   // used - the ?paid / ?session_id / ?checkout params are appended here.
   const rawReturn = clean(body.returnPath, 200).split(/[?#]/)[0];
   const returnPath = rawReturn.startsWith("/") && !rawReturn.startsWith("//") ? rawReturn : "/onboard";
+  const agentParam = agentType ? `agent=${encodeURIComponent(agentType)}&` : "";
 
   const stripe = getStripe();
   const { data: prices } = await stripe.prices.list({ lookup_keys: [planKey], active: true });
@@ -132,8 +134,12 @@ export const POST = route(async (request: Request) => {
     // questionnaire. The session id lets that screen read back what was actually charged
     // (promotion codes and proration mean the catalog price is not always the total) and
     // confirm the payment with Stripe rather than trusting ?paid=1.
-    success_url: `${origin}${returnPath}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}${returnPath}?checkout=cancelled`,
+    //
+    // `agent` goes back on both URLs when a role was asked for: /onboard opens on the agent
+    // picker without it, which is the wrong screen for someone who just paid for the Law Agent
+    // (or backed out of paying for it).
+    success_url: `${origin}${returnPath}?${agentParam}paid=1&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}${returnPath}?${agentParam}checkout=cancelled`,
     allow_promotion_codes: true,
     // A promotion code that brings the total to zero (David's own WELCOME100 for demos) used
     // to leave the card step in place: on a subscription checkout Stripe collects a payment
