@@ -30,8 +30,9 @@ export default function AgentHero({
 }: {
   /** Keys agentBrand(): "legal", "cfo", "medical"... Omit for the ApolloClaw-red fallback. */
   agentTypeId?: string;
-  /** The /build/<slug> funnel. Omit when the agent is not sold self-serve; the Build button
-   *  then drops out rather than pointing at a 404, and the consultation CTA carries the hero. */
+  /** The role's slug on the paid door, /onboard?agent=<slug> (lib/buildFunnel.ts). Omit when the
+   *  agent is not sold self-serve; the Build button then drops out rather than pointing at the
+   *  wrong agent, and the consultation CTA carries the hero. */
   buildSlug?: string;
   badge: string;
   title: React.ReactNode;
@@ -132,7 +133,7 @@ export default function AgentHero({
           >
             {buildSlug && (
               <a
-                href={`/build/${buildSlug}`}
+                href={`/onboard?agent=${buildSlug}`}
                 className="font-mono inline-flex items-center justify-center rounded font-bold uppercase transition-all hover:brightness-110"
                 style={{
                   background: brand.color,

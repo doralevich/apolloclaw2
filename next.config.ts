@@ -210,6 +210,22 @@ const nextConfig: NextConfig = {
         destination: "/company",
         permanent: true,
       },
+      // The onboarding doors were consolidated to two (Nov 5 2026, David's call: the entry points
+      // had multiplied until they read as redundant). /onboard is the paid door and
+      // /white-glove-onboarding the done-for-you one; each takes ?agent=<slug> for the role
+      // (lib/buildFunnel.ts) and opens on a picker without it. Everything below was one of those
+      // two with the role hard-coded, or a passcode-gated free build that a promotion code at the
+      // paywall now covers. The addresses live on as redirects because they were printed in
+      // mailers, on the agents' own sites and in links David handed out; the request's own query
+      // (?pay=, ?name=) rides along.
+      { source: "/build/:slug", destination: "/onboard?agent=:slug", permanent: true },
+      { source: "/agent-build/apollo", destination: "/onboard", permanent: true },
+      { source: "/agent-invite", destination: "/onboard", permanent: true },
+      { source: "/agent-invite/:type", destination: "/onboard?agent=:type", permanent: true },
+      { source: "/real-estate-invite", destination: "/onboard?agent=real-estate", permanent: true },
+      { source: "/legal-onboarding", destination: "/white-glove-onboarding?agent=law", permanent: true },
+      { source: "/cfo-onboarding", destination: "/white-glove-onboarding?agent=cfo", permanent: true },
+      { source: "/recruiting-onboarding", destination: "/white-glove-onboarding?agent=recruiting", permanent: true },
     ];
   },
   async rewrites() {

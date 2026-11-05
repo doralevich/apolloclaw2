@@ -14,9 +14,9 @@ import { HAIRLINE, PAPER, PAPER_MUTED } from "@/components/home/ui";
 // config/navigation.ts puts it here with no edit to this file - which is the point, and is
 // the thing that had gone wrong everywhere these lists were retyped by hand.
 //
-// `items` defaults to AGENTS but takes any NavItem list - /agent-invite reuses this same card
-// for its own, smaller roster (the 8 invitable role agents, not the public fleet) rather than a
-// second copy of this markup.
+// `items` defaults to AGENTS but takes any NavItem list, so a page with its own smaller roster
+// can reuse this card rather than keep a second copy of this markup. (The retired /agent-invite
+// picker was the first to; nothing passes it today.)
 export function FleetGrid({ items = AGENTS }: { items?: NavItem[] }) {
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

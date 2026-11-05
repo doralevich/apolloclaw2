@@ -23,9 +23,9 @@ export type NavItem = {
    *  that navigates away from the site you are browsing is a row that loses you the site. Set
    *  this and every renderer adds target and rel from `externalLinkProps` below. */
   external?: boolean;
-  /** Overrides FleetGrid's footer text ("Explore →" / "Visit the site →"). Only
-   *  /agent-invite sets this - "Explore" is the wrong verb for a card that provisions a live
-   *  agent rather than reading a page about one. */
+  /** Overrides FleetGrid's footer text ("Explore →" / "Visit the site →"), for a roster whose
+   *  cards do something other than open a page about the agent. (The retired /agent-invite
+   *  picker set it to "Start →"; nothing sets it today.) */
   cta?: string;
 };
 

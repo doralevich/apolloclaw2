@@ -19,9 +19,10 @@ engine, and one provisioning path, no matter which site the customer arrived fro
 
 Why: the sites change often and independently; the money path should not.
 
-## The build funnels: `/build/<slug>`
+## The build funnels: `/onboard?agent=<slug>` (was `/build/<slug>` until Nov 5, 2026)
 
-Every role agent has a self-serve funnel on ApolloClaw at `/build/<slug>`:
+Every role agent has a self-serve funnel on ApolloClaw at `/onboard?agent=<slug>`. The
+old `/build/<slug>` addresses redirect there; see "The onboarding doors" below.
 
 | Slug | Agent |
 |---|---|
@@ -80,7 +81,7 @@ cleanly on the marketing PNG. Ask for a transparent export rather than repairing
 Every marketing site offers **both** options, in every CTA location (nav, hero, pricing
 section, closing CTA):
 
-- **Build Your Agent** → `https://www.apolloclaw.ai/build/<slug>` (self-serve purchase)
+- **Build Your Agent** → `https://www.apolloclaw.ai/onboard?agent=<slug>` (self-serve purchase; the older `/build/<slug>` links redirect)
 - **Schedule a Consultation** → the booking link below (custom, scoped engagement)
 
 Rejected alternatives: consult-only (loses self-serve entirely), and build-in-nav-only
@@ -171,13 +172,14 @@ The pattern that worked for therealestateagent.ai:
 Avoid cross-site asset hotlinks (one site was loading its founder headshot from
 another's domain). Each site keeps its own assets.
 
-## Private invite links (no payment)
+## Private invite links (retired Nov 5, 2026)
 
-`/agent-invite/<type>` provisions a live agent with no payment, for testing and
-hand-picked users. One shared passcode in `AGENT_INVITE_PASSCODE` (Vercel env) unlocks
-every link; it **fails closed** if unset. `/real-estate-invite` redirects into it.
-
-This is separate from the paid funnels and is not linked from any marketing site.
+`/agent-invite/<type>` used to provision a live agent with no payment behind a shared
+passcode (`AGENT_INVITE_PASSCODE`), for testing and hand-picked users. It is gone: a
+free build is now a promotion code at the `/onboard` paywall, which asks for no card at
+a zero total ("A zero-total checkout asks for no card", below) and leaves a Stripe record
+behind. The old links
+redirect to `/onboard?agent=<type>`. The Vercel variable can be deleted.
 
 ## Admin
 
@@ -547,3 +549,43 @@ payment_method_collection to "if_required": a code that brings the total to zero
 field, and the webhook, the account email and the provisioning run exactly as for a paid
 checkout. A paying customer still enters a card. The promotion code stays private; a test agent
 is deleted from the admin fleet page afterwards so the VPS stops billing.
+
+## The onboarding doors (Nov 5, 2026)
+
+David: "I think we have too many options, and they get confusing." There were nine
+addresses that built or set up an agent, all feeding one questionnaire:
+
+| Was | Did | Now |
+|---|---|---|
+| `/onboard` | paid build of the Apollo Agent | **stays**: the one paid door |
+| `/build/<slug>` | paid build of one role agent | redirects to `/onboard?agent=<slug>` |
+| `/agent-build/apollo` | paid build of the Apollo Agent, again | redirects to `/onboard` |
+| `/agent-invite`, `/agent-invite/<type>` | passcode-gated free build of a role agent | redirect to `/onboard` and `/onboard?agent=<type>` |
+| `/real-estate-invite` | the same, for one role | redirects to `/onboard?agent=real-estate` |
+| `/white-glove-onboarding` | done-for-you intake, no payment | **stays**: the one done-for-you door |
+| `/legal-onboarding`, `/cfo-onboarding`, `/recruiting-onboarding` | the same intake with the role hard-coded | redirect to `/white-glove-onboarding?agent=<slug>` |
+
+**Two doors, one parameter.** Each door takes `?agent=<slug>` (`lib/buildFunnel.ts`: the
+readable slugs, `law`, `real-estate`, `cfo`, plus `apollo`; a type id is accepted too, so
+Stripe's return trip and the retired invite links resolve). Without it the door opens on a
+picker (`components/onboard/AgentPicker.tsx`) and the choice lands in the URL, so every
+link that already named its agent skips the picker: the agent sites' "Build Your Agent",
+the `AgentHero` button, a link David hands a prospect.
+
+**Why the free build went away rather than the paid one.** The invite system existed
+because the only other way to stand up an agent was to pay. Since the paywall asks for no
+card at a zero total, a promotion code does what the passcode did, with a Stripe record
+and no second gate to maintain. Anyone who holds that code gets a free agent, which was
+also true of the passcode.
+
+**Why the old addresses redirect instead of 404.** They are printed in mailers, on the
+agents' own sites (`therealestateagent.ai` and the rest still link `/build/<slug>`) and in
+links David has handed out. A 308 keeps every one of them landing; the sites can update
+their CTA when they are next touched. The request's own query (`?pay=`, `?name=`) rides
+along on the redirect.
+
+**What did not move.** `/onboard/[agent]` is the post-checkout setup for a signed-in
+customer, a step rather than a door; `/setup` and `/pre-call` are the same. `/hello` is
+an intro page with a booking link, `/get-started` and `/demo` book a call or talk to
+Donna, `/create-an-agent` is the mailer's landing page, and `/davidtest` is the admin
+walkthrough. None of them builds an agent, so none of them was in the count.

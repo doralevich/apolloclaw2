@@ -221,6 +221,8 @@ import { apiFetch } from "@/lib/api";
 //                                                     This is the cloud-hosted (VPS) path and
 //                                                     is where the licensing paywall goes,
 //                                                     between the gate and the questionnaire.
+//                                                     ?agent=<slug> pins a role agent, whose
+//                                                     deep-dive the questionnaire then adds.
 //   - /white-glove-onboarding  (mode="whiteglove") - the same questionnaire with NO paywall,
 //                                                     ever. Unlisted; David hands the link out
 //                                                     directly for self-hosted (Mac Mini)
@@ -229,7 +231,8 @@ import { apiFetch } from "@/lib/api";
 //                                                     Submits to /api/intake like the lead
 //                                                     form, tagged so it is obvious which
 //                                                     submissions came in this way, and hands
-//                                                     off to /setup at the end.
+//                                                     off to /setup at the end. Takes the same
+//                                                     ?agent=<slug>.
 //   - /onboard/[agent]         (mode="customer")   - requires login + a paid agent type.
 //                                                     Submits to /api/agent-setup, which is
 //                                                     what actually configures and provisions
@@ -1138,8 +1141,8 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
     typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("plan")
   );
   // A choice already made goes straight to checkout rather than being asked again (David, Oct 4
-  // 2026): the plan picked on /pricing, or, in a branded agent funnel (/build/<slug>, which builds
-  // one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans.
+  // 2026): the plan picked on /pricing, or, in a role agent's funnel (/onboard?agent=<slug>, which
+  // builds one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans.
   const preset =
     PLANS_ON_SALE.find((p) => p.id === picked) ??
     (agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID ? PLANS_ON_SALE.find((p) => p.id === "solo") : undefined);
@@ -1165,9 +1168,9 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
           email: gate.email,
           phone: gate.phone,
           plan: planId,
-          // A branded role funnel (e.g. /build/real-estate) sends its type + its own path so the
-          // purchase builds that agent and Stripe returns to the right questionnaire. Plain
-          // /onboard sends neither and provisions the generic license agent, unchanged.
+          // A role funnel (/onboard?agent=real-estate) sends its type so the purchase builds that
+          // agent; the route puts the type back on Stripe's return URL so the resumed questionnaire
+          // is the right one. Plain /onboard sends none and provisions the generic license agent.
           agentType: agentTypeId,
           returnPath: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
