@@ -4,12 +4,17 @@ import { getAgentType } from "@/config/agent-types";
 import { getSession } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import OnboardingForm from "@/components/onboard/OnboardingForm";
+import { ConversationalIntake } from "@/components/onboard/ConversationalIntake";
 
-// Post-purchase setup: Stripe's success URL lands here (/onboard/cfo?ws=...&paid=1) while
-// the webhook provisions the agent in the background. Renders the SAME questionnaire as the
-// free lead form at plain /onboard (components/onboard/OnboardingForm.tsx) — same fields,
-// same design — but gated by login + a paid agent type, and submits to /api/agent-setup,
-// which is what actually configures and provisions the buyer's live agent.
+// Post-purchase setup: checkout signs the buyer in and lands here (/onboard/cfo?ws=...&paid=1,
+// app/api/onboard/post-checkout), and the dashboard's Create an Agent and "Finish setup" come
+// here too. Gated by login, and submits to /api/agent-setup, which configures and provisions
+// the live agent.
+//
+// Since Nov 5 2026 the questionnaire is asked one question at a time
+// (components/onboard/ConversationalIntake.tsx), saved as it goes, the way the college agent's
+// intake works. The ten-page form (components/onboard/OnboardingForm.tsx) is the same questions
+// in the old shape and still answers ?classic=1, for comparison and as a fallback.
 
 export const metadata: Metadata = {
   title: "Set up your agent",
@@ -18,7 +23,7 @@ export const metadata: Metadata = {
 
 type Props = {
   params: Promise<{ agent: string }>;
-  searchParams: Promise<{ ws?: string; paid?: string; agent?: string }>;
+  searchParams: Promise<{ ws?: string; paid?: string; agent?: string; classic?: string }>;
 };
 
 export default async function AgentSetupPage({ params, searchParams }: Props) {
@@ -36,7 +41,7 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
   const { user } = await getSession();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/onboard/${agent}`)}`);
 
-  const { ws, paid, agent: agent37Id } = await searchParams;
+  const { ws, paid, agent: agent37Id, classic } = await searchParams;
 
   // The signed-in account, for the form to skip the contact gate with. The gate's email
   // check refuses addresses that already have an account - correct for strangers on the
@@ -65,6 +70,8 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
   // membership-checked; absent, we fall back to the user's own first workspace.
   let initialAnswers: Record<string, unknown> | undefined;
   let initialAgentName: string | undefined;
+  // The workspace the answers belong to, membership-checked, for the autosave to write to.
+  let resolvedWorkspaceId: string | undefined;
   {
     const db = createAdminClient();
     let workspaceId: string | undefined = ws;
@@ -85,6 +92,7 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
         .maybeSingle();
       workspaceId = (first?.workspace_id as string) ?? undefined;
     }
+    resolvedWorkspaceId = workspaceId;
     if (workspaceId) {
       const { data: setup } = await db
         .from("agent_setup")
@@ -114,6 +122,23 @@ export default async function AgentSetupPage({ params, searchParams }: Props) {
         if (seedAnswers && Object.keys(seedAnswers).length > 0) initialAnswers = seedAnswers;
       }
     }
+  }
+
+  if (classic !== "1") {
+    const savedStep = typeof initialAnswers?.intakeStep === "number" ? initialAnswers.intakeStep : 0;
+    return (
+      <ConversationalIntake
+        agentTypeId={type.id}
+        agentLabel={type.label}
+        workspaceId={resolvedWorkspaceId ?? ws}
+        agent37Id={agent37Id}
+        justPaid={paid === "1"}
+        signedInUser={signedInUser}
+        initialAnswers={initialAnswers}
+        initialAgentName={initialAgentName}
+        initialStep={savedStep}
+      />
+    );
   }
 
   return (

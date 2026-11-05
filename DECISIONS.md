@@ -712,3 +712,31 @@ the dashboard's Create an Agent applies. The webhook records the plan and stops.
 refused, link not minted) falls back to `/onboard?paid=1&session_id=…`, which still runs
 the questionnaire on the session token and sets the password on the build screen. In-flight
 checkouts from before the deploy return there directly.
+
+## The questionnaire, one question at a time (Nov 5, 2026)
+
+The second of the two things David asked for after seeing the college agent's intake. At
+`/onboard/<type>` (where checkout now lands the buyer, signed in) the questionnaire is
+asked one question at a time: the agent's face and name, one question in large type, one
+control, Back and Continue, a progress bar for the whole and a "Your business · 2 of 6"
+line for the section. Every answer is saved as it lands (`PUT /api/agent-setup/draft`),
+so a closed tab or a refresh resumes at the same question.
+
+**Same answers, new asking.** `lib/intake-questions.ts` walks the pages
+`components/onboard/OnboardingForm.tsx` renders and turns each field into a question,
+in the same order, with the same role and industry rules (dropped pages, the role's own
+deep-dive and stack sections, `coversScope`, `businessDescField`). Its `toPayload()`
+produces the object the form's `buildData()` sends, byte for byte, so `/api/agent-setup`,
+USER.md, TOOLS.md and the intake email are untouched. The industry and role branches
+were already data; the generic pages are listed once, in that file.
+
+**Where drafts live.** In `agent_setup`, the row the finished questionnaire lands in,
+with `intakeStep` inside the answers. One place answers live, and the page's existing
+pre-fill reads a draft the same way it reads a finished questionnaire. The draft route
+provisions nothing; only the final submit does.
+
+**What the ten-page form still does.** Lead mode (`/onboard`'s free intake), the
+white-glove links and the demo walkthrough, and `?classic=1` on `/onboard/<type>` for
+comparison. Two things the form asks that the conversation does not yet: the file upload
+on Final Details (Connections and chat can take files later) and a second company. Both
+are rare on a first run and both can come back as questions.
