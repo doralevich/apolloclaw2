@@ -589,3 +589,34 @@ customer, a step rather than a door; `/setup` and `/pre-call` are the same. `/he
 an intro page with a booking link, `/get-started` and `/demo` book a call or talk to
 Donna, `/create-an-agent` is the mailer's landing page, and `/davidtest` is the admin
 walkthrough. None of them builds an agent, so none of them was in the count.
+
+## Email, calendar, then where to message you: the first three screens (Nov 5, 2026)
+
+The build screen hands off to `/dashboard/connect` again, in the shape of the college
+agent's integration onboarding, which David called excellent: "Which do you use for
+email?" with Google and Microsoft tiles, "Would you like to set up your calendar?" with
+both calendars as tiles, then "Where should I message you?" Three screens, a step counter
+on each, "Skip for now" and "I'll do this later" under every choice, and one closing line
+saying all of it is a click away in Connections.
+
+What moved to make that true:
+
+- `POST_BUILD_LANDING` is `/dashboard/connect` (it was Chat from Sept 29).
+- The files step (Drive, OneDrive) left the guided flow. Four asks on a first run is one
+  too many; files stay in Connections.
+- The calendar step carries `choices`: the other vendor's calendar, offered beside the
+  expected one, because the email answer is a strong guess at the calendar and not a
+  certainty. Any one connected satisfies the step. Outlook's "already covered" state
+  stays, since one Microsoft sign-in really does cover both.
+- Copy moved closer to the college agent's: "Connect Gmail", "So I can flag what needs a
+  reply", "So I know where you have to be, what is due, and when you have time".
+
+**Texting (SMS, iMessage) is not a channel yet.** David asked to research it. SMS is
+Twilio with A2P 10DLC registration for a US business number (brand and campaign vetting,
+days to approve) or a verified toll-free number. iMessage has no official API: Apple
+Messages for Business is inbound-only through an approved provider, a managed iMessage
+API such as Sendblue sends real blue bubbles from a dedicated number, and a self-hosted
+bridge such as BlueBubbles needs a Mac that stays on, which a Mac Mini deployment already
+has. Third-party guides describe OpenClaw running both an SMS webhook channel and an
+iMessage bridge; that has to be confirmed against the Agent37 image before it is offered
+as a fourth tile.
