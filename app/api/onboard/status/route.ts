@@ -18,9 +18,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // No agent id, no workspace id, no instance internals.
 
 export const GET = route(async (request: Request) => {
-  // The build screen polls every few seconds for a couple of minutes, so this needs more
-  // headroom than a form post. `assistant` is the hourly bucket that fits that shape.
-  const limited = await enforceRateLimit(request, "onboard_status", LIMITS.assistant);
+  // The build screen polls every five seconds for up to six minutes, so this needs far more
+  // headroom than a form post. It used the assistant's 30-an-hour bucket, which the poll
+  // emptied partway through the first build and which stayed empty for the next demo in the
+  // same hour; the screen then sat on "Warming up" until the bucket refilled (David, Nov 5
+  // 2026). `build_status` is sized for the poll, see lib/rate-limit.ts.
+  const limited = await enforceRateLimit(request, "onboard_status", LIMITS.build_status);
   if (limited) return limited;
 
   const id = new URL(request.url).searchParams.get("id")?.trim() || "";

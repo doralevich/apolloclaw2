@@ -11,17 +11,24 @@ import { instanceFetch } from "@/lib/agent37";
 // is how a demo at /onboard read as "there is no instance" on the first message (David, Nov 5
 // 2026). A minute later the same message went through.
 //
-// So "running" is necessary and this probe is sufficient: the instance host answers /v1/models
-// with a model list. The build screen waits for it before entering Chat, and the chat route
-// retries through it for a young agent instead of surfacing the edge's wording.
+// So "running" is necessary and this probe is sufficient: the instance host answers /v1/models.
+// The build screen waits for it before entering Chat, and the chat route retries through it
+// for a young agent instead of surfacing the edge's wording.
+//
+// "Answers" is read generously. The first version of this insisted on a 200 carrying a model
+// list, so any other reply from a live host (a 401 while the gateway finishes its own setup, a
+// model list in a different shape) kept the build screen on "Warming up" for the whole six
+// minutes it allows. What matters is only that the reply came from the agent's host rather
+// than from the edge saying there is no route yet (looksNotReady below).
 
 export async function instanceReady(id: string): Promise<boolean> {
   try {
     const res = await instanceFetch(id, "/v1/models", { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return false;
-    const j = (await res.json().catch(() => null)) as { data?: unknown } | null;
-    return Array.isArray(j?.data);
+    if (res.ok) return true;
+    const text = await res.text().catch(() => "");
+    return !looksNotReady(res.status, text);
   } catch {
+    // A network failure on the way to the host is the one case that is not an answer.
     return false;
   }
 }

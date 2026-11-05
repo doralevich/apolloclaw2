@@ -17,6 +17,12 @@ import type { MergedAgent } from "@/lib/types";
 // on "running" put the first message of every demo into that gap, where the edge answers
 // "Instance not found". Now the screen waits for /api/agents/{id}/ready (or the `ready` field
 // of /api/onboard/status in the license flow), which probes the chat host itself.
+//
+// With a ceiling. The wait is a courtesy, not a gate: the chat route retries a not-ready reply
+// on its own for a young agent (app/api/agents/[id]/chat/responses). So once the agent has
+// been "running" for WARMING_CAP_MS without the probe agreeing, the screen enters Chat anyway
+// rather than sit on "Warming up" for the full six minutes, which is what David saw on the
+// first build after the probe shipped (Nov 5 2026).
 
 const R = "#D72B2B";
 const BG = "#FAFAF7";
@@ -24,6 +30,11 @@ const SRF = "#F2F1ED";
 const BDR = "rgba(0,0,0,0.08)";
 const TX = "#1A1A1A";
 const TXM = "#555555";
+
+// How long after "running" the screen keeps waiting for the chat host before entering Chat
+// regardless. Long enough to cover the usual lag, short enough that a probe that is wrong about
+// a live host costs a minute and a half rather than six.
+const WARMING_CAP_MS = 90_000;
 
 // The real wordmark, matching the questionnaire and the rest of the site (was styled text).
 function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
@@ -91,12 +102,17 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
       return { created: body.created, running: body.running, ready: !!body.ready };
     };
 
+    // When the agent was first seen running, for the warming ceiling.
+    let runningSince = 0;
+
     const tick = async () => {
       if (cancelled || isReady()) return;
       try {
         const { created, running, ready } = await poll();
         if (created) {
-          if (running && ready) {
+          if (running && !runningSince) runningSince = Date.now();
+          const waitedLongEnough = running && Date.now() - runningSince > WARMING_CAP_MS;
+          if (running && (ready || waitedLongEnough)) {
             setPhase("ready");
             // Only the logged-in flow can be walked into the dashboard. A license buyer has
             // no session yet, so they stay here and read the closing instructions.
@@ -110,7 +126,7 @@ export function BuildScreen({ agentTypeId, agentLabel, workspaceId, sessionId }:
           setPhase(running ? "warming" : "starting");
         }
       } catch {
-        // transient — keep polling
+        // transient (a 429, a blip reaching Agent37) — keep polling
       }
       // After 6 minutes stop implying live progress and hand over a manual link. The chat
       // route retries on its own for a young agent, so a visitor who goes in early still gets

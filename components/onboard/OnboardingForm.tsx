@@ -1286,13 +1286,15 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
       </div>
 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-        <div style={{ width: "100%", maxWidth: 760, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
+        <div style={{ width: "100%", maxWidth: 1040, background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "clamp(24px, 5vw, 36px) clamp(18px, 5vw, 40px)", position: "relative", overflow: "visible" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${a},transparent)`, opacity: 0.6, borderRadius: "12px 12px 0 0" }} />
 
           {/* The plans on sale, the one picked on /pricing leading (Team when none was). Rendered
               from config/agent-plans.ts, the same source as /pricing, so the two can never quote
-              different numbers. One column under ~600px. */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 6, alignItems: "stretch" }}>
+              different numbers. Three across from tablet width up, so all of them sit side by
+              side (David, Nov 5 2026: the third plan used to wrap under the other two); one
+              column on a phone. The card is wide enough to hold three without squeezing. */}
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 14, marginTop: 6, alignItems: "stretch" }}>
             {PLANS_ON_SALE.map((t) => {
               const lead = t.id === leading;
               const planId = t.id as PlanId;
@@ -1300,7 +1302,6 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
                 <div
                   key={t.id}
                   style={{
-                    flex: "1 1 260px",
                     display: "flex",
                     flexDirection: "column",
                     textAlign: "left",

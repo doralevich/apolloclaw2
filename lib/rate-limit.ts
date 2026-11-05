@@ -26,6 +26,12 @@ export const LIMITS = {
   newsletter: { max: 5, windowSeconds: 300 },
   // The assistant: spends the platform's Anthropic key on every call.
   assistant: { max: 30, windowSeconds: 3600 },
+  // The build screen's progress poll (/api/onboard/status): one cheap read every five seconds
+  // for up to six minutes, and David runs several demos an hour from one address. It shared
+  // the assistant's 30-an-hour bucket until Nov 5 2026, which ran dry two and a half minutes
+  // into the first build, and every poll after that was a 429 the screen read as "still
+  // building". The real cost is one Agent37 list call per poll, authorized by a paid session.
+  build_status: { max: 600, windowSeconds: 3600 },
 } as const satisfies Record<string, RateLimitRule>;
 
 // Vercel puts the real client IP first in x-forwarded-for; everything after it is proxy hops and is
