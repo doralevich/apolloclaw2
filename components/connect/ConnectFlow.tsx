@@ -12,6 +12,7 @@ import {
   MAIL_SLUG,
   VENDORS,
   VENDOR_LIST,
+  stepSlugs,
   type ConnectStep,
   type Vendor,
   type VendorGuess,
@@ -62,12 +63,20 @@ function connectHref(agentId: string, slug: string): string {
   return `/api/agents/${encodeURIComponent(agentId)}/integrations/connect/redirect?toolkit=${encodeURIComponent(slug)}`;
 }
 
+/** Is this step satisfied: its own app, or any alternative offered beside it, live. */
+function stepConnected(step: ConnectStep, connected: Set<string>): boolean {
+  return stepSlugs(step).some((s) => connected.has(s));
+}
+
 /** The first step of `vendor` that is not already connected, or steps.length when they all are. */
 function firstOpenStep(vendor: VendorId, connected: Set<string>): number {
   const steps = VENDORS[vendor].steps;
-  const i = steps.findIndex((s) => !connected.has(s.slug.toLowerCase()));
+  const i = steps.findIndex((s) => !stepConnected(s, connected));
   return i === -1 ? steps.length : i;
 }
+
+/** The one line every screen ends on, so nobody feels locked in. */
+const LATER_NOTE = "You can set any of this up later from Connections. Your agent works either way.";
 
 export function ConnectFlow() {
   const { userFirstName } = useWorkspace();
@@ -85,6 +94,9 @@ export function ConnectFlow() {
   /** The channel that ended up live, named, so the closing screen can read it back. Set by the
    *  channel step when it hands over; null means skipped or never claimed. */
   const [channelLive, setChannelLive] = useState<string | null>(null);
+  /** "Skip for now" on the email question: no vendor, no app steps, straight to the channel
+   *  question. The closing screen then says plainly that nothing is connected. */
+  const [vendorSkipped, setVendorSkipped] = useState(false);
 
   const refresh = useCallback(async (): Promise<Set<string>> => {
     const res = await apiFetch<IntegrationConnectionsResult>(
@@ -124,6 +136,7 @@ export function ConnectFlow() {
         setWaitingFor(null);
         setTimedOut(false);
         setChannelLive(null);
+        setVendorSkipped(false);
       })
       .catch(() => {
         // Connections failing to load is not a reason to hide the flow - the connect links still
@@ -140,7 +153,10 @@ export function ConnectFlow() {
   const steps: ConnectStep[] = vendor ? VENDORS[vendor].steps : [];
   const step: ConnectStep | undefined = steps[index];
   const stepSlug = step?.slug.toLowerCase() ?? null;
-  const stepDone = stepSlug ? connected.has(stepSlug) : false;
+  // Every slug that satisfies this step (the calendar step offers both calendars), joined so the
+  // effect below can key on it as one string.
+  const slugsKey = step ? stepSlugs(step).join(",") : "";
+  const stepDone = step ? stepConnected(step, connected) : false;
 
   // Watch for the consent tab finishing.
   //
@@ -152,8 +168,10 @@ export function ConnectFlow() {
   // connected would skip past itself before it had been on screen - which is exactly the case for
   // the Microsoft calendar step, whose whole job is to say the Outlook grant already covered it.
   useEffect(() => {
-    if (!agentId || !stepSlug) return;
-    const watching = waitingFor === stepSlug;
+    if (!agentId || !slugsKey) return;
+    // Watching whichever of this step's apps the consent tab was opened for.
+    const watched = waitingFor && slugsKey.split(",").includes(waitingFor) ? waitingFor : null;
+    const watching = watched !== null;
     let cancelled = false;
     let attempts = 0;
     let timer: ReturnType<typeof setInterval> | null = null;
@@ -162,7 +180,7 @@ export function ConnectFlow() {
       refresh()
         .then((set) => {
           if (cancelled) return;
-          if (watching && set.has(stepSlug)) {
+          if (watched && set.has(watched)) {
             setWaitingFor(null);
             setTimedOut(false);
             setIndex((i) => i + 1);
@@ -190,7 +208,7 @@ export function ConnectFlow() {
       window.removeEventListener("focus", onFocus);
       if (timer) clearInterval(timer);
     };
-  }, [agentId, stepSlug, waitingFor, refresh]);
+  }, [agentId, slugsKey, waitingFor, refresh]);
 
   const agentName = useMemo(() => {
     if (!active) return "your agent";
@@ -246,14 +264,18 @@ export function ConnectFlow() {
     </div>
   );
 
-  // ── The one question ────────────────────────────────────────────────────────────────────────
-  if (!vendor) {
+  // ── Step 1: the one question ────────────────────────────────────────────────────────────────
+  //
+  // Three screens in all: email, calendar, where to message you. The college agent's integration
+  // onboarding is the model (David, Nov 5 2026), down to the step counter and the two quiet ways
+  // out under the choices.
+  if (!vendor && !vendorSkipped) {
     return (
-      <Page eyebrow={speaker} title="Let's connect your email">
-        <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-          {userFirstName ? `${userFirstName}, before ` : "Before "}I can be much use I need to see
-          what you see. Your email is the biggest piece of that, and your answer sorts out your
-          calendar and your files at the same time. You can disconnect any of it at any time.
+      <Page eyebrow={<StepDots total={3} current={0} />} title="Which do you use for email?">
+        <div className="mt-4">{speaker}</div>
+        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+          {userFirstName ? `${userFirstName}, so ` : "So "}I can see what is landing in your inbox
+          and what is on your calendar. You can disconnect any of it at any time.
         </p>
 
         <div className="mt-10 space-y-3">
@@ -275,19 +297,28 @@ export function ConnectFlow() {
           ))}
         </div>
 
-        {/* Centered and low contrast, the way the reference handles "Skip for now": present, and
-            plainly not the thing you came here to press. */}
-        <div className="mt-10 flex flex-col items-center gap-3 text-sm">
+        {/* Quiet, the way the reference handles the ways out: present, and plainly not the thing
+            you came here to press. "Skip for now" moves to the next question; "I'll do this
+            later" leaves the flow for Chat. */}
+        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+          <button
+            type="button"
+            onClick={() => setVendorSkipped(true)}
+            className="font-medium text-foreground hover:underline"
+          >
+            Skip for now
+          </button>
+          <Link href="/dashboard/chat" className="text-muted-foreground hover:text-foreground">
+            I&apos;ll do this later
+          </Link>
           <Link
             href="/dashboard/integrations"
-            className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            className="text-muted-foreground/70 underline underline-offset-4 hover:text-foreground"
           >
             I use something else
           </Link>
-          <Link href="/dashboard/chat" className="text-muted-foreground/60 hover:text-foreground">
-            Skip for now
-          </Link>
         </div>
+        <p className="mt-4 text-sm text-muted-foreground">{LATER_NOTE}</p>
       </Page>
     );
   }
@@ -303,7 +334,8 @@ export function ConnectFlow() {
         agentId={agentId}
         agentName={active.name}
         agentAvatarUrl={active.avatar_url}
-        eyebrow={<StepDots total={steps.length + 1} current={index} />}
+        // Always the third of three, whether the two app steps were walked or skipped past.
+        eyebrow={<StepDots total={3} current={2} />}
         onDone={(linkedChannel) => {
           setChannelLive(linkedChannel);
           setIndex((i) => i + 1);
@@ -314,8 +346,8 @@ export function ConnectFlow() {
 
   // ── Closing screen ──────────────────────────────────────────────────────────────────────────
   if (!step) {
-    const live = steps.filter((s) => connected.has(s.slug.toLowerCase()));
-    const missed = steps.filter((s) => !connected.has(s.slug.toLowerCase()) && !s.coveredByPrevious);
+    const live = steps.filter((s) => stepConnected(s, connected));
+    const missed = steps.filter((s) => !stepConnected(s, connected) && !s.coveredByPrevious);
     // De-duplicated because Outlook satisfies two steps and should be read back once.
     const can = Array.from(new Set(live.map((s) => s.gained)));
 
@@ -359,7 +391,7 @@ export function ConnectFlow() {
               <li key={s.key} className="flex items-center gap-3 py-4">
                 <AppLogo logo={s.logo} name={s.appName} />
                 <span className="flex-1 font-medium">{s.appName}</span>
-                {connected.has(s.slug.toLowerCase()) ? (
+                {stepConnected(s, connected) ? (
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     <Check className="size-4" />
                     Connected
@@ -403,14 +435,22 @@ export function ConnectFlow() {
   }
 
   // ── One step ────────────────────────────────────────────────────────────────────────────────
-  const waiting = waitingFor === stepSlug;
+  const waiting = waitingFor !== null && slugsKey.split(",").includes(waitingFor);
   const advance = () => {
     setTimedOut(false);
     setIndex((i) => i + 1);
   };
 
+  // Which of this step's apps is live, by name, for the "connected" line. The calendar step
+  // offers two, and "Outlook Calendar is connected" is the honest line for a Gmail business
+  // that keeps its calendar in Outlook.
+  const liveApp =
+    [step, ...(step.choices ?? [])].find((c) => connected.has(c.slug.toLowerCase()))?.appName ?? step.appName;
+  // The tiles a step with choices draws: its own app first, then the alternatives.
+  const tiles = step.choices ? [{ slug: step.slug, appName: step.appName, logo: step.logo }, ...step.choices] : null;
+
   return (
-    <Page eyebrow={<StepDots total={steps.length + 1} current={index} />} title={heading!}>
+    <Page eyebrow={<StepDots total={3} current={index} />} title={heading!}>
       <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
         {blurb}
         {step.optional && (
@@ -423,20 +463,45 @@ export function ConnectFlow() {
           <div className="flex flex-col items-stretch gap-4">
             <p className="flex items-center justify-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
               <Check className="size-4" />
-              {step.coveredByPrevious
+              {step.coveredByPrevious && connected.has(stepSlug!)
                 ? `Covered by your ${step.appName} connection`
-                : `${step.appName} is connected`}
+                : `${liveApp} is connected`}
             </p>
             <Button onClick={advance} className="h-14 w-full rounded-2xl text-base">
               Continue
               <ArrowRight className="size-4" />
             </Button>
           </div>
+        ) : tiles && !waiting ? (
+          // One tile per app, each its own consent link: the calendar question with both
+          // calendars on it (David, Nov 5 2026).
+          <div className="space-y-3">
+            {tiles.map((t) => (
+              <a
+                key={t.slug}
+                href={connectHref(agentId, t.slug)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  setTimedOut(false);
+                  setWaitingFor(t.slug.toLowerCase());
+                }}
+                className="flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition-colors hover:border-foreground/20 hover:bg-secondary/30"
+              >
+                <AppLogo logo={t.logo} name={t.appName} size="lg" />
+                <span className="flex-1 text-lg font-semibold">{t.appName}</span>
+                <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+              </a>
+            ))}
+            <p className="pt-1 text-center text-sm text-muted-foreground">
+              Opens in a new tab so you can approve it. Come straight back here.
+            </p>
+          </div>
         ) : waiting ? (
           <div className="flex flex-col items-stretch gap-4">
             <p className="flex items-center justify-center gap-2 text-center text-sm text-muted-foreground">
               <Loader2 className="size-4 shrink-0 animate-spin" />
-              Waiting for {step.appName}. This page moves on by itself.
+              Waiting for {tiles?.find((t) => t.slug.toLowerCase() === waitingFor)?.appName ?? step.appName}. This page moves on by itself.
             </p>
             <Button
               variant="outline"
@@ -513,7 +578,11 @@ export function ConnectFlow() {
             I picked the wrong one
           </button>
         )}
+        <Link href="/dashboard/chat" className="text-muted-foreground/60 hover:text-foreground">
+          I&apos;ll do this later
+        </Link>
       </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">{LATER_NOTE}</p>
     </Page>
   );
 }

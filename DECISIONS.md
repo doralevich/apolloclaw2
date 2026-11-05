@@ -590,6 +590,56 @@ an intro page with a booking link, `/get-started` and `/demo` book a call or tal
 Donna, `/create-an-agent` is the mailer's landing page, and `/davidtest` is the admin
 walkthrough. None of them builds an agent, so none of them was in the count.
 
+## The build screen that would not finish (Nov 5, 2026)
+
+The first build after "Warming up" shipped (earlier today) sat on that step until David
+refreshed; the agent was there and answered. Two causes, both fixed:
+
+- **The progress poll was rate-limited into silence.** `/api/onboard/status` shared the
+  assistant's bucket of 30 requests an hour. The build screen polls every five seconds,
+  so the bucket ran dry two and a half minutes into the first build, and stayed dry for
+  the next demo in the same hour. Every poll after that was a 429, which the screen reads
+  as "still building". It now has its own bucket (`LIMITS.build_status`, 600 an hour),
+  sized for the poll it serves.
+- **The readiness probe was too strict.** It wanted a 200 with a model list from
+  `/v1/models`. Any other reply from a live host kept the screen waiting. It now counts
+  any reply that is not the edge's "no route yet" as ready.
+
+And a ceiling, so neither of these can strand anyone again: once the agent has been
+"running" for 90 seconds, the screen enters Chat whether or not the probe agrees. The
+chat route retries a not-ready reply on its own for a young agent, so going in a little
+early costs a "still starting up" message at worst.
+
+## Email, calendar, then where to message you: the first three screens (Nov 5, 2026)
+
+The build screen hands off to `/dashboard/connect` again, in the shape of the college
+agent's integration onboarding, which David called excellent: "Which do you use for
+email?" with Google and Microsoft tiles, "Would you like to set up your calendar?" with
+both calendars as tiles, then "Where should I message you?" Three screens, a step counter
+on each, "Skip for now" and "I'll do this later" under every choice, and one closing line
+saying all of it is a click away in Connections.
+
+What moved to make that true:
+
+- `POST_BUILD_LANDING` is `/dashboard/connect` (it was Chat from Sept 29).
+- The files step (Drive, OneDrive) left the guided flow. Four asks on a first run is one
+  too many; files stay in Connections.
+- The calendar step carries `choices`: the other vendor's calendar, offered beside the
+  expected one, because the email answer is a strong guess at the calendar and not a
+  certainty. Any one connected satisfies the step. Outlook's "already covered" state
+  stays, since one Microsoft sign-in really does cover both.
+- Copy moved closer to the college agent's: "Connect Gmail", "So I can flag what needs a
+  reply", "So I know where you have to be, what is due, and when you have time".
+
+**Texting (SMS, iMessage) is not a channel yet.** David asked to research it. SMS is
+Twilio with A2P 10DLC registration for a US business number (brand and campaign vetting,
+days to approve) or a verified toll-free number. iMessage has no official API: Apple
+Messages for Business is inbound-only through an approved provider, a managed iMessage
+API such as Sendblue sends real blue bubbles from a dedicated number, and a self-hosted
+bridge such as BlueBubbles needs a Mac that stays on, which a Mac Mini deployment already
+has. Third-party guides describe OpenClaw running both an SMS webhook channel and an
+iMessage bridge; that has to be confirmed against the Agent37 image before it is offered
+as a fourth tile.
 ## The questionnaire, simpler and smarter (Nov 5, 2026)
 
 David walked the application and asked for a pass. What changed, and why:

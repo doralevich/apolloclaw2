@@ -55,6 +55,14 @@ export type ConnectStep = {
   whenNotCovered?: { heading: string; blurb: string };
   /** Worth having, not the point. Skipping is a normal outcome and the copy says so. */
   optional?: boolean;
+  /**
+   * Other apps that answer this step, offered as tiles beside this step's own. The calendar
+   * step shows both calendars (David, Nov 5 2026: "Would you like to set up your calendar?
+   * Have an image of Google, and Office 365"), because the email answer is a strong guess at
+   * the calendar and not a certainty: a Gmail business on an Outlook calendar is a real thing.
+   * Any one of them connected satisfies the step.
+   */
+  choices?: { slug: string; appName: string; logo: string }[];
 };
 
 export type Vendor = {
@@ -83,12 +91,16 @@ function slug(s: string): string {
   return s;
 }
 
+// TWO STEPS PER VENDOR, email and calendar, then the channel step below: three screens, the shape
+// of the college agent's integration onboarding that David asked for on Nov 5 2026. Files (Drive,
+// OneDrive) used to be a third, optional app step here; it is a click away in Connections, and a
+// first run that asks for four things is one that gets abandoned at the third.
 export const VENDORS: Record<VendorId, Vendor> = {
   google: {
     id: "google",
     label: "Google",
     suite: "Google Workspace",
-    examples: "Gmail, Google Workspace",
+    examples: "Gmail and Google Calendar",
     logo: composioLogoUrl("gmail"),
     steps: [
       {
@@ -98,9 +110,9 @@ export const VENDORS: Record<VendorId, Vendor> = {
         logo: composioLogoUrl("gmail"),
         // NAMES THE APP, and the chooser before it does not. Both screens used to be headed
         // "Let's connect your email", so picking Google appeared to do nothing at all.
-        heading: "Let's connect Gmail",
+        heading: "Connect Gmail",
         blurb:
-          "Gmail is where most of your work arrives. Connecting it lets me read what comes in, draft replies in your voice, and chase the threads that go quiet.",
+          "So I can flag what needs a reply, draft responses in your voice, and chase the threads that go quiet.",
         gained: "your inbox",
       },
       {
@@ -108,21 +120,11 @@ export const VENDORS: Record<VendorId, Vendor> = {
         slug: slug("googlecalendar"),
         appName: "Google Calendar",
         logo: composioLogoUrl("googlecalendar"),
-        heading: "Now your calendar",
+        heading: "Would you like to set up your calendar?",
         blurb:
-          "With your calendar I can see what your week actually looks like, book and move things, and stop offering times you are not free.",
+          "So I know where you have to be, what is due, and when you have time to work on it. Pick whichever calendar you live in.",
         gained: "your calendar",
-      },
-      {
-        key: "files",
-        slug: slug("googledrive"),
-        appName: "Google Drive",
-        logo: composioLogoUrl("googledrive"),
-        heading: "One more: your files",
-        blurb:
-          "Drive is where the contracts, rate cards and reports live. Without it I can see a file's name and nothing inside it.",
-        gained: "your documents",
-        optional: true,
+        choices: [{ slug: slug("outlook"), appName: "Outlook Calendar", logo: composioLogoUrl("outlook") }],
       },
     ],
   },
@@ -130,7 +132,7 @@ export const VENDORS: Record<VendorId, Vendor> = {
     id: "microsoft",
     label: "Microsoft",
     suite: "Microsoft 365",
-    examples: "Outlook, Microsoft 365, Office 365",
+    examples: "Outlook and Office 365, mail and calendar together",
     logo: composioLogoUrl("outlook"),
     steps: [
       {
@@ -138,9 +140,9 @@ export const VENDORS: Record<VendorId, Vendor> = {
         slug: slug("outlook"),
         appName: "Outlook",
         logo: composioLogoUrl("outlook"),
-        heading: "Let's connect Outlook",
+        heading: "Connect Outlook",
         blurb:
-          "Outlook is where most of your work arrives. Connecting it lets me read what comes in, draft replies in your voice, and chase the threads that go quiet. It covers your calendar in the same step.",
+          "So I can flag what needs a reply, draft responses in your voice, and chase the threads that go quiet. Outlook covers your calendar with the same sign-in.",
         gained: "your inbox",
       },
       {
@@ -149,39 +151,34 @@ export const VENDORS: Record<VendorId, Vendor> = {
         // of keeping it. Silently skipping a step somebody was told to expect reads as a bug.
         key: "calendar",
         slug: slug("outlook"),
-        appName: "Outlook",
+        appName: "Outlook Calendar",
         logo: composioLogoUrl("outlook"),
         coveredByPrevious: true,
         heading: "Your calendar is already done",
         blurb:
-          "Microsoft hands over mail and calendar together, so the connection you just made covers both. Nothing else to do here.",
+          "Microsoft hands over mail and calendar together, so the sign-in you just did covers both. Nothing more to approve.",
         whenNotCovered: {
-          heading: "Now your calendar",
+          heading: "Would you like to set up your calendar?",
           blurb:
-            "Microsoft hands over mail and calendar in one go, so connecting Outlook here gets me both: what your week looks like, and the inbox you skipped a moment ago.",
+            "So I know where you have to be, what is due, and when you have time to work on it. Outlook gets me your inbox in the same sign-in; pick whichever calendar you live in.",
         },
         gained: "your calendar",
-      },
-      {
-        key: "files",
-        slug: slug("one_drive"),
-        appName: "OneDrive",
-        logo: composioLogoUrl("one_drive"),
-        heading: "One more: your files",
-        blurb:
-          "OneDrive is where the contracts, rate cards and reports live. Without it I can see a file's name and nothing inside it.",
-        gained: "your documents",
-        optional: true,
+        choices: [{ slug: slug("googlecalendar"), appName: "Google Calendar", logo: composioLogoUrl("googlecalendar") }],
       },
     ],
   },
 };
 
+/** Every slug that satisfies a step: its own app and any alternative offered beside it. */
+export function stepSlugs(step: ConnectStep): string[] {
+  return [step.slug, ...(step.choices ?? []).map((c) => c.slug)].map((s) => s.toLowerCase());
+}
+
 export const VENDOR_LIST: Vendor[] = [VENDORS.google, VENDORS.microsoft];
 
 /** The slugs this flow can connect, for deciding whether somebody has already been through it. */
 export const CONNECT_FLOW_SLUGS: string[] = Array.from(
-  new Set(VENDOR_LIST.flatMap((v) => v.steps.map((s) => s.slug.toLowerCase())))
+  new Set(VENDOR_LIST.flatMap((v) => v.steps.flatMap(stepSlugs)))
 );
 
 // ── The channel step ───────────────────────────────────────────────────────────────────────────
@@ -192,8 +189,8 @@ export const CONNECT_FLOW_SLUGS: string[] = Array.from(
 // is what lets the flow say "everything after the one question is a button". A channel is not that.
 // Telegram is six steps of conversation with a robot in another app before a token exists to
 // paste; Slack is seven, one of which is pasting a URL back into Slack's own admin. Dropping a
-// five-minute errand between "connect your calendar" and "connect your files" is how somebody
-// stops before the files step, and the files step is the one that makes it useful on documents.
+// five-minute errand between the email question and the calendar question is how somebody stops
+// before the calendar, and the calendar is half of what makes the agent useful.
 //
 // It is also a different question in kind. The apps settle whether the agent can DO anything. The
 // channel settles WHERE you talk to it - and there is already an answer to that, the chat in this
