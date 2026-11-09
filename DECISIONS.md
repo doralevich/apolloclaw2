@@ -808,3 +808,16 @@ college site's webhook and tables. Port it to ApolloClaw only if it comes back.
 picker (`UNLISTED_SLUGS`, lib/buildFunnel.ts): a business buyer is never offered a college
 agent, and `internal` keeps it out of the create-agent modal for the same reason. The nav
 row for it still goes to thecollegeagent.ai, which is its marketing page.
+
+## Agent37 key on instance hosts goes in X-Agent37-Key (Nov 9, 2026)
+
+Agent37 (Vishnu) asked every customer to stop sending the API key to instance hosts
+(`*.agent37.app`, including `<id>-<port>` hosts) as `Authorization: Bearer` and send it as
+`X-Agent37-Key` instead; the bearer form stops working on instance hosts later this year.
+The hosting API, `api.agent37.com`, keeps the bearer.
+
+Two places changed: `instanceFetch` in lib/agent37.ts (chat, files, the readiness probe and
+everything else that talks to a box's Agents API), and the "apikey" way through the edge in
+lib/gateway-chat.ts. The latter now also sends the gateway's own token in `Authorization`,
+which the header split frees up. The sandbox exec host and scripts/multi-agent-test.mjs
+already used the new header. The college repo's instance calls already did too.
