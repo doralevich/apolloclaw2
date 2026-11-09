@@ -31,7 +31,7 @@ const PAGES: [string, string][] = [
   ["/industries/real-estate", "AI for realtors and property managers: listing inquiries, leads and showings."],
   ["/industries/accounting-firms", "AI for accounting firms and CPAs: document collection and deadline reminders."],
   ["/use-cases", "Client results grouped by industry, and one page per job an agent does."],
-  ["/security", "How an agent runs: a dedicated private virtual server, or a Mac Mini on your network. Encryption, access and what we never see."],
+  ["/security", "How an agent runs: a private virtual server, or a Mac Mini on your network. Encryption, access and what we never see."],
   ["/ai-consulting-long-island", "AI consulting for Long Island businesses, from Roslyn Heights, NY."],
   ["/ai-consulting-nyc", "AI consulting for New York City businesses."],
   ["/company", "David Oralevich and Apollo Claw."],
