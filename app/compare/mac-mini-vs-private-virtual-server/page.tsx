@@ -55,7 +55,7 @@ const jsonLd = {
       "@id": `${URL}#service`,
       name: "AI Agent Hosting: Mac Mini or Private Virtual Server",
       serviceType: "AI Agent Hosting and Deployment",
-      description: "Every Apollo Claw agent runs on a Mac Mini on your network or a dedicated private virtual server. This page compares the two.",
+      description: "Every Apollo Claw agent runs on a Mac Mini on your network or a private virtual server. This page compares the two.",
       provider: ORG_REF,
       url: URL,
       areaServed: "United States",
