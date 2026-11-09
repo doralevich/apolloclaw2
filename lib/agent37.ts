@@ -131,7 +131,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return parseAgent37<T>(res, true);
 }
 
-// Raw fetch against an instance's Agents API with the shared bearer. Returns the raw Response
+// Raw fetch against an instance's Agents API with the shared key. Returns the raw Response
 // so callers can stream SSE, upload bytes, or stream a download — things the JSON-parsing
 // `call` helper above can't. Only throws for missing server config; HTTP status is the
 // caller's to handle (e.g. a 409 session_busy is surfaced, not thrown here).
@@ -148,10 +148,14 @@ export async function instanceFetch(id: string, path: string, init?: RequestInit
     throw new Agent37Error(500, "config_error", "AGENT37_API_KEY is not set on the server");
   }
   const body = init?.body instanceof ReadableStream ? await new Response(init.body).arrayBuffer() : init?.body;
+  // The key goes in X-Agent37-Key on instance hosts (*.agent37.app), not Authorization: Bearer.
+  // Agent37 asked for the move in Nov 2026 and retires the bearer form on instance hosts later
+  // that year. The hosting API above (`call`, api.agent37.com) keeps the bearer, and the sandbox
+  // exec host below already took this header.
   return fetch(`${instanceBaseUrl(id)}${path}`, {
     ...init,
     body,
-    headers: { Authorization: `Bearer ${key}`, ...(init?.headers || {}) },
+    headers: { "X-Agent37-Key": key, ...(init?.headers || {}) },
     cache: "no-store",
   });
 }

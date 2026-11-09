@@ -131,8 +131,11 @@ function shapeFor(way: EdgeWay, route: EdgeRoute, token: string, path: string): 
       if (!route.cookie) return null;
       return { url: `${route.origin}${path}`, headers: { Authorization: `Bearer ${token}`, Cookie: route.cookie } };
     case "apikey":
+      // Agent37's key for its edge, in its own header since Nov 2026 (Authorization: Bearer on
+      // instance hosts is retired later that year). That leaves Authorization free for the
+      // gateway's own token, so the gateway is asked with its credential too.
       if (!apiKey) return null;
-      return { url: `${route.origin}${path}`, headers: { Authorization: `Bearer ${apiKey}` } };
+      return { url: `${route.origin}${path}`, headers: { "X-Agent37-Key": apiKey, Authorization: `Bearer ${token}` } };
   }
 }
 
