@@ -895,3 +895,17 @@ account?" with a plus sign that opens a section for a second account.
   and must differ from the first's; closing it clears it and sends nothing. The token is a
   secret like the first (`telegram_bot_token_2` in `BYO_SECRET_FIELDS`, stored encrypted for
   Super Admin), and the summary email, CRM notes and Attio note list it as given or not.
+
+## Intake questions sit on a white card and run full width (Nov 10, 2026)
+
+David: make the question go across, for every question, and put the question on a white card
+with a 1px #DDDDDD border, 10px corners and 20px padding.
+
+- **The card** (`ConversationalIntake.tsx`) holds everything that belongs to one question: the
+  agent's name, the question, its help line, the answer, Back / Continue and "Skip this one".
+  The section label stays above it and "Saves as you go" below. The column widened from 640 to
+  680 so the content inside the padding keeps roughly its old width.
+- **Full width.** The heading used `text-wrap: balance`, which splits even a short question
+  into two half-width lines. It is now `pretty`, which fills each line and only avoids a lone
+  last word, at 24-32px (was 26-38px) so the usual questions fit one line on desktop. On a
+  phone they wrap where the width ends.
