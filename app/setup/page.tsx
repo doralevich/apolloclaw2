@@ -10,7 +10,6 @@ const TX = "#1A1A1A";
 const TXM = "#555555";
 const TXD = "#888888";
 const SETUP_ENDPOINT = "/api/submit-setup";
-type Step = 1 | 2 | "done";
 interface Step1Fields {
   first_name: string;
   last_name: string;
@@ -19,9 +18,6 @@ interface Step1Fields {
   assistant_name: string;
   timezone: string;
   computer_name: string;
-  it_contact_name: string;
-  it_contact_email: string;
-  it_notes: string;
 }
 interface Step2Fields {
   anthropic_api_key: string;
@@ -135,191 +131,47 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 function Code({ children }: { children: React.ReactNode }) {
   return <code style={{ background: SRF2, padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", fontSize: 11, color: TX }}>{children}</code>;
 }
+// ONE PAGE (David, Nov 10 2026). This used to be two steps, "Your Setup" then "Credentials",
+// with a "Corporate / Enterprise Setup" section on the first: an IT contact, known
+// restrictions, a checklist for IT, and pre-written emails to a Google Workspace or Microsoft
+// 365 admin. That section is gone, and the two steps are one form with one submit.
+//
+// The single submit is the old second step's ("apollo_setup_2"), which already carried every
+// field and does the whole handoff: the CRM deal at deployment_ready, the credentials encrypted
+// for Super Admin, the summary email and the Telegram ping (app/api/submit-setup/route.ts). The
+// first step's only job was a silent CRM upsert of a half-finished setup, which a one-page form
+// has no use for. The endpoint still answers "apollo_setup_1" and still prints IT contact fields
+// when they arrive, so a tab left open on the old page submits cleanly.
 export default function SetupPage() {
-  const [step, setStep] = useState<Step>(1);
+  const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [s1, setS1] = useState<Step1Fields>({ first_name: "", last_name: "", email: "", phone: "", assistant_name: "", timezone: "", computer_name: "", it_contact_name: "", it_contact_email: "", it_notes: "" });
+  const [s1, setS1] = useState<Step1Fields>({ first_name: "", last_name: "", email: "", phone: "", assistant_name: "", timezone: "", computer_name: "" });
   const [s2, setS2] = useState<Step2Fields>({ anthropic_api_key: "", telegram_bot_token: "", telegram_bot_username: "", tavily_api_key: "" });
-  const [isEnterprise, setIsEnterprise] = useState(false);
-  const [itEmailCopied, setItEmailCopied] = useState<"google"|"ms365"|null>(null);
+  // The bot username is suggested from the assistant's name and the email
+  // (apollo_agent_<name>_<nnn>_bot, lib/telegram-username.ts) until the client types their own.
+  // It used to be filled in when step 1 was saved; on one page it follows those two fields live.
+  const [usernameTyped, setUsernameTyped] = useState(false);
+  const suggestedUsername =
+    s1.assistant_name.trim() && validateEmail(s1.email.trim())
+      ? `@${suggestBotUsername(s1.assistant_name, s1.email.trim().toLowerCase())}`
+      : "";
+  const botUsername = usernameTyped ? s2.telegram_bot_username : suggestedUsername;
   const updateS1 = (key: keyof Step1Fields, value: string) => setS1(p => ({ ...p, [key]: value }));
   const updateS2 = (key: keyof Step2Fields, value: string) => setS2(p => ({ ...p, [key]: value }));
-  const copyItEmail = (platform: "google"|"ms365") => {
-    const name = s1.first_name ? `${s1.first_name} ${s1.last_name}`.trim() : "[Client Name]";
-    const company = "[Your Company Name]";
-    const googleEmail = `Subject: AI Assistant Integration Request for Google Workspace Access
-
-Hi [IT Contact Name],
-
-I am setting up an AI Chief of Staff through Apollo[Claw] (apolloclaw.ai) that will integrate with my Google Workspace account. Before the technical team completes installation, please confirm the following is in place.
-
-GOOGLE API SCOPES REQUIRED (my account only, OAuth 2.0)
-Email & Communication:
-- gmail.readonly: read incoming emails
-- gmail.send: send emails on my behalf
-- gmail.modify: label, archive, and organize messages
-
-Calendar & Scheduling:
-- calendar.events: read/create/update/delete calendar events
-- calendar.readonly: read calendar details for meeting briefs
-
-Drive & Documents:
-- drive.file: read/write files created by the assistant
-- docs: read/write Google Docs (proposals, SOWs, summaries)
-- spreadsheets: read/write Google Sheets (reports, trackers)
-
-Contacts & People:
-- contacts.readonly: read contacts for relationship intelligence
-- people.readonly: read profile data for meeting prep
-
-Tasks:
-- tasks: read/write Google Tasks (task management and follow-ups)
-
-ADMIN CONSOLE ACTION REQUIRED (if your org restricts third-party OAuth apps)
-If your Google Workspace admin has restricted OAuth app access, you will need to whitelist the Apollo[Claw] integration. Please go to:
-Admin Console > Security > API Controls > App Access Control
-and allow access for the Apollo[Claw] application, or set the trust level to "Trusted" for the OAuth client ID provided during setup.
-
-OUTBOUND NETWORK REQUIREMENTS (port 443 / HTTPS only)
-- api.anthropic.com: AI model (Claude)
-- api.telegram.org: delivery channel
-- api.tavily.com: web research
-- fathom.video: meeting intelligence
-- oauth2.googleapis.com / accounts.google.com: Google OAuth
-- www.googleapis.com: Google API calls
-
-WHAT IT DOES NOT DO
-- Does not store OAuth tokens or credentials on any external server
-- Does not share data outside the API endpoints listed above
-- All processing runs on a dedicated Mac Mini inside the local environment
-- No access to other users' accounts, shared drives, or admin settings
-- No data leaves the approved endpoints
-
-INSTALLATION SCOPE
-- One dedicated Mac Mini assigned to ${name}
-- No software installed on any other machine
-- No VPN or inbound access required, outbound HTTPS only
-
-Please advise if any of the above requires a formal app approval request or if there are additional steps needed for your environment. David Oralevich at Apollo[Claw] can speak directly with your team if helpful.
-
-hello@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
-
-Thank you,
-${name}`;
-
-    const ms365Email = `Subject: AI Assistant Integration Request for Microsoft 365 Access
-
-Hi [IT Contact Name],
-
-I am setting up an AI Chief of Staff through Apollo[Claw] (apolloclaw.ai) that will integrate with my Microsoft 365 account. Before the technical team completes installation, please confirm the following is in place.
-
-MICROSOFT GRAPH API PERMISSIONS REQUIRED (my account only, delegated permissions)
-Email & Communication:
-- Mail.ReadWrite: read, organize, and label incoming emails
-- Mail.Send: send emails on my behalf
-
-Calendar & Scheduling:
-- Calendars.ReadWrite: read/create/update/delete calendar events
-
-Contacts & People:
-- Contacts.Read: read contacts for relationship intelligence
-- User.Read: basic profile (required for all Graph API connections)
-
-Files & Documents:
-- Files.ReadWrite: read/write OneDrive files (proposals, SOWs, summaries)
-- Sites.ReadWrite.All: read/write SharePoint document libraries (if company uses SharePoint for file storage)
-
-Tasks:
-- Tasks.ReadWrite: read/write Microsoft To-Do / Planner tasks
-
-AZURE AD / ENTRA ID ACTION REQUIRED (if your org restricts app consent)
-If your organization has disabled user consent for OAuth applications or requires admin pre-approval, an IT administrator will need to grant tenant-wide admin consent for the Apollo[Claw] Microsoft Graph application.
-
-Steps:
-1. Go to Azure Portal > Azure Active Directory > Enterprise Applications
-2. Find or register the Apollo[Claw] app (Client ID provided during setup)
-3. Grant admin consent for the delegated permissions listed above
-4. If Conditional Access policies restrict external OAuth apps, add an exception for this application
-
-All permissions are delegated (user-level only); no application-level or admin permissions are requested.
-
-OUTBOUND NETWORK REQUIREMENTS (port 443 / HTTPS only)
-- api.anthropic.com: AI model (Claude)
-- api.telegram.org: delivery channel
-- api.tavily.com: web research
-- fathom.video: meeting intelligence
-- login.microsoftonline.com: Microsoft OAuth
-- graph.microsoft.com: Microsoft Graph API calls
-
-WHAT IT DOES NOT DO
-- Does not store OAuth tokens or credentials on any external server
-- Does not share data outside the API endpoints listed above
-- All processing runs on a dedicated Mac Mini inside the local environment
-- No access to other users' mailboxes, SharePoint sites, or admin settings
-- No data leaves the approved endpoints
-
-INSTALLATION SCOPE
-- One dedicated Mac Mini assigned to ${name}
-- No software installed on any other machine
-- No VPN or inbound access required, outbound HTTPS only
-
-Apollo[Claw] can provide additional technical documentation, an app manifest, or join a call with your IT team if needed.
-
-hello@apolloclaw.ai | 917.363.5487 | apolloclaw.ai
-
-Thank you,
-${name}`;
-
-    const text = platform === "google" ? googleEmail : ms365Email;
-    navigator.clipboard.writeText(text).then(() => {
-      setItEmailCopied(platform);
-      setTimeout(() => setItEmailCopied(null), 3000);
-    });
-  };
-  async function submitStep1() {
+  async function submit() {
     setError("");
     const { first_name, last_name, email, assistant_name, timezone, computer_name } = s1;
-    if (!first_name || !last_name || !email || !assistant_name || !timezone || !computer_name) {
-      setError("Please complete all required fields before continuing.");
-      return;
-    }
-    if (!validateEmail(email)) { setError("Please enter a valid email address."); return; }
-    setLoading(true);
-    try {
-      const res = await fetch(SETUP_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "apollo_setup_1", email, fields: s1 }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message || "Submission failed.");
-      setClientEmail(email);
-      // Step 2 opens with a bot username ready, apollo_agent_<name>_<nnn>_bot, already in the
-      // username box (lib/telegram-username.ts). The client sends it to BotFather, and edits the
-      // box only if BotFather asks for another. One they typed themselves is kept.
-      setS2(p => ({ ...p, telegram_bot_username: p.telegram_bot_username || `@${suggestBotUsername(assistant_name, email.trim().toLowerCase())}` }));
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      setStep(2);
-    } catch {
-      setError("Something went wrong. Please try again or email hello@apolloclaw.ai");
-    } finally {
-      setLoading(false);
-    }
-  }
-  async function submitStep2() {
-    setError("");
     const { anthropic_api_key, telegram_bot_token } = s2;
-    // Prefilled with the suggestion at step 1; required either way. A missing leading @ is added
-    // rather than refused.
-    const typed = s2.telegram_bot_username.trim().replace(/^@/, "");
+    // A missing leading @ is added rather than refused.
+    const typed = botUsername.trim().replace(/^@/, "");
     const telegram_bot_username = typed ? `@${typed}` : "";
-    // The Anthropic key is optional (David, Sept 28 2026); it is checked only when one is given.
-    if (!telegram_bot_token || !telegram_bot_username) {
+    if (!first_name || !last_name || !email || !assistant_name || !timezone || !computer_name || !telegram_bot_token || !telegram_bot_username) {
       setError("Please complete all required fields before submitting.");
       return;
     }
+    if (!validateEmail(email)) { setError("Please enter a valid email address."); return; }
+    // The Anthropic key is optional (David, Sept 28 2026); it is checked only when one is given.
     if (anthropic_api_key && !anthropic_api_key.trim().startsWith("sk-ant-")) {
       setError("Your Anthropic API key should start with sk-ant-... Please double-check it.");
       return;
@@ -333,12 +185,12 @@ ${name}`;
       const res = await fetch(SETUP_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "apollo_setup_2", email: clientEmail, fields: { ...s1, ...s2, telegram_bot_username } }),
+        body: JSON.stringify({ source: "apollo_setup_2", email, fields: { ...s1, ...s2, telegram_bot_username } }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Submission failed.");
       window.scrollTo({ top: 0, behavior: "smooth" });
-      setStep("done");
+      setDone(true);
     } catch {
       setError("Something went wrong. Please try again or email hello@apolloclaw.ai");
     } finally {
@@ -361,41 +213,18 @@ ${name}`;
       {/* Hero */}
       <div style={{ background: `radial-gradient(ellipse 80% 50% at 50% -5%,rgba(232,52,42,0.14) 0%,transparent 70%),${SRF}`, borderBottom: `1px solid ${BDR}`, padding: "40px 32px 32px", textAlign: "center" }}>
         <h1 style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 10px", color: TX }}>
-          {step === "done" ? "You're all set." : <>Technical <span style={{ color: R }}>Setup</span></>}
+          {done ? "You're all set." : <>Technical <span style={{ color: R }}>Setup</span></>}
         </h1>
         <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, maxWidth: 420, margin: "0 auto" }}>
-          {step === 1 && "Two quick steps and your AI assistant is ready to deploy."}
-          {step === 2 && "Almost done. Enter your API credentials and we'll handle the rest."}
-          {step === "done" && "David will be in touch within 2 business days to schedule your first Zoom session."}
+          {done
+            ? "David will be in touch within 2 business days to schedule your first Zoom session."
+            : "One page, and your AI assistant is ready to deploy. Each section says exactly where to find what it asks for."}
         </p>
       </div>
       <div style={{ maxWidth: 700, margin: "0 auto", padding: "36px 24px 100px" }}>
-        {/* Progress */}
-        {step !== "done" && (
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, background: step === 1 ? R : "#16a34a", color: "#fff", border: `2px solid ${step === 1 ? R : "#16a34a"}`, transition: "all 0.2s" }}>
-                {step === 1 ? "1" : "✓"}
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: step === 1 ? TX : TXD }}>Your Setup</span>
-            </div>
-            <div style={{ flex: 1, height: 1, background: BDR, margin: "0 16px" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, background: step === 2 ? R : "transparent", color: step === 2 ? "#fff" : TXD, border: `2px solid ${step === 2 ? R : BDR}`, transition: "all 0.2s" }}>
-                2
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: step === 2 ? TX : TXD }}>Credentials</span>
-            </div>
-          </div>
-        )}
-        {/* STEP 1 */}
-        {step === 1 && (
+        {/* THE FORM: who you are, your assistant, your machine, then the three credentials. */}
+        {!done && (
           <Stack>
-            <Card>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 12 }}>Step 1 of 2</p>
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: TX, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Let&apos;s get your AI ready to deploy.</h2>
-              <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: 0 }}>This first step covers the basics: who you are, what you want to call your AI, and your machine details. Credentials come next, and we&apos;ll walk you through each one.</p>
-            </Card>
             <Card>
               <SectionHeader number="01" label="Your Info" />
               <Stack gap={16}>
@@ -403,7 +232,7 @@ ${name}`;
                   <FF label="First Name" required><TInput value={s1.first_name} onChange={v => updateS1("first_name", v)} placeholder="Jane" /></FF>
                   <FF label="Last Name" required><TInput value={s1.last_name} onChange={v => updateS1("last_name", v)} placeholder="Smith" /></FF>
                 </Row2>
-                <FF label="Business Email" required><TInput type="email" value={s1.email} onChange={v => updateS1("email", v)} placeholder="jane@yourbusiness.com" /></FF>
+                <FF label="Email" required><TInput type="email" value={s1.email} onChange={v => updateS1("email", v)} placeholder="jane@example.com" /></FF>
                 <FF label="Phone Number" required><TInput type="tel" value={s1.phone || ""} onChange={v => updateS1("phone", v)} placeholder="+1 (___) ___-____" /></FF>
               </Stack>
             </Card>
@@ -442,83 +271,7 @@ ${name}`;
               </FF>
             </Card>
             <Card>
-              <SectionHeader number="04" label="Corporate / Enterprise Setup" />
-              <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Deploying inside a managed corporate environment? IT may need to be involved for VPN access, firewall rules, SSO, or procurement approval. Check the box below so we can coordinate directly with your team.</p>
-              <button type="button" onClick={() => setIsEnterprise(!isEnterprise)} style={{ display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", padding: "14px 16px", borderRadius: 6, cursor: "pointer", fontSize: 13, fontFamily: "inherit", lineHeight: 1.55, width: "100%", background: isEnterprise ? "rgba(215,43,43,0.1)" : SRF2, border: `1px solid ${isEnterprise ? "rgba(215,43,43,0.45)" : BDR}`, color: isEnterprise ? TX : TXM, marginBottom: 16 }}>
-                <span style={{ flexShrink: 0, marginTop: 2, fontSize: 16 }}>{isEnterprise ? "☑" : "☐"}</span>
-                <span><strong>This is a Corporate / Enterprise deployment.</strong> Our IT team needs to be involved, or there are managed network restrictions that may affect the setup.</span>
-              </button>
-              {isEnterprise && (
-                <Stack gap={16}>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 4 }}>IT Contact: Who Mike Reaches Out To</p>
-                  <p style={{ fontSize: 12, color: TXM, marginBottom: 12, lineHeight: 1.6 }}>Once you submit, Mike will contact this person directly to coordinate the setup. This is your IT manager, MSP, or the person who handles system access at your company.</p>
-                  <Row2>
-                    <FF label="IT Contact Name">
-                      <TInput value={s1.it_contact_name} onChange={v => updateS1("it_contact_name", v)} placeholder="IT Manager or MSP contact" />
-                    </FF>
-                    <FF label="IT Contact Email">
-                      <TInput type="email" value={s1.it_contact_email} onChange={v => updateS1("it_contact_email", v)} placeholder="it@company.com" />
-                    </FF>
-                  </Row2>
-                  <FF label="Known Restrictions or Notes">
-                    <textarea value={s1.it_notes} onChange={e => updateS1("it_notes", e.target.value)} placeholder="Anything you already know: firewall rules, VPN requirements, managed device policy, procurement process, Azure AD restrictions..." style={{ width: "100%", background: SRF2, border: `1px solid ${BDR}`, borderRadius: 6, color: TX, fontSize: 14, fontFamily: "inherit", padding: "10px 14px", outline: "none", minHeight: 80, resize: "vertical", boxSizing: "border-box" }} />
-                  </FF>
-                  <div style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 6, padding: "14px 16px" }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 10 }}>What We Need IT to Confirm</p>
-                    <p style={{ fontSize: 12, color: TXM, marginBottom: 10, lineHeight: 1.6 }}>When IT replies to the email above, we need the following confirmed. Mike will follow up on anything not addressed.</p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                      <ul style={{ paddingLeft: 18, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-                      {[
-                        "OAuth app authorization: allowed, requires admin approval, or blocked",
-                        "Outbound HTTPS (port 443) permitted to: api.anthropic.com, api.telegram.org, api.tavily.com, fathom.video",
-                        "Google Admin Console or Azure AD consent policy: approval process if required",
-                        "Managed device policy: any restrictions on installing software on the Mac Mini",
-                        "Procurement or vendor approval requirements (contracts, insurance, DPA)",
-                        "Preferred timeline and IT availability for the pre-setup call"
-                      ].map((item, i) => (
-                        <li key={i} style={{ fontSize: 12, color: TX, lineHeight: 1.65 }}>{item}</li>
-                      ))}
-                      </ul>
-                    </div>
-                  </div>
-                  <div style={{ borderTop: `1px solid ${BDR}`, paddingTop: 16 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 8 }}>Pre-Written IT Department Email</p>
-                    <p style={{ fontSize: 12, color: TXM, marginBottom: 12, lineHeight: 1.6 }}>Copy and send this to your IT team. It covers exactly what Apollo[Claw] needs: API access, outbound endpoints, and what we do not touch. Choose your platform:</p>
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <button type="button" onClick={() => copyItEmail("google")} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 6, border: `1px solid ${itEmailCopied === "google" ? "#16a34a" : BDR}`, background: itEmailCopied === "google" ? "rgba(22,163,74,0.1)" : SRF2, color: itEmailCopied === "google" ? "#16a34a" : TXM, fontFamily: "inherit", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.15s" }}>
-                        <span style={{ fontSize: 16 }}>{itEmailCopied === "google" ? "✓" : "📋"}</span>
-                        {itEmailCopied === "google" ? "Copied!" : "Copy: Google Workspace"}
-                      </button>
-                      <button type="button" onClick={() => copyItEmail("ms365")} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 6, border: `1px solid ${itEmailCopied === "ms365" ? "#16a34a" : BDR}`, background: itEmailCopied === "ms365" ? "rgba(22,163,74,0.1)" : SRF2, color: itEmailCopied === "ms365" ? "#16a34a" : TXM, fontFamily: "inherit", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.15s" }}>
-                        <span style={{ fontSize: 16 }}>{itEmailCopied === "ms365" ? "✓" : "📋"}</span>
-                        {itEmailCopied === "ms365" ? "Copied!" : "Copy: Microsoft 365"}
-                      </button>
-                    </div>
-                    <p style={{ fontSize: 11, color: TXD, marginTop: 8, lineHeight: 1.5 }}>The email includes required API scopes, outbound endpoint list, and what the assistant does not access. Edit [brackets] before sending.</p>
-                  </div>
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#fffdf9", border: `1px solid ${BDR}`, borderLeft: `3px solid ${R}`, borderRadius: "0 6px 6px 0", padding: "12px 14px" }}>
-                    <span style={{ color: R, fontSize: 12, marginTop: 1, flexShrink: 0 }}>■</span>
-                    <p style={{ fontSize: 11, color: TXD, lineHeight: 1.6, margin: 0 }}>We will reach out to you and your IT contact before scheduling any installation. Enterprise deployments include a dedicated pre-setup call to map the environment and confirm requirements.</p>
-                  </div>
-                </Stack>
-              )}
-            </Card>
-            {error && <div style={{ padding: "10px 14px", borderRadius: 6, background: "rgba(232,52,42,0.08)", border: `1px solid rgba(232,52,42,0.3)`, fontSize: 13, color: "#b91c1c" }}>{error}</div>}
-            <button onClick={submitStep1} disabled={loading} style={{ width: "100%", background: loading ? SRF2 : R, color: loading ? TXD : "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "14px", borderRadius: 6, border: "none", cursor: loading ? "not-allowed" : "pointer", transition: "background 0.15s" }}>
-              {loading ? "Saving…" : "Continue to Step 2 →"}
-            </button>
-          </Stack>
-        )}
-        {/* STEP 2 */}
-        {step === 2 && (
-          <Stack>
-            <Card>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: R, marginBottom: 12 }}>Step 2 of 2</p>
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: TX, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Your API Credentials</h2>
-              <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: 0 }}>These keys connect your AI to the services it needs. Each instruction block below walks you through exactly where to find them.</p>
-            </Card>
-            <Card>
-              <SectionHeader number="01" label="Anthropic API Key" />
+              <SectionHeader number="04" label="Anthropic API Key" />
               <Disclosure title="How to get your Anthropic API key">
                 <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
                 <Step>Click your name in the top right → <strong>API Keys</strong>.</Step>
@@ -531,7 +284,7 @@ ${name}`;
               </FF>
             </Card>
             <Card>
-              <SectionHeader number="02" label="Telegram Bot" />
+              <SectionHeader number="05" label="Telegram Bot" />
               <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: "0 0 16px" }}>Your assistant&apos;s own private bot. Follow these in Telegram, then bring the token back here.</p>
               <ol style={{ listStyle: "decimal", paddingLeft: 22, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 8, fontSize: 14, color: TX, lineHeight: 1.6 }}>
                 <li>Open BotFather and send it <Code>/newbot</Code>.</li>
@@ -551,8 +304,10 @@ ${name}`;
                   </span>
                 </div>
                 <CopyRow label="Send it this" value="/newbot" />
-                {s2.telegram_bot_username.trim() && (
-                  <CopyRow label="Then this username" value={s2.telegram_bot_username.trim().replace(/^@/, "")} />
+                {botUsername.trim() ? (
+                  <CopyRow label="Then this username" value={botUsername.trim().replace(/^@/, "")} />
+                ) : (
+                  <p style={{ fontSize: 12, color: TXM, margin: 0 }}>Fill in your assistant&apos;s name and your email above and a username appears here, ready to copy.</p>
                 )}
               </div>
               <Stack gap={16}>
@@ -560,12 +315,12 @@ ${name}`;
                   <TInput value={s2.telegram_bot_token} onChange={v => updateS2("telegram_bot_token", v)} placeholder="Paste your bot token" />
                 </FF>
                 <FF label="Telegram Bot Username" hint="Filled in for you. Change it only if BotFather asked you for a different one." required>
-                  <TInput value={s2.telegram_bot_username} onChange={v => updateS2("telegram_bot_username", v)} placeholder="@YourBotName_bot" />
+                  <TInput value={botUsername} onChange={v => { setUsernameTyped(true); updateS2("telegram_bot_username", v); }} placeholder="@YourBotName_bot" />
                 </FF>
               </Stack>
             </Card>
             <Card>
-              <SectionHeader number="03" label="Tavily: Web Search & Research" />
+              <SectionHeader number="06" label="Tavily: Web Search & Research" />
               <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Powers real-time research, competitive intelligence, and market monitoring. Get your free API key at <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>tavily.com</a>: takes 2 minutes.</p>
               <Stack gap={16}>
                 <FF label="Tavily API Key" hint="Format: tvly-...">
@@ -578,13 +333,13 @@ ${name}`;
               <p style={{ fontSize: 11, color: TXD, lineHeight: 1.6, margin: 0 }}>Your credentials are transmitted securely over HTTPS and used solely to configure your deployment. They are never shared, sold, or stored beyond setup. Questions? <strong style={{ color: TX }}>hello@apolloclaw.ai</strong></p>
             </div>
             {error && <div style={{ padding: "10px 14px", borderRadius: 6, background: "rgba(232,52,42,0.08)", border: `1px solid rgba(232,52,42,0.3)`, fontSize: 13, color: "#b91c1c" }}>{error}</div>}
-            <button onClick={submitStep2} disabled={loading} style={{ width: "100%", background: loading ? SRF2 : R, color: loading ? TXD : "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "14px", borderRadius: 6, border: "none", cursor: loading ? "not-allowed" : "pointer", transition: "background 0.15s" }}>
+            <button onClick={submit} disabled={loading} style={{ width: "100%", background: loading ? SRF2 : R, color: loading ? TXD : "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, padding: "14px", borderRadius: 6, border: "none", cursor: loading ? "not-allowed" : "pointer", transition: "background 0.15s" }}>
               {loading ? "Submitting…" : "Complete My Setup →"}
             </button>
           </Stack>
         )}
         {/* SUCCESS */}
-        {step === "done" && (
+        {done && (
           <div style={{ background: SRF, border: `1px solid ${BDR}`, borderRadius: 12, padding: "60px 40px", textAlign: "center" }}>
             <div style={{ width: 64, height: 64, borderRadius: "50%", border: `2px solid #16a34a`, background: "rgba(22,163,74,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
               <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13.5L10 18.5L21 8" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
