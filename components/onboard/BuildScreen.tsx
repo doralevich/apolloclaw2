@@ -32,9 +32,12 @@ const TX = "#1A1A1A";
 const TXM = "#555555";
 
 // How long after "running" the screen keeps waiting for the chat host before entering Chat
-// regardless. Long enough to cover the usual lag, short enough that a probe that is wrong about
-// a live host costs a minute and a half rather than six.
-const WARMING_CAP_MS = 90_000;
+// regardless. 30 seconds since Nov 10 2026 (was 90): David found "Warming up" the slow part of
+// a build whose box was up and written within seconds. A shorter wait loses nothing, because a
+// first message sent before the chat host answers is retried quietly by the chat route for up
+// to about 55 seconds (WARMUP_RETRY_MS in app/api/agents/[id]/chat/responses) and only then
+// says "still starting up". Most of the lag moves from this screen into that first reply.
+const WARMING_CAP_MS = 30_000;
 
 // The real wordmark, matching the questionnaire and the rest of the site (was styled text).
 function ApolloWordmark({ size = 18 }: { size?: number; sublabel?: string }) {
