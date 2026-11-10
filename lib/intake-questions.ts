@@ -12,7 +12,6 @@ import {
   STACK_CRM,
   STACK_PM,
   SUCCESS_MET,
-  TEAM_SENT,
 } from "@/components/onboard/OnboardingForm";
 import {
   fieldVisible,
@@ -123,6 +122,15 @@ function fromStack(s: StackSection, bucket: Bucket): Question {
   };
 }
 
+/** Answers for "How does your team adapt to technology changes?" */
+const TEAM_ADAPT = [
+  "Early adopters - they jump on the latest tools",
+  "Quick learners - they pick it up with a little help",
+  "Steady - they come around once they see it work",
+  "Cautious - they need time and training",
+  "Just me - no team involved",
+];
+
 // Communication first, David (Nov 10, 2026): it is the one that decides which mailbox and
 // calendar the agent connects to (config/connect-flow.ts reads commsTools).
 // "Documents and files" (docsTools) is off, David (Nov 10, 2026): nothing on the agent's side
@@ -205,8 +213,14 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
     ? []
     : [
         { id: "strategicBet", bucket: "top", section: "The year ahead", ask: "What is your biggest goal for the next 12 months?", placeholder: "The move that matters most - a new market, a product, a key hire, more revenue, an acquisition...", kind: "textarea" },
-        { id: "growthBottleneck", bucket: "top", section: "The year ahead", ask: "Where is the real bottleneck to growth right now?", kind: "multi", options: GROWTH_BOTTLENECK, other: "Other" },
       ];
+  // "Where is the real bottleneck to growth right now?" moved out of "The year ahead", David
+  // (Nov 10, 2026): it is asked right before the agent's "first" question (a role's "What
+  // should it tackle first?", the generic "What should I take off your plate first?") and
+  // under the same heading, because the bottleneck is what decides where to start.
+  const bottleneck = (section: string): Question[] =>
+    dropped.has("exec") ? [] : [{ id: "growthBottleneck", bucket: "top", section, ask: "Where is the real bottleneck to growth right now?", kind: "multi", options: GROWTH_BOTTLENECK, other: "Other" }];
+  let bottleneckAsked = false;
   if (!isRole) q.push(...exec);
 
   // ── Tech stack ──────────────────────────────────────────────────────────────────────────
@@ -242,27 +256,37 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
     q.push({ id: "aiTools", bucket: "top", section: "Where you are with AI", ask: "Which AI tools have you used?", kind: "multi", options: AI_TOOLS, other: "Other", showIf: (x) => str(x.top.priorAI) === "Yes" });
     q.push({ id: "aiProficiency", bucket: "top", section: "Where you are with AI", ask: "How comfortable are you with AI tools?", help: "1 is just getting started, 5 is power user.", kind: "scale", max: 5, showIf: (x) => str(x.top.priorAI) === "Yes" });
     q.push({ id: "aiKeepProcesses", bucket: "top", section: "Where you are with AI", ask: "Any processes you use today and want to keep?", help: "Optional. Anything that works and should stay as it is.", placeholder: "e.g. The Zapier flow that posts new leads to Slack...", kind: "textarea", showIf: (x) => str(x.top.priorAI) === "Yes" });
-    q.push({ id: "teamSentiment", bucket: "top", section: "Where you are with AI", ask: "How does your team feel about bringing me in?", kind: "single", options: TEAM_SENT });
+    // Was "How does your team feel about bringing me in?", David (Nov 10, 2026): asked as how the
+    // team takes to technology in general, which says how much hand-holding the rollout needs.
+    // Same key, so the payload and the summary's "Team Sentiment" row are unchanged.
+    q.push({ id: "teamSentiment", bucket: "top", section: "Where you are with AI", ask: "How does your team adapt to technology changes?", kind: "single", options: TEAM_ADAPT });
   }
   if (!role?.coversScope && !dropped.has("scopeai")) {
     // The industry's own tasks first, in its own words, then the generic list. The chat opener
     // and the checklist read these by exact string for the generic list and by keyword for
     // the rest, and fall back to a plain "Hand over <task>" row for anything else.
     const takeOnOptions = [...(takeOn?.options ?? []).filter((o) => o !== "Other"), ...AI_GOALS];
+    q.push(...bottleneck("What I should take on"));
+    bottleneckAsked = true;
     q.push({ id: "aiGoals", bucket: "top", section: "What I should take on", ask: "What should I take off your plate first?", help: "Pick all that apply.", kind: "multi", options: takeOnOptions, other: "Other" });
     // Up to two (David, Nov 5 2026): a priority rather than everything ticked, so the agent
     // knows what it is being judged on.
     q.push({ id: "successMetric", bucket: "top", section: "What I should take on", ask: "What does winning look like?", help: "Pick up to two.", kind: "multi", max: 2, options: SUCCESS_MET, other: "Something else" });
   }
 
-  if (firstUp) q.push(firstUp);
+  if (firstUp) {
+    q.push(...bottleneck("Where to start"), firstUp);
+    bottleneckAsked = true;
+  }
+  // A flow with neither "first" question still asks it, at the end.
+  if (!bottleneckAsked) q.push(...bottleneck("The year ahead"));
 
   // ── Final details ───────────────────────────────────────────────────────────────────────
   if (role?.finalNote) {
     q.push({ id: role.finalNote.key, bucket: "role", section: "Last thing", ask: role.finalNote.label, placeholder: role.finalNote.placeholder, kind: "textarea" });
-  } else {
-    q.push({ id: "anythingElse", bucket: "top", section: "Last thing", ask: "Anything else I should know?", help: "Optional. Whatever did not fit a question above.", placeholder: "Context, quirks, a thing you have been meaning to fix, how you want to be kept in the loop...", kind: "textarea" });
   }
+  // The generic "Anything else I should know?" (anythingElse) is off, David (Nov 10, 2026). The
+  // owner tells the agent anything else in chat. A role's own finalNote above is unaffected.
   q.push({ id: "agree", bucket: "top", section: "Build", ask: "That is everything. Ready to build?", kind: "confirm", required: true });
 
   return q;
