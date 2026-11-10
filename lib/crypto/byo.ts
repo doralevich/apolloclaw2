@@ -82,6 +82,7 @@ export function decryptSecret(stored?: string | null): string | null {
 export const BYO_SECRET_FIELDS = [
   "anthropic_api_key",
   "telegram_bot_token",
+  "telegram_bot_token_2",
   "fireflies_api_key",
   "tavily_api_key",
   "fathom_password",

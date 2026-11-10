@@ -881,3 +881,17 @@ title with a red cursor, and a red waveform. A clip is a podcast clip when its Y
 ends "| David Oralevich"; its number comes from `CLIP_NUMBERS` in lib/podcast.ts, read off the
 clips' own frames. The college promos keep their YouTube frame in a centred vertical strip.
 The share image for a clip page is still YouTube's thumbnail.
+
+## Technical Setup: Tavily out, a second Telegram account in (Nov 10, 2026)
+
+David: remove section 06 (Tavily) from `/setup`, and add "Do you need an additional Telegram
+account?" with a plus sign that opens a section for a second account.
+
+- **Tavily is gone from the page.** The endpoint still reads `tavily_api_key` if an old tab
+  sends one, and the field stays in the encrypted list for submissions already stored.
+- **The second account** opens from a button under the Telegram section: who it is for, a
+  username suggested from that name (seeded apart from the first so the two never collide),
+  the bot token and the username. Opened means wanted, so its token and username are required
+  and must differ from the first's; closing it clears it and sends nothing. The token is a
+  secret like the first (`telegram_bot_token_2` in `BYO_SECRET_FIELDS`, stored encrypted for
+  Super Admin), and the summary email, CRM notes and Attio note list it as given or not.
