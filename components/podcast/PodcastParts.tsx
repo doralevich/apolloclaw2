@@ -33,9 +33,13 @@ export function VideoPlayer({ video, title }: { video: PodcastVideo; title?: str
 }
 
 /**
- * A card linking to a video's page. The thumbnail is YouTube's 4:3 frame; for a Short the picture
- * sits in the middle of it with black bars either side, so object-cover in a 9:16 box crops the
- * bars away and leaves the vertical frame. i.ytimg.com is on the CSP img-src list.
+ * A card linking to a video's page. Every card is 16:9, Shorts included, so the grids stay one
+ * shape (David, Nov 10 2026: the tall 9:16 cards did not look good).
+ *
+ * The thumbnail is YouTube's 4:3 frame. For a Short the picture sits in the middle of it with black
+ * bars either side, so a Short gets two layers: the same image blown up and blurred to fill the
+ * card, and the vertical frame itself in a centred 9:16 box, where object-cover crops the bars
+ * away. i.ytimg.com is on the CSP img-src list.
  */
 export function VideoCard({ video }: { video: PodcastVideo }) {
   return (
@@ -43,15 +47,41 @@ export function VideoCard({ video }: { video: PodcastVideo }) {
       href={`/podcast/${video.slug}`}
       className="group block h-full bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
     >
-      <div className={`relative overflow-hidden bg-black ${video.isShort ? "aspect-[9/16]" : "aspect-video"}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
-        <img
-          src={video.thumbnailUrl}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-        />
+      <div className="relative aspect-video overflow-hidden bg-black">
+        {video.isShort ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
+            <img
+              src={video.thumbnailUrl}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover scale-[2.5] blur-2xl opacity-60"
+            />
+            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 aspect-[9/16] h-full overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
+              <img
+                src={video.thumbnailUrl}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                // 4% in, because the picture inside YouTube's frame is a fraction under 9:16 and
+                // object-cover alone leaves a hairline of the black bar along one edge.
+                className="h-full w-full object-cover scale-[1.04] transition-transform duration-300 group-hover:scale-[1.08]"
+              />
+            </div>
+          </>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed
+          <img
+            src={video.thumbnailUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        )}
         <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[11px] text-white">
           {video.durationText}
         </span>

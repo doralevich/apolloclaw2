@@ -131,7 +131,7 @@ export default function PodcastPage() {
               <p className="font-body text-muted-foreground mb-8">
                 One idea each, under a minute.
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {PODCAST_CLIPS.map((v, i) => (
                   <ScrollReveal key={v.videoId} delay={i * 50}>
                     <VideoCard video={v} />

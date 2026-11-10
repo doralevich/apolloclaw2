@@ -69,8 +69,8 @@ export default async function PodcastVideoPage({
   if (!video) notFound();
 
   const pageUrl = `https://apolloclaw.ai/podcast/${slug}`;
-  // Clips only, so the row is one shape (9:16) whichever page it sits under.
-  const more = PODCAST_CLIPS.filter((v) => v.slug !== slug).slice(0, 4);
+  // Clips only, three of them: one row of 16:9 cards under any page.
+  const more = PODCAST_CLIPS.filter((v) => v.slug !== slug).slice(0, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -152,7 +152,7 @@ export default async function PodcastVideoPage({
             <h2 id="more" className="font-display text-2xl md:text-3xl text-foreground mb-8">
               More from the podcast
             </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {more.map((v) => (
                 <VideoCard key={v.videoId} video={v} />
               ))}
