@@ -230,12 +230,17 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
           <section style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 10, padding: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             {avatar ? (
+              // A photo fills the circle. The agent's own mascot is a full standing figure: a circle
+              // either cut its arms off (cover) or shrank it to a speck (contain), so it stands
+              // uncropped and unframed at the full row height.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatar} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", background: SRF }} />
+              <img src={avatar} alt="" style={avatar === brand.mascot
+                ? { width: "auto", height: 60, objectFit: "contain" }
+                : { width: 52, height: 52, borderRadius: "50%", objectFit: "cover", background: SRF }} />
             ) : (
-              <span style={{ width: 36, height: 36, borderRadius: "50%", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{agentName[0]?.toUpperCase()}</span>
+              <span style={{ width: 52, height: 52, fontSize: 20, borderRadius: "50%", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{agentName[0]?.toUpperCase()}</span>
             )}
-            <span style={{ fontSize: 14, fontWeight: 600, color: TXM }}>{agentName}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: TXM }}>{agentName}</span>
           </div>
 
           {/* The question runs the full width of the card. "balance" split even a short question

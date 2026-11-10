@@ -25,29 +25,11 @@ const SEAT: IndustryBranch = {
   stepTitle: "Your Seat",
   stepSubtitle: "What you run and who is around you, so your agent knows whose name it writes in.",
   stepLabel: "Your Seat",
+  // "What's your role?" (key `title`) and "How big is the organization you run?" (key
+  // `team_size`) lived here and repeated "What is your role there?" and "How big is the team?"
+  // from the Your Business page a few questions earlier. Removed, David (Nov 10, 2026); records
+  // that already carry either key keep it and still show it in the summary.
   fields: [
-    {
-      key: "title",
-      label: "What's your role?",
-      type: "dropdown",
-      options: [
-        "Founder & CEO",
-        "CEO",
-        "President",
-        "Owner",
-        "Managing Partner",
-        "Managing Director",
-        "Executive Director",
-        "COO",
-        "Other",
-      ],
-    },
-    {
-      key: "team_size",
-      label: "How big is the organization you run?",
-      type: "dropdown",
-      options: ["Just me", "2-10", "11-50", "51-200", "201-1000", "More than 1000"],
-    },
     {
       key: "reports_to",
       label: "Who do you answer to?",
@@ -104,28 +86,10 @@ const WEEK: IndustryBranch = {
       ],
       helper: "Check all that apply.",
     },
-    {
-      key: "recurring_meetings",
-      label: "Which recurring meetings do you run or sit in?",
-      type: "multiselect",
-      options: [
-        "Leadership team meeting",
-        "One-on-ones",
-        "Board meetings",
-        "Investor updates",
-        "All-hands",
-        "Pipeline or sales review",
-        "Weekly business review",
-        "Other",
-      ],
-      helper: "Check all that apply.",
-    },
-    {
-      key: "inbox_reality",
-      label: "How many emails land in your inbox on a typical day?",
-      type: "dropdown",
-      options: ["Under 50", "50-100", "100-200", "200-500", "More than 500"],
-    },
+    // Removed, David (Nov 10, 2026): "Which recurring meetings do you run or sit in?"
+    // (`recurring_meetings`) and "How many emails land in your inbox on a typical day?"
+    // (`inbox_reality`). Each only went into the deep-dive rows of USER.md, and the agent reads
+    // both from the source once the calendar and mailbox are connected. Old records keep them.
   ],
 };
 

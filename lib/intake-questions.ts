@@ -170,7 +170,7 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
 
   // ── What you do ─────────────────────────────────────────────────────────────────────────
   if (!dropped.has("whatyoudo")) {
-    q.push({ id: "businessDescription", bucket: "top", section: "What you do", ask: "Describe your business in a few sentences.", help: "Who do you serve, and what do you deliver for them?", placeholder: "We help [who] do [what] by [how]...", kind: "textarea", required: true });
+    q.push({ id: "businessDescription", bucket: "top", section: "What you do", ask: "Describe your Business", help: "Who do you serve, and what do you deliver for them?", placeholder: "We help [who] do [what] by [how]...", kind: "textarea", required: true });
   }
 
   // ── The role's own deep-dive, in its own words ──────────────────────────────────────────

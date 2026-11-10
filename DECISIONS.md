@@ -909,3 +909,21 @@ with a 1px #DDDDDD border, 10px corners and 20px padding.
   into two half-width lines. It is now `pretty`, which fills each line and only avoids a lone
   last word, at 24-32px (was 26-38px) so the usual questions fit one line on desktop. On a
   phone they wrap where the width ends.
+
+## CEO Agent intake: four questions out, one renamed, mascot shown whole (Nov 10, 2026)
+
+David, walking the CEO Agent intake:
+
+- **Removed as repeats** of the Your Business page a few questions earlier: "What's your role?"
+  (`title`, repeats "What is your role there?") and "How big is the organization you run?"
+  (`team_size`, repeats "How big is the team?").
+- **Removed as unneeded:** "Which recurring meetings do you run or sit in?"
+  (`recurring_meetings`) and "How many emails land in your inbox on a typical day?"
+  (`inbox_reality`). No code read them; they only became deep-dive rows in USER.md, and the
+  agent reads both from the calendar and mailbox once connected.
+- Records already holding any of the four keep them; the summary still lists them.
+- **Renamed:** "Describe your business in a few sentences." is now "Describe your Business",
+  in David's words.
+- **The agent's face above each question** is larger (52px). A chosen photo fills its circle
+  as before; the agent's own mascot, a full standing figure, is shown whole at 60px tall with no
+  circle, because a circle either cut its arms off or shrank it to a speck.
