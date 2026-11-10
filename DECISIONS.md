@@ -858,3 +858,13 @@ Super Admin, the summary email, the Telegram ping). The Telegram bot username is
 live from the assistant's name and the email until the client types their own. The endpoint
 still accepts the old first step and still prints IT contact fields, so a tab left open on the
 old page submits cleanly.
+
+## "Warming up" waits 30 seconds at most (Nov 10, 2026)
+
+David: the build screen's "Warming up, so your first message gets an answer" step was the slow
+part of building a college agent, whose box was created and written within 4 seconds. The
+step waits for Agent37 to connect the agent's chat host and enters the dashboard regardless
+after a ceiling, which was 90 seconds and is now 30 (`WARMING_CAP_MS`,
+components/onboard/BuildScreen.tsx). Nothing is lost by entering early: the chat route quietly
+retries a first message for up to about 55 seconds while the host comes up, and only then says
+the agent is still starting up.
