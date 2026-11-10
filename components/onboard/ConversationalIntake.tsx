@@ -87,6 +87,9 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
   // megabytes. So it is sent once, with the build, as `avatar_upload`, which /api/agent-setup
   // has always accepted; a draft resumed later has the preset or the agent's own face instead.
   const [upload, setUpload] = useState<AvatarUploadPick | null>(null);
+  // Documents for the agent to read. Like the face upload, the bytes stay in memory only: they
+  // are sent once with the build and never autosaved.
+  const [docs, setDocs] = useState<DocPick[]>([]);
 
   const first = signedInUser?.first?.trim() || "";
   const agentName = (typeof answers.top.agentName === "string" && answers.top.agentName.trim()) || inlineLabel(agentTypeId);
@@ -181,7 +184,7 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
       workspace_id: workspaceId,
       agent37_id: agent37Id,
       agent_type: agentTypeId,
-      answers: payload,
+      answers: docs.length ? { ...payload, uploadedFiles: docs } : payload,
       agent_name: (typeof answers.top.agentName === "string" && answers.top.agentName.trim()) || undefined,
       // An upload and a preset are exclusive (picking one clears the other), so at most one goes.
       ...(upload ? { avatar_upload: { name: upload.name, type: upload.type, size: upload.size, dataBase64: upload.dataBase64 } } : { avatar_preset: preset }),
@@ -230,12 +233,17 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
           <section style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 10, padding: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             {avatar ? (
+              // A photo fills the circle. The agent's own mascot is a full standing figure: a circle
+              // either cut its arms off (cover) or shrank it to a speck (contain), so it stands
+              // uncropped and unframed at the full row height.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatar} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", background: SRF }} />
+              <img src={avatar} alt="" style={avatar === brand.mascot
+                ? { width: "auto", height: 60, objectFit: "contain" }
+                : { width: 52, height: 52, borderRadius: "50%", objectFit: "cover", background: SRF }} />
             ) : (
-              <span style={{ width: 36, height: 36, borderRadius: "50%", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{agentName[0]?.toUpperCase()}</span>
+              <span style={{ width: 52, height: 52, fontSize: 20, borderRadius: "50%", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{agentName[0]?.toUpperCase()}</span>
             )}
-            <span style={{ fontSize: 14, fontWeight: 600, color: TXM }}>{agentName}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: TXM }}>{agentName}</span>
           </div>
 
           {/* The question runs the full width of the card. "balance" split even a short question
@@ -247,7 +255,11 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
           {current.help && <p style={{ fontSize: 15, color: TXM, lineHeight: 1.6, margin: "0 0 26px" }}>{current.help}</p>}
           {!current.help && <div style={{ height: 18 }} />}
 
+          {current.kind === "files" ? (
+            <DocumentsPick docs={docs} onDocs={setDocs} budget={UPLOAD_BUDGET_BYTES - (upload?.size ?? 0)} accent={accent} accentRgb={accentRgb} onError={setError} />
+          ) : (
           <Control q={current} value={get(current)} other={getOther(current)} onChange={(v) => set(current, v)} onOther={(v) => setOther(current, v)} onEnter={next} accent={accent} accentRgb={accentRgb} agentLabel={agentLabel} mascot={brand.mascot} upload={upload} onUpload={(u) => { setUpload(u); if (u) set(current, ""); }} onUploadError={setError} />
+          )}
 
           {error && <p style={{ marginTop: 14, fontSize: 13, color: "#dc2626" }}>{error}</p>}
 
@@ -259,7 +271,7 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
               {phase === "submitting" ? "Building…" : isLast ? `Build my ${inlineLabel(agentTypeId)} →` : current.required ? "Continue →" : "Continue →"}
             </button>
           </div>
-          {!current.required && current.kind !== "confirm" && (
+          {!current.required && current.kind !== "confirm" && !(current.kind === "files" && docs.length > 0) && (
             <p style={{ textAlign: "right", marginTop: 10, fontSize: 13 }}>
               <button type="button" onClick={next} style={{ background: "transparent", border: "none", color: TXD, fontFamily: "inherit", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>Skip this one</button>
             </p>
@@ -282,6 +294,68 @@ type AvatarUploadPick = { name: string; type: string; size: number; dataBase64: 
 // The storage bucket refuses anything over 3 MB (lib/supabase/avatar-storage.ts), so a bigger
 // file is turned away here with a reason instead of failing quietly at the build.
 const AVATAR_MAX_BYTES = 3 * 1024 * 1024;
+
+/** A document picked for the agent to read, in the shape lib/agent-setup.ts reads. */
+type DocPick = { name: string; type: string; size: number; dataBase64: string };
+
+// Everything the build request carries in bytes: the face upload and the documents together.
+// Base64 grows a file by a third, and the request has to stay under the hosting limit of 4.5 MB,
+// so 3.2 MB of files is the most one build can take.
+const UPLOAD_BUDGET_BYTES = Math.round(3.2 * 1024 * 1024);
+
+const mb = (bytes: number) => `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+
+/** "Any documents your agent should read?": add several, remove any, within the byte budget. */
+function DocumentsPick({ docs, onDocs, budget, accent, accentRgb, onError }: {
+  docs: DocPick[];
+  onDocs: (d: DocPick[]) => void;
+  budget: number;
+  accent: string;
+  accentRgb: string;
+  onError: (message: string) => void;
+}) {
+  const used = docs.reduce((n, d) => n + d.size, 0);
+  const add = async (list: FileList | null) => {
+    const files = list ? Array.from(list) : [];
+    if (!files.length) return;
+    const total = used + files.reduce((n, f) => n + f.size, 0);
+    if (total > budget) {
+      onError(`Documents can total ${mb(Math.max(0, budget))} here. Larger files can go to hello@apolloclaw.ai after you build.`);
+      return;
+    }
+    try {
+      const read = await Promise.all(files.map((file) => new Promise<DocPick>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, type: file.type || "application/octet-stream", size: file.size, dataBase64: String(reader.result).split(",")[1] || "" });
+        reader.onerror = () => reject(new Error("read failed"));
+        reader.readAsDataURL(file);
+      })));
+      onError("");
+      onDocs([...docs, ...read]);
+    } catch {
+      onError("That file could not be read. Please try another.");
+    }
+  };
+  return (
+    <div>
+      <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: `1.5px dashed ${docs.length ? accent : "rgba(0,0,0,0.25)"}`, borderRadius: 8, padding: "18px", cursor: "pointer", background: docs.length ? `rgba(${accentRgb},0.06)` : "#fff", color: TXM, fontSize: 15, fontWeight: 700 }}>
+        + {docs.length ? "Add more documents" : "Add documents"}
+        <input type="file" multiple accept=".pdf,.txt,.md,.csv,.json,.doc,.docx,.xls,.xlsx,.ppt,.pptx,application/pdf,text/*" style={{ display: "none" }} onChange={(e) => { void add(e.target.files); e.currentTarget.value = ""; }} />
+      </label>
+      {docs.length > 0 && (
+        <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+          {docs.map((d, i) => (
+            <div key={`${d.name}-${i}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: SRF2, border: `1px solid ${BDR}`, fontSize: 14, color: TX }}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name} <span style={{ color: TXD }}>({Math.max(1, Math.round(d.size / 1024))} KB)</span></span>
+              <button type="button" onClick={() => onDocs(docs.filter((_, idx) => idx !== i))} aria-label={`Remove ${d.name}`} style={{ border: "none", background: "none", color: TXD, cursor: "pointer", fontSize: 18, lineHeight: 1, flexShrink: 0, padding: 4 }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <p style={{ fontSize: 13, color: TXD, margin: "10px 0 0" }}>Up to {mb(Math.max(0, budget))} in all. They go with your answers when you build.</p>
+    </div>
+  );
+}
 
 function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRgb, agentLabel, mascot, upload, onUpload, onUploadError }: {
   q: Question;

@@ -150,7 +150,7 @@ const AGENT: IndustryBranch = {
   fields: [
     {
       key: "owns_work",
-      label: "What do you want your marketing agent to own?",
+      label: "What do you want your agent to own?",
       type: "multiselect",
       options: [
         "Social posts",
