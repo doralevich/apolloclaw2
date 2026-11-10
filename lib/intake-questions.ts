@@ -60,7 +60,7 @@ export type Question = {
   ask: string;
   help?: string;
   placeholder?: string;
-  kind: "name" | "avatar" | "text" | "textarea" | "single" | "multi" | "select" | "scale" | "tiles" | "people" | "confirm";
+  kind: "name" | "avatar" | "text" | "textarea" | "single" | "multi" | "select" | "scale" | "tiles" | "people" | "classes" | "confirm";
   options?: readonly string[];
   required?: boolean;
   /** Scale: the top of the range. Multi: the most picks allowed. */
@@ -101,6 +101,8 @@ function fromField(f: IndustryField, bucket: Bucket, section: string, values: Re
       return { ...base, kind: "textarea", showIf };
     case "people":
       return { ...base, kind: "people", help: f.helper ?? "One per line, with an age if you like.", showIf };
+    case "classes":
+      return { ...base, kind: "classes", showIf };
     default:
       return { ...base, kind: "text", showIf };
   }

@@ -25,11 +25,11 @@ export const BUILD_SLUGS: Record<string, string> = {
   college: "college",
 };
 
-// Slugs that work as a link but never appear on the picker. The College Agent is sold to
-// students from thecollegeagent.ai, whose "Build" button links here with the slug; a business
-// buyer opening plain /onboard is choosing between agents for a business, and a college agent on
-// that grid is a card for the wrong customer (David, Nov 5 2026).
-const UNLISTED_SLUGS: ReadonlySet<string> = new Set(["college"]);
+// Slugs whose card goes at the END of the picker rather than in registry order. The College
+// Agent was left off the picker entirely at first (Nov 5 2026), reasoning that a business buyer
+// on plain /onboard is choosing an agent for a business. David looked for it there on Nov 10 and
+// expected to find it, so it is listed, last, after the business agents.
+const LAST_SLUGS: readonly string[] = ["college"];
 
 /** The slug for the generic Apollo Agent, so a picker card and a redirect can name it. */
 export const APOLLO_SLUG = "apollo";
@@ -64,9 +64,13 @@ export function pickerAgents(): Array<{ slug: string; type: AgentType }> {
   const apollo = getAgentType(LICENSE_AGENT_TYPE_ID);
   const roles = AGENT_TYPES.flatMap((type) => {
     const slug = Object.keys(BUILD_SLUGS).find((s) => BUILD_SLUGS[s] === type.id);
-    return slug && !UNLISTED_SLUGS.has(slug) && buildFunnelType(slug) ? [{ slug, type }] : [];
+    return slug && buildFunnelType(slug) ? [{ slug, type }] : [];
   });
-  return apollo ? [{ slug: APOLLO_SLUG, type: apollo }, ...roles] : roles;
+  const ordered = [
+    ...roles.filter((r) => !LAST_SLUGS.includes(r.slug)),
+    ...LAST_SLUGS.flatMap((s) => roles.filter((r) => r.slug === s)),
+  ];
+  return apollo ? [{ slug: APOLLO_SLUG, type: apollo }, ...ordered] : ordered;
 }
 
 /** "The CFO Agent" -> "CFO Agent", for possessive copy ("Build your CFO Agent"). */

@@ -20,6 +20,7 @@ import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
 import { PERSONAL_BRANCH } from "@/lib/personalIntake";
 import { COLLEGE_BRANCH, COLLEGE_ANYTHING_ELSE_PLACEHOLDER } from "@/lib/collegeIntake";
+import ClassListInput from "@/components/onboard/ClassListInput";
 import { PROPERTY_MANAGEMENT_BRANCH } from "@/lib/propertyManagementIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
@@ -1205,14 +1206,17 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
   const student = agentTypeId === "college";
   const onSale = plansForAgentType(agentTypeId);
   // A choice already made goes straight to checkout rather than being asked again (David, Oct 4
-  // 2026): the plan picked on /pricing, or, in a role agent's funnel (/onboard?agent=<slug>, which
-  // builds one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans,
-  // and so does the student funnel: its three tiers are the choice, so there is nothing to preset.
-  const preset =
-    onSale.find((p) => p.id === picked) ??
-    (agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID && !student ? onSale.find((p) => p.id === "solo") : undefined);
+  // 2026): the plan picked on /pricing (?plan=). Everyone else sees the three plans side by side.
+  //
+  // A role agent's funnel (/onboard?agent=<slug>) used to preset Solo here and go straight to
+  // Stripe, on the reasoning that it builds one agent of that type. David bought a CEO Agent that
+  // way on Nov 10 2026 and found the college funnel, which shows its three plans, the better
+  // experience. So a role funnel shows the plans too, with Solo leading since it buys exactly the
+  // one agent being built.
+  const preset = onSale.find((p) => p.id === picked);
   const [showPicker, setShowPicker] = useState(!preset);
-  const leading = preset?.id ?? onSale.find((p) => p.featured)?.id;
+  const roleFunnel = !!agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID && !student;
+  const leading = preset?.id ?? (roleFunnel ? "solo" : onSale.find((p) => p.featured)?.id);
 
   // Set when the buyer backs out of the hand-off while its checkout request is still in
   // flight, so the reply, when it lands, is dropped instead of navigating them away from the
@@ -1522,6 +1526,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
   const isGeneric = branch.fields[0]?.key === "industry_detail";
   const subtitle = isGeneric && otherLabel ? `A bit more about your ${otherLabel} business.` : branch.stepSubtitle;
   const takeOn = hideTakeOn ? takeOnField(branch) : null;
+  const { a } = useAccent();
   return (
     <Stack>
       <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} art={branch.art} />
@@ -1565,6 +1570,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
             </Fragment>
           );
         }
+        if (f.type === "classes") return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><ClassListInput value={arr} onChange={v => onChange(f.key, v)} colors={{ accent: a, surface: SRF, border: BDR, text: TX, muted: TXD }} /></FF>;
         if (f.type === "people") return <NameAgeList key={f.key} label={f.label} hint={f.helper} value={arr} onChange={v => onChange(f.key, v)} ageOptions={f.ageOptions ?? []} namePlaceholder={f.namePlaceholder} />;
         if (f.type === "radio") return <RadioGroup key={f.key} label={f.label} hint={f.helper} options={f.options ?? []} value={str} onChange={v => onChange(f.key, v)} />;
         if (f.type === "scale") return <ScaleRow key={f.key} label={f.label} low="Low" high="High" value={str ? Number(str) : null} onChange={v => onChange(f.key, String(v))} />;

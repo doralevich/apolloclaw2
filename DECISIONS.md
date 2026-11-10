@@ -804,10 +804,12 @@ registered for the boxes it owns.
 checkout, but crediting the ambassador, the clearing window and payouts lived in the
 college site's webhook and tables. Port it to ApolloClaw only if it comes back.
 
-**Not on the picker.** The college slug works as a link and is unlisted on `/onboard`'s
-picker (`UNLISTED_SLUGS`, lib/buildFunnel.ts): a business buyer is never offered a college
-agent, and `internal` keeps it out of the create-agent modal for the same reason. The nav
-row for it still goes to thecollegeagent.ai, which is its marketing page.
+**On the picker, last.** The college slug was first left off `/onboard`'s picker, so a
+business buyer would never be offered a college agent. David looked for it there on Nov 10
+and expected it, so it is listed after the business agents (`LAST_SLUGS`,
+lib/buildFunnel.ts). `internal` still keeps it out of the dashboard's create-agent modal,
+which is for a business adding a second agent. The nav row for it still goes to
+thecollegeagent.ai, which is its marketing page.
 
 ## Agent37 key on instance hosts goes in X-Agent37-Key (Nov 9, 2026)
 
@@ -821,3 +823,24 @@ everything else that talks to a box's Agents API), and the "apikey" way through 
 lib/gateway-chat.ts. The latter now also sends the gateway's own token in `Authorization`,
 which the header split frees up. The sandbox exec host and scripts/multi-agent-test.mjs
 already used the new header. The college repo's instance calls already did too.
+
+## The student questionnaire, second pass (Nov 10, 2026)
+
+David, after building a college agent through the new path:
+
+- **"What classes are you taking this semester?" is the class-by-class builder again.** The
+  first port made it one text box; the college site had asked for each class's name, course
+  number, and every day and time it meets, with extra blocks for a lab or a discussion
+  section. "It was much more detailed." Rebuilt as a field type, `classes`
+  (components/onboard/ClassListInput.tsx), used by both questionnaires. Stored one line per
+  class ("Marketing 301 (MKT 301): Mon / Wed 10:00 AM - 10:50 AM and Fri 1:30 PM - 3:20 PM"),
+  so USER.md and the intake email print it with no change.
+- **"What does a great semester look like?" is gone.** The agent's "how they'll judge whether
+  you're working" line is left out for students, the same as for the Personal Agent.
+- **The College Agent is on the `/onboard` picker**, last (see the Nov 5 entry above).
+- **Every agent's checkout opens on its three plans.** A role agent's funnel used to preset
+  Solo and go straight to Stripe. David bought a CEO Agent that way and found the college
+  funnel, which shows its three plans, the better experience: "This should be for all the
+  agents." Solo leads for a role agent, Plus for the college agent, Team on plain
+  `/onboard`. A plan picked on `/pricing` (`?plan=`) still goes straight to checkout.
+

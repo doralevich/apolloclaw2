@@ -4,7 +4,7 @@
 // there) on Nov 5 2026, when the college agent started selling through ApolloClaw's own
 // checkout and questionnaire instead of its own. The questions and their option lists are that
 // site's, trimmed to the ones its agent files read: every answer here lands in USER.md, and
-// three of them (owns_work, first_priority and the fixed guard in ROLE_INTAKES) feed the agent's
+// two of them (owns_work and the fixed guard in ROLE_INTAKES) feed the agent's
 // own instructions the same way every other role agent's do.
 //
 // Three pages rather than one: who the student is, their semester, and how the agent should
@@ -105,12 +105,14 @@ const SEMESTER: IndustryBranch = {
   stepSubtitle: "Classes, goals and what comes after. Your agent plans around all of it.",
   stepLabel: "Your Semester",
   fields: [
+    // The class-by-class builder from the college site (David, Nov 10 2026: "It was much more
+    // detailed"): name, course number, and every day and time it meets. Stored one line per
+    // class, see components/onboard/ClassListInput.tsx.
     {
       key: "classes",
       label: "What classes are you taking this semester?",
-      type: "textarea",
-      placeholder: "MKT 301 Marketing, Mon/Wed 10am, Prof. Lee\nECON 102, Tue/Thu 1pm...",
-      helper: "One per line, with days, times and the professor if you have them. Your agent builds your week from this.",
+      type: "classes",
+      helper: "Add them one at a time. Your agent builds your week from this.",
     },
     {
       key: "gpa_goal",
@@ -142,9 +144,12 @@ const SEMESTER: IndustryBranch = {
 
 // ─── Page 3: how the agent works with them ──────────────────────────────────
 //
-// owns_work and first_priority are the two keys ROLE_INTAKES.college.coversScope names, so
-// they reach the agent's "What to push on" section (lib/agent-files.ts) by name. Every other
-// role intake uses the same two keys for the same reason.
+// owns_work is the key ROLE_INTAKES.college.coversScope names, so the student's picks reach the
+// agent's "What to push on" section (lib/agent-files.ts) by name, as every role intake's do.
+// "What does a great semester look like?" (first_priority) was here and is gone, David's call
+// (Nov 10 2026). The scope still names first_priority for its "win" slot, as the Personal
+// Agent's does with no such field: the slot reads empty and that line of the agent's
+// instructions is left out.
 const AGENT: IndustryBranch = {
   stepTitle: "Working Together",
   stepSubtitle: "How your agent should sound, what it should take on, and when it should speak up.",
@@ -202,20 +207,6 @@ const AGENT: IndustryBranch = {
         "Internship & job deadlines",
         "Wellbeing check-ins",
       ],
-    },
-    {
-      key: "first_priority",
-      label: "What does a great semester look like?",
-      type: "multiselect",
-      options: [
-        "Grades up",
-        "Deadlines met, zero surprises",
-        "An internship or job lined up",
-        "Less stress",
-        "More free time",
-        "Better habits that stick",
-      ],
-      helper: "Pick up to two. This is how your agent judges whether it is working.",
     },
     {
       key: "biggest_stressors",

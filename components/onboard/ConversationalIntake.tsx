@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { BuildScreen } from "@/components/onboard/BuildScreen";
+import ClassListInput from "@/components/onboard/ClassListInput";
 import { AGENT_NAME_SUGGESTIONS, STACK_LOGOS } from "@/components/onboard/OnboardingForm";
 import { AVATAR_PRESETS } from "@/config/avatar-presets";
 import { getAgentType } from "@/config/agent-types";
@@ -322,6 +323,8 @@ function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRg
       return <input autoFocus value={str} onChange={(e) => onChange(e.target.value)} onKeyDown={enterSubmits} placeholder={q.placeholder} style={input} />;
     case "textarea":
       return <textarea autoFocus value={str} onChange={(e) => onChange(e.target.value)} placeholder={q.placeholder} rows={5} style={{ ...input, resize: "vertical", lineHeight: 1.6 }} />;
+    case "classes":
+      return <ClassListInput value={list} onChange={onChange} colors={{ accent, surface: SRF, border: BDR, text: TX, muted: TXM }} />;
     case "people":
       return <textarea autoFocus value={list.join("\n")} onChange={(e) => onChange(e.target.value.split("\n").filter((l) => l.trim()))} placeholder={q.placeholder ?? "Name (age)"} rows={4} style={{ ...input, resize: "vertical", lineHeight: 1.6 }} />;
     case "select":
