@@ -37,7 +37,11 @@ export type FieldType =
   | "textarea"
   // Repeating rows of a name plus an age dropdown ("+ Add another"), stored as a string[] of
   // "Name (age)" entries. Built for the Personal Agent's kids question.
-  | "people";
+  | "people"
+  // A class schedule, one class at a time with its days and times (components/onboard/
+  // ClassListInput.tsx), stored as a string[] of one line per class. Built for the College
+  // Agent's "What classes are you taking this semester?".
+  | "classes";
 
 export interface IndustryField {
   key: string; // becomes the key inside industry_details JSONB

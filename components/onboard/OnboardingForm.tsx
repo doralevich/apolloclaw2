@@ -20,6 +20,7 @@ import { MEDICAL_BRANCH } from "@/lib/medicalIntake";
 import { INSURANCE_BRANCH } from "@/lib/insuranceIntake";
 import { PERSONAL_BRANCH } from "@/lib/personalIntake";
 import { COLLEGE_BRANCH, COLLEGE_ANYTHING_ELSE_PLACEHOLDER } from "@/lib/collegeIntake";
+import ClassListInput from "@/components/onboard/ClassListInput";
 import { PROPERTY_MANAGEMENT_BRANCH } from "@/lib/propertyManagementIntake";
 
 // Off-the-rack role agents (the CFO Agent, the Law Agent) keep the standard business questions but
@@ -1522,6 +1523,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
   const isGeneric = branch.fields[0]?.key === "industry_detail";
   const subtitle = isGeneric && otherLabel ? `A bit more about your ${otherLabel} business.` : branch.stepSubtitle;
   const takeOn = hideTakeOn ? takeOnField(branch) : null;
+  const { a } = useAccent();
   return (
     <Stack>
       <SHead stepNum={0} total={0} title={branch.stepTitle} subtitle={subtitle} badge={badge} art={branch.art} />
@@ -1565,6 +1567,7 @@ function IndustryStep({ branch, values, onChange, otherLabel, badge = "Industry"
             </Fragment>
           );
         }
+        if (f.type === "classes") return <FF key={f.key} label={f.label} required={f.required} hint={f.helper}><ClassListInput value={arr} onChange={v => onChange(f.key, v)} colors={{ accent: a, surface: SRF, border: BDR, text: TX, muted: TXD }} /></FF>;
         if (f.type === "people") return <NameAgeList key={f.key} label={f.label} hint={f.helper} value={arr} onChange={v => onChange(f.key, v)} ageOptions={f.ageOptions ?? []} namePlaceholder={f.namePlaceholder} />;
         if (f.type === "radio") return <RadioGroup key={f.key} label={f.label} hint={f.helper} options={f.options ?? []} value={str} onChange={v => onChange(f.key, v)} />;
         if (f.type === "scale") return <ScaleRow key={f.key} label={f.label} low="Low" high="High" value={str ? Number(str) : null} onChange={v => onChange(f.key, String(v))} />;
