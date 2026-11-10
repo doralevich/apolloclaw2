@@ -150,7 +150,7 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
 
   // ── Your agent ──────────────────────────────────────────────────────────────────────────
   q.push({ id: "agentName", bucket: "top", section: "Your agent", ask: "What should we call your agent?", help: "A first name. You can change it any time.", kind: "name", required: true });
-  q.push({ id: "avatarPreset", bucket: "top", section: "Your agent", ask: "Pick a face for it", help: "Upload your own image or choose one below. Optional: skip and it keeps its own.", kind: "avatar" });
+  q.push({ id: "avatarPreset", bucket: "top", section: "Your agent", ask: "Select a face for your agent", help: "Upload your own image or choose one below. Optional: skip and it keeps its own.", kind: "avatar" });
 
   // ── Your business ───────────────────────────────────────────────────────────────────────
   if (!dropped.has("biz")) {
