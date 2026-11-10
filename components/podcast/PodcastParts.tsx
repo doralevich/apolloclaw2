@@ -36,10 +36,15 @@ export function VideoPlayer({ video, title }: { video: PodcastVideo; title?: str
  * A card linking to a video's page. Every card is 16:9, Shorts included, so the grids stay one
  * shape (David, Nov 10 2026: the tall 9:16 cards did not look good).
  *
- * The thumbnail is YouTube's 4:3 frame. For a Short the picture sits in the middle of it with black
- * bars either side, so a Short gets two layers: the same image blown up and blurred to fill the
- * card, and the vertical frame itself in a centred 9:16 box, where object-cover crops the bars
- * away. i.ytimg.com is on the CSP img-src list.
+ * The thumbnail is YouTube's 4:3 frame. For a Short it is NOT the whole vertical video with black
+ * bars either side, as first assumed: YouTube fills the 4:3 frame with a crop from the middle of the
+ * vertical video. Cutting a 9:16 strip out of that crop again (the first version) kept only its
+ * middle third, so "Apollo [Claw]" read as "o [Claw]" and on-screen captions lost both ends (David,
+ * Nov 10 2026: "The images don't appear correct").
+ *
+ * So a Short shows YouTube's frame whole, centred and uncropped (object-contain), over the same
+ * image blown up and blurred to fill the rest of the 16:9 card. i.ytimg.com is on the CSP img-src
+ * list.
  */
 export function VideoCard({ video }: { video: PodcastVideo }) {
   return (
@@ -59,18 +64,14 @@ export function VideoCard({ video }: { video: PodcastVideo }) {
               decoding="async"
               className="absolute inset-0 h-full w-full object-cover scale-[2.5] blur-2xl opacity-60"
             />
-            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 aspect-[9/16] h-full overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
-              <img
-                src={video.thumbnailUrl}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                // 4% in, because the picture inside YouTube's frame is a fraction under 9:16 and
-                // object-cover alone leaves a hairline of the black bar along one edge.
-                className="h-full w-full object-cover scale-[1.04] transition-transform duration-300 group-hover:scale-[1.08]"
-              />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
+            <img
+              src={video.thumbnailUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+            />
           </>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed
