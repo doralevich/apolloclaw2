@@ -1206,14 +1206,17 @@ function Paywall({ gate, onBack, agentTypeId }: { gate: GateData; onBack: () => 
   const student = agentTypeId === "college";
   const onSale = plansForAgentType(agentTypeId);
   // A choice already made goes straight to checkout rather than being asked again (David, Oct 4
-  // 2026): the plan picked on /pricing, or, in a role agent's funnel (/onboard?agent=<slug>, which
-  // builds one agent of that type), Solo. Plain /onboard with nothing picked still shows the plans,
-  // and so does the student funnel: its three tiers are the choice, so there is nothing to preset.
-  const preset =
-    onSale.find((p) => p.id === picked) ??
-    (agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID && !student ? onSale.find((p) => p.id === "solo") : undefined);
+  // 2026): the plan picked on /pricing (?plan=). Everyone else sees the three plans side by side.
+  //
+  // A role agent's funnel (/onboard?agent=<slug>) used to preset Solo here and go straight to
+  // Stripe, on the reasoning that it builds one agent of that type. David bought a CEO Agent that
+  // way on Nov 10 2026 and found the college funnel, which shows its three plans, the better
+  // experience. So a role funnel shows the plans too, with Solo leading since it buys exactly the
+  // one agent being built.
+  const preset = onSale.find((p) => p.id === picked);
   const [showPicker, setShowPicker] = useState(!preset);
-  const leading = preset?.id ?? onSale.find((p) => p.featured)?.id;
+  const roleFunnel = !!agentTypeId && agentTypeId !== LICENSE_AGENT_TYPE_ID && !student;
+  const leading = preset?.id ?? (roleFunnel ? "solo" : onSale.find((p) => p.featured)?.id);
 
   // Set when the buyer backs out of the hand-off while its checkout request is still in
   // flight, so the reply, when it lands, is dropped instead of navigating them away from the

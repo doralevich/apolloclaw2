@@ -838,4 +838,9 @@ David, after building a college agent through the new path:
 - **"What does a great semester look like?" is gone.** The agent's "how they'll judge whether
   you're working" line is left out for students, the same as for the Personal Agent.
 - **The College Agent is on the `/onboard` picker**, last (see the Nov 5 entry above).
+- **Every agent's checkout opens on its three plans.** A role agent's funnel used to preset
+  Solo and go straight to Stripe. David bought a CEO Agent that way and found the college
+  funnel, which shows its three plans, the better experience: "This should be for all the
+  agents." Solo leads for a role agent, Plus for the college agent, Team on plain
+  `/onboard`. A plan picked on `/pricing` (`?plan=`) still goes straight to checkout.
 
