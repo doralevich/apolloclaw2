@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { sanityClient } from "@/lib/sanity";
 import { USE_CASES } from "@/config/useCases";
+import { PODCAST_VIDEOS, videoDay } from "@/lib/podcast";
 
 export const revalidate = 3600;
 
@@ -84,6 +85,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Donna, full size. High, because it is the page the whole site is trying to get somebody
     // to: every other page argues that the agents work and this one lets them find out.
     { path: "/demo", priority: 0.9, changed: "2026-09-26" },
+    // The podcast (Nov 10 2026), built from docs/podcast-videos.json. The index changes when a
+    // video is added, so its date is the newest upload's; each video page is dated by its upload.
+    {
+      path: "/podcast",
+      priority: 0.7,
+      changed: PODCAST_VIDEOS[0] ? videoDay(PODCAST_VIDEOS[0].uploadDate) : "2026-11-10",
+    },
+    ...PODCAST_VIDEOS.map((v) => ({
+      path: `/podcast/${v.slug}`,
+      priority: v.isShort ? 0.5 : 0.6,
+      changed: videoDay(v.uploadDate),
+    })),
   ].map(({ path, priority, changed }) => ({
     url: `https://apolloclaw.ai${path}`,
     lastModified: new Date(`${changed}T12:00:00Z`),

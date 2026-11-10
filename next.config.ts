@@ -57,14 +57,16 @@ const CSP_DIRECTIVES = [
   // SUPABASE_ORIGIN: agent and sub-agent avatars are public objects in Supabase storage and are
   // rendered with plain <img> tags in the dashboard and admin views. cdn.simpleicons.org: the tool
   // logos on /what-we-do. Both were found by audit before this policy was enforced (Oct 5, 2026);
-  // the report-only run never had a dashboard session to catch the avatars.
-  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https://cdn.sanity.io https://logos.composio.dev https://mcusercontent.com https://cdn.simpleicons.org https://www.googletagmanager.com https://www.google-analytics.com`,
+  // the report-only run never had a dashboard session to catch the avatars. i.ytimg.com: the
+  // video thumbnails on /podcast (Nov 10 2026).
+  `img-src 'self' data: blob: ${SUPABASE_ORIGIN} https://cdn.sanity.io https://logos.composio.dev https://mcusercontent.com https://cdn.simpleicons.org https://www.googletagmanager.com https://www.google-analytics.com https://i.ytimg.com`,
   // analytics.google.com: gtag's collect endpoint can land there as well as on the two
   // google-analytics.com hosts, depending on the visitor's region and GA's routing.
   `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com`,
   // 'self' covers the /demo.html lightbox. The YouTube domains are allowed so /karan.html can
   // embed the intro video (sent to Karan at Composio) inline via the YouTube player; scheduling
-  // stays a link-out to cal.com, so no cal frame is needed here.
+  // stays a link-out to cal.com, so no cal frame is needed here. /podcast embeds its videos
+  // through youtube-nocookie.com as well.
   "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com",
   "object-src 'none'",
   "base-uri 'self'",
