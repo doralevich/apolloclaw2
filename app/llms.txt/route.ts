@@ -37,6 +37,7 @@ const PAGES: [string, string][] = [
   ["/company", "David Oralevich and Apollo Claw."],
   ["/faq", "Every question the site answers, in one place."],
   ["/blog", "Guides on what AI agents do for law firms, medical practices, insurance agencies and real estate teams."],
+  ["/podcast", "The Apollo Claw podcast: David Oralevich on AI agents for real businesses, with short clips."],
   ["/contact", "Book a discovery call."],
 ];
 
