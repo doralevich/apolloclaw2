@@ -205,23 +205,7 @@ const AGENT: IndustryBranch = {
     },
     // Price and approval stay one answer: a wrong number in a quote is the hardest thing on
     // this list to walk back, so it leads the options.
-    {
-      key: "approval_line",
-      label: "Always check with me first before it...",
-      type: "multiselect",
-      options: [
-        "Quotes a price or discount",
-        "Sends a proposal or contract",
-        "Offers custom terms",
-        "Promises a delivery date or timeline",
-        "Emails an existing customer",
-        "Sends the first message to a cold prospect",
-        "Adds anyone to an outreach sequence",
-        "Books a meeting on my calendar",
-        "Other",
-      ],
-      helper: "A wrong number in a quote is hard to walk back, so pricing belongs on this list.",
-    },
+    // "Always check with me first before it..." (`approval_line`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     {
       key: "first_priority",
       label: "What should it tackle first?",

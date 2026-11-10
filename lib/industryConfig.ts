@@ -199,13 +199,7 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Reviews and reputation",
         ],
       },
-      {
-        key: "clinical_staff",
-        label: "Clinical and admin staff",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 5", "6 to 15", "16 to 40", "40+"],
-      },
+      // "Clinical and admin staff" (`clinical_staff`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
       {
         key: "payer_mix",
         label: "Payer mix",
@@ -268,19 +262,7 @@ export const industryConfig: Record<string, IndustryBranch> = {
           "Other",
         ],
       },
-      {
-        key: "firm_size",
-        label: "Firm size",
-        type: "dropdown",
-        required: true,
-        options: [
-          "Solo",
-          "2 to 5 attorneys",
-          "6 to 15 attorneys",
-          "16 to 50 attorneys",
-          "50+ attorneys",
-        ],
-      },
+      // "Firm size" (`firm_size`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
       {
         key: "billing_model",
         label: "Primary billing model",
@@ -660,12 +642,7 @@ export const industryConfig: Record<string, IndustryBranch> = {
         required: true,
         options: ["One", "2 to 3", "4 to 10", "10+"],
       },
-      {
-        key: "hosp_staff",
-        label: "Staff on payroll",
-        type: "dropdown",
-        options: ["Under 10", "10 to 30", "30 to 75", "75+"],
-      },
+      // "Staff on payroll" (`hosp_staff`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
       {
         key: "hosp_channels",
         label: "Where guests come from",
@@ -736,13 +713,7 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "trade_type", label: "Type", type: "dropdown", required: true, options: ["General contractor", "Specialty trade (HVAC / plumbing / electrical)", "Remodeling", "Roofing", "Landscaping", "Commercial construction"] },
       { key: "job_volume", label: "Jobs per month", type: "dropdown", required: true, options: ["Under 10", "10 to 30", "30 to 100", "100+"] },
       { key: "trade_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Lead follow-up and estimates", "Scheduling and dispatch", "Quoting and bids", "Invoicing and collections", "Client updates", "Crew coordination"] },
-      {
-        key: "trade_crew",
-        label: "Crew size",
-        type: "dropdown",
-        required: true,
-        options: ["Just me", "2 to 5", "6 to 20", "20 to 75", "75+"],
-      },
+      // "Crew size" (`trade_crew`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
       {
         key: "trade_job_size",
         label: "Typical job value",
@@ -922,13 +893,7 @@ export const industryConfig: Record<string, IndustryBranch> = {
       { key: "np_type", label: "Type", type: "dropdown", required: true, options: ["Charity / direct service", "Foundation / grantmaking", "Advocacy", "Faith-based", "Arts / culture", "Education"] },
       { key: "np_size", label: "Annual budget", type: "dropdown", required: true, options: ["Under $250k", "$250k to $1M", "$1M to $5M", "$5M+"] },
       { key: "np_bottlenecks", label: "Biggest bottleneck", type: "multiselect", options: ["Donor outreach and follow-up", "Grant writing and reporting", "Volunteer coordination", "Event management", "Donor data and CRM", "Communications"] },
-      {
-        key: "np_staff",
-        label: "Paid staff",
-        type: "dropdown",
-        required: true,
-        options: ["All volunteer", "1 to 5", "6 to 20", "21 to 75", "75+"],
-      },
+      // "Paid staff" (`np_staff`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
       {
         key: "np_funding",
         label: "Where funding comes from",

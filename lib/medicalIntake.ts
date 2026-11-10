@@ -63,19 +63,7 @@ const PRACTICE: IndustryBranch = {
       type: "text",
       placeholder: "e.g. pediatric dentistry, sports medicine, cosmetic dermatology",
     },
-    {
-      key: "practice_size",
-      label: "How big is the practice?",
-      type: "dropdown",
-      options: [
-        "Solo provider, working alone",
-        "Solo provider with support staff",
-        "2-5 providers",
-        "6-15 providers",
-        "More than 15 providers",
-        "Multi-location group",
-      ],
-    },
+    // "How big is the practice?" (`practice_size`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
     {
       key: "regulated_status",
       label: "Are you a HIPAA covered entity?",
@@ -192,27 +180,7 @@ const AGENT: IndustryBranch = {
     // asked something clinical, and the customer needs to have decided what happens then BEFORE
     // it happens rather than reading it in a transcript afterwards. Clinical and PHI cases are
     // listed first on purpose: the persona holds this line too, and this answer adds to it.
-    {
-      key: "clinical_boundary",
-      label: "Always hand to a clinician or your staff when it involves...",
-      type: "multiselect",
-      required: true,
-      options: [
-        "Symptoms, diagnosis or medical advice",
-        "Urgent or emergency situations",
-        "Mental health crisis or self-harm risk",
-        "Medications, prescriptions and refills",
-        "Test results and lab values",
-        "Chart details and protected health information (PHI)",
-        "Patient information outside the EHR or portal",
-        "Billing disputes and payment plans",
-        "Complaints and upset patients",
-        "Every outgoing patient message, reviewed first",
-        "Other",
-      ],
-      helper:
-        "Tick generously. Your agent handles scheduling and admin, and hands anything clinical or sensitive to your team.",
-    },
+    // "Always hand to a clinician or your staff when it involves..." (`clinical_boundary`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     {
       key: "first_priority",
       label: "What should it tackle first?",

@@ -22,6 +22,7 @@ import {
   type IndustryField,
   type StackSection,
 } from "@/lib/industryConfig";
+import { guardLine } from "@/lib/guard-line";
 
 // The questionnaire as a list of questions, one at a time.
 //
@@ -393,7 +394,7 @@ export function toPayload(agentTypeId: string, a: Answers, user: SignedInUser | 
     loveWords: "",
     hateWords: "",
     writingSample: "",
-    autonomyLine: scope?.guard ? roleAnswer(scope.guard) : role?.standardGuard,
+    autonomyLine: guardLine(scope?.guard ? roleAnswer(scope.guard) : undefined, role?.standardGuard),
     aiGoals: scope ? roleAnswer(scope.owns) : arr(t.aiGoals),
     aiGoalsOther: str(t.aiGoals_other),
     successMetric: scope ? roleAnswer(scope.win) : arr(t.successMetric),

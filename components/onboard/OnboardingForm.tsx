@@ -95,10 +95,9 @@ export const ROLE_INTAKES: Record<
     // A FIXED autonomy line, asked of nobody. For a role where the boundary is a professional
     // one rather than a personal preference - the Law Agent's UPL guardrail is the same for
     // every firm, not a question with a customer-specific answer - the standard is written once
-    // here instead of asked on the form and left to whatever the buyer happened to type. Read
-    // only when `coversScope.guard` is unset; the two are alternatives, not a fallback chain,
-    // because a branch that still asks its own guardrail question should keep using the
-    // customer's actual answer.
+    // here instead of asked on the form and left to whatever the buyer happened to type. With a
+    // `coversScope.guard` as well (Marketing, Recruiting), the customer's answer comes first and
+    // this follows it - see lib/guard-line.ts.
     standardGuard?: string;
     // OPT IN to asking "Describe your business" as the last field on this branch's own first
     // page instead of on the generic "What Do You Do?" page. Names the field on this branch
@@ -115,7 +114,12 @@ export const ROLE_INTAKES: Record<
   cfo: {
     branch: CFO_BRANCH, stepKey: "cfo", stepLabel: "Finances", detailsKey: "cfoDetails", roleName: "CFO Agent",
     stackSkip: ["billing"],
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
+    // Its "Always check with me first" / "Always hand to a person" question is off the form,
+    // David (Nov 10, 2026): "This is assumed." The full list it offered is written in once here,
+    // so every one of these agents carries all of it in its Boundaries section.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Drafts rather than sends. Checks with the owner first before sending numbers to the board or investors, sharing anything with a bank or lender, sending anything to a client or vendor, touching payroll or compensation, moving money or scheduling a payment, sending anything to the accountant or auditor, or sharing financials with the team.",
   },
   legal: {
     branch: LEGAL_BRANCH, stepKey: "legal", stepLabel: "Legal", detailsKey: "legalDetails", roleName: "Law Agent",
@@ -139,7 +143,12 @@ export const ROLE_INTAKES: Record<
   realestate: {
     branch: REALESTATE_BRANCH, stepKey: "realestate", stepLabel: "Real Estate", detailsKey: "realEstateDetails", roleName: "Real Estate Agent",
     stackSkip: ["crm"],
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
+    // Its "Always check with me first" / "Always hand to a person" question is off the form,
+    // David (Nov 10, 2026): "This is assumed." The full list it offered is written in once here,
+    // so every one of these agents carries all of it in its Boundaries section.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Drafts rather than sends. Checks with the owner first before sending anything with a price in it, messaging a client under contract, posting on social media, publishing or updating a listing, replying to an incoming lead, contacting another agent or broker, sharing contract or disclosure details, or booking a showing or inspection.",
   },
   ceo: {
     branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
@@ -153,34 +162,62 @@ export const ROLE_INTAKES: Record<
   marketing: {
     branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent",
     coversScope: { owns: "owns_work", win: "first_priority", guard: "publishing_authority" },
+    // The publishing question stays: whether it may publish is the owner's call. Its separate
+    // "Always check with me first" list is off the form (David, Nov 10, 2026: "This is
+    // assumed") and is written in here, after whatever publishing answer the owner gave.
+    standardGuard:
+      "Checks with the owner first before naming a customer or using a testimonial, making a results or performance claim, mentioning pricing or a discount, replying to comments or DMs in public, mentioning a competitor, touching a regulated topic (health, finance, legal), posting about news or current events, or using someone's photo or likeness.",
   },
   sales: {
     branch: SALES_BRANCH, stepKey: "sales", stepLabel: "Sales", detailsKey: "salesDetails", roleName: "Sales Agent",
     stackSkip: ["crm"],
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "approval_line" },
+    // Its "Always check with me first" / "Always hand to a person" question is off the form,
+    // David (Nov 10, 2026): "This is assumed." The full list it offered is written in once here,
+    // so every one of these agents carries all of it in its Boundaries section.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Drafts rather than sends. Checks with the owner first before quoting a price or discount, sending a proposal or contract, offering custom terms, promising a delivery date or timeline, emailing an existing customer, sending the first message to a cold prospect, adding anyone to an outreach sequence, or booking a meeting on the owner's calendar.",
   },
   recruiting: {
     branch: RECRUITING_BRANCH, stepKey: "recruiting", stepLabel: "Recruiting", detailsKey: "recruitingDetails", roleName: "Recruiting Agent",
     coversScope: { owns: "owns_work", win: "first_priority", guard: "screening_authority" },
+    // How far it may go with applicants stays the owner's call. The separate "Always hand to a
+    // person" list is off the form (David, Nov 10, 2026: "This is assumed") and is written in
+    // here, after the screening answer.
+    standardGuard:
+      "Hands to a person anything involving rejecting or declining a candidate or prospect, offers, pay and benefits, disability, accommodation or medical questions, age, religion, family or other protected traits, visa and work authorization, background checks and references, or anything sent in the owner's name. In athlete or talent recruiting, it also hands over the first message to any prospect, parent or coach, fee, commission or contract terms, anything touching NCAA eligibility or NIL, gifts, benefits or inducements of any kind, a prospect under contract with another agency, and anything a league or players association could read as tampering.",
   },
   medical: {
     branch: MEDICAL_BRANCH, stepKey: "medical", stepLabel: "Practice", detailsKey: "medicalDetails", roleName: "Medical Agent",
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "clinical_boundary" },
+    // Its "Always check with me first" / "Always hand to a person" question is off the form,
+    // David (Nov 10, 2026): "This is assumed." The full list it offered is written in once here,
+    // so every one of these agents carries all of it in its Boundaries section.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Handles scheduling and administration only. Hands to a clinician or the practice's staff anything involving symptoms, diagnosis or medical advice, urgent or emergency situations, a mental health crisis or self-harm risk, medications, prescriptions and refills, test results and lab values, chart details and protected health information, patient information outside the EHR or portal, billing disputes and payment plans, or complaints and upset patients. Drafts patient messages for staff to review before they go out.",
   },
   insurance: {
     branch: INSURANCE_BRANCH, stepKey: "insurance", stepLabel: "Your Book", detailsKey: "insuranceDetails", roleName: "Insurance Agent",
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
+    // Its "Always check with me first" / "Always hand to a person" question is off the form,
+    // David (Nov 10, 2026): "This is assumed." The full list it offered is written in once here,
+    // so every one of these agents carries all of it in its Boundaries section.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Drafts up to the licensed line and hands over. Hands to a licensed person anything involving binding, quoting or changing coverage, whether a loss is covered, coverage recommendations and limits, certificates with special wording or additional insureds, claims decisions and adjuster conversations, anything sent to a carrier under the agency's code, cancellations and non-renewals, complaints and E&O-sensitive situations, or clients and risks in other states. Drafts client messages for review before they go out.",
   },
-  // `guard` is the handoff line, same slot the Law and Insurance agents use, and it is carrying
-  // the most of any agent in the family: fair housing, eviction and legal notices, deposit
-  // deductions, binding a lease, and habitability emergencies. The persona
-  // (config/personas.ts -> `propertymanagement`) names all five itself rather than trusting the
-  // answer alone, because the customer who leaves this short still must not get an agent that
-  // writes its own screening rejections.
+  // The handoff line carries the most of any agent in the family: fair housing, eviction and
+  // legal notices, deposit deductions, binding a lease, and habitability emergencies. Since Nov
+  // 10, 2026 it is a fixed standardGuard rather than an answer, and the persona
+  // (config/personas.ts -> `propertymanagement`) still names all five itself.
   propertymanagement: {
     branch: PROPERTY_MANAGEMENT_BRANCH, stepKey: "propertymanagement", stepLabel: "Portfolio",
     detailsKey: "propertyManagementDetails", roleName: "Property Management Agent",
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "handoff_line" },
+    // Its "Always check with me first" / "Always hand to a person" question is off the form,
+    // David (Nov 10, 2026): "This is assumed." The full list it offered is written in once here,
+    // so every one of these agents carries all of it in its Boundaries section.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Hands to a person anything involving habitability emergencies (heat, water, gas, locks, safety), fair housing, accessibility and accommodation requests, applicant screening decisions and denials, evictions, legal notices and court matters, security deposit deductions and disputes, signing, changing or ending a lease, rent amounts, concessions and payment plans, discrimination or harassment complaints, entry into an occupied unit, or spending above the owner's limit.",
   },
   personal: {
     branch: PERSONAL_BRANCH, stepKey: "personal", stepLabel: "About You", detailsKey: "personalDetails", roleName: "Personal Agent",
@@ -239,6 +276,7 @@ export const ROLE_INTAKES: Record<
 const wordmarkName = (roleName: string) => roleName.replace(/\s+Agent$/, "");
 import { agentTier, dollars, plansForAgentType, type PlanId } from "@/config/agent-plans";
 import { apiFetch } from "@/lib/api";
+import { guardLine } from "@/lib/guard-line";
 
 // The single business-onboarding questionnaire, shared by three entry points:
 //   - /onboard                 (mode="lead")       - no login. Submits to /api/intake as a
@@ -1857,7 +1895,7 @@ function BizTrack({ gate, submitLabel, onDone, onExit, initialAnswers, agentType
   const industryDetailsOut = takeOn
     ? { ...industryDetails, [takeOn.key]: s7.goals.filter(g => (takeOn.options ?? []).includes(g)) }
     : industryDetails;
-  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails: industryDetailsOut, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : roleIntake?.standardGuard, aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, aiTools: s7.aiTools, aiToolsOther: s7.aiToolsOther, aiProficiency: s7.aiProficiency, aiKeepProcesses: s7.aiKeep, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes, anythingElse: s8.anythingElse });
+  const buildData = () => ({ firstName: gate.first, lastName: gate.last, email: gate.email, phone: gate.phone, companies, primaryCompanyIndex: primaryIndex, portfolio, industryDetails: industryDetailsOut, ...(roleIntake ? { [roleIntake.detailsKey]: roleDetails } : {}), timezone: gate.timezone, bestTime: gate.bestTime, linkedin: gate.linkedin, companyName: primaryCompany?.name || gate.company || s2.biz, primaryRole: (primaryCompany?.role === "Other" ? primaryCompany?.roleOther : primaryCompany?.role) || "", primaryOwnership: primaryCompany?.ownership || "", website: s2.web_presence || s2.url, webPresence: s2.web_presence, industry: primaryCompany?.industry || s2.industry, companySize: s2.size, businessAge: s2.age, keyPeople: keyPeople.filter(p => p.name.trim() || p.role.trim()), businessDescription: roleIntake?.businessDescField ? roleDetails[roleIntake.businessDescField] : s2.desc, differentiator: s2.differentiate, crmTools: s2.crm, crmToolsOther: s2.crmOther, commsTools: s2.comms, pmTools: s2.pm, billingTools: s2.billing, docsTools: s2.docs, docsToolsOther: s2.docsOther, hatedTasks: s3.hate, partnerName: s4.partnerName, children: s4.kids, childrenDetails: s4.kidsDetails, household: s4.household, strategicBet: s5.strategicBet, growthBottleneck: s5.growthBottleneck, growthBottleneckOther: s5.growthBottleneckOther, writingTone: s6.tone, brandVoiceLike: s6.brandLike, brandVoiceLikeOther: s6.brandLikeOther, voiceDescription: s6.voiceStyle, loveWords: s6.loveWords, hateWords: s6.hateWords, writingSample: s6.sample, autonomyLine: guardLine(scopeKeys?.guard ? roleAnswer(scopeKeys.guard) : undefined, roleIntake?.standardGuard), aiGoals: roleOwns ?? s7.goals, aiGoalsOther: s7.goalsOther, successMetric: roleWin ?? s7.metric, successMetricOther: s7.metricOther, priorAI: s7.prior, aiTools: s7.aiTools, aiToolsOther: s7.aiToolsOther, aiProficiency: s7.aiProficiency, aiKeepProcesses: s7.aiKeep, teamSentiment: s7.teamSent, internalTech: s8.internalTech, constraints: s8.constraints, serviceRequests: s8.serviceRequests, serviceRequestsNotes: s8.serviceRequestsNotes, anythingElse: s8.anythingElse });
   const validate = (key?: string): string => {
     if (key === "biz") {
       const p = companies[primaryIndex] || companies[0];
