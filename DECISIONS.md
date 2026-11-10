@@ -910,7 +910,7 @@ with a 1px #DDDDDD border, 10px corners and 20px padding.
   last word, at 24-32px (was 26-38px) so the usual questions fit one line on desktop. On a
   phone they wrap where the width ends.
 
-## Intake trimmed: nine questions out, three reworded, three moved, mascot shown whole (Nov 10, 2026)
+## Intake trimmed: eight questions out, four reworded, three moved, mascot shown whole (Nov 10, 2026)
 
 David, walking the CEO Agent intake:
 
@@ -942,8 +942,9 @@ David, walking the CEO Agent intake:
 - **"How does your team feel about bringing me in?"** is now "How does your team adapt to
   technology changes?" with answers to match (early adopters through cautious, or just me).
   Same `teamSentiment` key. David wrote "new technology"; "new" is off-brand site-wide.
-- **The generic "Anything else I should know?"** is off. A role's own last-note question
-  (Personal, College) stays.
+- **The closing question** is now headed "Last question" and reads "Is there anything else I
+  should know or be aware of?" (was "Last thing" / "Anything else I should know?"). The
+  Personal and College agents keep their own wording under the same heading.
 - **The agent's face above each question** is larger (52px). A chosen photo fills its circle
   as before; the agent's own mascot, a full standing figure, is shown whole at 60px tall with no
   circle, because a circle either cut its arms off or shrank it to a speck.

@@ -278,15 +278,16 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
     q.push(...bottleneck("Where to start"), firstUp);
     bottleneckAsked = true;
   }
-  // A flow with neither "first" question still asks it, at the end.
+  // A flow with neither "first" question still asks it, before the last question.
   if (!bottleneckAsked) q.push(...bottleneck("The year ahead"));
 
   // ── Final details ───────────────────────────────────────────────────────────────────────
   if (role?.finalNote) {
-    q.push({ id: role.finalNote.key, bucket: "role", section: "Last thing", ask: role.finalNote.label, placeholder: role.finalNote.placeholder, kind: "textarea" });
+    q.push({ id: role.finalNote.key, bucket: "role", section: "Last question", ask: role.finalNote.label, placeholder: role.finalNote.placeholder, kind: "textarea" });
+  } else {
+    // Reworded and headed "Last question", David (Nov 10, 2026). Was "Anything else I should know?"
+    q.push({ id: "anythingElse", bucket: "top", section: "Last question", ask: "Is there anything else I should know or be aware of?", help: "Optional. Whatever did not fit a question above.", placeholder: "Context, quirks, a thing you have been meaning to fix, how you want to be kept in the loop...", kind: "textarea" });
   }
-  // The generic "Anything else I should know?" (anythingElse) is off, David (Nov 10, 2026). The
-  // owner tells the agent anything else in chat. A role's own finalNote above is unaffected.
   q.push({ id: "agree", bucket: "top", section: "Build", ask: "That is everything. Ready to build?", kind: "confirm", required: true });
 
   return q;
