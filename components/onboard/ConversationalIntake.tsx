@@ -220,11 +220,14 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
       </div>
 
       <main style={{ flex: 1, display: "flex", justifyContent: "center", padding: "40px 20px 60px" }}>
-        <div style={{ width: "100%", maxWidth: 640 }}>
+        <div style={{ width: "100%", maxWidth: 680 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: TXD, margin: "0 0 18px" }}>
             {current.section} · {inSection} of {sectionCount}
           </p>
 
+          {/* The question sits on its own white card: everything from the agent's name to the
+              Continue button belongs to one question. */}
+          <section style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 10, padding: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             {avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -235,7 +238,9 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
             <span style={{ fontSize: 14, fontWeight: 600, color: TXM }}>{agentName}</span>
           </div>
 
-          <h1 className="font-heading" style={{ fontSize: "clamp(26px,4vw,38px)", fontWeight: 900, letterSpacing: "-0.02em", lineHeight: 1.12, color: TX, margin: "0 0 10px", textWrap: "balance" }}>
+          {/* The question runs the full width of the card. "balance" split even a short question
+              into two half-width lines; "pretty" fills each line and only avoids a lone last word. */}
+          <h1 className="font-heading" style={{ fontSize: "clamp(24px,3.4vw,32px)", fontWeight: 900, letterSpacing: "-0.02em", lineHeight: 1.15, color: TX, margin: "0 0 10px", textWrap: "pretty" }}>
             {step === 0 && first ? `${first}, ${current.ask.charAt(0).toLowerCase()}${current.ask.slice(1)}` : current.ask}
             {current.required && current.kind !== "confirm" && <span style={{ color: accent, marginLeft: 6, fontSize: "0.6em", verticalAlign: "top" }}>*</span>}
           </h1>
@@ -259,6 +264,7 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
               <button type="button" onClick={next} style={{ background: "transparent", border: "none", color: TXD, fontFamily: "inherit", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>Skip this one</button>
             </p>
           )}
+          </section>
           <p style={{ marginTop: 28, fontSize: 12, color: TXD, textAlign: "center" }}>
             Saves as you go. Close this tab and come back any time.
           </p>
