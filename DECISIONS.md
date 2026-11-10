@@ -844,3 +844,17 @@ David, after building a college agent through the new path:
   agents." Solo leads for a role agent, Plus for the college agent, Team on plain
   `/onboard`. A plan picked on `/pricing` (`?plan=`) still goes straight to checkout.
 
+
+## Technical Setup is one page, without the corporate section (Nov 10, 2026)
+
+David: remove the "Corporate / Enterprise Setup" part of the Technical Setup page (`/setup`),
+put the rest on one page, and say "Email" rather than "Business Email".
+
+The corporate section held an IT contact, known network restrictions, a checklist for IT, and
+pre-written emails to a Google Workspace or Microsoft 365 admin. It is gone. The two steps,
+"Your Setup" and "Credentials", are one form with one submit, which sends what the old second
+step sent ("apollo_setup_2": the CRM deal at deployment_ready, the credentials encrypted for
+Super Admin, the summary email, the Telegram ping). The Telegram bot username is suggested
+live from the assistant's name and the email until the client types their own. The endpoint
+still accepts the old first step and still prints IT contact fields, so a tab left open on the
+old page submits cleanly.
