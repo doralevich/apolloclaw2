@@ -78,22 +78,7 @@ const PRACTICE: IndustryBranch = {
         "Other",
       ],
     },
-    {
-      key: "role",
-      label: "What is your role in real estate?",
-      type: "multiselect",
-      options: [
-        "Residential agent / Realtor",
-        "Commercial broker",
-        "Investor / flipper",
-        "Buy-and-hold landlord",
-        "Property manager",
-        "Wholesaler",
-        "Team lead",
-        "Broker-owner",
-        "Other",
-      ],
-    },
+    // "What is your role in real estate?" (`role`) removed, David (Nov 10, 2026): repeated "What is your role there?" on Your Business.
     // The one free-text answer on this intake, because a market is a list of names only the
     // realtor knows. It carries the licence states too, which saves a question.
     {
@@ -232,23 +217,7 @@ const AGENT: IndustryBranch = {
       ],
       helper: "Your agent gets configured around this first.",
     },
-    {
-      key: "approval_line",
-      label: "Always check with me first before it...",
-      type: "multiselect",
-      options: [
-        "Sends anything with a price in it",
-        "Messages a client under contract",
-        "Posts anything on social media",
-        "Publishes or updates a listing",
-        "Replies to an incoming lead",
-        "Contacts another agent or broker",
-        "Shares contract or disclosure details",
-        "Books a showing or inspection",
-        "Other",
-      ],
-      helper: "Your agent drafts up to this line and waits for you.",
-    },
+    // "Always check with me first before it..." (`approval_line`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     // "Biggest headache in your business right now?" was here and is gone. The Executive
     // Profile page already asks "Where's the real bottleneck to growth right now?" two pages
     // later, and the answers were the same sentence typed twice. Asking a person to describe

@@ -955,3 +955,24 @@ David, walking the CEO Agent intake:
 - **The agent's face above each question** is larger (52px). A chosen photo fills its circle
   as before; the agent's own mascot, a full standing figure, is shown whole at 60px tall with no
   circle, because a circle either cut its arms off or shrank it to a speck.
+
+## Every agent's intake trimmed the CEO way (Nov 10, 2026)
+
+David: "trim the industry ones too, make them the same format" as the CEO Agent.
+
+- **Repeats of the Your Business page are off.** Size: Medical "How big is the practice?",
+  Insurance "How big is the agency?", and on the industry pages Legal "Firm size", Healthcare
+  "Clinical and admin staff", Hospitality "Staff on payroll", Construction "Crew size" and
+  Non-profit "Paid staff" (all repeat "How big is the team?"). Role: Real Estate "What is your
+  role in real estate?" (repeats "What is your role there?"). AI: the Law Agent's "Where is your
+  team with AI tools generally?" (repeats the shared AI questions).
+- **"Always check with me first" / "Always hand to a person" are off for every agent**, as for
+  the CEO ("This is assumed"): CFO, Real Estate, Sales, Marketing, Recruiting (both paths),
+  Medical, Insurance, Property Management. Each list became that agent's fixed `standardGuard`
+  in ROLE_INTAKES, every option written in, so every agent of that kind gets the whole list in
+  its Boundaries section rather than whatever a buyer ticked.
+- **Marketing and Recruiting keep their "how far may it go" question** (publish or draft;
+  how far to screen), which is a real preference. Their fixed list now follows that answer in
+  one Boundaries line (`lib/guard-line.ts`); before, a role had either an answer or a fixed
+  line, never both. Every other role's line is unchanged in shape.
+- Records holding answers to removed questions keep them; the summary still lists them.

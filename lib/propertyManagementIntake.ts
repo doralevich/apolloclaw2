@@ -226,33 +226,7 @@ const AGENT: IndustryBranch = {
         "Notices and routine correspondence",
       ],
     },
-    {
-      key: "handoff_line",
-      label: "Always hand to a person when it involves...",
-      type: "multiselect",
-      required: true,
-      options: [
-        "Habitability emergencies (heat, water, gas, locks, safety)",
-        "Fair housing, accessibility and accommodation requests",
-        "Applicant screening decisions and denials",
-        "Evictions, legal notices and court matters",
-        "Security deposit deductions and disputes",
-        "Signing, changing or ending a lease",
-        "Rent amounts, concessions and payment plans",
-        "Discrimination or harassment complaints",
-        "Entry into an occupied unit",
-        "Spending above the owner's limit",
-        "Other",
-      ],
-      // This is the guard slot for this role, and it is carrying more than the others: the list of
-      // things a property management agent must not do on its own is longer and more specific than
-      // for any role in the family except medical. The dangerous cases are listed first so ticking
-      // only the top few still gives a safe agent. Fair housing in particular is where a fluent
-      // writer is actively dangerous - the phrasing that gets a manager sued reads as friendly and
-      // helpful, so the persona holds that line too and does not rely on this answer alone.
-      helper:
-        "Tick generously. Your agent drafts up to this line and hands the rest to you.",
-    },
+    // "Always hand to a person when it involves..." (`handoff_line`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     {
       key: "first_priority",
       label: "What should it tackle first?",

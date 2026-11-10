@@ -48,12 +48,7 @@ const AGENCY: IndustryBranch = {
         "Other",
       ],
     },
-    {
-      key: "agency_size",
-      label: "How big is the agency?",
-      type: "dropdown",
-      options: ["Just me", "2-5", "6-15", "16-50", "More than 50"],
-    },
+    // "How big is the agency?" (`agency_size`) removed, David (Nov 10, 2026): repeated "How big is the team?" on Your Business.
     {
       key: "states_licensed",
       label: "Which states are you licensed in?",
@@ -184,27 +179,7 @@ const AGENT: IndustryBranch = {
     // noticing. A certificate is a statement about coverage; issuing one that says something the
     // policy does not say is an E&O claim waiting to happen, so the rules are asked for up front.
     // Licensed activities are listed first, so ticking only the top few still gives a safe agent.
-    {
-      key: "handoff_line",
-      label: "Always hand to a licensed person when it involves...",
-      type: "multiselect",
-      required: true,
-      options: [
-        "Binding, quoting or changing coverage",
-        "Whether a loss is covered",
-        "Coverage recommendations and limits",
-        "Certificates with special wording or additional insureds",
-        "Claims decisions and adjuster conversations",
-        "Anything sent to a carrier under our code",
-        "Cancellations and non-renewals",
-        "Complaints and E&O-sensitive situations",
-        "Clients or risks in other states",
-        "Every outgoing client message, reviewed first",
-        "Other",
-      ],
-      helper:
-        "Tick generously. Quoting, binding and advising on coverage are licensed activities, and your agent drafts up to this line and hands over.",
-    },
+    // "Always hand to a licensed person when it involves..." (`handoff_line`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     {
       key: "first_priority",
       label: "What should it tackle first?",

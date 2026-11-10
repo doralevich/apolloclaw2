@@ -404,24 +404,9 @@ const AGENT: IndustryBranch = {
       helper:
         "Hiring decisions carry legal weight and affect real people. The top option is the safest start and easy to loosen later.",
     }),
-    // Took over the fairness and record-keeping half of the old free-text box that sat below the
-    // dropdown. It lands in USER.md with the rest of the blob; the Boundaries line still reads
-    // `screening_authority` alone (coversScope.guard in OnboardingForm).
-    hiring({
-      key: "human_review",
-      label: "Always hand to a person when it involves...",
-      type: "multiselect",
-      options: [
-        "Rejecting or declining a candidate",
-        "Offers, pay and benefits",
-        "Disability, accommodation or medical questions",
-        "Age, religion, family or other protected traits (EEO)",
-        "Visa and work authorization questions",
-        "Background checks and references",
-        "Anything sent to a candidate in my name",
-        "Other",
-      ],
-    }),
+    // The hand-off list that sat here (both paths) is now part of the Recruiting standardGuard,
+    // which follows the screening answer in the Boundaries line (lib/guard-line.ts).
+    // "Always hand to a person when it involves..." (`human_review`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     hiring({
       key: "first_priority",
       label: "What should it tackle first?",
@@ -473,20 +458,7 @@ const AGENT: IndustryBranch = {
       helper:
         "Representation is a relationship, and a regulated one. The top option is the safest start and easy to loosen later.",
     }),
-    sports({
-      key: "human_review",
-      label: "Always hand to a person when it involves...",
-      type: "multiselect",
-      options: [
-        "The first message to any prospect, parent or coach",
-        "Fee, commission or contract terms",
-        "Anything touching NCAA eligibility or NIL",
-        "Gifts, benefits or inducements of any kind",
-        "A prospect under contract with another agency",
-        "Anything a league or players association could read as tampering",
-        "Other",
-      ],
-    }),
+    // "Always hand to a person when it involves..." (`human_review`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     sports({
       key: "first_priority",
       label: "What should it tackle first?",

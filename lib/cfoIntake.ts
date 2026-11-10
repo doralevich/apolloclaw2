@@ -211,23 +211,7 @@ const AGENT: IndustryBranch = {
       ],
       helper: "Your agent gets configured around this first.",
     },
-    {
-      key: "approval_line",
-      label: "Always check with me first before it...",
-      type: "multiselect",
-      options: [
-        "Sends numbers to the board or investors",
-        "Shares anything with a bank or lender",
-        "Sends anything to a client or vendor",
-        "Touches payroll or compensation",
-        "Moves money or schedules a payment",
-        "Sends anything to our accountant or auditor",
-        "Shares financials with my team",
-        "Other",
-      ],
-      helper:
-        "The one question on this form worth being strict about. A number sent to a board or a bank is hard to take back.",
-    },
+    // "Always check with me first before it..." (`approval_line`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
   ],
 };
 

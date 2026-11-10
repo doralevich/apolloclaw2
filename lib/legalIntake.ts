@@ -448,18 +448,7 @@ const TECH_DOCKETING: IndustryBranch = {
     // Moved here from the retired Legal Research & AI Tools page (its tools question now lives
     // on the Tech Stack page, LEGAL_STACK above). The comfort level is about process, so it
     // sits with the other process questions.
-    {
-      key: "ai_comfort",
-      label: "Where is your team with AI tools generally?",
-      type: "dropdown",
-      options: [
-        "Early exploration, still getting a feel for it",
-        "Regular use for specific tasks",
-        "Deeply integrated into how we already work",
-        "Cautious, and want to move slowly",
-      ],
-      helper: "Sets how much you want to review at first versus how much the agent can just get on with.",
-    },
+    // "Where is your team with AI tools generally?" (`ai_comfort`) removed, David (Nov 10, 2026): repeated the shared "Where you are with AI" questions.
   ],
 };
 

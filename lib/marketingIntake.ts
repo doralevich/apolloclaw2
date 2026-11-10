@@ -177,23 +177,7 @@ const AGENT: IndustryBranch = {
       ],
       helper: "Starting cautious is a fine default, and you can widen it anytime.",
     },
-    {
-      key: "claims_rules",
-      label: "Always check with me first before it...",
-      type: "multiselect",
-      options: [
-        "Names a customer or uses a testimonial",
-        "Makes a results or performance claim",
-        "Mentions pricing or a discount",
-        "Replies to comments or DMs in public",
-        "Mentions a competitor",
-        "Touches a regulated topic (health, finance, legal)",
-        "Posts about news or current events",
-        "Uses someone's photo or likeness",
-        "Other",
-      ],
-      helper: "Anything your industry, your customers, or your legal counsel require.",
-    },
+    // "Always check with me first before it..." (`claims_rules`) removed, David (Nov 10, 2026): assumed; its list is now the fixed standardGuard in OnboardingForm.tsx ROLE_INTAKES.
     {
       key: "first_priority",
       label: "What should it tackle first?",
