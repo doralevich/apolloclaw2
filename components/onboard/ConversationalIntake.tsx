@@ -81,10 +81,16 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
   const [error, setError] = useState("");
   const [buildWorkspace, setBuildWorkspace] = useState<string | undefined>(workspaceId);
   const [saved, setSaved] = useState<"idle" | "saving" | "saved">("idle");
+  // An uploaded face for the agent (Nov 10 2026: David building a CEO Agent found no way to use
+  // his own image; the ten-page form had "Upload your own", this did not). Kept here rather than
+  // in the answers, because the answers autosave to the draft every few seconds and a picture is
+  // megabytes. So it is sent once, with the build, as `avatar_upload`, which /api/agent-setup
+  // has always accepted; a draft resumed later has the preset or the agent's own face instead.
+  const [upload, setUpload] = useState<AvatarUploadPick | null>(null);
 
   const first = signedInUser?.first?.trim() || "";
   const agentName = (typeof answers.top.agentName === "string" && answers.top.agentName.trim()) || inlineLabel(agentTypeId);
-  const avatar = typeof answers.top.avatarPreset === "string" && answers.top.avatarPreset ? answers.top.avatarPreset : brand.mascot;
+  const avatar = upload?.preview || (typeof answers.top.avatarPreset === "string" && answers.top.avatarPreset ? answers.top.avatarPreset : brand.mascot);
 
   // ── Autosave ────────────────────────────────────────────────────────────────────────────
   // Every change and every step lands on the server after a short pause, as a draft row the
@@ -177,7 +183,8 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
       agent_type: agentTypeId,
       answers: payload,
       agent_name: (typeof answers.top.agentName === "string" && answers.top.agentName.trim()) || undefined,
-      avatar_preset: preset,
+      // An upload and a preset are exclusive (picking one clears the other), so at most one goes.
+      ...(upload ? { avatar_upload: { name: upload.name, type: upload.type, size: upload.size, dataBase64: upload.dataBase64 } } : { avatar_preset: preset }),
     };
     try {
       const res = harness?.submit
@@ -235,7 +242,7 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
           {current.help && <p style={{ fontSize: 15, color: TXM, lineHeight: 1.6, margin: "0 0 26px" }}>{current.help}</p>}
           {!current.help && <div style={{ height: 18 }} />}
 
-          <Control q={current} value={get(current)} other={getOther(current)} onChange={(v) => set(current, v)} onOther={(v) => setOther(current, v)} onEnter={next} accent={accent} accentRgb={accentRgb} agentLabel={agentLabel} mascot={brand.mascot} />
+          <Control q={current} value={get(current)} other={getOther(current)} onChange={(v) => set(current, v)} onOther={(v) => setOther(current, v)} onEnter={next} accent={accent} accentRgb={accentRgb} agentLabel={agentLabel} mascot={brand.mascot} upload={upload} onUpload={(u) => { setUpload(u); if (u) set(current, ""); }} onUploadError={setError} />
 
           {error && <p style={{ marginTop: 14, fontSize: 13, color: "#dc2626" }}>{error}</p>}
 
@@ -263,7 +270,14 @@ export function ConversationalIntake(props: ConversationalIntakeProps) {
 
 // ── One control per question kind ──────────────────────────────────────────────────────────
 
-function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRgb, agentLabel, mascot }: {
+/** An image picked from the visitor's device for the agent's face. */
+type AvatarUploadPick = { name: string; type: string; size: number; dataBase64: string; preview: string };
+
+// The storage bucket refuses anything over 3 MB (lib/supabase/avatar-storage.ts), so a bigger
+// file is turned away here with a reason instead of failing quietly at the build.
+const AVATAR_MAX_BYTES = 3 * 1024 * 1024;
+
+function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRgb, agentLabel, mascot, upload, onUpload, onUploadError }: {
   q: Question;
   value: unknown;
   other: string;
@@ -274,6 +288,9 @@ function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRg
   accentRgb: string;
   agentLabel: string;
   mascot?: string;
+  upload: AvatarUploadPick | null;
+  onUpload: (u: AvatarUploadPick | null) => void;
+  onUploadError: (message: string) => void;
 }) {
   const str = typeof value === "string" ? value : "";
   const list = Array.isArray(value) ? (value as string[]) : typeof value === "string" && value && q.kind !== "text" && q.kind !== "textarea" && q.kind !== "name" && q.kind !== "select" && q.kind !== "single" ? [value] : [];
@@ -302,23 +319,56 @@ function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRg
           </div>
         </div>
       );
-    case "avatar":
+    case "avatar": {
+      const pickFile = (file: File | undefined) => {
+        if (!file) return;
+        if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+          onUploadError("Please choose a PNG, JPG or WebP image.");
+          return;
+        }
+        if (file.size > AVATAR_MAX_BYTES) {
+          onUploadError("That image is over 3 MB. Please choose a smaller one.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = String(reader.result);
+          onUploadError("");
+          onUpload({ name: file.name, type: file.type, size: file.size, dataBase64: dataUrl.split(",")[1] || "", preview: dataUrl });
+        };
+        reader.readAsDataURL(file);
+      };
+      const tile = (on: boolean): React.CSSProperties => ({ padding: 0, border: `2.5px solid ${on ? accent : "transparent"}`, borderRadius: "50%", overflow: "hidden", aspectRatio: "1", background: SRF, cursor: "pointer" });
       return (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))", gap: 10 }}>
-          {mascot && (
-            <button type="button" onClick={() => onChange("")} aria-label="The agent's own face" style={{ padding: 0, border: `2.5px solid ${!str ? accent : "transparent"}`, borderRadius: "50%", overflow: "hidden", aspectRatio: "1", background: SRF, cursor: "pointer" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={mascot} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
-            </button>
-          )}
-          {AVATAR_PRESETS.map((p) => (
-            <button key={p.id} type="button" onClick={() => onChange(p.src)} aria-label={p.label} style={{ padding: 0, border: `2.5px solid ${str === p.src ? accent : "transparent"}`, borderRadius: "50%", overflow: "hidden", aspectRatio: "1", background: SRF, cursor: "pointer" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            </button>
-          ))}
+        <div>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, border: `1.5px dashed ${upload ? accent : "rgba(0,0,0,0.25)"}`, borderRadius: 8, padding: "11px 18px", cursor: "pointer", background: upload ? `rgba(${accentRgb},0.06)` : "#fff", color: TXM, fontSize: 14, fontWeight: 700, marginBottom: 16 }}>
+            {upload ? "Upload a different image" : "Upload your own"}
+            <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }} onChange={(e) => { pickFile(e.target.files?.[0]); e.currentTarget.value = ""; }} />
+          </label>
+          <p style={{ fontSize: 13, color: TXD, margin: "0 0 10px" }}>Or choose one of these</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))", gap: 10 }}>
+            {upload && (
+              <button type="button" onClick={() => undefined} aria-label="Your uploaded image" aria-pressed style={tile(true)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={upload.preview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </button>
+            )}
+            {mascot && (
+              <button type="button" onClick={() => { onUpload(null); onChange(""); }} aria-label="The agent's own face" style={tile(!upload && !str)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={mascot} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+              </button>
+            )}
+            {AVATAR_PRESETS.map((p) => (
+              <button key={p.id} type="button" onClick={() => { onUpload(null); onChange(p.src); }} aria-label={p.label} style={tile(!upload && str === p.src)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </button>
+            ))}
+          </div>
         </div>
       );
+    }
     case "text":
       return <input autoFocus value={str} onChange={(e) => onChange(e.target.value)} onKeyDown={enterSubmits} placeholder={q.placeholder} style={input} />;
     case "textarea":
