@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
+import ApolloClawLogo from "@/components/ApolloClawLogo";
 import { embedUrl, videoDate, type PodcastVideo } from "@/lib/podcast";
 
 // Shared pieces of /podcast and /podcast/[slug]. All server components: the player is a plain
@@ -36,15 +37,21 @@ export function VideoPlayer({ video, title }: { video: PodcastVideo; title?: str
  * A card linking to a video's page. Every card is 16:9, Shorts included, so the grids stay one
  * shape (David, Nov 10 2026: the tall 9:16 cards did not look good).
  *
- * The thumbnail is YouTube's 4:3 frame. For a Short it is NOT the whole vertical video with black
- * bars either side, as first assumed: YouTube fills the 4:3 frame with a crop from the middle of the
- * vertical video. Cutting a 9:16 strip out of that crop again (the first version) kept only its
- * middle third, so "Apollo [Claw]" read as "o [Claw]" and on-screen captions lost both ends (David,
- * Nov 10 2026: "The images don't appear correct").
+ * WHAT THE PICTURE IS depends on the video:
  *
- * So a Short shows YouTube's frame whole, centred and uncropped (object-contain), over the same
- * image blown up and blurred to fill the rest of the 16:9 card. i.ytimg.com is on the CSP img-src
- * list.
+ *   A podcast clip gets artwork drawn here (ClipArt): the podcast's title card, laid out for a
+ *   wide card. YouTube's thumbnail for these is a faithful frame of the clip, and the clip itself
+ *   was cut vertically from a title card laid out wide, so every frame reads "o [Claw] st".
+ *   No framing of that image can show words the clip never had. Two attempts to frame it
+ *   differently (Nov 10 2026) both came back from David as "still not correct".
+ *
+ *   Any other Short (the college promos, someone on camera) shows its vertical frame in a centred
+ *   9:16 strip on a dark ground. YouTube's 4:3 thumbnail holds that frame with black bars either
+ *   side, and object-cover in the strip trims the bars.
+ *
+ *   A full-length video shows its thumbnail across the card.
+ *
+ * i.ytimg.com is on the CSP img-src list.
  */
 export function VideoCard({ video }: { video: PodcastVideo }) {
   return (
@@ -52,27 +59,22 @@ export function VideoCard({ video }: { video: PodcastVideo }) {
       href={`/podcast/${video.slug}`}
       className="group block h-full bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
     >
-      <div className="relative aspect-video overflow-hidden bg-black">
-        {video.isShort ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
-            <img
-              src={video.thumbnailUrl}
-              alt=""
-              aria-hidden
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover scale-[2.5] blur-2xl opacity-60"
-            />
+      <div className="relative aspect-video overflow-hidden bg-[#0B111C]">
+        {video.podcastClip ? (
+          <ClipArt video={video} />
+        ) : video.isShort ? (
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 aspect-[9/16] h-full overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed */}
             <img
               src={video.thumbnailUrl}
               alt=""
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+              // 4% in, because the picture inside YouTube's frame is a fraction under 9:16 and
+              // object-cover alone leaves a hairline of the black bar along one edge.
+              className="h-full w-full object-cover scale-[1.04] transition-transform duration-300 group-hover:scale-[1.08]"
             />
-          </>
+          </div>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- remote YouTube thumbnail, no optimiser config needed
           <img
@@ -88,7 +90,7 @@ export function VideoCard({ video }: { video: PodcastVideo }) {
         </span>
         <span
           aria-hidden
-          className="absolute inset-0 flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity"
+          className={`absolute flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity ${video.podcastClip ? "right-4 top-4" : "inset-0"}`}
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D72B2B] shadow-lg shadow-black/30">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff" aria-hidden>
@@ -104,6 +106,54 @@ export function VideoCard({ video }: { video: PodcastVideo }) {
         <p className="mt-1 font-mono text-xs text-muted-foreground">{videoDate(video.uploadDate)}</p>
       </div>
     </Link>
+  );
+}
+
+
+/**
+ * A podcast clip's card picture: the podcast's own title card ("-episode 04", the wordmark,
+ * "Podcast", the clip's title with a red cursor, a red waveform), laid out for a wide card.
+ * Drawn rather than fetched, so it is sharp at any size and every clip card matches.
+ *
+ * The waveform is seeded from the video id, so each clip has its own shape and keeps it.
+ */
+function waveform(id: string, count = 48): number[] {
+  let seed = 0;
+  for (const ch of id) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  const bars: number[] = [];
+  for (let i = 0; i < count; i++) {
+    seed = (seed * 1103515245 + 12345) >>> 0;
+    const n = ((seed >>> 8) % 1000) / 1000;
+    // Taller in the middle, like a voice, never flat.
+    const envelope = 0.35 + 0.65 * Math.sin((Math.PI * (i + 0.5)) / count);
+    bars.push(Math.max(0.12, n * envelope));
+  }
+  return bars;
+}
+
+function ClipArt({ video }: { video: PodcastVideo }) {
+  const bars = waveform(video.videoId);
+  return (
+    <div className="absolute inset-0 flex flex-col justify-between p-[6%] text-white">
+      <div className="font-mono text-[11px] tracking-wide text-white/50">
+        -episode{video.clipNumber !== null && <span className="ml-1.5 text-[#E12E30]">{String(video.clipNumber).padStart(2, "0")}</span>}
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex items-baseline gap-2">
+          <ApolloClawLogo ink="#FFFFFF" height={20} />
+          <span className="font-mono text-[15px] font-bold leading-none">Podcast</span>
+        </div>
+        <p className="font-mono text-[13px] leading-snug text-white/80 line-clamp-2">
+          {video.shortTitle.toLowerCase()}
+          <span aria-hidden className="ml-0.5 inline-block h-[0.9em] w-[0.45em] translate-y-[0.12em] bg-[#E12E30]" />
+        </p>
+      </div>
+      <svg viewBox="0 0 96 20" preserveAspectRatio="none" className="h-[18%] w-full" aria-hidden>
+        {bars.map((h, i) => (
+          <rect key={i} x={i * 2 + 0.4} y={10 - h * 10} width="1.2" height={h * 20} rx="0.6" fill="#E12E30" />
+        ))}
+      </svg>
+    </div>
   );
 }
 
