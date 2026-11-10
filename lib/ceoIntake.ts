@@ -13,8 +13,9 @@
 // generic IndustryStep. All three write into ONE blob (`ceoDetails`), so USER.md, the intake
 // email and the edit pre-fill are unchanged.
 //
-// Keys other code reads by name, so keep them: owns_work, first_priority and guardrails
-// (OnboardingForm.tsx's coversScope maps them to aiGoals, successMetric and autonomyLine).
+// Keys other code reads by name, so keep them: owns_work and first_priority
+// (OnboardingForm.tsx's coversScope maps them to aiGoals and successMetric). `guardrails` is off
+// the form (Nov 10, 2026); the CEO entry's standardGuard there supplies autonomyLine instead.
 //
 // Brand rules: no em dashes in any user-facing string; positive framing throughout.
 
@@ -102,7 +103,7 @@ const AGENT: IndustryBranch = {
   fields: [
     {
       key: "owns_work",
-      label: "What do you want your CEO agent to own?",
+      label: "What do you want your agent to own?",
       type: "multiselect",
       options: [
         "Inbox triage and drafting",
@@ -121,24 +122,9 @@ const AGENT: IndustryBranch = {
     },
     // An agent writing in a chief executive's name can do real damage with a message that is
     // merely tone-deaf, so this stays required - as checkboxes now, the riskiest first.
-    {
-      key: "guardrails",
-      label: "Always check with me first before it...",
-      type: "multiselect",
-      required: true,
-      options: [
-        "Messages the board or investors",
-        "Replies to press or media",
-        "Commits to a number, price or deadline",
-        "Discusses anyone's role or performance",
-        "Sends anything in my name to a client",
-        "Sends a company-wide announcement",
-        "Accepts or declines a meeting for me",
-        "Spends money or books travel",
-        "Other",
-      ],
-      helper: "Check all that apply. Your agent carries your name, so it's worth being strict.",
-    },
+    // "Always check with me first before it..." (`guardrails`) removed, David (Nov 10, 2026):
+    // "This is assumed." Its options are now the fixed standardGuard on the CEO entry in
+    // components/onboard/OnboardingForm.tsx, so every CEO agent gets the whole list.
     {
       key: "comm_style",
       label: "How should it communicate with you?",

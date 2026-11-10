@@ -910,7 +910,7 @@ with a 1px #DDDDDD border, 10px corners and 20px padding.
   last word, at 24-32px (was 26-38px) so the usual questions fit one line on desktop. On a
   phone they wrap where the width ends.
 
-## CEO Agent intake: four questions out, one renamed, mascot shown whole (Nov 10, 2026)
+## CEO Agent intake: five questions out, two reworded, one moved, mascot shown whole (Nov 10, 2026)
 
 David, walking the CEO Agent intake:
 
@@ -924,6 +924,13 @@ David, walking the CEO Agent intake:
 - Records already holding any of the four keep them; the summary still lists them.
 - **Renamed:** "Describe your business in a few sentences." is now "Describe your Business",
   in David's words.
+- **"Always check with me first before it..."** (`guardrails`) is off the form too: "This is
+  assumed." Its whole list is now the CEO entry's fixed `standardGuard`, so every CEO agent's
+  Boundaries section carries all of it, the way the Law and Personal Agents already work.
+- **"What do you want your agent to own?"** on every role agent; each used to name the role
+  ("your CEO agent", "your Law Agent").
+- **"What should it tackle first?"** moves to the end of every role agent's intake, just
+  before "Anything else", under its own "Where to start" heading. Same key, same payload.
 - **The agent's face above each question** is larger (52px). A chosen photo fills its circle
   as before; the agent's own mascot, a full standing figure, is shown whole at 60px tall with no
   circle, because a circle either cut its arms off or shrank it to a speck.

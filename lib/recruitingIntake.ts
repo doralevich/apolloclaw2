@@ -373,7 +373,7 @@ const AGENT: IndustryBranch = {
     // Hiring
     hiring({
       key: "owns_work",
-      label: "What do you want your recruiting agent to own?",
+      label: "What do you want your agent to own?",
       type: "multiselect",
       options: [
         "Job descriptions and adverts",
@@ -443,7 +443,7 @@ const AGENT: IndustryBranch = {
     // Sports. Same three keys the form reads by name, with the agency's own vocabulary.
     sports({
       key: "owns_work",
-      label: "What do you want your recruiting agent to own?",
+      label: "What do you want your agent to own?",
       type: "multiselect",
       options: [
         "Prospect research and scouting summaries",

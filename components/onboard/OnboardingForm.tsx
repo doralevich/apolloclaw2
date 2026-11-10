@@ -143,7 +143,12 @@ export const ROLE_INTAKES: Record<
   },
   ceo: {
     branch: CEO_BRANCH, stepKey: "ceo", stepLabel: "Your Day", detailsKey: "ceoDetails", roleName: "CEO Agent",
-    coversScope: { owns: "owns_work", win: "first_priority", guard: "guardrails" },
+    // No `guard`: "Always check with me first before it..." is off the form, David's call
+    // (Nov 10, 2026): "This is assumed." The boundary every CEO checked is written in once here,
+    // so it still reaches the Boundaries section of every CEO agent's instructions.
+    coversScope: { owns: "owns_work", win: "first_priority" },
+    standardGuard:
+      "Drafts rather than sends. Checks with the owner first before messaging the board, investors, press or a client in the owner's name, committing to a number, price or deadline, discussing anyone's role or performance, sending a company-wide announcement, accepting or declining a meeting, or spending money or booking travel.",
   },
   marketing: {
     branch: MARKETING_BRANCH, stepKey: "marketing", stepLabel: "Marketing", detailsKey: "marketingDetails", roleName: "Marketing Agent",

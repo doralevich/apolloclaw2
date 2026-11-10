@@ -473,7 +473,7 @@ const AGENT: IndustryBranch = {
   fields: [
     {
       key: "owns_work",
-      label: "What do you want your Law Agent to own?",
+      label: "What do you want your agent to own?",
       type: "multiselect",
       options: [
         "First-pass review of incoming contracts and redlines",

@@ -174,9 +174,18 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
   }
 
   // ── The role's own deep-dive, in its own words ──────────────────────────────────────────
+  // "What should it tackle first?" (the role's coversScope.win field) is held back and asked
+  // near the end, just before "Anything else", David (Nov 10, 2026): after the stack, voice and
+  // year ahead, the owner has said enough to pick a starting point. It keeps its key, so the
+  // payload's successMetric is unchanged.
   const rolePages = role ? (Array.isArray(role.branch) ? role.branch : [role.branch]) : [];
+  const winKey = role?.coversScope?.win;
+  let firstUp: Question | null = null;
   for (const page of rolePages) {
-    for (const f of page.fields) q.push(fromField(f, "role", page.stepLabel ?? role!.stepLabel, a.role));
+    for (const f of page.fields) {
+      if (f.key === winKey) { firstUp = fromField(f, "role", "Where to start", a.role); continue; }
+      q.push(fromField(f, "role", page.stepLabel ?? role!.stepLabel, a.role));
+    }
   }
 
   // ── The industry deep-dive (generic agent only) ─────────────────────────────────────────
@@ -243,6 +252,8 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
     // knows what it is being judged on.
     q.push({ id: "successMetric", bucket: "top", section: "What I should take on", ask: "What does winning look like?", help: "Pick up to two.", kind: "multi", max: 2, options: SUCCESS_MET, other: "Something else" });
   }
+
+  if (firstUp) q.push(firstUp);
 
   // ── Final details ───────────────────────────────────────────────────────────────────────
   if (role?.finalNote) {

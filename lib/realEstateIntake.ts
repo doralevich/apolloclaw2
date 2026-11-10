@@ -202,7 +202,7 @@ const AGENT: IndustryBranch = {
   fields: [
     {
       key: "owns_work",
-      label: "What do you want your real estate agent to own?",
+      label: "What do you want your agent to own?",
       type: "multiselect",
       options: [
         "Listing descriptions and marketing copy",
