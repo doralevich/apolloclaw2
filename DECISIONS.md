@@ -945,6 +945,13 @@ David, walking the CEO Agent intake:
 - **The closing question** is now headed "Last question" and reads "Is there anything else I
   should know or be aware of?" (was "Last thing" / "Anything else I should know?"). The
   Personal and College agents keep their own wording under the same heading.
+- **Documents are back.** David: "We don't have a place for adding documents." The old form had
+  an upload; the one-question-at-a-time intake never did. "Any documents your agent should
+  read?" now comes just before the last question, for every agent, optional. Files ride the
+  build request as `uploadedFiles`, the same field the old form sent, so lib/agent-setup.ts
+  reads PDFs and text into BUSINESS-CONTEXT.md on the instance and attaches every file to the
+  team's intake email. Bytes are never autosaved or stored in the database. The documents and a
+  face upload share 3.2 MB, which keeps the base64 request under the 4.5 MB hosting limit.
 - **The agent's face above each question** is larger (52px). A chosen photo fills its circle
   as before; the agent's own mascot, a full standing figure, is shown whole at 60px tall with no
   circle, because a circle either cut its arms off or shrank it to a speck.

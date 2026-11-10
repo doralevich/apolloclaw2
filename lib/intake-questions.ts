@@ -56,7 +56,7 @@ export type Question = {
   ask: string;
   help?: string;
   placeholder?: string;
-  kind: "name" | "avatar" | "text" | "textarea" | "single" | "multi" | "select" | "scale" | "tiles" | "people" | "classes" | "confirm";
+  kind: "name" | "avatar" | "text" | "textarea" | "single" | "multi" | "select" | "scale" | "tiles" | "people" | "classes" | "files" | "confirm";
   options?: readonly string[];
   required?: boolean;
   /** Scale: the top of the range. Multi: the most picks allowed. */
@@ -280,6 +280,13 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
   }
   // A flow with neither "first" question still asks it, before the last question.
   if (!bottleneckAsked) q.push(...bottleneck("The year ahead"));
+
+  // ── Documents ───────────────────────────────────────────────────────────────────────────
+  // David (Nov 10, 2026): "We don't have a place for adding documents." The old form had one;
+  // this flow never did. The files themselves are held by ConversationalIntake (bytes are never
+  // autosaved) and go up with the build as `uploadedFiles`, which lib/agent-setup.ts reads into
+  // BUSINESS-CONTEXT.md on the instance and attaches to the team's intake email. Optional.
+  q.push({ id: "documents", bucket: "top", section: "Your documents", ask: "Any documents your agent should read?", help: "Optional. A brand guide, price list, FAQ, process doc or syllabus. PDFs and text files are read in full; anything else is passed to the team.", kind: "files" });
 
   // ── Final details ───────────────────────────────────────────────────────────────────────
   if (role?.finalNote) {
