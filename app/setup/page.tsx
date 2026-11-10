@@ -23,7 +23,13 @@ interface Step2Fields {
   anthropic_api_key: string;
   telegram_bot_token: string;
   telegram_bot_username: string;
-  tavily_api_key: string;
+}
+// A second Telegram bot, for a second person (David, Nov 10 2026). Shown only when the client
+// asks for it, and sent only then.
+interface SecondBotFields {
+  telegram2_for: string;
+  telegram_bot_token_2: string;
+  telegram_bot_username_2: string;
 }
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -147,7 +153,13 @@ export default function SetupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [s1, setS1] = useState<Step1Fields>({ first_name: "", last_name: "", email: "", phone: "", assistant_name: "", timezone: "", computer_name: "" });
-  const [s2, setS2] = useState<Step2Fields>({ anthropic_api_key: "", telegram_bot_token: "", telegram_bot_username: "", tavily_api_key: "" });
+  const [s2, setS2] = useState<Step2Fields>({ anthropic_api_key: "", telegram_bot_token: "", telegram_bot_username: "" });
+  // The optional second Telegram account. Its username is suggested the same way as the first,
+  // from the name of whoever it is for (else the assistant's), seeded differently so the two
+  // never collide.
+  const [second, setSecond] = useState(false);
+  const [b2, setB2] = useState<SecondBotFields>({ telegram2_for: "", telegram_bot_token_2: "", telegram_bot_username_2: "" });
+  const [username2Typed, setUsername2Typed] = useState(false);
   // The bot username is suggested from the assistant's name and the email
   // (apollo_agent_<name>_<nnn>_bot, lib/telegram-username.ts) until the client types their own.
   // It used to be filled in when step 1 was saved; on one page it follows those two fields live.
@@ -157,6 +169,12 @@ export default function SetupPage() {
       ? `@${suggestBotUsername(s1.assistant_name, s1.email.trim().toLowerCase())}`
       : "";
   const botUsername = usernameTyped ? s2.telegram_bot_username : suggestedUsername;
+  const suggestedUsername2 =
+    (b2.telegram2_for.trim() || s1.assistant_name.trim()) && validateEmail(s1.email.trim())
+      ? `@${suggestBotUsername(b2.telegram2_for.trim() || s1.assistant_name, `${s1.email.trim().toLowerCase()}#2`)}`
+      : "";
+  const botUsername2 = username2Typed ? b2.telegram_bot_username_2 : suggestedUsername2;
+  const updateB2 = (key: keyof SecondBotFields, value: string) => setB2(p => ({ ...p, [key]: value }));
   const updateS1 = (key: keyof Step1Fields, value: string) => setS1(p => ({ ...p, [key]: value }));
   const updateS2 = (key: keyof Step2Fields, value: string) => setS2(p => ({ ...p, [key]: value }));
   async function submit() {
@@ -180,12 +198,34 @@ export default function SetupPage() {
       setError("Please check the bot username: Telegram usernames use letters, numbers and underscores, and end in bot.");
       return;
     }
+    // The second account, only when it was opened. Opened means wanted, so its token and
+    // username are required like the first's.
+    const typed2 = botUsername2.trim().replace(/^@/, "");
+    const telegram_bot_username_2 = second && typed2 ? `@${typed2}` : "";
+    if (second) {
+      if (!b2.telegram_bot_token_2.trim() || !telegram_bot_username_2) {
+        setError("Please add the second bot's token and username, or remove the second account.");
+        return;
+      }
+      if (!/^@[A-Za-z0-9_]{2,29}bot$/i.test(telegram_bot_username_2)) {
+        setError("Please check the second bot's username: letters, numbers and underscores, ending in bot.");
+        return;
+      }
+      if (telegram_bot_username_2.toLowerCase() === telegram_bot_username.toLowerCase()) {
+        setError("The two bots need different usernames.");
+        return;
+      }
+    }
     setLoading(true);
     try {
       const res = await fetch(SETUP_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "apollo_setup_2", email, fields: { ...s1, ...s2, telegram_bot_username } }),
+        body: JSON.stringify({
+          source: "apollo_setup_2",
+          email,
+          fields: { ...s1, ...s2, telegram_bot_username, ...(second ? { ...b2, telegram_bot_username_2 } : {}) },
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || "Submission failed.");
@@ -318,15 +358,42 @@ export default function SetupPage() {
                   <TInput value={botUsername} onChange={v => { setUsernameTyped(true); updateS2("telegram_bot_username", v); }} placeholder="@YourBotName_bot" />
                 </FF>
               </Stack>
-            </Card>
-            <Card>
-              <SectionHeader number="06" label="Tavily: Web Search & Research" />
-              <p style={{ fontSize: 12, color: TXM, marginBottom: 16, lineHeight: 1.6 }}>Powers real-time research, competitive intelligence, and market monitoring. Get your free API key at <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" style={{ color: R, textDecoration: "none", fontWeight: 600 }}>tavily.com</a>: takes 2 minutes.</p>
-              <Stack gap={16}>
-                <FF label="Tavily API Key" hint="Format: tvly-...">
-                  <TInput value={s2.tavily_api_key} onChange={v => updateS2("tavily_api_key", v)} placeholder="tvly-..." />
-                </FF>
-              </Stack>
+              {/* A second bot, for a second person: a business partner, an assistant, a spouse.
+                  Each Telegram bot talks to whoever it is set up for, so a second person gets
+                  their own. Closed until asked for; closing it clears what was typed. */}
+              <div style={{ marginTop: 22, paddingTop: 18, borderTop: `1px solid ${BDR}` }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (second) { setB2({ telegram2_for: "", telegram_bot_token_2: "", telegram_bot_username_2: "" }); setUsername2Typed(false); }
+                    setSecond(!second);
+                  }}
+                  aria-expanded={second}
+                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: second ? "rgba(215,43,43,0.06)" : "#fff", border: `1px dashed ${second ? R : "rgba(0,0,0,0.25)"}`, borderRadius: 8, padding: "12px 14px", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700, color: TX }}
+                >
+                  <span aria-hidden style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", background: R, color: "#fff", fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{second ? "−" : "+"}</span>
+                  {second ? "Remove the additional Telegram account" : "Do you need an additional Telegram account?"}
+                </button>
+                {second && (
+                  <div style={{ marginTop: 16 }}>
+                    <p style={{ fontSize: 13, color: TXM, lineHeight: 1.6, margin: "0 0 14px" }}>A second bot, for a second person. Make it in BotFather the same way: send <Code>/newbot</Code>, then the username below, and paste the token it sends back.</p>
+                    <Stack gap={16}>
+                      <FF label="Who Is It For?" hint="Their name, so we set the bot up for the right person.">
+                        <TInput value={b2.telegram2_for} onChange={v => updateB2("telegram2_for", v)} placeholder="e.g. Sam, my business partner" />
+                      </FF>
+                      {botUsername2.trim() && (
+                        <CopyRow label="Username for the second bot" value={botUsername2.trim().replace(/^@/, "")} />
+                      )}
+                      <FF label="Second Bot Token" hint="From BotFather, after you choose the username." required>
+                        <TInput value={b2.telegram_bot_token_2} onChange={v => updateB2("telegram_bot_token_2", v)} placeholder="Paste the second bot's token" />
+                      </FF>
+                      <FF label="Second Bot Username" hint="Filled in for you. Change it only if BotFather asked for a different one." required>
+                        <TInput value={botUsername2} onChange={v => { setUsername2Typed(true); updateB2("telegram_bot_username_2", v); }} placeholder="@SecondBotName_bot" />
+                      </FF>
+                    </Stack>
+                  </div>
+                )}
+              </div>
             </Card>
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#fffdf9", border: `1px solid ${BDR}`, borderLeft: `3px solid ${R}`, borderRadius: "0 6px 6px 0", padding: "12px 14px" }}>
               <span style={{ color: R, fontSize: 12, marginTop: 1, flexShrink: 0 }}>■</span>

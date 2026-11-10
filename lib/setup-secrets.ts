@@ -9,6 +9,7 @@ import { BYO_SECRET_FIELDS, byoEncConfigured, decryptSecret, encryptSecret } fro
 export const SECRET_LABELS: Record<string, string> = {
   anthropic_api_key: "Anthropic API key",
   telegram_bot_token: "Telegram bot token",
+  telegram_bot_token_2: "Second Telegram bot token",
   fireflies_api_key: "Fireflies API key",
   tavily_api_key: "Tavily API key",
   fathom_password: "Fathom password",

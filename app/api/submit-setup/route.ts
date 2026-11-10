@@ -199,6 +199,13 @@ export async function POST(req: NextRequest) {
             `Anthropic API Key: ${given(fields.anthropic_api_key)}`,
             `Telegram Bot Token: ${given(fields.telegram_bot_token)}`,
             `Telegram Bot Username: ${fields.telegram_bot_username || ""}`,
+            ...(fields.telegram_bot_username_2
+              ? [
+                  `Second Telegram Bot For: ${fields.telegram2_for || ""}`,
+                  `Second Telegram Bot Token: ${given(fields.telegram_bot_token_2)}`,
+                  `Second Telegram Bot Username: ${fields.telegram_bot_username_2}`,
+                ]
+              : []),
           ].join("\n"),
           next_action: "Deploy assistant to client Mac Mini",
         });
@@ -229,6 +236,7 @@ export async function POST(req: NextRequest) {
           computer_name: F.computer_name || "",
           timezone: F.timezone || "",
           telegram_bot_username: F.telegram_bot_username || "",
+          telegram_bot_username_2: F.telegram_bot_username_2 || "",
         },
         fields: F,
       });
@@ -268,6 +276,9 @@ export async function POST(req: NextRequest) {
             ${rowCred("Anthropic API Key", F.anthropic_api_key || "")}
             ${rowCred("Telegram Bot Token", F.telegram_bot_token || "")}
             ${rowText("Telegram Bot Username", F.telegram_bot_username || "")}
+            ${rowText("Second Telegram Bot For", F.telegram2_for || "")}
+            ${rowCred("Second Telegram Bot Token", F.telegram_bot_token_2 || "")}
+            ${rowText("Second Telegram Bot Username", F.telegram_bot_username_2 || "")}
             ${rowCred("Fireflies API Key", F.fireflies_api_key || "")}
             ${rowCred("Tavily API Key", F.tavily_api_key || "")}
             ${rowText("Calendly URL", F.calendly_url || "")}
@@ -312,6 +323,9 @@ export async function POST(req: NextRequest) {
           anthropic_api_key: fields.anthropic_api_key || "",
           telegram_bot_token: fields.telegram_bot_token || "",
           telegram_bot_username: fields.telegram_bot_username || "",
+          telegram2_for: fields.telegram2_for || "",
+          telegram_bot_token_2: fields.telegram_bot_token_2 || "",
+          telegram_bot_username_2: fields.telegram_bot_username_2 || "",
           fireflies_api_key: fields.fireflies_api_key || "",
           tavily_api_key: fields.tavily_api_key || "",
           calendly_url: fields.calendly_url || "",
@@ -347,6 +361,9 @@ export async function POST(req: NextRequest) {
             `Anthropic API Key: ${given(fields.anthropic_api_key)}`,
             `Telegram Bot Token: ${given(fields.telegram_bot_token)}`,
             `Telegram Bot Username: ${fields.telegram_bot_username || ""}`,
+            `Second Telegram Bot For: ${fields.telegram2_for || ""}`,
+            ...(fields.telegram_bot_token_2 ? [`Second Telegram Bot Token: ${given(fields.telegram_bot_token_2)}`] : []),
+            `Second Telegram Bot Username: ${fields.telegram_bot_username_2 || ""}`,
             `Fireflies API Key: ${given(fields.fireflies_api_key)}`,
             `Tavily API Key: ${given(fields.tavily_api_key)}`,
             `Calendly URL: ${fields.calendly_url || ""}`,

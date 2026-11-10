@@ -882,12 +882,16 @@ ends "| David Oralevich"; its number comes from `CLIP_NUMBERS` in lib/podcast.ts
 clips' own frames. The college promos keep their YouTube frame in a centred vertical strip.
 The share image for a clip page is still YouTube's thumbnail.
 
-## The questionnaire takes an uploaded face for the agent (Nov 10, 2026)
+## Technical Setup: Tavily out, a second Telegram account in (Nov 10, 2026)
 
-David, building a CEO Agent: no way to upload his own image. The ten-page form always had
-"Upload your own" on its personalize screen; the conversational questionnaire (the default
-since Nov 5) offered only the preset faces. Its "Pick a face for it" question now has the same
-button. PNG, JPG or WebP up to 3 MB, the storage bucket's own limit. The image is held in the
-page, not in the autosaved answers (a picture is megabytes and the draft saves every few
-seconds), and is sent once with the build as `avatar_upload`, which /api/agent-setup has always
-accepted. A questionnaire resumed from a draft has the preset or the agent's own face instead.
+David: remove section 06 (Tavily) from `/setup`, and add "Do you need an additional Telegram
+account?" with a plus sign that opens a section for a second account.
+
+- **Tavily is gone from the page.** The endpoint still reads `tavily_api_key` if an old tab
+  sends one, and the field stays in the encrypted list for submissions already stored.
+- **The second account** opens from a button under the Telegram section: who it is for, a
+  username suggested from that name (seeded apart from the first so the two never collide),
+  the bot token and the username. Opened means wanted, so its token and username are required
+  and must differ from the first's; closing it clears it and sends nothing. The token is a
+  secret like the first (`telegram_bot_token_2` in `BYO_SECRET_FIELDS`, stored encrypted for
+  Super Admin), and the summary email, CRM notes and Attio note list it as given or not.
