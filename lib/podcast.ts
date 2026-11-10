@@ -20,7 +20,26 @@ export type PodcastVideo = {
   uploadDate: string;
   isShort: boolean;
   thumbnailUrl: string;
+  /** A clip cut from the podcast (its YouTube title ends "| David Oralevich"), as opposed to a
+   *  promo with someone on camera. Its card is drawn in code (components/podcast/PodcastParts.tsx
+   *  ClipArt), because the clip's own frames crop the podcast's wide title card. */
+  podcastClip: boolean;
+  /** The clip's number on its own title card ("-episode 04"), when known. */
+  clipNumber: number | null;
 };
+
+// Each podcast clip's number, as its own title card shows it ("-episode 04"). Read off the
+// clips' frames on the live /podcast page (David's screenshot, Nov 10 2026); YouTube's listing
+// does not carry it. A clip missing here simply has no number on its card.
+const CLIP_NUMBERS: Record<string, number> = {
+  EcwNb7GAPxc: 1, // Close Encounters moment
+  r0BFn6qLVTU: 2, // The GoDaddy idea
+  E9V3yEoozZE: 4, // Shakedown Street guardrail
+  tfOBGW8FPx4: 7, // Jerry Maguire it
+  TGa_8np9mRo: 8, // The student agent
+};
+
+const PODCAST_SUFFIX = /\s*\|\s*david oralevich\s*$/i;
 
 // "Shakedown Street guardrail | David Oralevich" -> "Shakedown Street guardrail". The speaker is
 // named on the page already; repeating it on every card is noise.
@@ -50,6 +69,8 @@ function toVideo(v: RawVideo): PodcastVideo {
     uploadDate: v.uploadDate,
     isShort: v.isShort,
     thumbnailUrl: v.thumbnailUrl,
+    podcastClip: v.isShort && PODCAST_SUFFIX.test(v.title),
+    clipNumber: CLIP_NUMBERS[v.videoId] ?? null,
   };
 }
 

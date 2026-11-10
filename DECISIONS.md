@@ -868,3 +868,16 @@ after a ceiling, which was 90 seconds and is now 30 (`WARMING_CAP_MS`,
 components/onboard/BuildScreen.tsx). Nothing is lost by entering early: the chat route quietly
 retries a first message for up to about 55 seconds while the host comes up, and only then says
 the agent is still starting up.
+
+## Podcast clip cards are drawn, not YouTube frames (Nov 10, 2026)
+
+The podcast clips were cut vertically from a title card laid out wide, so every frame of every
+clip, and so every YouTube thumbnail of one, reads "o [Claw] st" instead of "Apollo [Claw]
+Podcast". Two attempts to frame YouTube's image differently could not show words the clip
+never had (David: "still not seeing the podcasts look correct"). A podcast clip's card on
+`/podcast` is now the podcast's title card drawn in code (`ClipArt`,
+components/podcast/PodcastParts.tsx): the clip's number, the wordmark, "Podcast", the clip
+title with a red cursor, and a red waveform. A clip is a podcast clip when its YouTube title
+ends "| David Oralevich"; its number comes from `CLIP_NUMBERS` in lib/podcast.ts, read off the
+clips' own frames. The college promos keep their YouTube frame in a centred vertical strip.
+The share image for a clip page is still YouTube's thumbnail.
