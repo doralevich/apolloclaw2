@@ -910,7 +910,7 @@ with a 1px #DDDDDD border, 10px corners and 20px padding.
   last word, at 24-32px (was 26-38px) so the usual questions fit one line on desktop. On a
   phone they wrap where the width ends.
 
-## CEO Agent intake: five questions out, two reworded, one moved, mascot shown whole (Nov 10, 2026)
+## Intake trimmed: eight questions out, two reworded, two moved, mascot shown whole (Nov 10, 2026)
 
 David, walking the CEO Agent intake:
 
@@ -931,6 +931,11 @@ David, walking the CEO Agent intake:
   ("your CEO agent", "your Law Agent").
 - **"What should it tackle first?"** moves to the end of every role agent's intake, just
   before "Anything else", under its own "Where to start" heading. Same key, same payload.
+- **Tech stack, every agent on the shared list:** Communication comes first (it decides which
+  mailbox and calendar the agent connects to); "Documents and files" is off (nothing on the
+  agent's side read it); "Who looks after the technical side after launch?" is off.
+- **"How do you naturally sound?"** is off; "Whose voice do you sound most like?" sets the
+  voice. Old answers to any removed question still reach the agent's files.
 - **The agent's face above each question** is larger (52px). A chosen photo fills its circle
   as before; the agent's own mascot, a full standing figure, is shown whole at 60px tall with no
   circle, because a circle either cut its arms off or shrank it to a speck.

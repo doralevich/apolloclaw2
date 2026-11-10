@@ -6,16 +6,13 @@ import {
   BIZ_SIZES,
   BRAND_LIKE,
   GROWTH_BOTTLENECK,
-  INTERNAL_TECH,
   ROLE_INTAKES,
   STACK_BILLING,
   STACK_COMMS,
   STACK_CRM,
-  STACK_DOCS,
   STACK_PM,
   SUCCESS_MET,
   TEAM_SENT,
-  WRITING_TONE,
 } from "@/components/onboard/OnboardingForm";
 import {
   fieldVisible,
@@ -126,10 +123,13 @@ function fromStack(s: StackSection, bucket: Bucket): Question {
   };
 }
 
+// Communication first, David (Nov 10, 2026): it is the one that decides which mailbox and
+// calendar the agent connects to (config/connect-flow.ts reads commsTools).
+// "Documents and files" (docsTools) is off, David (Nov 10, 2026): nothing on the agent's side
+// read it, neither TOOLS.md nor USER.md. Old answers still map through toPayload/fromPayload.
 const GENERIC_STACK: Array<{ skip: "crm" | "comms" | "docs" | "pm" | "billing"; id: string; ask: string; options: readonly string[] }> = [
-  { skip: "crm", id: "crmTools", ask: "Sales and CRM", options: STACK_CRM },
   { skip: "comms", id: "commsTools", ask: "Communication", options: STACK_COMMS },
-  { skip: "docs", id: "docsTools", ask: "Documents and files", options: STACK_DOCS },
+  { skip: "crm", id: "crmTools", ask: "Sales and CRM", options: STACK_CRM },
   { skip: "pm", id: "pmTools", ask: "Projects and operations", options: STACK_PM },
   { skip: "billing", id: "billingTools", ask: "Finance and billing", options: STACK_BILLING },
 ];
@@ -223,12 +223,14 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
         }
       }
     }
-    q.push({ id: "internalTech", bucket: "top", section: "Tech stack", ask: "Who looks after the technical side after launch?", kind: "single", options: INTERNAL_TECH });
+    // "Who looks after the technical side after launch?" (internalTech) is off, David
+    // (Nov 10, 2026). Old answers still reach agent-files.ts; a blank one writes no line.
   }
 
   // ── Voice ───────────────────────────────────────────────────────────────────────────────
   if (!dropped.has("voice")) {
-    q.push({ id: "writingTone", bucket: "top", section: "Your voice", ask: "How do you naturally sound?", help: "Pick all that fit.", kind: "multi", options: WRITING_TONE });
+    // "How do you naturally sound?" (writingTone) is off, David (Nov 10, 2026). The voice is
+    // set by the next question; old answers still reach the Tone line in lib/agent-files.ts.
     q.push({ id: "brandVoiceLike", bucket: "top", section: "Your voice", ask: "Whose voice do you sound most like?", help: "Up to three.", kind: "multi", options: BRAND_LIKE, max: 3, other: "Other" });
   }
 
