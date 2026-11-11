@@ -482,14 +482,27 @@ function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRg
         </div>
       );
     case "multi": {
+      // With an always-on write-in, the "Other" tick follows the box: typed in it is ticked,
+      // emptied it is not, and it holds one of the `max` places while it has text.
+      const free = q.writeIn && q.other ? q.other : null;
       const toggle = (o: string) => {
         const next = list.includes(o) ? list.filter((x) => x !== o) : [...list, o];
-        onChange(q.max ? next.slice(-q.max) : next);
+        if (!free) return onChange(q.max ? next.slice(-q.max) : next);
+        const keep = list.includes(free);
+        const named = next.filter((x) => x !== free);
+        const cap = q.max ? q.max - (keep ? 1 : 0) : 0;
+        onChange([...(cap ? named.slice(-cap) : named), ...(keep ? [free] : [])]);
+      };
+      const typeIn = (text: string) => {
+        onOther(text);
+        if (!free) return;
+        const named = list.filter((x) => x !== free);
+        onChange(text.trim() ? [...(q.max ? named.slice(-(q.max - 1)) : named), free] : named);
       };
       return (
         <div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))", gap: 8 }}>
-            {(q.options ?? []).map((o) => {
+            {(q.options ?? []).filter((o) => o !== free).map((o) => {
               const on = list.includes(o);
               return (
                 <button key={o} type="button" onClick={() => toggle(o)} style={chip(on)}>
@@ -501,7 +514,9 @@ function Control({ q, value, other, onChange, onOther, onEnter, accent, accentRg
               );
             })}
           </div>
-          {otherBox}
+          {free ? (
+            <input value={other} onChange={(e) => typeIn(e.target.value)} placeholder={q.writeIn} style={{ ...input, marginTop: 10, fontSize: 15 }} />
+          ) : otherBox}
         </div>
       );
     }

@@ -20,7 +20,6 @@ interface Step1Fields {
   computer_name: string;
 }
 interface Step2Fields {
-  anthropic_api_key: string;
   telegram_bot_token: string;
   telegram_bot_username: string;
 }
@@ -89,25 +88,6 @@ function SectionHeader({ number, label }: { number: string; label: string }) {
     </div>
   );
 }
-function Disclosure({ title, children }: { title: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ border: `1px solid ${BDR}`, borderLeft: `3px solid ${R}`, borderRadius: "0 6px 6px 0", background: "#fffdf9", marginBottom: 16, overflow: "hidden" }}>
-      <button type="button" onClick={() => setOpen(!open)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", cursor: "pointer", background: "transparent", border: "none", fontFamily: "inherit" }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: TX }}>{open ? "▼" : "▶"} {title}</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: R }}>{open ? "Hide" : "Show"}</span>
-      </button>
-      {open && (
-        <div style={{ padding: "0 14px 14px" }}>
-          <ol style={{ paddingLeft: 18, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>{children}</ol>
-        </div>
-      )}
-    </div>
-  );
-}
-function Step({ children }: { children: React.ReactNode }) {
-  return <li style={{ fontSize: 12, color: TXM, lineHeight: 1.7 }}>{children}</li>;
-}
 // A value the client copies into Telegram, with a Copy button: /newbot, then the username. The
 // same pair the dashboard's channel setup offers (components/channels/pieces.tsx), drawn in this
 // page's own styling.
@@ -153,7 +133,7 @@ export default function SetupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [s1, setS1] = useState<Step1Fields>({ first_name: "", last_name: "", email: "", phone: "", assistant_name: "", timezone: "", computer_name: "" });
-  const [s2, setS2] = useState<Step2Fields>({ anthropic_api_key: "", telegram_bot_token: "", telegram_bot_username: "" });
+  const [s2, setS2] = useState<Step2Fields>({ telegram_bot_token: "", telegram_bot_username: "" });
   // The optional second Telegram account. Its username is suggested the same way as the first,
   // from the name of whoever it is for (else the assistant's), seeded differently so the two
   // never collide.
@@ -180,7 +160,7 @@ export default function SetupPage() {
   async function submit() {
     setError("");
     const { first_name, last_name, email, assistant_name, timezone, computer_name } = s1;
-    const { anthropic_api_key, telegram_bot_token } = s2;
+    const { telegram_bot_token } = s2;
     // A missing leading @ is added rather than refused.
     const typed = botUsername.trim().replace(/^@/, "");
     const telegram_bot_username = typed ? `@${typed}` : "";
@@ -189,11 +169,6 @@ export default function SetupPage() {
       return;
     }
     if (!validateEmail(email)) { setError("Please enter a valid email address."); return; }
-    // The Anthropic key is optional (David, Sept 28 2026); it is checked only when one is given.
-    if (anthropic_api_key && !anthropic_api_key.trim().startsWith("sk-ant-")) {
-      setError("Your Anthropic API key should start with sk-ant-... Please double-check it.");
-      return;
-    }
     if (!/^@[A-Za-z0-9_]{2,29}bot$/i.test(telegram_bot_username)) {
       setError("Please check the bot username: Telegram usernames use letters, numbers and underscores, and end in bot.");
       return;
@@ -310,21 +285,11 @@ export default function SetupPage() {
                 <TInput value={s1.computer_name} onChange={v => updateS1("computer_name", v)} placeholder="e.g. Janes-MacBook-Pro" />
               </FF>
             </Card>
+            {/* "04 Anthropic API Key" is off the page, David (Nov 11, 2026): the model account is set
+                up with the customer on the setup call, so nobody pastes a key into a form. The
+                endpoint still accepts anthropic_api_key from a tab opened before this change. */}
             <Card>
-              <SectionHeader number="04" label="Anthropic API Key" />
-              <Disclosure title="How to get your Anthropic API key">
-                <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
-                <Step>Click your name in the top right → <strong>API Keys</strong>.</Step>
-                <Step>Click <strong>Create Key</strong>, give it a name (e.g. <Code>My AI Assistant</Code>), and copy the key immediately; it won&apos;t be shown again.</Step>
-                <Step>The key starts with <Code>sk-ant-api03-...</Code>; paste it below.</Step>
-                <Step>You&apos;ll need to add a payment method and purchase credits. We recommend starting with $20–$50.</Step>
-              </Disclosure>
-              <FF label="Anthropic API Key (optional)" hint="Starts with sk-ant-... Leave blank and we can set this up with you.">
-                <TInput value={s2.anthropic_api_key} onChange={v => updateS2("anthropic_api_key", v)} placeholder="sk-ant-api03-..." />
-              </FF>
-            </Card>
-            <Card>
-              <SectionHeader number="05" label="Telegram Bot" />
+              <SectionHeader number="04" label="Telegram Bot" />
               <p style={{ fontSize: 14, color: TXM, lineHeight: 1.7, margin: "0 0 16px" }}>Your assistant&apos;s own private bot. Follow these in Telegram, then bring the token back here.</p>
               <ol style={{ listStyle: "decimal", paddingLeft: 22, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 8, fontSize: 14, color: TX, lineHeight: 1.6 }}>
                 <li>Open BotFather and send it <Code>/newbot</Code>.</li>
