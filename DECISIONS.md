@@ -976,3 +976,17 @@ David: "trim the industry ones too, make them the same format" as the CEO Agent.
   one Boundaries line (`lib/guard-line.ts`); before, a role had either an answer or a fixed
   line, never both. Every other role's line is unchanged in shape.
 - Records holding answers to removed questions keep them; the summary still lists them.
+
+## Voice list widened; /setup drops the Anthropic key (Nov 11, 2026)
+
+- **"Whose voice do you sound most like?"** offers sixteen voices, up from eight (added Warren
+  Buffett, Mark Cuban, Brené Brown, Mel Robbins, Ann Handley, Malcolm Gladwell, Ryan Holiday,
+  Sara Blakely), each with the words the agent should take from it. In the intake the write-in
+  is always on screen ("Or name anyone whose writing you like") instead of hiding behind an
+  "Other" tick: typing ticks "Other" for it, and it holds one of the three places. The payload
+  is unchanged, so agent-files.ts still swaps the name in for "Other".
+- **/setup has no Anthropic API key section** (David picked option B): the model account is
+  set up with the customer on the setup call, so nobody pastes a key into a form and the page
+  stops being the one place we ask a customer for an API key. Telegram is section 04 now. The
+  endpoint still accepts a key from a tab opened earlier, and the team email, CRM note and Attio
+  note list it only when one was sent.

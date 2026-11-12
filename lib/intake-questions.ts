@@ -64,6 +64,9 @@ export type Question = {
   max?: number;
   /** "Other" (or the named option) opens a write-in stored under `${id}_other`. */
   other?: string;
+  /** Multi only: the write-in is always on screen with this placeholder, and the `other`
+   *  option is ticked for it automatically, so nobody has to find "Other" first. */
+  writeIn?: string;
   /** Tiles: one pick, stored as a string. */
   single?: boolean;
   /** Only asked when this says so, given the answers so far. */
@@ -246,7 +249,7 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
   if (!dropped.has("voice")) {
     // "How do you naturally sound?" (writingTone) is off, David (Nov 10, 2026). The voice is
     // set by the next question; old answers still reach the Tone line in lib/agent-files.ts.
-    q.push({ id: "brandVoiceLike", bucket: "top", section: "Your voice", ask: "Whose voice do you sound most like?", help: "Up to three.", kind: "multi", options: BRAND_LIKE, max: 3, other: "Other" });
+    q.push({ id: "brandVoiceLike", bucket: "top", section: "Your voice", ask: "Whose voice do you sound most like?", help: "Up to three, or name your own below.", kind: "multi", options: BRAND_LIKE, max: 3, other: "Other", writeIn: "Or name anyone whose writing you like" });
   }
 
   if (isRole) q.push(...exec);

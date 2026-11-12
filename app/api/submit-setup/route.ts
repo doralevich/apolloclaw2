@@ -196,7 +196,7 @@ export async function POST(req: NextRequest) {
             `Timezone: ${fields.timezone || ""}`,
             `Computer Name: ${fields.computer_name || ""}`,
             // Secrets never go into CRM notes: say whether each was given, not what it is.
-            `Anthropic API Key: ${given(fields.anthropic_api_key)}`,
+            ...(fields.anthropic_api_key ? [`Anthropic API Key: ${given(fields.anthropic_api_key)}`] : []),
             `Telegram Bot Token: ${given(fields.telegram_bot_token)}`,
             `Telegram Bot Username: ${fields.telegram_bot_username || ""}`,
             ...(fields.telegram_bot_username_2
@@ -273,7 +273,7 @@ export async function POST(req: NextRequest) {
           </table>
           ${sectionHead("Credentials")}
           <table style="width:100%;border-collapse:collapse;">
-            ${rowCred("Anthropic API Key", F.anthropic_api_key || "")}
+            ${F.anthropic_api_key ? rowCred("Anthropic API Key", F.anthropic_api_key) : ""}
             ${rowCred("Telegram Bot Token", F.telegram_bot_token || "")}
             ${rowText("Telegram Bot Username", F.telegram_bot_username || "")}
             ${rowText("Second Telegram Bot For", F.telegram2_for || "")}
@@ -358,7 +358,7 @@ export async function POST(req: NextRequest) {
             `Computer Name: ${fields.computer_name || ""}`,
             `Meeting Recorder: ${fields.meeting_recorder || "fathom"}`,
             // Attio is a third-party CRM: secrets are noted as given or not, never copied in.
-            `Anthropic API Key: ${given(fields.anthropic_api_key)}`,
+            ...(fields.anthropic_api_key ? [`Anthropic API Key: ${given(fields.anthropic_api_key)}`] : []),
             `Telegram Bot Token: ${given(fields.telegram_bot_token)}`,
             `Telegram Bot Username: ${fields.telegram_bot_username || ""}`,
             `Second Telegram Bot For: ${fields.telegram2_for || ""}`,
