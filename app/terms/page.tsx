@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
 import LegalPage, { type LegalSection } from "@/components/LegalPage";
-import { PLANS_ON_SALE, agentsLabel, dollars } from "@/config/agent-plans";
 
-// The prices in these terms are read from the plans (config/agent-plans.ts), the same source as
-// /pricing and checkout, so the terms can never name a price the till no longer charges.
-const PLAN_LIST = PLANS_ON_SALE.map(
-  (p) =>
-    `${p.label} at ${dollars(p.monthlyCents ?? 0)} a month for ${agentsLabel(p.agents)}${
-      p.includedCreditCents ? ` with ${dollars(p.includedCreditCents)} of usage included` : ""
-    }${p.addOn ? `, plus ${dollars(p.addOn.monthlyCents)} a month for each extra agent` : ""}`
-).join("; ");
-
-const PLAN_TERMS = `Current prices are shown at checkout and are what binds. At the time of writing the plans are: ${PLAN_LIST}. Plans are month to month with no setup fee and no minimum commitment. Customers who subscribed before these plans keep the price and terms they signed up on.`;
+// No plan prices appear in these terms (David, Nov 12 2026: no pricing on public pages). The
+// price a customer pays is the one shown at checkout, and the terms say that is what binds.
+const PLAN_TERMS =
+  "Current prices are shown at checkout and are what binds. Plans are month to month with setup included on the standard plans and no minimum commitment. Customers who subscribed before the current plans keep the price and terms they signed up on.";
 
 const USAGE_TERMS =
   "Your plan includes a monthly usage allowance, shared across its agents. If your agents use all of it, they pause until the allowance renews at the start of the next month, or until you add credit in the dashboard, so you are never billed for usage you did not choose to buy.";
@@ -26,7 +19,7 @@ export const metadata: Metadata = {
 // WRITTEN AGAINST WHAT THIS PRODUCT ACTUALLY DOES, not a template. Every number and every
 // timescale below is read out of the code, so it can be checked rather than trusted:
 //
-//   Plans, prices, included usage                         config/agent-plans.ts
+//   Plans and included usage                              config/agent-plans.ts
 //   Credit packs, no markup                              lib/pricing/catalog.ts (CREDIT_PACKS)
 //   10-day grace window after cancellation               lib/entitlement.ts (GRACE_PERIOD_DAYS)
 //   30-day retention before an agent is purged           lib/agent-lifecycle.ts (RETENTION_DAYS)
@@ -40,9 +33,9 @@ export const metadata: Metadata = {
 // decisions rather than drafting - the refund position and the liability cap - and both are
 // flagged to David rather than quietly chosen. Have counsel read this before relying on it.
 const EFFECTIVE = "2026-09-07";
-// The wording last changed on Oct 4 2026 (the plan prices came off the site), after the
+// The wording last changed on Nov 12 2026 (the plan prices came off the page), after the
 // effective date. Both show on the page and the later one is the dateModified.
-const UPDATED = "2026-10-04";
+const UPDATED = "2026-11-12";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -72,7 +65,7 @@ const SECTIONS: LegalSection[] = [
       {
         kind: "bullets",
         items: [
-          "Setup. Building your agents from your questionnaire, the configuration, and the work that turns your answers into working assistants. There is no setup fee on the standard plans; custom builds are quoted separately.",
+          "Setup. Building your agents from your questionnaire, the configuration, and the work that turns your answers into working assistants. Setup is included on the standard plans; custom builds are quoted separately.",
           "Hosting. Your agents run on a server we manage, keep patched, and keep running.",
           "Usage. Every conversation your agents have costs money in AI model usage. Your plan includes a monthly allowance shared across its agents.",
         ],
@@ -118,7 +111,7 @@ const SECTIONS: LegalSection[] = [
         kind: "bullets",
         items: [
           "Credit packs are one-time purchases, delivered to your agent's runtime balance.",
-          "A pack delivers exactly what you pay for. There is no service fee on top: $25 buys $25 of usage.",
+          "A pack delivers exactly what you pay for. There is no service fee on top: the credit you buy is the usage you get.",
           "Credit is consumed as your agent works and does not expire while your account is active.",
           "Unused credit is not refundable for cash, and does not survive the closure of your account.",
         ],

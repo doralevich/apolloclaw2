@@ -247,11 +247,11 @@ export const PRICING_FAQ_ANSWER = `Every plan is month to month with setup inclu
  *  legacy. */
 export const AGENT_TIERS: readonly AgentTier[] = [LEGACY_TIER, ...PLANS, ...COLLEGE_PLANS];
 
-/** Enterprise: never a published price, except the one "starting at". */
+/** Enterprise: never a published price. (The "starting at" private-server figure that sat here
+ *  was unused and came out Nov 12 2026, when David ruled no pricing on public pages.) */
 export const ENTERPRISE = {
   label: "Enterprise",
   headline: "Custom corporate builds. Contact us.",
-  privateServersFrom: "$6,500",
 } as const;
 
 /** Where "Upgrade for more agents" goes. */

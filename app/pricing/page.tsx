@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ENTERPRISE, PLANS_ON_SALE, dollars } from "@/config/agent-plans";
+import { ENTERPRISE, PLANS_ON_SALE } from "@/config/agent-plans";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { EnterpriseContactButton, EnterpriseForm } from "@/components/pricing/EnterpriseForm";
 import { Bot, ClipboardList, Headphones, Layers, MessageCircle, Network, Plug, Rocket, Server, Users, type LucideIcon } from "lucide-react";
 import { OG_IMAGES } from "@/lib/seo";
 
-// THE PRICING PAGE (David, Oct 4 2026): the plans, priced in public, with real content under them.
+// THE PLANS PAGE (/pricing). David, Nov 12 2026: "I don't want to show any pricing anywhere." The
+// plans keep their names and what they include; no dollar amount appears on the page, and every
+// card points to a call instead. (The Oct 4 version priced the plans in public; see DECISIONS.md.)
 //
 // Layout: equal plan cards side by side with Team highlighted, then one wide Enterprise strip with
 // "Contact us", then what every plan includes, how it works, FAQs, and a closing consultation
@@ -18,9 +19,8 @@ import { OG_IMAGES } from "@/lib/seo";
 // and reach this page as one line of fine print and one plain phrase per card ("AI usage
 // included"). Nothing about compliance, HIPAA or data residency either; we do not claim them.
 //
-// Every number is read from config/agent-plans.ts and lib/pricing/catalog.ts, the same source the
-// checkout and the Stripe sync use. A page that quotes a price the till does not charge is the
-// failure worth engineering against, so nothing here is typed by hand.
+// What each plan includes is read from config/agent-plans.ts. No price is printed here: pricing is
+// discussed on a call, and the checkout states the real amount before anyone pays.
 //
 // White ground, the logo red, Bricolage headings and Inter body: the brand as the brief gives it.
 
@@ -37,18 +37,17 @@ const SOFT = "#F7F6F3";
 const featured = PLANS_ON_SALE.find((p) => p.featured);
 const team = PLANS_ON_SALE.find((p) => p.id === "team");
 
-// No dollar amounts in the title or description (the SEO brief, Donna, Oct 9 2026; David's final
-// call Oct 19): the prices live on the page, where they can change without the search snippet
-// going stale. /pricing is a real, indexed page with a self-referencing canonical; the redirect
-// to /contact that the brief found in an older build is gone.
+// No dollar amounts in the title, description or page (David, Nov 12 2026). The self-referencing
+// canonical stays so the page is ready if the /pricing redirect in next.config.ts (hidden Oct 26
+// 2026) is ever removed; until then the redirect wins and visitors land on /contact.
 export const metadata: Metadata = {
-  title: { absolute: "Pricing | Apollo Claw" },
+  title: { absolute: "Plans | Apollo Claw" },
   description:
     "Apollo Claw plans for one agent, a small team or an executive bench: month to month, setup included, hosting and updates built in. Private servers on a call.",
   alternates: { canonical: "https://apolloclaw.ai/pricing" },
   openGraph: {
     images: OG_IMAGES,
-    title: "Pricing | Apollo Claw",
+    title: "Plans | Apollo Claw",
     description: "AI agents built around your business, month to month, with hosting and updates included.",
     url: "https://apolloclaw.ai/pricing",
     type: "website",
@@ -113,10 +112,10 @@ const FAQS = [
   {
     q: "Can I add more agents?",
     a: team?.addOn
-      ? `Yes. On ${team.label}, add agents for ${dollars(team.addOn.monthlyCents)} a month each, right from your dashboard. Once you reach ${team.upgradeAt ?? 6}, Executive is usually the better fit.`
+      ? `Yes. On ${team.label}, add agents right from your dashboard; the cost is shown before you confirm. Once you reach ${team.upgradeAt ?? 6}, Executive is usually the better fit.`
       : "Yes, from your dashboard, or move up a plan.",
   },
-  { q: "Can I cancel?", a: "Any time. Plans are month to month, with no setup fee and no minimum term." },
+  { q: "Can I cancel?", a: "Any time. Plans are month to month, with setup included and no minimum term." },
   {
     q: "What if I need more?",
     a: "Executive includes ten agents. For more than that, several users, or agents that share one memory, we build it with you. Book a call.",
@@ -142,7 +141,7 @@ export default function PricingPage() {
     <div style={{ background: "#FFFFFF", color: INK }}>
       {/* ── Header ── */}
       <section className="mx-auto max-w-6xl px-5 pb-10 pt-12 text-center md:px-8 md:pt-16">
-        <Eyebrow>Pricing</Eyebrow>
+        <Eyebrow>Plans</Eyebrow>
         <h1
           className="font-heading mx-auto max-w-3xl text-[clamp(2rem,4vw,3.25rem)] font-extrabold leading-[1.08] tracking-tight"
           style={{ textWrap: "balance" }}
@@ -150,7 +149,7 @@ export default function PricingPage() {
           AI Agents That Work for Your Business.
         </h1>
         <p className="font-body mx-auto mt-5 max-w-2xl text-[1.125rem] leading-[1.6]" style={{ color: INK_MUTED }}>
-          Pick how many agents you want working for you. No setup fee, and you can cancel any time.
+          Pick how many agents you want working for you. Setup is included, you can cancel any time, and we walk you through the details on a short call.
         </p>
       </section>
 
@@ -184,12 +183,7 @@ export default function PricingPage() {
                   {plan.tagline}
                 </p>
                 <p className="mt-5 flex items-baseline gap-1.5">
-                  <span className="font-heading text-[2.3rem] font-extrabold leading-none tabular-nums">
-                    {dollars(plan.monthlyCents ?? 0)}
-                  </span>
-                  <span className="font-body text-[14px]" style={{ color: INK_MUTED }}>
-                    / month
-                  </span>
+                  <span className="font-heading text-[2.3rem] font-extrabold leading-none">Talk to us</span>
                 </p>
                 {/* The plan at a glance, in its own box: who it is for and that usage is in. */}
                 <div className="mt-5 rounded-xl border px-4 py-3" style={{ borderColor: RULE, background: SOFT }}>
@@ -209,8 +203,10 @@ export default function PricingPage() {
                     );
                   })}
                 </ul>
-                <Link
-                  href={`/onboard?plan=${plan.id}`}
+                <a
+                  href={SCHEDULE_CONSULT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`${BTN} mt-7 w-full`}
                   style={
                     isFeatured
@@ -218,8 +214,8 @@ export default function PricingPage() {
                       : { border: `1px solid ${INK}`, color: INK }
                   }
                 >
-                  Get started
-                </Link>
+                  Book a call
+                </a>
               </article>
             );
           })}
@@ -293,7 +289,7 @@ export default function PricingPage() {
 
         {team?.addOn && (
           <p className="font-body mt-6 text-center text-[15px]" style={{ color: INK_MUTED }}>
-            Need one more? Add agents to {team.label} for {dollars(team.addOn.monthlyCents)} a month each.
+            Need one more? You can add agents to {team.label} from your dashboard.
           </p>
         )}
         {/* Hands-on setup for any plan, quoted on a call (the old Custom Build's 30 days of

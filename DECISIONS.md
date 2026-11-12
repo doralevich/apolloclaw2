@@ -990,3 +990,31 @@ David: "trim the industry ones too, make them the same format" as the CEO Agent.
   stops being the one place we ask a customer for an API key. Telegram is section 04 now. The
   endpoint still accepts a key from a tab opened earlier, and the team email, CRM note and Attio
   note list it only when one was sent.
+
+## No pricing on any public page (Nov 12, 2026)
+
+David: "I don't want to show any pricing anywhere." This reverses the Oct 4 decision (plans priced
+in public on /pricing and /create-an-agent) and the Oct 19 one (/pricing is the only page that
+prints a dollar amount). Apollo Claw's rule is now: no dollar amount on any public, marketing,
+indexed page; pricing is discussed on a discovery call.
+
+- **/pricing** keeps its plan names and what each plan includes. The price on each card is now
+  "Talk to us" and each card's button is "Book a call" (SCHEDULE_CONSULT_URL). The add-on price in
+  the FAQ and under the cards is gone, "no setup fee" reads "setup included", and the page is
+  retitled "Plans | Apollo Claw". The /pricing redirect to /contact (Oct 26) is NOT touched here:
+  the page stays hidden until David removes that one entry in next.config.ts.
+- **/create-an-agent** shows the plans without prices. "Get started" still goes to
+  /onboard?plan=, whose first screen and Stripe Checkout state the real price before anyone pays;
+  an "Or book a call" link sits under each button. Open question for David: whether that
+  self-serve path should stay on a public page at all, since it is the only place a buyer sees a
+  price before paying.
+- **/terms** no longer lists plan prices or the "$25 buys $25" line. It already says current
+  prices are shown at checkout and are what binds. Last-updated date moved to Nov 12, 2026.
+- **Left alone on purpose:** every charge disclosure a person sees before paying or while logged
+  in (checkout routes, onboarding paywall, add-agent and seat purchase, billing, plan, credits
+  and usage views), admin pages, the Stripe webhook, and the numbers in config/agent-plans.ts and
+  lib/pricing/catalog.ts that the till reads. The unused ENTERPRISE.privateServersFrom figure was
+  deleted.
+- **Not in this repo:** the blog post /blog/how-to-hire-an-ai-consultant lives in Sanity and
+  still says "An engagement that costs $5,000 and recovers even half of that has a 1-month
+  payback." It needs a content edit in Sanity.

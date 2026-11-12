@@ -3,14 +3,15 @@ import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
-import { PLANS_ON_SALE, dollars } from "@/config/agent-plans";
+import { PLANS_ON_SALE } from "@/config/agent-plans";
 
 
 // The "Create an Agent" landing page — the destination for the mailer. It walks a prospect
 // through what an ApolloClaw agent is, how getting one works, what it can do, and the details
 // worth knowing, then converts on a HYBRID CTA: book a call (primary) or start setup yourself
-// (secondary). Pricing is the plans on sale, each carrying its number, with /pricing as the
-// fuller page behind them.
+// (secondary). The plans on sale are shown by name and by what they include, with no dollar amount
+// (David, Nov 12 2026: "I don't want to show any pricing anywhere"). "Get started" still goes to
+// /onboard?plan=, whose first screen and Stripe Checkout both state the price before anyone pays.
 //
 // Full nav/footer chrome is added automatically by RootShell (this route is not standalone).
 // Styling mirrors app/what-we-do/page.tsx: PageHero, ScrollReveal, bauhaus-card, the semantic
@@ -242,8 +243,8 @@ export default function CreateAnAgentPage() {
 
       <div className="section-divider" />
 
-      {/* PRICING: the plans on sale, read from config/agent-plans.ts like /pricing and the
-          checkout, so this page cannot quote a price the till does not charge. */}
+      {/* PLANS: the plans on sale, read from config/agent-plans.ts like /pricing and the checkout.
+          No price is printed here; the checkout states it before payment. */}
       <section className="bg-background py-16">
         <div className="container mx-auto px-4 md:px-8 max-w-6xl">
           <ScrollReveal>
@@ -255,7 +256,7 @@ export default function CreateAnAgentPage() {
               Pick how many agents you want working for you.
             </h2>
             <p className="font-body text-sm text-muted-foreground mb-10 max-w-2xl leading-relaxed">
-              Billed monthly, with no setup fee and no minimum term.
+              Month to month, with setup included and no minimum term. You see the price before you pay, or book a call and we will walk you through it.
             </p>
           </ScrollReveal>
 
@@ -277,8 +278,7 @@ export default function CreateAnAgentPage() {
                   <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground font-bold">{plan.label}</span>
                   <p className="font-display text-2xl text-foreground mt-3">{plan.tagline}</p>
                   <div className="mt-6">
-                    <span className="font-display text-4xl font-extrabold text-foreground">{dollars(plan.monthlyCents ?? 0)}</span>
-                    <span className="font-body text-base text-muted-foreground"> / month</span>
+                    <span className="font-display text-4xl font-extrabold text-foreground">Talk to us</span>
                   </div>
                   <p className="font-body text-sm font-semibold text-foreground mt-1">{plan.agentsText}</p>
                   <ul className="mt-7 flex flex-col gap-3 flex-1">
@@ -295,6 +295,14 @@ export default function CreateAnAgentPage() {
                   >
                     Get started
                   </Link>
+                  <a
+                    href={SCHEDULE_CONSULT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 text-center font-body text-sm font-bold text-foreground underline underline-offset-4"
+                  >
+                    Or book a call
+                  </a>
                 </div>
               </ScrollReveal>
             ))}
