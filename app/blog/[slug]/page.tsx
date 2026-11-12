@@ -29,6 +29,28 @@ function stripBrand(title: string): string {
   return title.replace(BRAND_SUFFIX, "").trim();
 }
 
+// Length limits for the snippet (the audit, Nov 12 2026: 81 titles over 60 characters, 44
+// descriptions over 160). Both are shortening only, never rewording: the brand suffix is dropped
+// when that alone brings the title to 60, and a long description is cut at a word boundary with
+// an ellipsis. A title still over 60 without the brand is left as the editor wrote it; shortening
+// those is a Sanity edit.
+const TITLE_MAX = 60;
+const DESCRIPTION_MAX = 160;
+
+function postTitle(raw: string): string {
+  const base = stripBrand(raw);
+  const branded = `${base} | Apollo Claw`;
+  return branded.length > TITLE_MAX && base.length <= TITLE_MAX ? base : branded;
+}
+
+function snippet(text: string): string {
+  const t = text.trim();
+  if (t.length <= DESCRIPTION_MAX) return t;
+  const cut = t.slice(0, DESCRIPTION_MAX - 2);
+  const at = cut.lastIndexOf(" ");
+  return `${(at > 80 ? cut.slice(0, at) : cut).replace(/[\s,;:\-\u2013\u2014]+$/, "")}…`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -45,8 +67,8 @@ export async function generateMetadata({
       ? [{ url: ogImageUrl, width: 1200, height: 627, alt: post.featuredImage?.alt || post.title }]
       : undefined;
     return {
-      title: { absolute: `${stripBrand(post.seoTitle || post.title || "")} | Apollo Claw` },
-      description: post.seoDescription || post.excerpt || "",
+      title: { absolute: postTitle(post.seoTitle || post.title || "") },
+      description: snippet(post.seoDescription || post.excerpt || ""),
       ...(ogImages && {
         openGraph: {
           type: "article",

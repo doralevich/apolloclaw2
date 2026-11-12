@@ -28,6 +28,14 @@ function summary(description: string, fallback: string): string {
   return text || fallback;
 }
 
+// Brand suffix, shortened only as far as the 60-character limit needs (the audit, Nov 12 2026).
+function episodeTitle(shortTitle: string): string {
+  for (const suffix of [" | Apollo Claw Podcast", " | Apollo Claw"]) {
+    if (shortTitle.length + suffix.length <= 60) return shortTitle + suffix;
+  }
+  return shortTitle;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -39,7 +47,7 @@ export async function generateMetadata({
   const url = `https://apolloclaw.ai/podcast/${slug}`;
   const description = summary(video.description, `${video.shortTitle}, from the Apollo Claw podcast.`);
   return {
-    title: { absolute: `${video.shortTitle} | Apollo Claw Podcast` },
+    title: { absolute: episodeTitle(video.shortTitle) },
     description,
     alternates: { canonical: url },
     // The video's own thumbnail for link previews, the way a blog post uses its featured image.
