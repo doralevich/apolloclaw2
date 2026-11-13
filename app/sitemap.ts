@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // /pricing is hidden (Oct 26 2026, redirects to /contact); it returns here with the page.
     { path: "/privacy",          priority: 0.3, changed: "2026-09-26" },
     { path: "/cookies",          priority: 0.3, changed: "2026-09-26" },
-    { path: "/terms",            priority: 0.3, changed: "2026-10-04" },
+    { path: "/terms",            priority: 0.3, changed: "2026-11-12" },
     // The fleet page: the index every /ai-agents/* entry below hangs off.
     { path: "/ai-agents",              priority: 0.9, changed: "2026-10-27" },
     { path: "/ai-agents/ceo",          priority: 0.9, changed: "2026-10-20" },
@@ -78,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/accessibility", priority: 0.3, changed: "2026-10-09" },
     { path: "/integrations", priority: 0.8, changed: "2026-09-27" },
     // Both of these are public, indexable pages that were simply never added here.
-    { path: "/create-an-agent", priority: 0.8, changed: "2026-10-04" },
+    { path: "/create-an-agent", priority: 0.8, changed: "2026-11-12" },
     { path: "/blog/ai-assistant-for-ceo", priority: 0.6, changed: "2026-09-21" },
     // Hand-built like the one above: the law-firm results write-up (Oct 27 2026).
     { path: "/blog/what-three-law-firms-got-back", priority: 0.6, changed: "2026-10-27" },
