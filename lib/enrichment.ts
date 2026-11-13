@@ -75,6 +75,117 @@ function clean(s: string, cap: number): { text: string; truncated: boolean } {
     : { text: collapsed, truncated: false };
 }
 
+// ─── Word, Excel and PowerPoint ───────────────────────────────────────────────
+//
+// David (Nov 13, 2026): most owners upload Word documents, and until now the agent saw only
+// their names. The modern Office formats (.docx, .xlsx, .pptx) are zip archives of XML, so the
+// text is read straight out of the XML: no converter, no headless Office. The legacy binary
+// formats (.doc, .xls, .ppt) are a different thing entirely and still get the "please send it
+// as PDF or text" note.
+
+type OfficeKind = "docx" | "xlsx" | "pptx";
+
+function officeKind(mime: string, name: string): OfficeKind | null {
+  if (/\.docx$/i.test(name) || mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") return "docx";
+  if (/\.xlsx$/i.test(name) || mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") return "xlsx";
+  if (/\.pptx$/i.test(name) || mime === "application/vnd.openxmlformats-officedocument.presentationml.presentation") return "pptx";
+  return null;
+}
+
+function isLegacyOffice(name: string): boolean {
+  return /\.(doc|xls|ppt)$/i.test(name);
+}
+
+/** The few XML entities Office writes, plus numeric ones. */
+function xmlText(s: string): string {
+  return s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(Number(d)))
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+/** Text runs inside one block of XML, for a run tag such as `w:t` or `a:t`. */
+function runs(xml: string, tag: string): string {
+  const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([^<]*)</${tag}>`, "g");
+  let out = "";
+  for (let m = re.exec(xml); m; m = re.exec(xml)) out += xmlText(m[1]);
+  return out;
+}
+
+/** Paragraph by paragraph, so headings, bullets and table cells stay on lines of their own. */
+function paragraphs(xml: string, para: string, run: string): string {
+  return xml
+    .split(new RegExp(`</${para}>`))
+    .map((block) => runs(block.replace(/<w:tab\/>/g, "<w:t>\t</w:t>"), run).trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
+const naturally = (a: string, b: string) => Number(/(\d+)\.xml$/.exec(a)?.[1] ?? 0) - Number(/(\d+)\.xml$/.exec(b)?.[1] ?? 0);
+
+// A zip can claim almost any size once unpacked. Each XML part we read is held to this, so a
+// crafted file cannot make the request inflate gigabytes; a real document's parts are far under.
+const MAX_PART_BYTES = 25 * 1024 * 1024;
+const MAX_SHEET_ROWS = 2_000;
+
+async function extractOfficeText(bytes: Uint8Array, kind: OfficeKind): Promise<string> {
+  const { unzipSync, strFromU8 } = await import("fflate");
+  const wanted =
+    kind === "docx"
+      ? (n: string) => n === "word/document.xml"
+      : kind === "pptx"
+        ? (n: string) => /^ppt\/slides\/slide\d+\.xml$/.test(n)
+        : (n: string) => n === "xl/sharedStrings.xml" || n === "xl/workbook.xml" || /^xl\/worksheets\/sheet\d+\.xml$/.test(n);
+  const files = unzipSync(bytes, { filter: (f) => wanted(f.name) && f.originalSize <= MAX_PART_BYTES });
+  const read = (n: string) => (files[n] ? strFromU8(files[n]) : "");
+
+  if (kind === "docx") return paragraphs(read("word/document.xml"), "w:p", "w:t");
+
+  if (kind === "pptx") {
+    return Object.keys(files)
+      .sort(naturally)
+      .map((n, i) => {
+        const text = paragraphs(read(n), "a:p", "a:t");
+        return text ? `Slide ${i + 1}\n${text}` : "";
+      })
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  // Spreadsheet: shared strings first (most text cells point into them), then each sheet's rows
+  // as tab-separated lines under the sheet's own name.
+  const shared = read("xl/sharedStrings.xml")
+    .split("</si>")
+    .slice(0, -1)
+    .map((si) => runs(si, "t"));
+  const names = [...read("xl/workbook.xml").matchAll(/<sheet\b[^>]*\bname="([^"]*)"/g)].map((m) => xmlText(m[1]));
+  const sheets = Object.keys(files).filter((n) => n.startsWith("xl/worksheets/")).sort(naturally);
+  return sheets
+    .map((n, i) => {
+      const rows: string[] = [];
+      for (const row of read(n).split("</row>").slice(0, MAX_SHEET_ROWS)) {
+        const cells: string[] = [];
+        for (const c of row.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+          const attrs = c[1];
+          const body = c[2] ?? "";
+          const type = /\bt="([^"]+)"/.exec(attrs)?.[1];
+          const v = /<v>([^<]*)<\/v>/.exec(body)?.[1];
+          const value =
+            type === "s" ? shared[Number(v)] ?? "" : type === "inlineStr" ? runs(body, "t") : v !== undefined ? xmlText(v) : "";
+          if (value.trim()) cells.push(value.trim());
+        }
+        if (cells.length) rows.push(cells.join(" | "));
+      }
+      return rows.length ? `${names[i] ?? `Sheet ${i + 1}`}\n${rows.join("\n")}` : "";
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 async function extractPdfText(bytes: Uint8Array): Promise<string> {
   // Imported lazily: pdf.js is heavy and most requests through this module never touch a PDF.
   const { extractText, getDocumentProxy } = await import("unpdf");
@@ -120,8 +231,17 @@ export async function extractUploadedDocs(uploads: RawUpload[]): Promise<Extract
           out.push({ name, text: "", note: "a PDF with no extractable text (likely a scan or images)" });
           continue;
         }
+      } else if (officeKind(mime, name)) {
+        raw = await extractOfficeText(new Uint8Array(buf), officeKind(mime, name)!);
+        if (!raw.trim()) {
+          out.push({ name, text: "", note: "an Office file with no text in it (perhaps only images or charts)" });
+          continue;
+        }
       } else if (textLikeType(mime, name)) {
         raw = buf.toString("utf8");
+      } else if (isLegacyOffice(name)) {
+        out.push({ name, text: "", note: "an older Office format - ask your owner to save it as .docx, .xlsx, .pptx or PDF if you need it" });
+        continue;
       } else {
         out.push({
           name,

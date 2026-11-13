@@ -1018,3 +1018,16 @@ indexed page; pricing is discussed on a discovery call.
 - **Not in this repo:** the blog post /blog/how-to-hire-an-ai-consultant lives in Sanity and
   still says "An engagement that costs $5,000 and recovers even half of that has a 1-month
   payback." It needs a content edit in Sanity.
+
+## Uploaded Word, Excel and PowerPoint files are read in full (Nov 13, 2026)
+
+Until now the agent read only PDFs and text files from an upload; a .docx brand guide or an
+.xlsx price list reached it as a file name. lib/enrichment.ts now reads the modern Office
+formats too. They are zip archives of XML, so the text comes straight out of the XML with
+`fflate` (already in the tree under @react-pdf/renderer, now a direct dependency at the same
+version): Word paragraph by paragraph, PowerPoint slide by slide in order, Excel sheet by sheet
+under each sheet's name with cells separated by " | " (up to 2,000 rows a sheet). Each XML part
+is capped at 25 MB unpacked, so a crafted zip cannot inflate without limit. The legacy binary
+formats (.doc, .xls, .ppt) get a note asking for .docx/.xlsx/.pptx or PDF; a damaged file gets
+the existing "couldn't read it" note and the rest of the upload carries on. The documents step's
+help line now names the formats.
