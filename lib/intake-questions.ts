@@ -290,7 +290,7 @@ export function buildQuestions(agentTypeId: string, a: Answers): Question[] {
   // this flow never did. The files themselves are held by ConversationalIntake (bytes are never
   // autosaved) and go up with the build as `uploadedFiles`, which lib/agent-setup.ts reads into
   // BUSINESS-CONTEXT.md on the instance and attaches to the team's intake email. Optional.
-  q.push({ id: "documents", bucket: "top", section: "Your documents", ask: "Any documents your agent should read?", help: "Optional. A brand guide, price list, FAQ, process doc or syllabus. PDFs and text files are read in full; anything else is passed to the team.", kind: "files" });
+  q.push({ id: "documents", bucket: "top", section: "Your documents", ask: "Any documents your agent should read?", help: "Optional. A brand guide, price list, FAQ, process doc or syllabus. PDF, Word, Excel, PowerPoint and text files are read in full; anything else goes to the team.", kind: "files" });
 
   // ── Final details ───────────────────────────────────────────────────────────────────────
   if (role?.finalNote) {
