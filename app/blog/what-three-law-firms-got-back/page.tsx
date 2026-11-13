@@ -12,7 +12,7 @@ import { FOUNDER_BYLINE, OG_IMAGES, ORG_REF, PERSON_REF, breadcrumbJsonLd, human
 const URL = "https://apolloclaw.ai/blog/what-three-law-firms-got-back";
 const TITLE = "What Three Law Firms Got Back in Their First 30 Days With a Law Agent";
 const DESCRIPTION =
-  "A litigation firm, a corporate practice and a family law practice put a private Law Agent on intake, documents and client updates. Here is what each one got back.";
+  "A litigation firm, a corporate practice and a family law practice put a private Law Agent on intake, documents and client updates. Here is what each got back.";
 const PUBLISHED = "2026-10-27";
 const UPDATED = "2026-10-27";
 

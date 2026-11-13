@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "What an AI Assistant for CEOs Actually Does (and Doesn't Do)",
+  // Absolute, without the brand: with the layout template this ran to 74 characters (audit, Nov 12 2026).
+  title: { absolute: "What an AI Assistant for CEOs Actually Does (and Doesn't Do)" },
   description:
     "Learn how a CEO agent AI handles briefings, research, and follow-up, and where the CEO still makes the calls. CEO productivity AI, explained plainly.",
   alternates: {
