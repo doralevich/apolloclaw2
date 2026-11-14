@@ -124,7 +124,7 @@ const jsonLd = {
       },
       image: "https://apolloclaw.ai/og-image.png",
       description:
-        "AI consulting and implementation for owner-led businesses: private AI agents set up on your own infrastructure, with hands-on training and support after launch.",
+        "AI consulting and implementation for owner-led businesses and law firms: private AI agents that run on a Mac Mini on your network or a private virtual server, with hands-on training and support after launch.",
       serviceType: "AI Strategy and Implementation",
       // No priceRange: it read as "$$$$" in search results, which says "expensive" and
       // nothing else (the SEO brief's follow-up, Oct 19 2026). Checked again Oct 27 2026.
@@ -140,9 +140,15 @@ const jsonLd = {
       },
       geo: {
         "@type": "GeoCoordinates",
-        latitude: 40.7998,
-        longitude: -73.651,
+        // Same pin as designsbydaveo.com for the same address (David confirmed Nov 14 2026).
+        // Was 40.7998, -73.651.
+        latitude: 40.7799,
+        longitude: -73.6465,
       },
+      // The Apollo Claw AI Consulting Google Business Profile, David's share link of Nov 14 2026.
+      // It is a Google redirect that does not resolve to a canonical maps URL from the build
+      // environment, so it is used as given; swap in the maps/place URL if David has one.
+      hasMap: "https://share.google/sUIIUP3FJ8Bje10qJ",
       areaServed: [
         { "@type": "Country", name: "United States" },
         { "@type": "Place", name: "Long Island, NY" },
@@ -164,19 +170,20 @@ const jsonLd = {
         "https://www.linkedin.com/company/apolloclaw/",
         "https://www.crunchbase.com/organization/apollo-claw",
         "https://designsbydaveo.com",
+        "https://share.google/sUIIUP3FJ8Bje10qJ",
       ],
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "AI Consulting Services",
         itemListElement: [
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Strategy Consulting" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Agent Implementation" } },
           { "@type": "Offer", itemOffered: { "@type": "Service", name: "Custom AI Agent Development" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Agent Implementation" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Strategy Consulting" } },
           { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Automation for Small Business" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Universities" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Enterprise Organizations" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Nonprofits" } },
           { "@type": "Offer", itemOffered: { "@type": "Service", name: "Fractional Chief AI Officer" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Enterprise Organizations" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Universities" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "AI Consulting for Nonprofits" } },
         ],
       },
     },

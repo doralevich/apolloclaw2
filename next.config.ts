@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { BLOG_MERGES } from "./lib/blog-triage";
 
 // Old /use-cases/* slug -> new path. "healthcare" is an older alias that used to hop to
 // /use-cases/health; it now points straight at the final destination so there is no redirect
@@ -25,6 +26,14 @@ const USE_CASE_MAP: Record<string, string> = {
   // genuinely gone. If any of these should instead point at a surviving page (brokers ->
   // /industries/real-estate is the closest real match), add the line back with that destination.
 };
+
+// Merged blog posts (triage approved Nov 14 2026): each old post URL 301s straight to its target,
+// which is never itself a redirect, so there are no chains. See lib/blog-triage.ts.
+const BLOG_MERGE_REDIRECTS = Object.entries(BLOG_MERGES).map(([slug, destination]) => ({
+  source: `/blog/${slug}`,
+  destination,
+  statusCode: 301,
+}));
 
 const USE_CASE_REDIRECTS = Object.entries(USE_CASE_MAP).map(([slug, destination]) => ({
   source: `/use-cases/${slug}`,
@@ -200,6 +209,7 @@ const nextConfig: NextConfig = {
       // hiring). Every old path was indexed at sitemap priority 0.9, so each one 301s to its
       // new home to carry the ranking over. Do not remove these.
       ...USE_CASE_REDIRECTS,
+      ...BLOG_MERGE_REDIRECTS,
       {
         source: "/ai-agents/personal",
         destination: "/ai-agents/personal-assistant",

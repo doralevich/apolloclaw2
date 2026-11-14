@@ -9,6 +9,7 @@ import {
   PODCAST_EPISODES,
   PODCAST_VIDEOS,
   videoDate,
+  videoDay,
 } from "@/lib/podcast";
 import { OG_IMAGES, ORG_REF, breadcrumbJsonLd } from "@/lib/seo";
 
@@ -45,6 +46,9 @@ export default function PodcastPage() {
         publisher: ORG_REF,
         isPartOf: { "@id": "https://apolloclaw.ai/#website" },
         inLanguage: "en-US",
+        // The index changes when a video is added, so its date is the newest upload's (same rule as
+        // app/sitemap.ts).
+        dateModified: PODCAST_VIDEOS[0] ? videoDay(PODCAST_VIDEOS[0].uploadDate) : "2026-11-10",
         mainEntity: {
           "@type": "ItemList",
           itemListElement: PODCAST_VIDEOS.map((v, i) => ({

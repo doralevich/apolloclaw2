@@ -17,7 +17,8 @@ const PUBLISHED = "2026-10-27";
 const UPDATED = "2026-10-27";
 
 export const metadata: Metadata = {
-  title: { absolute: `${TITLE} | Apollo Claw` },
+  // The tag is shortened to fit 60 characters (audit, Nov 14 2026); the H1 keeps the full title.
+  title: { absolute: "What Three Law Firms Got Back in 30 Days | Apollo Claw" },
   description: DESCRIPTION,
   alternates: { canonical: URL },
   openGraph: {

@@ -5,6 +5,7 @@ import { PortableText } from "@portabletext/react";
 import { sanityClient } from "@/lib/sanity";
 import { POST_BY_SLUG_QUERY, ALL_POST_SLUGS_QUERY, POSTS_QUERY } from "@/lib/sanity-queries";
 import { Button } from "@/components/ui/button";
+import { isBlogMerged, isBlogNoindex } from "@/lib/blog-triage";
 import { ORG_REF, PERSON_REF, breadcrumbJsonLd } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -88,6 +89,8 @@ export async function generateMetadata({
       // homepage - so each post told Google it was a duplicate of apolloclaw.ai and none of
       // them could rank on their own.
       alternates: { canonical: `https://apolloclaw.ai/blog/${slug}` },
+      // Triage rows marked NOINDEX stay live but stay out of search; links are still followed.
+      ...(isBlogNoindex(slug) && { robots: { index: false, follow: true } }),
     };
   } catch {
     return { title: "Blog Post" };
@@ -162,7 +165,7 @@ export default async function BlogPostPage({
   try {
     const allPosts = await sanityClient.fetch(POSTS_QUERY);
     recentPosts = (allPosts || [])
-      .filter((p: any) => p.slug?.current !== slug)
+      .filter((p: any) => p.slug?.current !== slug && !isBlogMerged(p.slug?.current))
       .slice(0, 5)
       .map((p: any) => ({ slug: p.slug?.current || "", title: p.title, publishedAt: p.publishedAt || "" }));
   } catch {}
