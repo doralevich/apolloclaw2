@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { sanityClient } from "@/lib/sanity";
 import { USE_CASES } from "@/config/useCases";
+import { isBlogMerged, isBlogNoindex } from "@/lib/blog-triage";
 import { PODCAST_VIDEOS, videoDay } from "@/lib/podcast";
 
 export const revalidate = 3600;
@@ -78,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/accessibility", priority: 0.3, changed: "2026-10-09" },
     { path: "/integrations", priority: 0.8, changed: "2026-09-27" },
     // Both of these are public, indexable pages that were simply never added here.
-    { path: "/create-an-agent", priority: 0.8, changed: "2026-11-12" },
+    { path: "/create-an-agent", priority: 0.8, changed: "2026-11-14" },
     { path: "/blog/ai-assistant-for-ceo", priority: 0.6, changed: "2026-09-21" },
     // Hand-built like the one above: the law-firm results write-up (Oct 27 2026).
     { path: "/blog/what-three-law-firms-got-back", priority: 0.6, changed: "2026-10-27" },
@@ -109,6 +110,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogPages = posts
     .filter((post) => {
       if (!post.slug || seen.has(post.slug)) return false;
+      // Merged posts 301 elsewhere and noindexed posts ask not to be indexed; neither belongs
+      // in the sitemap (lib/blog-triage.ts).
+      if (isBlogMerged(post.slug) || isBlogNoindex(post.slug)) return false;
       seen.add(post.slug);
       return true;
     })

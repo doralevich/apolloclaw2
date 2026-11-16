@@ -4,6 +4,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
 import { SCHEDULE_CONSULT_URL } from "@/config/scheduling";
 import { PLANS_ON_SALE } from "@/config/agent-plans";
+import { webPageJsonLd } from "@/lib/seo";
 
 
 // The "Create an Agent" landing page — the destination for the mailer. It walks a prospect
@@ -109,9 +110,24 @@ function Check() {
   );
 }
 
+// The day this page's words last changed (the plan cards lost their buttons' price line Nov 12 and
+// gained the discovery call button Nov 14 2026); app/sitemap.ts carries the same day.
+const UPDATED = "2026-11-14";
+
 export default function CreateAnAgentPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      webPageJsonLd({
+        url: "https://apolloclaw.ai/create-an-agent",
+        name: "Create Your Agent",
+        dateModified: UPDATED,
+      }),
+    ],
+  };
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageHero
         title="Create Your"
         titleAccent="Agent"
@@ -256,7 +272,7 @@ export default function CreateAnAgentPage() {
               Pick how many agents you want working for you.
             </h2>
             <p className="font-body text-sm text-muted-foreground mb-10 max-w-2xl leading-relaxed">
-              Month to month, with setup included and no minimum term. You see the price before you pay, or book a call and we will walk you through it.
+              Month to month, with setup included and no minimum term. Book a discovery call and we will walk you through it, or get started now.
             </p>
           </ScrollReveal>
 
@@ -288,21 +304,21 @@ export default function CreateAnAgentPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link
-                    href={`/onboard?plan=${plan.id}`}
-                    className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
-                    style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
-                  >
-                    Get started
-                  </Link>
                   <a
                     href={SCHEDULE_CONSULT_URL}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="mt-8 flex w-full items-center justify-center font-bold uppercase transition-all hover:brightness-110"
+                    style={{ background: "#D72B2B", color: "#fff", fontSize: 13, letterSpacing: "0.08em", padding: "14px 28px", borderRadius: 4, textDecoration: "none", boxShadow: "0 8px 24px rgba(215,43,43,0.28)" }}
+                  >
+                    Book a discovery call
+                  </a>
+                  <Link
+                    href={`/onboard?plan=${plan.id}`}
                     className="mt-4 text-center font-body text-sm font-bold text-foreground underline underline-offset-4"
                   >
-                    Or book a call
-                  </a>
+                    Or get started now
+                  </Link>
                 </div>
               </ScrollReveal>
             ))}

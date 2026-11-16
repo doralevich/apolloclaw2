@@ -1031,3 +1031,23 @@ is capped at 25 MB unpacked, so a crafted zip cannot inflate without limit. The 
 formats (.doc, .xls, .ppt) get a note asking for .docx/.xlsx/.pptx or PDF; a damaged file gets
 the existing "couldn't read it" note and the rest of the upload carries on. The documents step's
 help line now names the formats.
+
+## Blog triage, Organization schema and the map pin (Nov 14, 2026)
+
+David approved the blog triage CSV as written ("just post it and do it"). The posts live in
+Sanity, so the decisions live in `lib/blog-triage.ts`: `BLOG_NOINDEX` (11 posts, live at their URL
+with robots "noindex, follow" and a self canonical) and `BLOG_MERGES` (27 posts, each a 301 to its
+target through next.config.ts). Merged and noindexed posts are out of the sitemap; merged posts
+are also out of the /blog index and the Recent Posts sidebar, since linking to a redirect helps
+nobody. Merge sources stay in Sanity so passages can be lifted into the target. Every target is a
+KEEP or REFRESH page (or /compare/ai-agent-vs-chatbot), so there are no chains. To change a
+decision, edit that one file.
+
+Whether NOINDEX posts stay listed on /blog is left as it was (listed), pending David.
+
+The Organization node: the description now carries the delivery language (a Mac Mini on your
+network or a private virtual server), the offer catalog leads with the flagship offers, the
+Google Business Profile share link is both `sameAs` and `hasMap`, and `geo` is the designsbydaveo.com
+pin (40.7799, -73.6465; was 40.7998, -73.651), which David confirmed. /create-an-agent leads with
+"Book a discovery call"; "Or get started now" remains for the self-serve path. /invite and /auth
+gained noindex layouts.

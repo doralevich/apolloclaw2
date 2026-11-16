@@ -4,6 +4,7 @@ import { sanityClient } from "@/lib/sanity";
 import { POSTS_QUERY } from "@/lib/sanity-queries";
 import ScrollReveal from "@/components/ScrollReveal";
 import PageHero from "@/components/PageHero";
+import { isBlogMerged } from "@/lib/blog-triage";
 import { OG_IMAGES } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -26,7 +27,11 @@ export const metadata: Metadata = {
 
 async function getPosts() {
   try {
-    return await sanityClient.fetch(POSTS_QUERY);
+    const all = await sanityClient.fetch(POSTS_QUERY);
+    // A merged post 301s to its target, so listing it would link to a redirect.
+    return (all || []).filter(
+      (p: { slug?: { current?: string } }) => !isBlogMerged(p.slug?.current ?? ""),
+    );
   } catch {
     return [];
   }
